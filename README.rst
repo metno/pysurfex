@@ -3,9 +3,6 @@ Offline Surfex Forcing and Visualization
 
 Tool to create offline SURFEX forcing and plotting and verification of results
 
-This package allows testing of different strategies for creating deterministic forecasts from an
-ensemble. The forecasts are visualized using Yr-s short-range meteogram.
-
 Installation on ubuntu
 ----------------------
 
