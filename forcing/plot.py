@@ -7,6 +7,7 @@ from operator import truediv,add
 from datetime import datetime
 import matplotlib.pylab as mpl
 from forcing.inputFromSurfex import readFromASCIIFile,texte,netCDF
+import os
 
 #class plot():
 #   
@@ -14,52 +15,60 @@ from forcing.inputFromSurfex import readFromASCIIFile,texte,netCDF
 #      print "Constructed a plot"
 
 
-def snowOgram(stnr,index,basetime,patches,layers,sa_file,ta_file,sfxfile="ISBA_PROGNOSTIC.OUT.nc"):
+def snowOgram(stnr,index,patches,layers,sa_file,ta_file,inputPath,format):
 
         # Read obs
-        sa=readFromASCIIFile(sa_file,stnr,"SA")
-        ta=readFromASCIIFile(ta_file,stnr,"TA")
-#        pr=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"PR")
-        ff=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"FF")
-#        dd=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"DD")
+        if ( sa_file != None ): sa=readFromASCIIFile(sa_file,stnr,"SA")
+        if ( ta_file != None ):
+            ta=readFromASCIIFile(ta_file,stnr,"TA")
+            pr=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"PR")
+            ff=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"FF")
+            dd=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"DD")
 
         fig,ax1 = plt.subplots()
 
         # Plot obs
-        ax1.plot(sa.times,sa.values,label="SA_OBS",color="b")
-        ax1.set_xlabel("time")
-        ax1.set_ylabel("Snow depth (m)",color="b")
-        ax1.tick_params("y",colors="b")
-#        ax2=ax1.twinx()
-#        ax3=ax1.twinx()
-        ax4=ax1.twinx()
-#        ax5=ax1.twinx()
+        if ( sa_file != None ):
+          ax1.plot(sa.times,sa.values,label="SA_OBS",color="b")
+          ax1.set_xlabel("time")
+          ax1.set_ylabel("Snow depth (m)",color="b")
+          ax1.tick_params("y",colors="b")
 
         #print ta.values
-#        ax2.plot(ta.times,ta.values,'bs',label="TA")
-#        ax2.set_ylabel("TA",color="r")
-#        ax2.tick_params("y",colors="r")
-    
-#        ax3.plot(pr.times,pr.values,'rs',label="PR")
-#        ax2.set_ylabel("PR",color="r")
-#        print ff.values
-        ax4.plot(ff.times,ff.values,'ys',label="FF")
-        ax4.set_ylabel("FF",color="y")
-#        ax5.plot(dd.times,dd.values,'bs',label="DD")
-#        ax5.set_ylabel("TA",color="b")
+        if ( ta_file != None ):
+           ax2=ax1.twinx()
+           ax2.plot(ta.times,ta.values,'bs',label="TA")
+           ax2.set_ylabel("TA",color="r")
+           ax2.tick_params("y",colors="r")
 
         # Read surfex DSNOW_T_ISBA from "TEXTE"
-        sfx=texte("DSNOW_T_ISBA",30,index,basetime,3600)
-        ax1.plot(sfx.times,sfx.values,label="DSNOW_T_ISBA")
+        # TODO:
+        # Temporary basetime (at least not needed for netCDF)
+        DTG="2014100200"
+        basetime=datetime.strptime(str.strip(DTG), '%Y%m%d%H')
+
+        #sfxfile=inputPath+"/ISBA_DIAGNOSTICS.OUT.nc"
+        #sfx=netCDF(sfxfile,"DSNOW_VEGT_P",1,index,basetime,3600)
+        #ax1.plot(sfx.times,sfx.values,label="DSNOW_T_ISBA")
 
         # Read snow SWE and density from NetCDF file
+        flayer=layers
+        if ( layers < 0 ):
+            flayers=0
+            layers=abs(layers)
+
         for l in range(0,layers):
           for p in range(0,patches):
 
-            wsn_veg=netCDF(sfxfile,"WSN_VEG"+str(l+1),p,index,basetime,3600)
-            rsn_veg=netCDF(sfxfile,"RSN_VEG"+str(l+1),p,index,basetime,3600)
-            dsn_veg=map(truediv,wsn_veg.values,rsn_veg.values)
-            ax1.plot(wsn_veg.times,dsn_veg,label="DSN_PATCH"+str(p)+"_VEG"+str(l))
+            if ( format == "nc" ):
+                sfxfile=inputPath+"/ISBA_PROGNOSTIC.OUT.nc"
+                if ( os.path.isfile(sfxfile)):
+                  wsn_veg=netCDF(sfxfile,"WSN_VEG"+str(l+1),p,index,basetime,3600)
+                  rsn_veg=netCDF(sfxfile,"RSN_VEG"+str(l+1),p,index,basetime,3600)
+                  dsn_veg=map(truediv,wsn_veg.values,rsn_veg.values)
+                  ax1.plot(wsn_veg.times,dsn_veg,label="DSN_PATCH"+str(p)+"_VEG"+str(l))
+                else:
+                  forcing.util.info(sfxfile+" does not exists!")
 
         plt.gcf().autofmt_xdate()
         #plt.legend()

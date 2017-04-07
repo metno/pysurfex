@@ -27,7 +27,7 @@ class readFromASCIIFile(inputFromSurfex):
        self.stnr=stnr
        self.varname=var
  
-       forcing.util.info("Reading "+file+" stnr:"+str(stnr))
+       forcing.util.info("Reading "+str(file)+" stnr:"+str(stnr))
        dtg2dt=lambda x: datetime.strptime(str.strip(x), '%Y%m%d%H')
 
        myobsheader=np.genfromtxt(file,names=True,dtype=None,delimiter=";",max_rows=1)
