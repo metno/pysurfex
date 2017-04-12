@@ -125,15 +125,15 @@ class netCDFOutput(surfexForcing):
         self.__forcing__['LAT']           = self.__fileHandler__.createVariable("LAT","f4",("Number_of_points",))
         self.__forcing__['LAT'].units     = "degrees_north"
         self.__forcing__['LAT'].longname  = "latitude"
-        self.__forcing__['LAT'][:] = [ i for i in range (60,90) ]
+        self.__forcing__['LAT'][:] = geo.__lats__
         self.__forcing__['LON']           = self.__fileHandler__.createVariable("LON","f4",("Number_of_points",))
         self.__forcing__['LON'].units     = "degrees_east"
         self.__forcing__['LON'].longname  = "longitude"
-        self.__forcing__['LON'][:] = [ i for i in range (0,30) ]
+        self.__forcing__['LON'][:] = geo.__lons__
         self.__forcing__['ZS']            = self.__fileHandler__.createVariable("ZS" ,"f4",("Number_of_points",))
         self.__forcing__['ZS'].units      = "m2/s2"
         self.__forcing__['ZS'].longname   = "Surface_Orography"
-        self.__forcing__['ZS'][:] = [ i for i in range (0,30) ]
+        self.__forcing__['ZS'][:] = geo.__zs__
         self.__forcing__['ZREF']          = self.__fileHandler__.createVariable("ZREF" ,"f4",("Number_of_points",))
         self.__forcing__['ZREF'].units    = "m"
         self.__forcing__['ZREF'].longname = "Reference_height"
@@ -193,7 +193,6 @@ class netCDFOutput(surfexForcing):
             self.__forcing__['CO2air']         = self.__fileHandler__.createVariable("CO2air" ,"f4",("time","Number_of_points",))
             self.__forcing__['CO2air'].units   = "kg/m3"
             self.__forcing__['CO2air'].longname = "Near_Surface_CO2_concentration"
-            self.__forcing__['CO2air'][:,:]    = 0.000620
           else:
             print "This should never happen! "+thisVar+" is not defined!"
             sys.exit(1)

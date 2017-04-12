@@ -24,15 +24,21 @@ def run(argv):
    if not args.debug:
       np.seterr(invalid="ignore")
 
-   geoOut=forcing.geo.geo(30,30,30)
+   #geoOut=forcing.geo.domain(739,949,"+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
+   lons=[10,11]
+   lats=[60,61]
+   zs=[1000,500]
+   geoOut=forcing.geo.points(2,lons,lats,zs)
    nTimes=6
    for t in range (0,nTimes):
        if ( t == 0 ):
 
            #fh = nc.Dataset("/lustre/storeB/project/metproduction/products/meps/symlinks/meps_det_extracted_2_5km_20170411T00Z.nc", 'r')
+           #fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps05files/t2myr_kf_0_5km_latest.nc", 'r')
            fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
            ta=forcing.readInputForSurfex.readTemperatureFromNetCDF(geoOut,"TA","air_temperature_2m",fh)
 
+           fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
            qa=forcing.readInputForSurfex.netCDF(geoOut,"QA","relative_humidity_2m",fh,t)
 
            DTG="2014100200"
@@ -53,6 +59,10 @@ def run(argv):
            varObjs.append(forcing.readInputForSurfex.constantValue(geoOut,"CO2",0.062))
 
            output=forcing.surfexForcing.netCDFOutput(basetime,geoOut,nTimes,varObjs)
+
+           # Increase time
+           for i in range(0,len(varObjs)):
+               varObjs[i].__increaseTime__()
 
        # Write for each time step
        output.__writeForcing__(varObjs)
