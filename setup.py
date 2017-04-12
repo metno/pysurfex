@@ -101,8 +101,8 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'create_forcing=forcing:create_forcing',
-            'plot_offline=forcing:plot_offline',
+            'create_forcing=forcing:createForcing',
+            'plot_offline=forcing:plotOffline',
         ],
     },
 )
