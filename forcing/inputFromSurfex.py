@@ -1,98 +1,98 @@
-from forcing.timeSeries import timeSeries
 import forcing.util
 import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset
+from forcing.timeSeries import TimeSeries
 
-class inputFromSurfex(timeSeries):
+class InputFromSurfex(TimeSeries):
      """ 
      Reading surfex output
      """
 
-     def __init__(self,baseTime="NA",nPoints=1):
-       super(inputFromSurfex, self).__init__()
-       self.baseTime=baseTime
-       self.nPoints=nPoints
-       self.myData=list()
+     def __init__(self,base_time="NA",npoints=1):
+       super(InputFromSurfex, self).__init__()
+       self.base_time=base_time
+       self.npoints=npoints
+       self.my_data=list()
 
 
-class readFromASCIIFile(inputFromSurfex):
+class ReadFromASCIIFile(InputFromSurfex):
      """
      Read from ASCII file
      """
 
      def __init__(self,file,stnr,var):
-       super(readFromASCIIFile, self).__init__()
-       self.nPoints=1
+       super(ReadFromASCIIFile, self).__init__()
+       self.npoints=1
        self.stnr=stnr
        self.varname=var
  
        forcing.util.info("Reading "+str(file)+" stnr:"+str(stnr))
        dtg2dt=lambda x: datetime.strptime(str.strip(x), '%Y%m%d%H')
 
-       myobsheader=np.genfromtxt(file,names=True,dtype=None,delimiter=";",max_rows=1)
-       #print myobsheader.dtype.names
-       nCols=len(myobsheader.dtype.names)
+       my_obsheader=np.genfromtxt(file,names=True,dtype=None,delimiter=";",max_rows=1)
+       #print my_obsheader.dtype.names
+       ncols=len(my_obsheader.dtype.names)
  
        found=0
-       obsDtype=["int","object"]
-       for i in range(2,nCols):
-          obsDtype.append("float")
-          #print myobsheader.dtype.names[i]
-          if ( str.strip(myobsheader.dtype.names[i]) == var):
+       obs_data_type=["int","object"]
+       for i in range(2,ncols):
+          obs_data_type.append("float")
+          #print my_obsheader.dtype.names[i]
+          if ( str.strip(my_obsheader.dtype.names[i]) == var):
             found=1
        if ( found == 0 ): forcing.util.error("Variable "+var+" not found!")
-       myobs=np.genfromtxt(file,names=True,dtype=obsDtype,delimiter=";",converters={1: dtg2dt})
+       my_obs=np.genfromtxt(file,names=True,dtype=obs_data_type,delimiter=";",converters={1: dtg2dt})
  
-       for i in range(0,len(myobs)):
-         if ( myobs['STNR'][i] == stnr ):
-           val=myobs[var][i]
-           #print myobs['TIME'][i],val
+       for i in range(0,len(my_obs)):
+         if ( my_obs['STNR'][i] == stnr ):
+           val=my_obs[var][i]
+           #print my_obs['TIME'][i],val
            # Scale snow depth to meter
            if ( var == 'SA' ):
              val=val*0.01
  
-           self.times.append(myobs['TIME'][i])
+           self.times.append(my_obs['TIME'][i])
            self.values.append(val)
 
 
-class netCDF(inputFromSurfex):
+class NetCDF(InputFromSurfex):
 
      """
      Reading surfex NetCDF output 
      """
 
-     def __init__(self,filename,var,patch,pos,baseTime,interval):
-       super(netCDF, self).__init__(baseTime)
+     def __init__(self,filename,var,patch,pos,base_time,interval):
+       super(NetCDF, self).__init__(base_time)
 
        fh = Dataset(filename, "r")
        #dimensions = fh.variables[var].dimensions
-       inputFromSurfex.myData=fh.variables[var][:,patch,pos]
+       self.my_data=fh.variables[var][:,patch,pos]
 
-       for i in range(0,len(inputFromSurfex.myData)):
-         self.values.append(inputFromSurfex.myData[i])
-         self.times.append(self.baseTime+timedelta(seconds=(i*interval)))
+       for i in range(0,len(self.my_data)):
+         self.values.append(self.my_data[i])
+         self.times.append(self.base_time+timedelta(seconds=(i*interval)))
          #print self.times[i],self.values[i]
        fh.close()
 
 
-class texte(inputFromSurfex):
+class Texte(InputFromSurfex):
      """
      Reading surfex TEXTE output
      """
 
-     def __init__(self,var,nPoints,pos,baseTime,interval):
-       super(texte, self).__init__(baseTime,nPoints)
-       doubleToExp=lambda x: float(x.replace("D", "E"))
+     def __init__(self,var,npoints,pos,base_time,interval):
+       super(Texte, self).__init__(base_time,npoints)
+       double_to_exp=lambda x: float(x.replace("D", "E"))
 
        convert=dict()
-       for i in range(0,nPoints):
-         convert[i]=doubleToExp
+       for i in range(0,npoints):
+         convert[i]=double_to_exp
 
-       inputFromSurfex.myData=np.genfromtxt(var+".TXT",usecols=pos, converters=convert)
-       #print inputFromSurfex.myData
-       for i in range(0,len(inputFromSurfex.myData)):
-         self.values.append(inputFromSurfex.myData[i])
-         self.times.append(self.baseTime+timedelta(seconds=(i*interval)))
+       self.my_data=np.genfromtxt(var+".TXT",usecols=pos, converters=convert)
+       #print inputFromSurfex.my_data
+       for i in range(0,len(self.my_data)):
+         self.values.append(self.my_data[i])
+         self.times.append(self.base_time+timedelta(seconds=(i*interval)))
          #print self.times[i],self.values[i] 
 

@@ -1,14 +1,13 @@
 import sys
-import numpy as np
 import forcing.driverPlots
 import forcing.driverForcing
 
-def createForcing():
+def create_forcing():
    forcing.driverForcing.run(sys.argv)
 
-def plotOffline():
+def plot_offline():
    forcing.driverPlots.run(sys.argv)
 
 if __name__ == '__main__':
-   createForcing()
+   create_forcing()
 

@@ -1,112 +1,150 @@
 import abc
-from datetime import datetime,timedelta
-import netCDF4  as nc
-import pyproj
+from datetime import datetime, timedelta
 import numpy as np
 import sys
-import forcing.geo
+from forcing.geo import Domain,Points
+import forcing.util
+from scipy.interpolate import griddata
 
-class readInputForSurfex(object):
+class ReadInputForSurfex(object):
     __metaclass__ = abc.ABCMeta
 
-    __values__=np.array
-    __varName__=""
+    values = np.array
+    varName = ""
 
     @abc.abstractmethod
-    def __increaseTime__(self):
-        raise NotImplementedError('users must define __increaseTime__ to use this base class')
+    def increase_time(self):
+        raise NotImplementedError('users must define increaseTime to use this base class')
 
     @abc.abstractmethod
-    def __readTimeStep__(self):
-        raise NotImplementedError('users must define __readTimeStep__ to use this base class')
+    def read_time_step(self):
+        raise NotImplementedError('users must define readTimeStep to use this base class')
 
-    __geoOut__=None
-    def __init__(self,geo,varName):
-       self.__geoOut__=geo
-       self.__varName__=varName
-       print "Constructed object for "+self.__varName__
+    def __init__(self, geo, var_name):
+        self.geo_out = geo
+        self.var_name = var_name
+        print "Constructed object for " + self.var_name
 
     # TODO: handle change of projection
-    def __changeGeo__(self,geoIn,fieldIn):
-        np=self.__geoOut__.__nPoints__
-        nx=self.__geoOut__.__nLons__
-        ny=self.__geoOut__.__nLats__
+    """Convert the read object to the requested output geo"""
 
-        if ( np == nx == ny ):
+    def change_geo(self, geo_in, field_in):
+        np = self.geo_out.npoints
+        nx = self.geo_out.nlons
+        ny = self.geo_out.nlats
+
+        if (np == nx == ny):
             print "Points"
-            print fieldIn
-            self.__values__=fieldIn[0:1,0:ny,0:1]
+            print field_in
+            self.values = field_in[0:1, 0:ny, 0:1]
         else:
             print "Domain"
-            self.__values__=fieldIn
-            self.__values__=fieldIn[0:1,0:ny,0:nx]
+            self.values = field_in
+            self.values = field_in[0:1, 0:ny, 0:nx]
 
         print "Changed geo:"
-        print self.__values__
+        print self.values
 
-class netCDF(readInputForSurfex):
 
-    __netcdfName__=""
-    __timeStep__=-1
-    __timeStepInc__=-1
-    __timeStepIntervall__=-1
-    __fileHandler__=None
-    def __init__(self,geo,varName,netcdfName,fh,timeStep=0,timeStepInc=1,timeStepIntervall=3600.):
-      super(netCDF,self).__init__(geo,varName)
-      self.__netcdfName__=netcdfName
-      self.__fileHandler__=fh
-      self.__timeStep__=timeStep
-      self.__timeStepInc__=timeStepInc
-      self.__timeStepIntervall__=timeStepIntervall
+class NetCDF(ReadInputForSurfex):
+    netcdf_name = ""
+    time_step = -1
+    time_step_inc = -1
+    time_step_intervall = -1
+    file_handler = None
 
-    def readField(self):
-       vn=self.__netcdfName__
-       t=self.__timeStep__
-       nx=self.__geoOut__.__nLons__
-       ny=self.__geoOut__.__nLats__
+    def __init__(self, geo, var_name, netcdf_name, fh, time_step=0, time_step_inc=1, time_step_intervall=3600.):
+        super(NetCDF, self).__init__(geo, var_name)
+        self.netcdf_name = netcdf_name
+        self.file_handler = fh
+        self.time_step = time_step
+        self.time_step_inc = time_step_inc
+        self.time_step_intervall = time_step_intervall
 
-       print "Reading variable "+str(vn)+" timeStep: "+str(t)+" for "+str(self.__varName__)
-       print self.__fileHandler__[vn]
-       #self.__values__=np.array(self.__fileHandler__[vn][t,0:1,0:ny,0:1])
-       geoIn=forcing.geo.domain(739,949,"+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
-       nxIn=geoIn.__nLons__
-       nyIn=geoIn.__nLats__
-       fieldIn=np.array(self.__fileHandler__[vn][t,0:1,0:nyIn,0:nxIn])
-       return geoIn,fieldIn
- 
-    def __readTimeStep__(self):
-       geoIn,fieldIn = self.readField()
-       self.__changeGeo__(geoIn,fieldIn)
+        if "latitude" in self.file_handler.variables:
+            latvar = self.file_handler.variables["latitude"]
+            lonvar = self.file_handler.variables["longitude"]
+        elif "lat" in self.file_handler.variables:
+             latvar = self.file_handler.variables["lat"]
+             lonvar = self.file_handler.variables["lon"]
+        else:
+             forcing.util.error("No name for latitude found")
 
-    def __increaseTime__(self):
-       self.__timeStep__=self.__timeStep__+self.__timeStepInc__
+        print("Latvar")
+        print(latvar)
+        self.lats = latvar[:]
+        self.lons = lonvar[:]
+        self.isens = "ensemble_member" in self.file_handler.dimensions
 
-class readTemperatureFromNetCDF(netCDF): 
+        # Store the name of the I and J dimension, so we can retrieve the data from the right
+        # dimensions later on
+        if len(self.lats.shape) == 1:
+            self.lons, self.lats = np.meshgrid(self.lons, self.lats)
+            self.Iname = latvar.dimensions[0]
+            self.Jname = lonvar.dimensions[0]
+        else:
+            self.Iname = latvar.dimensions[0]
+            self.Jname = lonvar.dimensions[1]
 
-    def __init__(self,geoOut,varName,netcdfName,fh,t=0):
-       super(readTemperatureFromNetCDF,self).__init__(geoOut,varName,netcdfName,fh,t)
+    def read_field(self):
+        vn = self.netcdf_name
+        t = self.time_step
+        nx = self.geo_out.nlons
+        ny = self.geo_out.nlats
 
-class constantValue(readInputForSurfex):
+        print "Reading variable " + str(vn) + " timeStep: " + str(t) + " for " + str(self.var_name)
+        print self.file_handler[vn]
+        # self.__values__=np.array(self.__fileHandler__[vn][t,0:1,0:ny,0:1])
+        geo_in = Domain(739, 949, "+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
 
-    def __init__(self,geoOut,varName,value):
-       super(constantValue,self).__init__(geoOut,varName)
-       self.__value__=value
+        lons_vec=np.reshape(self.lons,self.lons.size)
+        lats_vec=np.reshape(self.lats,self.lats.size)
+        points=(lons_vec,lats_vec)
+        values = np.array(self.file_handler[vn][t, 0, 0:geo_in.nlats, 0:geo_in.nlons])
+        values_vec=values.reshape(values.size)
+        grid_x=np.array(self.geo_out.lons)
+        grid_y=np.array(self.geo_out.lats)
+        xi=(grid_x,grid_y)
+        print("lons_vec.shape")
+        print(lons_vec.shape)
+        print("lats_vec.shape")
+        print(lats_vec.shape)
+        print("xi")
+        print(xi)
+        field_in = griddata(points,values_vec,xi,method='linear')
+        self.values=field_in
+        #nx_in = geo_in.nlons
+        #ny_in = geo_in.nlats
+        #field_in = np.array(self.file_handler[vn][t, 0:1, 0:ny_in, 0:nx_in])
+        return geo_in, field_in
 
-    def __readTimeStep__(self):
-       self.__values__=np.array(self.__value__)
+    def read_time_step(self):
+        geo_in, field_in = self.read_field()
+        #self.change_geo(geo_in, field_in)
 
-    def __increaseTime__(self):
+    def increase_time(self):
+        self.time_step = int(self.time_step) + int(self.time_step_inc)
+
+
+class ReadTemperatureFromNetCDF(NetCDF):
+    def __init__(self, geo_out, var_name, netcdf_name, fh, t=0):
+        super(ReadTemperatureFromNetCDF, self).__init__(geo_out, var_name, netcdf_name, fh, t)
+
+
+class ConstantValue(ReadInputForSurfex):
+    def __init__(self, geo_out, var_name, const_value):
+        super(ConstantValue, self).__init__(geo_out, var_name)
+        self.const_value = const_value
+
+    def read_time_step(self):
+        self.values = np.array(self.const_value)
+
+    def increase_time(self):
         pass
 
-class readTemperatureFromNetCDF(netCDF):
 
-    def __init__(self,geoOut,varName,netcdfName,fh,t=0):
-       super(readTemperatureFromNetCDF,self).__init__(geoOut,varName,netcdfName,fh,t)
+class ReadTwoFieldsFromNetcdf(NetCDF):
+    def __init__(self, geo_out, var_name, netcdf_name1, fh1, netcdf_name2, fh2, op, t=0):
+        super(ReadTwoFieldsFromNetcdf, self).__init__(geo_out, var_name, netcdf_name1, fh1, t)
 
-class readTwoFieldsFromNetcdf(netCDF):
-
-    def __init__(self,geoOut,varName,netCDFname1,fh1,netCDFName2,fh2,op,t=0):
-       super(readTwoFieldsFromNetcdf,self).__init__(geoOut,varName,netcdfName1,fh1,t)
-
-       #var2=netCDF(geoOut,varName,netcdfName2,fh2,t)
-
+        # var2=netCDF(geoOut,varName,netcdfName2,fh2,t)

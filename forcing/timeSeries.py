@@ -1,6 +1,6 @@
 import forcing.util
 
-class timeSeries(object):
+class TimeSeries(object):
     """
     Time-Series object
     """

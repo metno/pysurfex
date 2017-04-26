@@ -1,39 +1,38 @@
 import pyproj
 import forcing.util
-#import numpy as np
+import numpy as np
 #import sys
 
-class geo(object):
+class Geo(object):
 
-    __nPoints__=-1
-    __nLons__=-1
-    __nLats__=-1
+    npoints=-1
+    nlons=-1
+    nlats=-1
+    lons=None
+    lats=None
+    zs=None
+    def __init__(self,npoints,nlons,nlats):
+        self.npoints=npoints
+        self.nlons=nlons
+        self.nlats=nlats
+        print "Created geo object "+str(self.npoints)+" "+str(self.nlons)+" "+str(self.nlats)
 
-    def __init__(self,nPoints,nLons,nLats):
-        self.__nPoints__=nPoints
-        self.__nLons__=nLons
-        self.__nLats__=nLats
-        self.__lons__=list()
-        self.__lats__=list()
-        self.__zs__=list()
-        print "Created geo object "+str(self.__nPoints__)+" "+str(self.__nLons__)+" "+str(self.__nLats__)
 
+class Points(Geo):
 
-class points(geo):
+    def __init__(self,npoints,lons,lats,zs):
+        super(Points,self).__init__(npoints,npoints,npoints)
 
-    def __init__(self,nPoints,lons,lats,zs):
-        super(points,self).__init__(nPoints,nPoints,nPoints)
+        if ((len(lons) and len(lats) and len(zs)) != npoints ): forcing.util.error("Mismatch in dimensions "+str(len(lons))+" "+str(len(lats))+" "+str(len(zs))+" != "+str(npoints))
+        self.lons=np.array(lons)
+        self.lats=np.array(lats)
+        self.zs=zs
 
-        if ((len(lons) and len(lats) and len(zs)) != nPoints ): forcing.util.error("Mismatch in dimensions "+str(len(lons))+" "+str(len(lats))+" "+str(len(zs))+" != "+str(nPoints))
-        self.__lons__=lons
-        self.__lats__=lats
-        self.__zs__=zs 
+class Domain(Geo):
 
-class domain(geo):
-
-    def __init__(self,nLons,nLats,projString):
-         super(domain,self).__init__(nLons*nLats,nLons,nLats)
-         self.__projection__=projString
+    def __init__(self,nlons,nlats,proj_string):
+         super(Domain,self).__init__(nlons*nlats,nlons,nlats)
+         self.projection=proj_string
 
          #p2 = Proj(projString)
 

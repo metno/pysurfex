@@ -6,7 +6,7 @@ from datetime import datetime,timedelta
 from operator import truediv,add
 from datetime import datetime
 import matplotlib.pylab as mpl
-from forcing.inputFromSurfex import readFromASCIIFile,texte,netCDF
+from forcing.inputFromSurfex import ReadFromASCIIFile,Texte,NetCDF
 import os
 
 #class plot():
@@ -15,15 +15,15 @@ import os
 #      print "Constructed a plot"
 
 
-def snowOgram(stnr,index,patches,layers,sa_file,ta_file,inputPath,format):
+def snowogram(stnr,index,patches,layers,sa_file,ta_file,input_path,format):
 
         # Read obs
-        if ( sa_file != None ): sa=readFromASCIIFile(sa_file,stnr,"SA")
+        if ( sa_file != None ): sa=ReadFromASCIIFile(sa_file,stnr,"SA")
         if ( ta_file != None ):
-            ta=readFromASCIIFile(ta_file,stnr,"TA")
-            pr=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"PR")
-            ff=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"FF")
-            dd=readFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"DD")
+            ta=ReadFromASCIIFile(ta_file,stnr,"TA")
+            pr=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"PR")
+            ff=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"FF")
+            dd=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"DD")
 
         fig,ax1 = plt.subplots()
 
@@ -44,10 +44,10 @@ def snowOgram(stnr,index,patches,layers,sa_file,ta_file,inputPath,format):
         # Read surfex DSNOW_T_ISBA from "TEXTE"
         # TODO:
         # Temporary basetime (at least not needed for netCDF)
-        DTG="2014100200"
-        basetime=datetime.strptime(str.strip(DTG), '%Y%m%d%H')
+        dtg="2014100200"
+        basetime=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
 
-        #sfxfile=inputPath+"/ISBA_DIAGNOSTICS.OUT.nc"
+        #sfxfile=input_path+"/ISBA_DIAGNOSTICS.OUT.nc"
         #sfx=netCDF(sfxfile,"DSNOW_VEGT_P",1,index,basetime,3600)
         #ax1.plot(sfx.times,sfx.values,label="DSNOW_T_ISBA")
 
@@ -61,10 +61,10 @@ def snowOgram(stnr,index,patches,layers,sa_file,ta_file,inputPath,format):
           for p in range(0,patches):
 
             if ( format == "nc" ):
-                sfxfile=inputPath+"/ISBA_PROGNOSTIC.OUT.nc"
+                sfxfile=input_path+"/ISBA_PROGNOSTIC.OUT.nc"
                 if ( os.path.isfile(sfxfile)):
-                  wsn_veg=netCDF(sfxfile,"WSN_VEG"+str(l+1),p,index,basetime,3600)
-                  rsn_veg=netCDF(sfxfile,"RSN_VEG"+str(l+1),p,index,basetime,3600)
+                  wsn_veg=NetCDF(sfxfile,"WSN_VEG"+str(l+1),p,index,basetime,3600)
+                  rsn_veg=NetCDF(sfxfile,"RSN_VEG"+str(l+1),p,index,basetime,3600)
                   dsn_veg=map(truediv,wsn_veg.values,rsn_veg.values)
                   ax1.plot(wsn_veg.times,dsn_veg,label="DSN_PATCH"+str(p)+"_VEG"+str(l))
                 else:

@@ -1,74 +1,104 @@
 import sys
+import os
 import argparse
 import numpy as np
 import forcing.version
 import forcing.util
-import forcing.surfexForcing
-import forcing.readInputForSurfex
-import forcing.geo
-import netCDF4  as nc
-from datetime import datetime,timedelta
+from forcing.surfexForcing import NetCDFOutput
+from forcing.readInputForSurfex import NetCDF,ReadTemperatureFromNetCDF,ConstantValue
+from forcing.geo import Points,Domain
+import netCDF4
+from datetime import datetime
+import ConfigParser
 
 def run(argv):
-   parser = argparse.ArgumentParser(description="Create offline forcing")
+
+    parser = argparse.ArgumentParser(description="Create offline forcing")
  
-   parser.add_argument('--debug', help="Show debug information?", action="store_true")
-   #parser.add_argument('--version', action="version", version=forcing.version.__version__)
+    parser.add_argument('-c', type=str,help="Configuration file?",default="",nargs="?")
+    parser.add_argument('--debug', help="Show debug information?", action="store_true")
+    #parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
-   if len(sys.argv) < 1:
-      parser.print_help()
-      sys.exit(1)
+    if len(sys.argv) < 1:
+        parser.print_help()
+        sys.exit(1)
 
-   args = parser.parse_args()
+    args = parser.parse_args()
 
-   if not args.debug:
-      np.seterr(invalid="ignore")
+    if not args.debug:
+        np.seterr(invalid="ignore")
 
-   #geoOut=forcing.geo.domain(739,949,"+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
-   lons=[10,11]
-   lats=[60,61]
-   zs=[1000,500]
-   geoOut=forcing.geo.points(2,lons,lats,zs)
-   nTimes=6
-   for t in range (0,nTimes):
-       if ( t == 0 ):
+    #geoOut=forcing.geo.domain(739,949,"+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
+    lons=[10,11,12]
+    lats=[60,61,62]
+    zs=[1000,500,250]
+    geo_out=Points(3,lons,lats,zs)
+    ntimes=6
+    var_objs=list()
+    output=None
 
-           #fh = nc.Dataset("/lustre/storeB/project/metproduction/products/meps/symlinks/meps_det_extracted_2_5km_20170411T00Z.nc", 'r')
-           #fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps05files/t2myr_kf_0_5km_latest.nc", 'r')
-           fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
-           ta=forcing.readInputForSurfex.readTemperatureFromNetCDF(geoOut,"TA","air_temperature_2m",fh)
+    def ConfigSectionMap(section):
+        dict1 = {}
+        options = Config.options(section)
+        for option in options:
+            try:
+                dict1[option] = Config.get(section, option)
+                if dict1[option] == -1:
+                    forcing.util.info("skip: %s" % option)
+            except:
+                print("exception on %s!" % option)
+                dict1[option] = None
+        return dict1
 
-           fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
-           qa=forcing.readInputForSurfex.netCDF(geoOut,"QA","relative_humidity_2m",fh,t)
+    config_file=args.c
+    Config = ConfigParser.ConfigParser()
+    if ( config_file != "" ):
+        if ( not os.path.isfile(config_file)):
+            forcing.util.error("The config file \""+config_file+"\" does not exist!")
+            sys.exit(1)
 
-           DTG="2014100200"
-           basetime=datetime.strptime(str.strip(DTG), '%Y%m%d%H')
+        Config.read(config_file)
+        print Config.sections()
+        print ConfigSectionMap("hei")['val']
+   
+    for t in range (0,ntimes):
+        if ( t == 0 ):
 
-           varObjs=list()
-           varObjs.append(ta)
-           varObjs.append(qa)
-           #varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"ZS","surface_geopotential",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"PS","surface_air_pressure",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"DIR_SW","integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time",fh))
-           varObjs.append(forcing.readInputForSurfex.constantValue(geoOut,"SCA_SW",0.0))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"LW","integral_of_surface_downwelling_longwave_flux_in_air_wrt_time",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"RAIN","precipitation_amount_acc",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"SNOW","snowfall_amount_acc",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"WIND","x_wind_10m",fh))
-           varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"WIND_DIR","x_wind_10m",fh))
-           varObjs.append(forcing.readInputForSurfex.constantValue(geoOut,"CO2",0.062))
+            #fh = nc.Dataset("/lustre/storeB/project/metproduction/products/meps/symlinks/meps_det_extracted_2_5km_20170411T00Z.nc", 'r')
+            #fh = nc.Dataset("http://thredds.met.no/thredds/dodsC/meps05files/t2myr_kf_0_5km_latest.nc", 'r')
+            fh = netCDF4.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
+            ta=ReadTemperatureFromNetCDF(geo_out,"TA","air_temperature_2m",fh)
 
-           output=forcing.surfexForcing.netCDFOutput(basetime,geoOut,nTimes,varObjs)
+            fh = netCDF4.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
+            qa=NetCDF(geo_out,"QA","relative_humidity_2m",fh,t)
 
-           # Increase time
-           for i in range(0,len(varObjs)):
-               varObjs[i].__increaseTime__()
+            dtg="2014100200"
+            basetime=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
 
-       # Write for each time step
-       output.__writeForcing__(varObjs)
+            var_objs=list()
+            var_objs.append(ta)
+            var_objs.append(qa)
+            #varObjs.append(forcing.readInputForSurfex.netCDF(geoOut,"ZS","surface_geopotential",fh))
+            var_objs.append(NetCDF(geo_out,"PS","surface_air_pressure",fh))
+            var_objs.append(NetCDF(geo_out,"DIR_SW","integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time",fh))
+            var_objs.append(ConstantValue(geo_out,"SCA_SW",0.0))
+            var_objs.append(NetCDF(geo_out,"LW","integral_of_surface_downwelling_longwave_flux_in_air_wrt_time",fh))
+            var_objs.append(NetCDF(geo_out,"RAIN","precipitation_amount_acc",fh))
+            var_objs.append(NetCDF(geo_out,"SNOW","snowfall_amount_acc",fh))
+            var_objs.append(NetCDF(geo_out,"WIND","x_wind_10m",fh))
+            var_objs.append(NetCDF(geo_out,"WIND_DIR","x_wind_10m",fh))
+            var_objs.append(ConstantValue(geo_out,"CO2",0.062))
 
-   output.__finalize__()
+            output=NetCDFOutput(basetime,geo_out,ntimes,var_objs)
 
+            # Increase time
+            for i in range(0,len(var_objs)):
+                var_objs[i].increase_time()
+
+        # Write for each time step
+        output.write_forcing(var_objs)
+
+    output.finalize()
 
 if __name__ == '__main__':
    run(sys.argv)

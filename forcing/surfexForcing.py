@@ -1,22 +1,19 @@
 import abc
-from datetime import datetime,timedelta
-import netCDF4  as nc
-import pyproj
-import numpy as np
+import netCDF4
 import sys
-import forcing.geo
 
-class surfexForcing(object):
+"""Main output class for SURFEX forcing"""
+class SurfexForcing(object):
     __metaclass__ = abc.ABCMeta
 
     # Time dependent parameter
-    __nParameters__=11
-    __nTimes__=-1
-    __baseTime__=None
-    __timeStepIntervall__=3600
-    __timeStep__=-1
-    __validTime__=None
-    __parameters__={
+    nparameters=11
+    ntimes=-1
+    base_time=None
+    time_step_intervall=3600
+    time_step=-1
+    valid_time=None
+    parameters={
       "TA":0,
       "QA":0,
       "PS":0,
@@ -31,42 +28,46 @@ class surfexForcing(object):
     }
 
     @abc.abstractmethod
-    def __writeForcing__(self):
-        raise NotImplementedError('users must define __writeForcing__ to use this base class')
+    def write_forcing(self):
+        raise NotImplementedError('users must define writeForcing to use this base class')
 
-    def __init__(self,format,baseTime,geo,nTimes,varObjs):
-       print "Constructed forcing object "+format
-       self.__baseTime__=baseTime
-       self.__nTimes__=nTimes
-       self.__timeStep__=0
-       self.__varObjs__=varObjs
-       self.__checkSanity__()
+    def __init__(self,format,base_time,geo,ntimes,var_objs):
+        print "Constructed forcing object "+format
+        self.base_time=base_time
+        self.geo=geo
+        self.ntimes=ntimes
+        self.time_step=0
+        self.var_objs=var_objs
+        self._check_sanity()
        
 
-    def __checkSanity__(self):
-       if ( len(self.__varObjs__) != self.__nParameters__ ):
-          sys.exit("Inconsistent number of parameter. "+str(len(self.__varObjs__))+" != "+str(self.__nParameters__))
-       # Check if all parameters are present
-       for i in range (0,len(self.__varObjs__)):
-          #print self.__varObjs__[i].varName
-          self.__parameters__[self.__varObjs__[i].__varName__]=1
-          print self.__parameters__[self.__varObjs__[i].__varName__]
+    def _check_sanity(self):
+        if ( len(self.var_objs) != self.nparameters ):
+            sys.exit("Inconsistent number of parameter. "+str(len(self.var_objs))+" != "+str(self.nparameters))
 
-       ok=1
-       for key in self.__parameters__:
-          if ( self.__parameters__[key] == 0 ):
-             ok=0
-             print "Required parameter "+str(key)+" is missing!"
+        # Check if all parameters are present
+        for i in range (0,len(self.var_objs)):
+            #print self.__varObjs__[i].varName
+            self.parameters[self.var_objs[i].var_name]=1
+            print self.parameters[self.var_objs[i].var_name]
 
-#       if ( ok == 0 ):
-#          sys.exit(1)
+        ok=1
+        for key in self.parameters:
+            if ( self.parameters[key] == 0 ):
+                ok=0
+                print "Required parameter "+str(key)+" is missing!"
 
-class netCDFOutput(surfexForcing):
+#        if ( ok == 0 ):
+#             sys.exit(1)
 
-    __outputFormat__="NETCDF3_64BIT"
-    __forcing__={}
 
-    __translation__={
+"""Forcing in NetCDF format"""
+class NetCDFOutput(SurfexForcing):
+
+    output_format="NETCDF3_64BIT"
+    forcing_file={}
+
+    translation={
       "TA":"Tair",
       "QA":"Qair",
       "PS":"PSurf",
@@ -81,124 +82,124 @@ class netCDFOutput(surfexForcing):
     }
 
  
-    def __init__(self,baseTime,geo,nTimes,varObjs):
-        super(netCDFOutput,self).__init__("netCDF",baseTime,geo,nTimes,varObjs)
+    def __init__(self,base_time,geo,ntimes,var_objs):
+        super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs)
         print "Type is netCDF"
-        self.__forcing__={}
-        self.__fileHandler__= nc.Dataset("FORCING.nc", 'w',format=self.__outputFormat__)
-        self.__defineForcing__(geo)
+        self.forcing_file={}
+        self.file_handler= netCDF4.Dataset("FORCING.nc", 'w',format=self.output_format)
+        self._define_forcing(geo)
 
-    def __writeForcing__(self,varObjs):
-        print "Forcing time step "+str(self.__timeStep__)
+    def write_forcing(self,var_objs):
+        print "Forcing time step "+str(self.time_step)
 
         # VARS
-        for i in range (0,len(self.__varObjs__)):
-            thisObj=self.__varObjs__[i]
-            thisVar=thisObj.__varName__
+        for i in range (0,len(self.var_objs)):
+            this_obj=self.var_objs[i]
+            this_var=this_obj.var_name
 
-            thisObj.__readTimeStep__()
-            self.__forcing__[self.__translation__[thisVar]][self.__timeStep__,:]=thisObj.__values__
+            this_obj.read_time_step()
+            self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.values
 
         # Write time step
-        print self.__timeStep__
-        self.__forcing__['TIME'][self.__timeStep__]=self.__timeStep__
-        print self.__forcing__['TIME'][self.__timeStep__]
-        self.__timeStep__=self.__timeStep__+1
+        print self.time_step
+        self.forcing_file['TIME'][self.time_step]=self.time_step
+        print self.forcing_file['TIME'][self.time_step]
+        self.time_step=self.time_step+1
 
-    def __defineForcing__(self,geo):
+    def _define_forcing(self,geo):
         print "Define netcdf forcing" 
 
         # DIMS
-        self.__forcing__['NX']            = self.__fileHandler__.createDimension("NLON"            ,geo.__nLons__     )
-        self.__forcing__['NLAT']          = self.__fileHandler__.createDimension("NLAT"            ,geo.__nLats__     )
-        self.__forcing__['NPOINTS']       = self.__fileHandler__.createDimension("Number_of_points",geo.__nPoints__)
-        self.__forcing__['NTIMES']        = self.__fileHandler__.createDimension("time"            ,self.__nTimes__   )
-        self.__forcing__['TSTEP']         = self.__fileHandler__.createVariable("FRC_TIME_STP","f4")
-        self.__forcing__['TSTEP'].units   = "s"
-        self.__forcing__['TSTEP'].longname = "Forcing_time_step"
-        self.__forcing__['TSTEP'][:]      = self.__timeStepIntervall__
+        self.forcing_file['NX']            = self.file_handler.createDimension("NLON"            ,geo.nlons)
+        self.forcing_file['NLAT']          = self.file_handler.createDimension("NLAT"            ,geo.nlats)
+        self.forcing_file['NPOINTS']       = self.file_handler.createDimension("Number_of_points",geo.npoints)
+        self.forcing_file['NTIMES']        = self.file_handler.createDimension("time"            ,self.ntimes)
+        self.forcing_file['TSTEP']         = self.file_handler.createVariable("FRC_TIME_STP","f4")
+        self.forcing_file['TSTEP'].units   = "s"
+        self.forcing_file['TSTEP'].longname = "Forcing_time_step"
+        self.forcing_file['TSTEP'][:]      = self.time_step_intervall
      
         # DEFINE VARS
-        self.__forcing__['TIME']          = self.__fileHandler__.createVariable("time" ,"f4",("time",))
-        self.__forcing__['TIME'].units    = "hours since %s 00:00:00 0:00" % self.__baseTime__.strftime("%Y-%m-%d")
+        self.forcing_file['TIME']          = self.file_handler.createVariable("time" ,"f4",("time",))
+        self.forcing_file['TIME'].units    = "hours since %s 00:00:00 0:00" % self.base_time.strftime("%Y-%m-%d")
 
-        self.__forcing__['LAT']           = self.__fileHandler__.createVariable("LAT","f4",("Number_of_points",))
-        self.__forcing__['LAT'].units     = "degrees_north"
-        self.__forcing__['LAT'].longname  = "latitude"
-        self.__forcing__['LAT'][:] = geo.__lats__
-        self.__forcing__['LON']           = self.__fileHandler__.createVariable("LON","f4",("Number_of_points",))
-        self.__forcing__['LON'].units     = "degrees_east"
-        self.__forcing__['LON'].longname  = "longitude"
-        self.__forcing__['LON'][:] = geo.__lons__
-        self.__forcing__['ZS']            = self.__fileHandler__.createVariable("ZS" ,"f4",("Number_of_points",))
-        self.__forcing__['ZS'].units      = "m2/s2"
-        self.__forcing__['ZS'].longname   = "Surface_Orography"
-        self.__forcing__['ZS'][:] = geo.__zs__
-        self.__forcing__['ZREF']          = self.__fileHandler__.createVariable("ZREF" ,"f4",("Number_of_points",))
-        self.__forcing__['ZREF'].units    = "m"
-        self.__forcing__['ZREF'].longname = "Reference_height"
-        self.__forcing__['ZREF'][:]       = 2
-        self.__forcing__['UREF']          = self.__fileHandler__.createVariable("UREF" ,"f4",("Number_of_points",))
-        self.__forcing__['UREF'].units    = "m"
-        self.__forcing__['UREF'].longname = "Reference_height_for_wind"
-        self.__forcing__['UREF'][:]      = 10
+        self.forcing_file['LAT']           = self.file_handler.createVariable("LAT","f4",("Number_of_points",))
+        self.forcing_file['LAT'].units     = "degrees_north"
+        self.forcing_file['LAT'].longname  = "latitude"
+        self.forcing_file['LAT'][:] = geo.lats
+        self.forcing_file['LON']           = self.file_handler.createVariable("LON","f4",("Number_of_points",))
+        self.forcing_file['LON'].units     = "degrees_east"
+        self.forcing_file['LON'].longname  = "longitude"
+        self.forcing_file['LON'][:] = geo.lons
+        self.forcing_file['ZS']            = self.file_handler.createVariable("ZS" ,"f4",("Number_of_points",))
+        self.forcing_file['ZS'].units      = "m2/s2"
+        self.forcing_file['ZS'].longname   = "Surface_Orography"
+        self.forcing_file['ZS'][:] = geo.zs
+        self.forcing_file['ZREF']          = self.file_handler.createVariable("ZREF" ,"f4",("Number_of_points",))
+        self.forcing_file['ZREF'].units    = "m"
+        self.forcing_file['ZREF'].longname = "Reference_height"
+        self.forcing_file['ZREF'][:]       = 2
+        self.forcing_file['UREF']          = self.file_handler.createVariable("UREF" ,"f4",("Number_of_points",))
+        self.forcing_file['UREF'].units    = "m"
+        self.forcing_file['UREF'].longname = "Reference_height_for_wind"
+        self.forcing_file['UREF'][:]      = 10
 
         # Define time dependent variables
-        for i in range (0,len(self.__varObjs__)):
-          thisObj=self.__varObjs__[i]
-          thisVar=thisObj.__varName__
+        for i in range (0,len(self.var_objs)):
+          this_obj=self.var_objs[i]
+          this_var=this_obj.var_name
 
-          print thisVar
-          if ( thisVar == "TA" ):
-            self.__forcing__['Tair']          = self.__fileHandler__.createVariable("Tair" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Tair'].units    = "K"
-            self.__forcing__['Tair'].longname = "Air_Temperature"
-          elif ( thisVar == "QA" ):
-            self.__forcing__['Qair']          = self.__fileHandler__.createVariable("Qair" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Qair'].units    = "kg/kg"
-            self.__forcing__['Qair'].longname = "Air_Specific_Humidity"
-          elif ( thisVar == "PS" ):
-            self.__forcing__['PSurf']          = self.__fileHandler__.createVariable("PSurf" ,"f4",("time","Number_of_points",))
-            self.__forcing__['PSurf'].units    = "Pa"
-            self.__forcing__['PSurf'].longname = "Surface_Pressure"
-          elif ( thisVar == "DIR_SW" ):
-            self.__forcing__['DIR_SWdown']    = self.__fileHandler__.createVariable("DIR_SWdown" ,"f4",("time","Number_of_points",))
-            self.__forcing__['DIR_SWdown'].units = "W/m2"
-            self.__forcing__['DIR_SWdown'].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
-          elif ( thisVar == "SCA_SW" ):
-            self.__forcing__['SCA_SWdown']    = self.__fileHandler__.createVariable("SCA_SWdown" ,"f4",("time","Number_of_points",))
-            self.__forcing__['SCA_SWdown'].units = "W/m2"
-            self.__forcing__['SCA_SWdown'].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
-          elif ( thisVar == "LW" ):
-            self.__forcing__['LWdown']        = self.__fileHandler__.createVariable("LWdown" ,"f4",("time","Number_of_points",))
-            self.__forcing__['LWdown'].units  = "W/m2"
-            self.__forcing__['LWdown'].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
-          elif ( thisVar == "RAIN" ):
-            self.__forcing__['Rainf']          = self.__fileHandler__.createVariable("Rainf" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Rainf'].units    = "kg/m2/s"
-            self.__forcing__['Rainf'].longname = "Rainfall_Rate"
-          elif ( thisVar == "SNOW" ):
-            self.__forcing__['Snowf']          = self.__fileHandler__.createVariable("Snowf" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Snowf'].units    = "kg/m2/s"
-            self.__forcing__['Snowf'].longname = "Snowfall_Rate"
-          elif ( thisVar == "WIND" ):
-            self.__forcing__['Wind']           = self.__fileHandler__.createVariable("Wind" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Wind'].units     = "m/s"
-            self.__forcing__['Wind'].longname  = "Wind_Speed"
-          elif ( thisVar == "WIND_DIR" ):
-            self.__forcing__['Wind_DIR']       = self.__fileHandler__.createVariable("Wind_DIR" ,"f4",("time","Number_of_points",))
-            self.__forcing__['Wind_DIR'].units = "degrees_from_north"
-            self.__forcing__['Wind_DIR'].longname = "Wind_Direction"
-          elif ( thisVar == "CO2" ):
-            self.__forcing__['CO2air']         = self.__fileHandler__.createVariable("CO2air" ,"f4",("time","Number_of_points",))
-            self.__forcing__['CO2air'].units   = "kg/m3"
-            self.__forcing__['CO2air'].longname = "Near_Surface_CO2_concentration"
+          print this_var
+          if ( this_var == "TA" ):
+            self.forcing_file['Tair']          = self.file_handler.createVariable("Tair" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Tair'].units    = "K"
+            self.forcing_file['Tair'].longname = "Air_Temperature"
+          elif ( this_var == "QA" ):
+            self.forcing_file['Qair']          = self.file_handler.createVariable("Qair" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Qair'].units    = "kg/kg"
+            self.forcing_file['Qair'].longname = "Air_Specific_Humidity"
+          elif ( this_var == "PS" ):
+            self.forcing_file['PSurf']          = self.file_handler.createVariable("PSurf" ,"f4",("time","Number_of_points",))
+            self.forcing_file['PSurf'].units    = "Pa"
+            self.forcing_file['PSurf'].longname = "Surface_Pressure"
+          elif ( this_var == "DIR_SW" ):
+            self.forcing_file['DIR_SWdown']    = self.file_handler.createVariable("DIR_SWdown" ,"f4",("time","Number_of_points",))
+            self.forcing_file['DIR_SWdown'].units = "W/m2"
+            self.forcing_file['DIR_SWdown'].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
+          elif ( this_var == "SCA_SW" ):
+            self.forcing_file['SCA_SWdown']    = self.file_handler.createVariable("SCA_SWdown" ,"f4",("time","Number_of_points",))
+            self.forcing_file['SCA_SWdown'].units = "W/m2"
+            self.forcing_file['SCA_SWdown'].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
+          elif ( this_var == "LW" ):
+            self.forcing_file['LWdown']        = self.file_handler.createVariable("LWdown" ,"f4",("time","Number_of_points",))
+            self.forcing_file['LWdown'].units  = "W/m2"
+            self.forcing_file['LWdown'].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
+          elif ( this_var == "RAIN" ):
+            self.forcing_file['Rainf']          = self.file_handler.createVariable("Rainf" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Rainf'].units    = "kg/m2/s"
+            self.forcing_file['Rainf'].longname = "Rainfall_Rate"
+          elif ( this_var == "SNOW" ):
+            self.forcing_file['Snowf']          = self.file_handler.createVariable("Snowf" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Snowf'].units    = "kg/m2/s"
+            self.forcing_file['Snowf'].longname = "Snowfall_Rate"
+          elif ( this_var == "WIND" ):
+            self.forcing_file['Wind']           = self.file_handler.createVariable("Wind" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Wind'].units     = "m/s"
+            self.forcing_file['Wind'].longname  = "Wind_Speed"
+          elif ( this_var == "WIND_DIR" ):
+            self.forcing_file['Wind_DIR']       = self.file_handler.createVariable("Wind_DIR" ,"f4",("time","Number_of_points",))
+            self.forcing_file['Wind_DIR'].units = "degrees_from_north"
+            self.forcing_file['Wind_DIR'].longname = "Wind_Direction"
+          elif ( this_var == "CO2" ):
+            self.forcing_file['CO2air']         = self.file_handler.createVariable("CO2air" ,"f4",("time","Number_of_points",))
+            self.forcing_file['CO2air'].units   = "kg/m3"
+            self.forcing_file['CO2air'].longname = "Near_Surface_CO2_concentration"
           else:
-            print "This should never happen! "+thisVar+" is not defined!"
+            print "This should never happen! "+this_var+" is not defined!"
             sys.exit(1)
    
-    def __finalize__(self):
-         self.__fileHandler__.close() 
+    def finalize(self):
+         self.file_handler.close()
 
     
 
