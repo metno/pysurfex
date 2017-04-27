@@ -49,7 +49,7 @@ class SurfexForcing(object):
         for i in range (0,len(self.var_objs)):
             #print self.__varObjs__[i].varName
             self.parameters[self.var_objs[i].var_name]=1
-            print self.parameters[self.var_objs[i].var_name]
+            #print self.parameters[self.var_objs[i].var_name]
 
         ok=1
         for key in self.parameters:
@@ -57,8 +57,8 @@ class SurfexForcing(object):
                 ok=0
                 print "Required parameter "+str(key)+" is missing!"
 
-#        if ( ok == 0 ):
-#             sys.exit(1)
+        if ( ok == 0 ):
+             sys.exit(1)
 
 
 """Forcing in NetCDF format"""
@@ -101,9 +101,9 @@ class NetCDFOutput(SurfexForcing):
             self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.values
 
         # Write time step
-        print self.time_step
+        #print self.time_step
         self.forcing_file['TIME'][self.time_step]=self.time_step
-        print self.forcing_file['TIME'][self.time_step]
+        #print self.forcing_file['TIME'][self.time_step]
         self.time_step=self.time_step+1
 
     def _define_forcing(self,geo):

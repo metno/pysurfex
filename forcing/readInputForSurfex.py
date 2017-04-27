@@ -61,6 +61,8 @@ class NetCDF(ReadInputForSurfex):
         self.time_step_inc = time_step_inc
         self.time_step_intervall = time_step_intervall
 
+        latvar=[]
+        lonvar=[]
         if "latitude" in self.file_handler.variables:
             latvar = self.file_handler.variables["latitude"]
             lonvar = self.file_handler.variables["longitude"]
@@ -70,8 +72,8 @@ class NetCDF(ReadInputForSurfex):
         else:
              forcing.util.error("No name for latitude found")
 
-        print("Latvar")
-        print(latvar)
+        #print("Latvar")
+        #print(latvar)
         self.lats = latvar[:]
         self.lons = lonvar[:]
         self.isens = "ensemble_member" in self.file_handler.dimensions
@@ -93,7 +95,7 @@ class NetCDF(ReadInputForSurfex):
         ny = self.geo_out.nlats
 
         print "Reading variable " + str(vn) + " timeStep: " + str(t) + " for " + str(self.var_name)
-        print self.file_handler[vn]
+        #print self.file_handler[vn]
         # self.__values__=np.array(self.__fileHandler__[vn][t,0:1,0:ny,0:1])
         geo_in = Domain(739, 949, "+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
 
@@ -111,7 +113,8 @@ class NetCDF(ReadInputForSurfex):
         print(lats_vec.shape)
         print("xi")
         print(xi)
-        field_in = griddata(points,values_vec,xi,method='linear')
+
+        field_in = griddata(points,values_vec,xi,method='nearest')
         self.values=field_in
         #nx_in = geo_in.nlons
         #ny_in = geo_in.nlats
