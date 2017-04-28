@@ -22,7 +22,7 @@ def run(argv):
     parser.add_argument('-type', type=str,help="Type: domain/points",default="points",nargs="?")
     parser.add_argument('-timestep', type=int,help="Surfex time step",default=forcing.defaults.timestep,nargs="?")
     parser.add_argument('-format', type=str,help="Default input file format",default="netcdf",nargs="?")
-    parser.add_argument('-pattern', type=str,help="Filepattern",default=forcing.defaults.filepattern_thredds,nargs="?")
+    parser.add_argument('-pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--debug', help="Show debug information?", action="store_true")
     #parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
@@ -42,6 +42,7 @@ def run(argv):
     var_objs=list()
     output=None
 
+    if ( args.pattern == None ): args.pattern=forcing.defaults.filepattern[args.format]
 
     # Function for config file
     def ConfigSectionMap(section):
@@ -96,9 +97,11 @@ def run(argv):
     var_objs=list()
     for i in range(0,len(vars)):
         if ( args.format == "netcdf" ):
-          #TODO: filepattern instead of handler
-          fh = netCDF4.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
-          var_objs.append(NetCDF(geo_out,vars[i],"air_temperature_2m",fh))
+            var_objs.append(NetCDF(geo_out,vars[i],forcing.defaults.netcdf_varname(vars[i],"screen","rel"),start,args.pattern))
+        elif ( args.format == "netcdf" ):
+            forcing.util.error("Format " + args.format + " not implemented yet")
+        else:
+            forcing.util.error("Format " + args.format + " not known")
 
     # Override default values from config file
     config_file=args.config
@@ -113,19 +116,50 @@ def run(argv):
 
         # Search in config file for parameters to override
         for i in range(0,len(vars)):
-            print(vars[i])
+            #print(vars[i])
             # Found this parameter
             if ( vars[i] in Config.sections() ):
-                print(ConfigSectionMap(vars[i]))
+                #print(ConfigSectionMap(vars[i]))
 
                 # Loop var_objs to replace this parameter
                 for j in range (0,len(var_objs)):
                     if ( var_objs[j].var_name == vars[i] ):
-                        print("Substitute "+var_objs[j].var_name)
-                        for key in ConfigSectionMap(vars[i]):
-                            print("Substitute "+str(key)+" with "+str(ConfigSectionMap(vars[i])[key]))
-                            print(ConfigSectionMap(vars[i])[key])
-                            setattr(var_objs[j],key,ConfigSectionMap(vars[i])[key])
+                        forcing.util.info("Modifing default settings for: "+var_objs[j].var_name)
+                        if ( "format" in ConfigSectionMap(vars[i])) :
+                            format=ConfigSectionMap(vars[i])["format"]
+
+                            if ( format == "netcdf "):
+                                if ( "type" in ConfigSectionMap(vars[i])) :
+                                    type=ConfigSectionMap(vars[i])["type"]
+                                else:
+                                    type="default"
+
+                                if ( type == "default" ):
+                                    netcdf_name=ConfigSectionMap(vars[i])["netcdf_name"]
+                                    filepattern=ConfigSectionMap(vars[i])["filepattern"]
+
+                                    var_objs[j]=NetCDF(geo_out,vars[i],netcdf_name,start,filepattern)
+                                else:
+                                    forcing.util.error("Type "+type+" is not known")
+                            elif ( format == "grib" ):
+                                forcing.util.error("Type "+type+" not implemnted yet!")
+                            else:
+                                forcing.util.error("Format "+format+" not known")
+                        else:
+                            forcing.util.info("Skipping variable "+var_objs[j].var_name+" since no format is defined")
+
+                            #for key in ConfigSectionMap(vars[i]):
+
+                            #if ( key == "var_name" ):
+                            #    forcing.util.info("Attribute "+str(key)+" is protected")
+                            #else:
+                            #    print("Substitute "+str(key)+" with "+str(ConfigSectionMap(vars[i])[key]))
+                            #    print(ConfigSectionMap(vars[i])[key])
+
+                            #    if ( hasattr(var_objs[j],key)):
+                            #        setattr(var_objs[j],key,ConfigSectionMap(vars[i])[key])
+                            #    else:
+                            #        forcing.util.info("Skipping: "+str(key)+" not defined as attribute")
 
     #for i in range(0,len(var_objs)):
     #    print(i)
@@ -151,8 +185,8 @@ def run(argv):
             #fh = netCDF4.Dataset("http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_latest.nc", 'r')
             #qa=NetCDF(geo_out,"QA","relative_humidity_2m",fh,t)
 
-            dtg="2014100200"
-            basetime=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
+            #dtg="2014100200"
+            #basetime=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
 
             #var_objs=list()
             #var_objs.append(ta)
@@ -168,7 +202,7 @@ def run(argv):
             #var_objs.append(NetCDF(geo_out,"WIND_DIR","x_wind_10m",fh))
             #var_objs.append(ConstantValue(geo_out,"CO2",0.062))
 
-            output=NetCDFOutput(basetime,geo_out,ntimes,var_objs)
+            output=NetCDFOutput(start,geo_out,ntimes,var_objs)
 
             # Increase time
             for i in range(0,len(var_objs)):

@@ -5,6 +5,7 @@ import sys
 from forcing.geo import Domain,Points
 import forcing.util
 from scipy.interpolate import griddata
+import netCDF4
 
 class ReadInputForSurfex(object):
     __metaclass__ = abc.ABCMeta
@@ -53,10 +54,13 @@ class NetCDF(ReadInputForSurfex):
     time_step_intervall = -1
     file_handler = None
 
-    def __init__(self, geo, var_name, netcdf_name, fh, time_step=0, time_step_inc=1, time_step_intervall=3600.):
+    def __init__(self, geo, var_name, netcdf_name, basetime, filepattern, time_step=0, time_step_inc=1, time_step_intervall=3600.):
         super(NetCDF, self).__init__(geo, var_name)
+        print("Initialized with "+netcdf_name)
         self.netcdf_name = netcdf_name
-        self.file_handler = fh
+        self.filepattern = filepattern
+        filename=self.filepattern
+        self.file_handler = netCDF4.Dataset(filename,"r")
         self.time_step = time_step
         self.time_step_inc = time_step_inc
         self.time_step_intervall = time_step_intervall
