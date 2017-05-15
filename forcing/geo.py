@@ -5,12 +5,6 @@ import numpy as np
 
 class Geo(object):
 
-    npoints=-1
-    nlons=-1
-    nlats=-1
-    lons=None
-    lats=None
-    zs=None
     def __init__(self,npoints,nlons,nlats):
         self.npoints=npoints
         self.nlons=nlons
@@ -20,13 +14,12 @@ class Geo(object):
 
 class Points(Geo):
 
-    def __init__(self,npoints,lons,lats,zs):
+    def __init__(self,npoints,lons,lats):
         super(Points,self).__init__(npoints,npoints,npoints)
 
-        if ((len(lons) and len(lats) and len(zs)) != npoints ): forcing.util.error("Mismatch in dimensions "+str(len(lons))+" "+str(len(lats))+" "+str(len(zs))+" != "+str(npoints))
+        if ((len(lons) and len(lats)) != npoints ): forcing.util.error("Mismatch in dimensions "+str(len(lons))+" "+str(len(lats))+" != "+str(npoints))
         self.lons=np.array(lons)
         self.lats=np.array(lats)
-        self.zs=zs
 
 class Domain(Geo):
 

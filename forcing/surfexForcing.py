@@ -89,7 +89,7 @@ class NetCDFOutput(SurfexForcing):
         self.file_handler= netCDF4.Dataset("FORCING.nc", 'w',format=self.output_format)
         self._define_forcing(geo)
 
-    def write_forcing(self,var_objs):
+    def write_forcing(self,var_objs,this_time,dry=False):
         print "Forcing time step "+str(self.time_step)
 
         # VARS
@@ -97,14 +97,17 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
 
-            this_obj.read_time_step()
-            self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.values
+            this_obj.read_time_step(this_time)
+            if ( not dry ):
+                self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.values
 
-        # Write time step
-        #print self.time_step
-        self.forcing_file['TIME'][self.time_step]=self.time_step
-        #print self.forcing_file['TIME'][self.time_step]
-        self.time_step=self.time_step+1
+
+        if ( not dry ):
+            # Write time step
+            #print self.time_step
+            self.forcing_file['TIME'][self.time_step]=self.time_step
+            #print self.forcing_file['TIME'][self.time_step]
+            self.time_step=self.time_step+1
 
     def _define_forcing(self,geo):
         print "Define netcdf forcing" 
@@ -134,14 +137,17 @@ class NetCDFOutput(SurfexForcing):
         self.forcing_file['ZS']            = self.file_handler.createVariable("ZS" ,"f4",("Number_of_points",))
         self.forcing_file['ZS'].units      = "m2/s2"
         self.forcing_file['ZS'].longname   = "Surface_Orography"
-        self.forcing_file['ZS'][:] = geo.zs
+        # TODO: Set this from read field
+        self.forcing_file['ZS'][:] = 0.
         self.forcing_file['ZREF']          = self.file_handler.createVariable("ZREF" ,"f4",("Number_of_points",))
         self.forcing_file['ZREF'].units    = "m"
         self.forcing_file['ZREF'].longname = "Reference_height"
+        # TODO: Set this from read field
         self.forcing_file['ZREF'][:]       = 2
         self.forcing_file['UREF']          = self.file_handler.createVariable("UREF" ,"f4",("Number_of_points",))
         self.forcing_file['UREF'].units    = "m"
         self.forcing_file['UREF'].longname = "Reference_height_for_wind"
+        # TODO: Set this from read field
         self.forcing_file['UREF'][:]      = 10
 
         # Define time dependent variables

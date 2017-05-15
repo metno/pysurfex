@@ -1,0 +1,229 @@
+# General netcdf settings
+netcdf:
+  filepattern: /home/trygveasp/nobackup/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  fstep: 3
+  step_inc: 1
+  file_inc: 6
+
+# General grib1 settings
+grib1:
+  filepattern:
+
+# General grib2 settings
+grib2:
+  filepattern:
+
+# Orography
+ZS:
+  netcdf:
+    converter:
+      none:
+        name: altitude
+      fhi2m:
+        name: surface_geopotential
+  grib1:
+
+# Temperature
+TA:
+  screen:
+    netcdf:
+      converter:
+        none:
+          filepattern: /home/trygveasp/nobackup/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+          name: air_temperaure_2m
+          fstep: 1
+          step_inc: 3
+          file_inc: 12
+    grib1:
+      converter:
+        none:
+          parameter: 11
+          level: 105
+          height: 2
+          tri: 0
+  ml: # Set forcing height also from command line?
+    netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
+          level: 65
+    grib1:
+      converter:
+        none:
+          parameter: 11
+          level: 109
+          height: 65
+          tri: 0
+    grib2:
+      converter:
+        none:
+    ascii:
+      converter:
+        none:
+
+
+# Specific humidity
+QA:
+  screen:
+    netcdf:
+      converter:
+        none:
+          specific_humidity_2m
+        rh2q:
+          rh:
+            name: relative_humidity_2m
+          t:
+            name: air_temperature_2m
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: specific_humidity_ml
+          level: 65
+        rh2q:
+          rh:
+            name: relative_humidity_ml
+            level: 65
+          t:
+            name: air_temperature_ml
+            level: 65
+
+# Wind speed
+WIND:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: wind_speed_10m
+        windspeed:
+          x:
+            name: x_wind_10m
+          y:
+            name: y_wind_10m
+    grib1:
+      converter:
+        none:
+          parameter:
+        windspeed:
+          x:
+          y:
+
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: wind_speed_ml
+          level: 65
+        windspeed:
+          x:
+            name: x_wind_ml
+            level: 65
+          y:
+            name: y_wind_ml
+            level: 65
+    grib1:
+      converter:
+        none:
+          parameter:
+
+# Wind direction
+WIND_DIR:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: wind_direction_10m
+        winddir:
+          x:
+            name: x_wind_10m
+          y:
+            name: y_wind_10m
+    grib1:
+      converter:
+        none:
+          parameter:
+        windspeed:
+          x:
+          y:
+
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: wind_direction_ml
+          level: 65
+        winddir:
+          x:
+            name: x_wind_ml
+            level: 65
+          y:
+            name: y_wind_ml
+            level: 65
+    grib1:
+      converter:
+        none:
+
+# Rainfall rate
+RAIN:
+  netcdf:
+    converter:
+      none:
+        name: rainfall_amount
+        accumulated: False
+        instant: False
+      totalprec:
+        totalprec:
+          name: precipitation_amount_acc
+          accumulated: True
+        snow:
+          name: snowfall_amount_acc
+          accumulated: True
+
+# Snow fall amount rate
+SNOW:
+  netcdf:
+    converter:
+      none:
+        name: snowfall_amount_acc
+        accumulated: True
+        instant: False
+
+# Surface air pressure
+PS:
+  netcdf:
+    converter:
+      none:
+        name: surface_air_pressure
+
+# Direct shortwave radiation
+DIR_SW:
+  netcdf:
+    converter:
+      none:
+        name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
+
+# Direct scattered radiation
+SCA_SW:
+  netcdf:
+    converter:
+      none:
+        name: scattered_short_wave_radiation
+
+  constant:
+    value: 0
+
+# Long wave radiation
+LW:
+  netcdf:
+    converter:
+      none:
+        name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
+
+# Carbon dioxide
+CO2:
+  netcdf:
+    converter:
+      none:
+        name: carbon_dioxide
+  constant:
+    value: 0.62
