@@ -1,0 +1,18 @@
+netcdf:
+  filepattern: my-file
+
+# Specific humidity
+QA:
+  ml:
+    netcdf:
+      converter:
+        rh2q:
+          rh:
+            filepattern: my-special-rh-file
+            name: relative_humidity_ml
+            level: 62
+            fstep: 7
+          t:
+            name: air_temperature_ml
+
+
