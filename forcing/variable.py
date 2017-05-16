@@ -1,5 +1,7 @@
 import abc
 import forcing.util
+import copy
+import numpy as np
 
 class Variable(object):
     __metaclass__ = abc.ABCMeta
@@ -28,8 +30,8 @@ class NetcdfVariable(Variable):
     """
 
     def __init__(self,var_dict):
-        self.var_dict=var_dict
-        print self.var_dict
+        self.var_dict=copy.deepcopy(var_dict)
+        #print self.var_dict
         mandatory=["name","fstep","step_inc","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in self.var_dict:
@@ -43,7 +45,13 @@ class NetcdfVariable(Variable):
     def read_variable(self,geo,validtime):
         print("Reading  "+self.print_variable_info()+" for time step: "+str(self.step))
         print "Should be valid for "+validtime.strftime('%Y%m%d%H')
+        field = np.array([float(i) for i in range(0,geo.npoints)])
+        field.fill(np.NaN)
+        print field.shape
+        print field
+
         self.step=self.step+self.var_dict["step_inc"]
+        return field
 
     def print_variable_info(self):
         return ":"+str(self.var_dict)+":"

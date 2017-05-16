@@ -1,4 +1,6 @@
 import forcing.variable
+import forcing.util
+import copy
 import numpy as np
 from datetime import timedelta
 
@@ -39,9 +41,11 @@ class Converter:
 
     def create_variable(self,format,defs,var_dict):
 
-        merged_dict=defs
-        for key in var_dict:
-            merged_dict[key]=var_dict[key]
+        # Finally we can merge the variable with the default settings
+        # Create deep copies not to inherit between variables
+        defs=copy.deepcopy(defs)
+        var_dict=copy.deepcopy(var_dict)
+        merged_dict=forcing.util.data_merge(defs,var_dict)
 
         var=None
         if format == "netcdf":
@@ -57,7 +61,7 @@ class Converter:
     def read_time_step(self,geo,validtime):
         print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
-        field=[]
+        field=np.array([geo.npoints])
         # Specific reading for each converter
         if self.name == "none":
             field=self.var.read_variable(geo,validtime)

@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 import argparse
 import numpy as np
 import forcing.version
@@ -35,26 +36,29 @@ def run(argv):
     parser.add_argument('--debug', help="Show debug information", action="store_true")
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
-    group_ta = parser.add_argument_group('TA', description="Air temperature")
+    group_ta = parser.add_argument_group('TA', description="Air temperature [K]")
     group_ta.add_argument("--ta", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
-    group_ta.add_argument("--ta_level", type=int, help="Level", default=None)
+    group_ta.add_argument("--ta_converter", type=str, help="Converter function to air temperature", default="none",choices=["none"])
 
     group_qa = parser.add_argument_group('QA', description="Specific humidity")
     group_qa.add_argument("--qa", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
-    group_qa.add_argument("--qa_converter", type=str, help="Converter function to specific humidity", default="rh2q",choices=["none", "rh2q"])
-    group_qa.add_argument("--qa_level", type=int, help="Level", default=None)
+    group_qa.add_argument("--qa_converter", type=str, help="Converter function to specific humidity", default="none",choices=["none", "rh2q"])
 
     group_ps = parser.add_argument_group('PS', description="Surface air pressure [Pa]")
     group_ps.add_argument('--ps',type=str,help="Surface air pressure input format",default="default",choices=["default","netcdf","grib1","constant"])
+    group_ps.add_argument("--ps_converter", type=str, help="Converter function to surface air pressure", default="none",choices=["none"])
 
     group_dir_sw = parser.add_argument_group('DIR_SW', description="Direct shortwave radiation")
     group_dir_sw.add_argument('--dir_sw',type=str,help="Direct short wave radiation input format",default="default",choices=["default","netcdf","grib1","constant"])
+    group_dir_sw.add_argument("--dir_sw_converter", type=str, help="Converter function to direct short wave radiation", default="none",choices=["none"])
 
-    group_sca_sw = parser.add_argument_group('SCA_SW', description="Scattered short wave radiation")
-    group_sca_sw.add_argument('--sca_sw',type=str,help="Scattered short wave radiation input format",default="constant",choices=["netcdf","grib1","constant"])
+    group_sca_sw = parser.add_argument_group('SCA_SW', description="Scattered short wave radiation flux")
+    group_sca_sw.add_argument('--sca_sw',type=str,help="Scattered short wave radiation input format",default="default",choices=["netcdf","grib1","constant"])
+    group_sca_sw.add_argument("--sca_sw_converter", type=str, help="Converter function to scattered shortwave radiation flux", default="none",choices=["none"])
 
-    group_lw = parser.add_argument_group('LW', description="Long wave radiation")
+    group_lw = parser.add_argument_group('LW', description="Long wave radiation flux")
     group_lw.add_argument('--lw',type=str,help="Long wave radiation input format",default="default",choices=["netcdf","grib1","constant"])
+    group_lw.add_argument("--lw_converter", type=str, help="Converter function to long wave radiation flux", default="none", choices=["none"])
 
     group_rain = parser.add_argument_group('RAIN',description="Rainfall rate")
     group_rain.add_argument("--rain", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
@@ -62,19 +66,19 @@ def run(argv):
 
     group_snow = parser.add_argument_group('SNOW', description="Snowfall rate")
     group_snow.add_argument("--snow", type=str, help="Input format", default="default",choices=["default", "netcdf", "grib1"])
+    group_snow.add_argument("--snow_converter", type=str, help="Converter function to snowfall rate", default="none", choices=["none"])
 
     group_wind = parser.add_argument_group('WIND', description="Wind speed")
     group_wind.add_argument("--wind", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
     group_wind.add_argument("--wind_converter", type=str, help="Converter function to windspeed", default="windspeed",choices=["none", "windspeed"])
-    group_wind.add_argument("--wind_level", type=int, help="Level", default=None)
 
     group_wind_dir = parser.add_argument_group('WIND_DIR', description="Wind direction")
     group_wind_dir.add_argument("--wind_dir", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
     group_wind_dir.add_argument("--wind_dir_converter", type=str, help="Converter function to wind direction", default="winddir",choices=["none", "winddir"])
-    group_wind_dir.add_argument("--wind_dir_level", type=int, help="Level", default=None)
 
     group_co2 = parser.add_argument_group('CO2', description="Carbon dioxide")
-    group_co2.add_argument('--co2',type=str,help="CO2 input format",default="constant",choices=["netcdf","grib1","constant"])
+    group_co2.add_argument('--co2',type=str,help="CO2 input format",default="default",choices=["netcdf","grib1","constant"])
+    group_co2.add_argument("--co2_converter", type=str, help="Converter function to carbon dioxide", default="none", choices=["none"])
 
     if len(sys.argv) < 4:
         parser.print_help()
@@ -128,109 +132,119 @@ def run(argv):
         parser.print_help()
         sys.exit(1)
 
-    #TODO: Remove zs in geo object
     geo_out = Points(len(lons), lons, lats)
 
-    def set_input_object(sfx_var,geo):
+    # TODO: How to always find this file...
+    default_conf = yaml.load(open("config.yml")) or {}
 
-        # Need this to be read for each variable
-        # TODO: can be moved now, I think
-        # TODO: How to always find this file...
-        default_conf = yaml.load(open("config.yml")) or {}
-        conf=default_conf.copy()
-        if ( args.config != "" ):
-            user_settings=yaml.load(open(args.config)) or {}
-            conf=forcing.util.data_merge(default_conf,user_settings)
+    # Read user settings. This overrides all other configurations
+    user_settings={}
+    if (args.config != ""):
+        user_settings = yaml.load(open(args.config)) or {}
 
-        obj=None
+    # Merge all settings with user all settings
+    merged_conf=forcing.util.data_merge(default_conf,user_settings)
 
-        default_format = args.input_format
-        format=default_format
+    # Replace global settings from
+    format = args.input_format
+    if args.pattern: merged_conf[format]["filepattern"] = args.pattern
 
-        # Default filepattern
-        if args.pattern: conf[default_format]["filepattern"]=args.pattern
+    def set_input_object(sfx_var,merged_conf,geo):
 
+        #########################################
+        # 1. Gobal configuration from yaml file
+        #########################################
+
+        conf=copy.deepcopy(merged_conf)
+
+        ###########################################################
+        # 2. Override specific variable settings from command line
+        ###########################################################
+
+        # Override with command line options for a given variable
         ref_height = ""
-        level=""
-        selected_converter="none"
+        format = args.input_format
         if sfx_var == "TA":
             if args.ta != "default": format = args.ta
-            if args.ta_level != None : level = args.ta_level
+            selected_converter = args.ta_converter
             ref_height = args.zref
         elif sfx_var == "QA":
             if args.qa != "default": format = args.qa
-            if args.qa_level != None: level = args.qa_level
             selected_converter = args.qa_converter
             ref_height = args.zref
         elif sfx_var == "PS":
             if args.ps != "default": format = args.ps
+            selected_converter = args.ps_converter
         elif sfx_var == "DIR_SW":
             if args.dir_sw != "default": format = args.dir_sw
+            selected_converter = args.dir_sw_converter
         elif sfx_var == "SCA_SW":
             if args.sca_sw != "default": format = args.sca_sw
+            selected_converter = args.sca_sw_converter
         elif sfx_var == "LW":
             if args.lw != "default": format = args.lw
+            selected_converter = args.lw_converter
         elif sfx_var == "RAIN":
             if args.rain != "default": format = args.rain
             selected_converter = args.rain_converter
         elif sfx_var == "SNOW":
             if args.snow != "default": format = args.snow
+            selected_converter = args.snow_converter
         elif sfx_var == "WIND":
             if args.wind != "default": format = args.wind
-            if args.wind_level != None: level = args.wind_level
             selected_converter = args.wind_converter
             ref_height = args.uref
         elif sfx_var == "WIND_DIR":
             if args.wind_dir != "default": format = args.wind_dir
-            if args.wind_dir_level != None: level = args.wind_dir_level
             selected_converter = args.wind_dir_converter
             ref_height = args.uref
         elif sfx_var == "CO2":
             if args.co2 != "default": format = args.co2
+            selected_converter = args.co2_converter
 
-        # Set defaults
+        # Now we know the CLA settings for each surfex variable
+
+        # Set defaults (merged global and user settings)
+        # Theses must be sent to the converter to be used for each variable
         defs={}
         if ( format in conf ):
-            defs = conf[format]
+            defs = copy.deepcopy(conf[format])
 
-        # Create the objects
-        # First the constant object
-        if format == "constant":
-            var_dict=conf[sfx_var][format]
-            merged_dict = defs
-            for key in var_dict:
-                merged_dict[key] = var_dict[key]
-            obj = forcing.readInputForSurfex.ConstantValue(geo,sfx_var,var_dict)
-        else:
+        # All objects with converters, find converter dict entry
+        if format != "constant":
 
-            # All objects with converters
             # Non-height dependent variables
+            var_defs={}
             conf_dict={}
             if ref_height == "":
                 if "converter" in conf[sfx_var][format]:
-                    conf_dict = conf[sfx_var][format]["converter"]
+                    conf_dict = copy.deepcopy(conf[sfx_var][format]["converter"])
                 else:
                     forcing.util.error("No converter defined for "+sfx_var)
             # Variables with height dependency
             else:
                 if ref_height in conf[sfx_var]:
                     if "converter" in conf[sfx_var][ref_height][format]:
-                        conf_dict = conf[sfx_var][ref_height][format]["converter"]
-                        print "level"
-                        print level
-                        if level != "":
-                            conf_dict["level"]=level
+                        conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
                     else:
                         forcing.util.error("No converter defined for "+sfx_var)
                 else:
                     forcing.util.error("No ref height \""+ref_height+"\" defined for " + sfx_var)
 
+
+        ##############################################################
+        ##############################################################
+        ##############################################################
+        # Create the object to be returned
+        if format == "constant":
+            const_dict=conf[sfx_var]["constant"]
+            obj = forcing.readInputForSurfex.ConstantValue(geo, sfx_var, const_dict)
+        else:
             # Construct the converter
-            converter=forcing.converter.Converter(selected_converter,start,defs,conf_dict,format)
+            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format)
 
             # Construct the input object
-            obj=forcing.readInputForSurfex.ConvertedInput(geo,sfx_var,converter)
-
+            obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var, converter)
         return obj
 
     var_objs=list()
@@ -238,15 +252,16 @@ def run(argv):
     for i in range(0,len(vars)):
 
         sfx_var=vars[i]
-        var_objs.append(set_input_object(sfx_var,geo_out))
+        var_objs.append(set_input_object(sfx_var,merged_conf,geo_out))
 
 
 
     # Find how many time steps we want to write
-    ntimes=0
+    ntimes=1
     this_time=start
     while this_time <= stop:
         ntimes=ntimes+1
+        print ntimes
         this_time=this_time+timedelta(seconds=args.timestep)
 
     # Create output object
@@ -263,7 +278,7 @@ def run(argv):
     while this_time <= stop:
 
         # Write for each time step
-        output.write_forcing(var_objs,this_time,True)
+        output.write_forcing(var_objs,this_time,False)
         output.time_step=output.time_step+1
         print(this_time.strftime('%Y%m%d%H'))
         this_time=this_time+timedelta(seconds=args.timestep)

@@ -33,6 +33,7 @@ class SurfexForcing(object):
 
     def __init__(self,format,base_time,geo,ntimes,var_objs):
         print "Constructed forcing object "+format
+        self.nparameters=11
         self.base_time=base_time
         self.geo=geo
         self.ntimes=ntimes
@@ -97,9 +98,12 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
 
-            this_obj.read_time_step(this_time)
             if ( not dry ):
-                self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.values
+                print self.forcing_file[self.translation[this_var]]
+                print self.forcing_file[self.translation[this_var]].shape
+                print self.time_step
+                print self.ntimes
+                self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.read_time_step(this_time)
 
 
         if ( not dry ):

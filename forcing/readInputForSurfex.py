@@ -12,7 +12,6 @@ class ReadInputForSurfex(object):
     def __init__(self, geo, var_name):
         self.geo_out = geo
         self.var_name = var_name
-        self.values = np.array
         print "Constructed "+self.__class__.__name__+" for " + self.var_name
 
 class ConvertedInput(ReadInputForSurfex):
@@ -25,13 +24,14 @@ class ConvertedInput(ReadInputForSurfex):
         super(ConvertedInput, self).__init__(geo,var_name)
         self.geo_out = geo
         self.var_name = var_name
-        self.values = np.array
         self.converter = converter
 
 class ConstantValue(ReadInputForSurfex):
 
     def read_time_step(self,validtime):
-        field=[]
+        field = np.array([float(i) for i in range(0, self.geo_out.npoints)])
+        field.fill(self.value)
+        print field.shape
         return field
 
     def __init__(self,geo,var_name,var_dict):
