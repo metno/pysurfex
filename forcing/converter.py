@@ -36,7 +36,7 @@ class Converter:
         else:
             forcing.util.error("Converter " + self.name + " not implemented")
 
-        print "Constructed the converter " + self.name
+        #print "Constructed the converter " + self.name
 
 
     def create_variable(self,format,defs,var_dict):
@@ -59,7 +59,7 @@ class Converter:
         return var
 
     def read_time_step(self,geo,validtime):
-        print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
+        #print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         field=np.array([geo.npoints])
         # Specific reading for each converter
@@ -68,10 +68,10 @@ class Converter:
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x.read_variable(geo,validtime)
             field_y = self.y.read_variable(geo,validtime)
-            if self.name == "windspeed":
-                print "Wind Speed calculation"
-            elif self.name == "winddir":
-                print "Wind Direction calculation"
+            #if self.name == "windspeed":
+            #    print "Wind Speed calculation"
+            #elif self.name == "winddir":
+            #    print "Wind Direction calculation"
             field=field_x #TODO Remove this
         elif self.name == "rh2q":
             field_rh = self.rh.read_variable(geo, validtime)

@@ -257,11 +257,10 @@ def run(argv):
 
 
     # Find how many time steps we want to write
-    ntimes=1
+    ntimes=0
     this_time=start
     while this_time <= stop:
         ntimes=ntimes+1
-        print ntimes
         this_time=this_time+timedelta(seconds=args.timestep)
 
     # Create output object
@@ -278,11 +277,10 @@ def run(argv):
     while this_time <= stop:
 
         # Write for each time step
+        print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
         output.write_forcing(var_objs,this_time,False)
-        output.time_step=output.time_step+1
-        print(this_time.strftime('%Y%m%d%H'))
+        output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=args.timestep)
-        print("After: "+this_time.strftime('%Y%m%d%H'))
 
     # Finalize forcing
     output.finalize()

@@ -31,7 +31,7 @@ class ConstantValue(ReadInputForSurfex):
     def read_time_step(self,validtime):
         field = np.array([float(i) for i in range(0, self.geo_out.npoints)])
         field.fill(self.value)
-        print field.shape
+        #print field.shape
         return field
 
     def __init__(self,geo,var_name,var_dict):

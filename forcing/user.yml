@@ -11,7 +11,7 @@ QA:
             filepattern: my-special-rh-file
             name: relative_humidity_ml
             level: 62
-            fstep: 7
+            fstep: 0
           t:
             name: air_temperature_ml
 

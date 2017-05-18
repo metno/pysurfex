@@ -8,11 +8,6 @@ class SurfexForcing(object):
 
     # Time dependent parameter
     nparameters=11
-    ntimes=-1
-    base_time=None
-    time_step_intervall=3600
-    time_step=-1
-    valid_time=None
     parameters={
       "TA":0,
       "QA":0,
@@ -33,7 +28,8 @@ class SurfexForcing(object):
 
     def __init__(self,format,base_time,geo,ntimes,var_objs):
         print "Constructed forcing object "+format
-        self.nparameters=11
+        self.time_step_intervall = 3600
+        self.valid_time = None
         self.base_time=base_time
         self.geo=geo
         self.ntimes=ntimes
@@ -85,13 +81,13 @@ class NetCDFOutput(SurfexForcing):
  
     def __init__(self,base_time,geo,ntimes,var_objs):
         super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs)
-        print "Type is netCDF"
+        print "Forcing type is netCDF"
         self.forcing_file={}
         self.file_handler= netCDF4.Dataset("FORCING.nc", 'w',format=self.output_format)
         self._define_forcing(geo)
 
     def write_forcing(self,var_objs,this_time,dry=False):
-        print "Forcing time step "+str(self.time_step)
+        #print "Forcing time step "+str(self.time_step)
 
         # VARS
         for i in range (0,len(self.var_objs)):
@@ -99,10 +95,10 @@ class NetCDFOutput(SurfexForcing):
             this_var=this_obj.var_name
 
             if ( not dry ):
-                print self.forcing_file[self.translation[this_var]]
-                print self.forcing_file[self.translation[this_var]].shape
-                print self.time_step
-                print self.ntimes
+                #print self.forcing_file[self.translation[this_var]]
+                #print self.forcing_file[self.translation[this_var]].shape
+                #print self.time_step
+                #print self.ntimes
                 self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.read_time_step(this_time)
 
 
@@ -111,7 +107,8 @@ class NetCDFOutput(SurfexForcing):
             #print self.time_step
             self.forcing_file['TIME'][self.time_step]=self.time_step
             #print self.forcing_file['TIME'][self.time_step]
-            self.time_step=self.time_step+1
+
+
 
     def _define_forcing(self,geo):
         print "Define netcdf forcing" 
@@ -159,7 +156,7 @@ class NetCDFOutput(SurfexForcing):
           this_obj=self.var_objs[i]
           this_var=this_obj.var_name
 
-          print this_var
+          #print this_var
           if ( this_var == "TA" ):
             self.forcing_file['Tair']          = self.file_handler.createVariable("Tair" ,"f4",("time","Number_of_points",))
             self.forcing_file['Tair'].units    = "K"
