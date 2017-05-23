@@ -33,6 +33,7 @@ def run(argv):
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('-z','--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
     parser.add_argument('-u','--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
+    parser.add_argument('--dry', help="Dry run (no reading/writing)", action="store_true")
     parser.add_argument('--debug', help="Show debug information", action="store_true")
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
@@ -265,7 +266,7 @@ def run(argv):
 
     # Create output object
     if str.lower(args.output_format) == "netcdf":
-        output = NetCDFOutput(start, geo_out, ntimes, var_objs)
+        output = NetCDFOutput(start, geo_out, ntimes, var_objs, args.dry)
     elif str.lower(args.output_format) == "ascii":
         forcing.util.error("Output format "+args.output_format+" not implemented yet")
     else:
@@ -278,7 +279,7 @@ def run(argv):
 
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
-        output.write_forcing(var_objs,this_time,False)
+        output.write_forcing(var_objs,this_time,args.dry)
         output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=args.timestep)
 

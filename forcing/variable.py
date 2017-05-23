@@ -3,6 +3,9 @@ import forcing.util
 import copy
 import numpy as np
 from scipy.interpolate import griddata
+from datetime import datetime,timedelta
+import os
+import netCDF4
 
 class Variable(object):
     __metaclass__ = abc.ABCMeta
@@ -12,10 +15,13 @@ class Variable(object):
     The variable read it self
     """
 
-    def __init__(self,step,var_dict):
+    def __init__(self,basetime,step,var_dict):
+        self.basetime=basetime
         self.step=step
         self.var_dict = copy.deepcopy(var_dict)
         if (int(self.var_dict["fstep"]) >= int(self.var_dict["file_inc"])): forcing.util.error("fstep must be less than file_inc")
+
+        self.filename = forcing.util.parse_filepattern(var_dict["filepattern"], basetime, 0)
         print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
@@ -31,7 +37,8 @@ class Variable(object):
         new=False
         if ( int(new_step) >= int(fstep+file_inc)):
             new=True
-
+            self.basetime=self.basetime+timedelta(hours=file_inc)
+            self.filename = forcing.util.parse_filepattern(self.var_dict["filepattern"], self.basetime, 0)
         return new
 
 class NetcdfVariable(Variable):
@@ -51,7 +58,21 @@ class NetcdfVariable(Variable):
         step=0
         if "fstep0" in var_dict: step=var_dict["fstep0"]
 
-        super(NetcdfVariable,self).__init__(step,var_dict)
+        basetime=datetime.strptime("2017052212", '%Y%m%d%H')
+
+        super(NetcdfVariable,self).__init__(basetime,step,var_dict)
+        #if (os.path.isfile(self.filename)):
+        #    self.file_exists = True
+        print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
+        try:
+            self.file_handler = netCDF4.Dataset(self.filename, "r")
+        except:
+            self.file_handler=None
+            forcing.util.warning("Could not open file "+self.filename)
+
+        #else:
+        #    self.file_exists = False
+        #    forcing.util.warning(self.filename + " does not exist!")
 
     def read_variable(self,geo,validtime):
         #print("Reading  "+self.print_variable_info()+" for time step: "+str(self.step))
@@ -61,27 +82,43 @@ class NetcdfVariable(Variable):
         #print field.shape
         #print field
 
-        geo_in = forcing.geo.Domain(739, 949, "+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
-        lons_vec = np.reshape(geo.lons, geo.lons.size)
-        lats_vec = np.reshape(geo.lats, geo.lats.size)
-        points = (lons_vec, lats_vec)
-        values = np.array(self.file_handler[self.name][self.step, 0, 0:geo.nlats, 0:geo.nlons])
-        values_vec = values.reshape(values.size)
-        grid_x = np.array(geo.lons)
-        grid_y = np.array(geo.lats)
-        xi = (grid_x, grid_y)
-        print("lons_vec.shape")
-        print(lons_vec.shape)
-        print("lats_vec.shape")
-        print(lats_vec.shape)
-        print("xi")
-        print(xi)
+        if ( self.file_handler == None):
+            forcing.util.warning("No file handler exist for this time step")
+        else:
+            geo_in = forcing.geo.Domain(739, 949, "+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
+            latvar = []
+            lonvar = []
+            if "latitude" in self.file_handler.variables:
+                latvar = self.file_handler.variables["latitude"]
+                lonvar = self.file_handler.variables["longitude"]
+            elif "lat" in self.file_handler.variables:
+                latvar = self.file_handler.variables["lat"]
+                lonvar = self.file_handler.variables["lon"]
+            else:
+                forcing.util.error("No name for latitude found")
 
-        field_in = griddata(points, values_vec, xi, method='nearest')
+            self.lats = latvar[:]
+            self.lons = lonvar[:]
+            self.isens = "ensemble_member" in self.file_handler.dimensions
+
+            lons_vec = np.reshape(self.lons, self.lons.size)
+            lats_vec = np.reshape(self.lats, self.lats.size)
+            points = (lons_vec, lats_vec)
+            print "Reading "+str(self.var_dict["name"])+" for time step "+str(self.step)
+            values = np.array(self.file_handler[self.var_dict["name"]][self.step, 0, 0:geo_in.nlats, 0:geo_in.nlons])
+            values_vec = values.reshape(values.size)
+            grid_x = np.array(geo.lons)
+            grid_y = np.array(geo.lats)
+            xi = (grid_x, grid_y)
+
+            print "interpolating"
+            field = griddata(points, values_vec, xi, method='nearest')
+            print "done interpolating"
 
         new_step=self.step+self.var_dict["step_inc"]
         if ( self.open_new_file(new_step,self.var_dict["fstep"],self.var_dict["file_inc"]) ):
-            print "Should update filehandler for "+self.print_variable_info()
+            print "Updating filehandler for "+self.print_variable_info()
+            self.file_handler = netCDF4.Dataset(self.filename, "r")
             self.step=self.var_dict["fstep"]
         else:
             self.step=new_step

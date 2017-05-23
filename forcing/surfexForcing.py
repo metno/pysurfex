@@ -26,7 +26,7 @@ class SurfexForcing(object):
     def write_forcing(self):
         raise NotImplementedError('users must define writeForcing to use this base class')
 
-    def __init__(self,format,base_time,geo,ntimes,var_objs):
+    def __init__(self,format,base_time,geo,ntimes,var_objs, dry):
         print "Constructed forcing object "+format
         self.time_step_intervall = 3600
         self.valid_time = None
@@ -79,14 +79,14 @@ class NetCDFOutput(SurfexForcing):
     }
 
  
-    def __init__(self,base_time,geo,ntimes,var_objs):
-        super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs)
+    def __init__(self,base_time,geo,ntimes,var_objs,dry):
+        super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs,dry)
         print "Forcing type is netCDF"
         self.forcing_file={}
         self.file_handler= netCDF4.Dataset("FORCING.nc", 'w',format=self.output_format)
         self._define_forcing(geo)
 
-    def write_forcing(self,var_objs,this_time,dry=False):
+    def write_forcing(self,var_objs,this_time,dry):
         #print "Forcing time step "+str(self.time_step)
 
         # VARS

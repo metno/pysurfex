@@ -4,6 +4,7 @@ netcdf:
   fstep: 3
   step_inc: 1
   file_inc: 6
+  level: 65
 
 # General grib1 settings
 grib1:
@@ -41,12 +42,11 @@ TA:
           level: 105
           height: 2
           tri: 0
-  ml: # Set forcing height also from command line?
+  ml:
     netcdf:
       converter:
         none:
           name: air_temperature_ml
-          level: 65
     grib1:
       converter:
         none:
@@ -74,19 +74,21 @@ QA:
             name: relative_humidity_2m
           t:
             name: air_temperature_2m
+          p:
+            name: surface_air_pressure
   ml:
     netcdf:
       converter:
         none:
           name: specific_humidity_ml
-          level: 65
         rh2q:
           rh:
             name: relative_humidity_ml
-            level: 65
           t:
             name: air_temperature_ml
-            level: 65
+          p:
+            name: surface_air_pressure
+
 
 # Wind speed
 WIND:
