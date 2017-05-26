@@ -6,6 +6,8 @@ from scipy.interpolate import griddata
 from datetime import datetime,timedelta
 import os
 import netCDF4
+import netcdfpy.netcdf
+
 
 class Variable(object):
     __metaclass__ = abc.ABCMeta
@@ -58,14 +60,15 @@ class NetcdfVariable(Variable):
         step=0
         if "fstep0" in var_dict: step=var_dict["fstep0"]
 
-        basetime=datetime.strptime("2017052212", '%Y%m%d%H')
+        basetime=datetime.strptime("2017052518", '%Y%m%d%H')
 
         super(NetcdfVariable,self).__init__(basetime,step,var_dict)
         #if (os.path.isfile(self.filename)):
         #    self.file_exists = True
         print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
         try:
-            self.file_handler = netCDF4.Dataset(self.filename, "r")
+            #self.file_handler = netCDF4.Dataset(self.filename, "r")
+            self.file_handler = netcdfpy.netcdf.Netcdf(self.filename)
         except:
             self.file_handler=None
             forcing.util.warning("Could not open file "+self.filename)
@@ -85,40 +88,19 @@ class NetcdfVariable(Variable):
         if ( self.file_handler == None):
             forcing.util.warning("No file handler exist for this time step")
         else:
-            geo_in = forcing.geo.Domain(739, 949, "+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
-            latvar = []
-            lonvar = []
-            if "latitude" in self.file_handler.variables:
-                latvar = self.file_handler.variables["latitude"]
-                lonvar = self.file_handler.variables["longitude"]
-            elif "lat" in self.file_handler.variables:
-                latvar = self.file_handler.variables["lat"]
-                lonvar = self.file_handler.variables["lon"]
-            else:
-                forcing.util.error("No name for latitude found")
-
-            self.lats = latvar[:]
-            self.lons = lonvar[:]
-            self.isens = "ensemble_member" in self.file_handler.dimensions
-
-            lons_vec = np.reshape(self.lons, self.lons.size)
-            lats_vec = np.reshape(self.lats, self.lats.size)
-            points = (lons_vec, lats_vec)
-            print "Reading "+str(self.var_dict["name"])+" for time step "+str(self.step)
-            values = np.array(self.file_handler[self.var_dict["name"]][self.step, 0, 0:geo_in.nlats, 0:geo_in.nlons])
-            values_vec = values.reshape(values.size)
-            grid_x = np.array(geo.lons)
-            grid_y = np.array(geo.lats)
-            xi = (grid_x, grid_y)
-
-            print "interpolating"
-            field = griddata(points, values_vec, xi, method='nearest')
-            print "done interpolating"
+            var_name=self.var_dict["name"]
+            level=None
+            if "level" in self.var_dict: level=[self.var_dict["level"]]
+            print level
+            field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[self.step],interpolation="nearest")
+            field=np.reshape(field4d[:,0,0,0],len(geo.lons))
 
         new_step=self.step+self.var_dict["step_inc"]
         if ( self.open_new_file(new_step,self.var_dict["fstep"],self.var_dict["file_inc"]) ):
             print "Updating filehandler for "+self.print_variable_info()
-            self.file_handler = netCDF4.Dataset(self.filename, "r")
+            #self.file_handler = netCDF4.Dataset(self.filename, "r")
+            self.file_handler = netcdfpy.netcdf.Netcdf(self.filename)
+
             self.step=self.var_dict["fstep"]
         else:
             self.step=new_step

@@ -1,10 +1,9 @@
 # General netcdf settings
 netcdf:
-  filepattern: /home/trygveasp/nobackup/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  filepattern: http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
   fstep: 3
   step_inc: 1
   file_inc: 6
-  level: 65
 
 # General grib1 settings
 grib1:
@@ -30,11 +29,7 @@ TA:
     netcdf:
       converter:
         none:
-          filepattern: /home/trygveasp/nobackup/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
-          name: air_temperaure_2m
-          fstep: 1
-          step_inc: 3
-          file_inc: 12
+          name: air_temperature_2m
     grib1:
       converter:
         none:
@@ -72,8 +67,10 @@ QA:
         rh2q:
           rh:
             name: relative_humidity_2m
+            level: 2
           t:
             name: air_temperature_2m
+            level: 2
           p:
             name: surface_air_pressure
   ml:
