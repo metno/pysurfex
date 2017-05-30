@@ -10,7 +10,7 @@ class Converter:
     The converter is default "None" to read a plain field
     """
 
-    def __init__(self,name,validtime,defs,conf,format,basetime):
+    def __init__(self,name,validtime,defs,conf,format,basetime,dry):
         """
         Initializing the converter
         
@@ -21,26 +21,27 @@ class Converter:
 
         self.name=name
         self.validtime=validtime
+        self.basetime=basetime
 
         if self.name == "none" :
-            self.var=self.create_variable(format,defs,conf[self.name],basetime)
+            self.var=self.create_variable(format,defs,conf[self.name],dry)
         elif name == "rh2q":
-            self.rh=self.create_variable(format,defs,conf[self.name]["rh"],basetime)
-            self.t=self.create_variable(format,defs,conf[self.name]["t"],basetime)
-            self.p=self.create_variable(format,defs,conf[self.name]["p"],basetime)
+            self.rh=self.create_variable(format,defs,conf[self.name]["rh"],dry)
+            self.t=self.create_variable(format,defs,conf[self.name]["t"],dry)
+            self.p=self.create_variable(format,defs,conf[self.name]["p"],dry)
         elif name == "windspeed" or name == "winddir":
-            self.x=self.create_variable(format,defs,conf[self.name]["x"],basetime)
-            self.y=self.create_variable(format,defs,conf[self.name]["y"],basetime)
+            self.x=self.create_variable(format,defs,conf[self.name]["x"],dry)
+            self.y=self.create_variable(format,defs,conf[self.name]["y"],dry)
         elif name == "totalprec":
-            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],basetime)
-            self.snow = self.create_variable(format, defs, conf[self.name]["snow"],basetime)
+            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],dry)
+            self.snow = self.create_variable(format, defs, conf[self.name]["snow"],dry)
         else:
             forcing.util.error("Converter " + self.name + " not implemented")
 
         #print "Constructed the converter " + self.name
 
 
-    def create_variable(self,format,defs,var_dict,basetime):
+    def create_variable(self,format,defs,var_dict,dry):
 
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables
@@ -50,7 +51,7 @@ class Converter:
 
         var=None
         if format == "netcdf":
-            var=forcing.variable.NetcdfVariable(merged_dict,basetime)
+            var=forcing.variable.NetcdfVariable(merged_dict,self.basetime,self.validtime,dry)
         elif format == "grib1":
             forcing.util.error("Create variable for format "+format+" not implemented!")
         #    var = forcing.variable.GribVariable(var_dict)
@@ -70,12 +71,9 @@ class Converter:
             field_x = self.x.read_variable(geo,validtime,dry)
             field_y = self.y.read_variable(geo,validtime,dry)
             if self.name == "windspeed":
-                print "Wind Speed calculation start"
                 field=np.sqrt(np.square(field_x)+np.square(field_y))
                 np.where(field<0.005,field,0)
-                print "Wind Speed calculation finished"
             elif self.name == "winddir":
-                print "Wind Direction calculation"
                 windspeed=np.sqrt(np.square(field_x)+np.square(field_y))
                 field=np.where(windspeed==0,180.,field)
                 # TODO: Fix this

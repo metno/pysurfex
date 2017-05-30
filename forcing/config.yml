@@ -1,9 +1,9 @@
 # General netcdf settings
 netcdf:
   filepattern: http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
-  fstep: 3
-  step_inc: 1
-  file_inc: 6
+  offset: 10800
+  file_inc: 21600
+  fcint: 21600
 
 # General grib1 settings
 grib1:

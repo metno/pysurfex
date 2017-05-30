@@ -7,7 +7,7 @@ from datetime import datetime,timedelta
 import os
 import netCDF4
 from netcdfpy.netcdf import Netcdf
-
+import re
 
 class Variable(object):
     __metaclass__ = abc.ABCMeta
@@ -17,13 +17,12 @@ class Variable(object):
     The variable read it self
     """
 
-    def __init__(self,basetime,step,var_dict):
+    def __init__(self,basetime,validtime,var_dict):
         self.basetime=basetime
-        self.step=step
+        self.validtime=validtime
         self.var_dict = copy.deepcopy(var_dict)
-        if (int(self.var_dict["fstep"]) >= int(self.var_dict["file_inc"])): forcing.util.error("fstep must be less than file_inc")
 
-        self.filename = forcing.util.parse_filepattern(var_dict["filepattern"], basetime,step)
+        self.filename = forcing.util.parse_filepattern(var_dict["filepattern"], self.basetime,self.validtime)
         print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
@@ -35,12 +34,19 @@ class Variable(object):
     def print_variable_info(self):
         raise NotImplementedError('users must define print_variable_info to use this base class')
 
-    def open_new_file(self,new_step,fstep,file_inc):
+    def open_new_file(self,fcint,offset,file_inc):
+        new_basetime=self.basetime+timedelta(seconds=fcint)
+        last_time=new_basetime+timedelta(seconds=offset)
+
         new=False
-        if ( int(new_step) >= int(fstep+file_inc)):
+        if (self.validtime - self.basetime) >= timedelta(seconds=file_inc):
+            self.filename = forcing.util.parse_filepattern(self.var_dict["filepattern"],self.basetime,self.validtime)
             new=True
-            self.basetime=self.basetime+timedelta(hours=file_inc)
-            self.filename = forcing.util.parse_filepattern(self.var_dict["filepattern"], self.basetime,int(new_step))
+
+        # Adjust basetime if we should read from a new cycle
+        if (self.validtime >= last_time):
+            self.basetime = new_basetime
+
         return new
 
 class NetcdfVariable(Variable):
@@ -49,35 +55,44 @@ class NetcdfVariable(Variable):
     NetCDF variable
     """
 
-    def __init__(self,var_dict,basetime):
+    def __init__(self,var_dict,basetime,validtime,dry):
         #var_dict=copy.deepcopy(var_dict)
         #print self.var_dict
-        mandatory=["name","fstep","step_inc","file_inc","filepattern"]
+        mandatory=["name","fcint","offset","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in var_dict:
                 forcing.util.error("NetCDF variable must have attribute "+mandatory[i]+" var_dict:"+str(var_dict))
 
-        step=0
-        if "fstep0" in var_dict: step=var_dict["fstep0"]
-
-        super(NetcdfVariable,self).__init__(basetime,step,var_dict)
+        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict)
 
         print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
-        try:
-            #self.file_handler = netCDF4.Dataset(self.filename, "r")
+        if dry:
+            if re.search("http", self.filename):
+                self.file_handler = None
+                print "File assumed to be served by opendap " + self.filename
+            else:
+                print "Check if " + self.filename + " exists!"
+        else:
             self.file_handler = Netcdf(self.filename)
-        except:
-            self.file_handler=None
-            forcing.util.warning("Could not open file "+self.filename)
-
-        #else:
-        #    self.file_exists = False
-        #    forcing.util.warning(self.filename + " does not exist!")
 
     def read_variable(self,geo,validtime,dry):
 
+        self.validtime=validtime
+        if (self.open_new_file(int(self.var_dict["fcint"]),int(self.var_dict["offset"]),int(self.var_dict["file_inc"]))):
+            print "Updating filehandler for "+self.print_variable_info()
+            if dry:
+                if re.search("http",self.filename):
+                    self.file_handler=None
+                    print "File assumed to be served by opendap "+self.filename
+                else:
+                    print "Check if "+self.filename+" exists!"
+            else:
+                self.file_handler = Netcdf(self.filename)
+
         if ( self.file_handler == None):
             forcing.util.warning("No file handler exist for this time step")
+            field = np.array(len(geo.lons))
+            #TODO: Fill with NAN
         else:
             var_name=self.var_dict["name"]
             level=None
@@ -93,17 +108,8 @@ class NetcdfVariable(Variable):
                 field=np.array(len(geo.lons))
             else:
                 field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],deaccumulate=accumulated,instantanious=instant,interpolation="nearest")
-                field=np.reshape(field4d[:,0,0,0],len(geo.npoints))
+                field=np.reshape(field4d[:,0,0,0],len(geo.lons))
 
-        new_step=self.step+self.var_dict["step_inc"]
-        if ( self.open_new_file(new_step,self.var_dict["fstep"],self.var_dict["file_inc"]) ):
-            print "Updating filehandler for "+self.print_variable_info()
-            #self.file_handler = netCDF4.Dataset(self.filename, "r")
-            self.file_handler = Netcdf(self.filename)
-
-            self.step=self.var_dict["fstep"]
-        else:
-            self.step=new_step
         return field
 
     def print_variable_info(self):

@@ -243,10 +243,10 @@ def run(argv):
         else:
             # Construct the converter
             basetime=start
-            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime)
+            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime,args.dry)
 
             # Construct the input object
-            obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var, converter)
+            obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var,converter)
         return obj
 
     var_objs=list()
