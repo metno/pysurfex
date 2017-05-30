@@ -242,7 +242,8 @@ def run(argv):
             obj = forcing.readInputForSurfex.ConstantValue(geo, sfx_var, const_dict)
         else:
             # Construct the converter
-            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format)
+            basetime=start
+            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime)
 
             # Construct the input object
             obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var, converter)

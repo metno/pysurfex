@@ -10,7 +10,7 @@ class Converter:
     The converter is default "None" to read a plain field
     """
 
-    def __init__(self,name,validtime,defs,conf,format):
+    def __init__(self,name,validtime,defs,conf,format,basetime):
         """
         Initializing the converter
         
@@ -23,24 +23,24 @@ class Converter:
         self.validtime=validtime
 
         if self.name == "none" :
-            self.var=self.create_variable(format,defs,conf[self.name])
+            self.var=self.create_variable(format,defs,conf[self.name],basetime)
         elif name == "rh2q":
-            self.rh=self.create_variable(format,defs,conf[self.name]["rh"])
-            self.t=self.create_variable(format,defs,conf[self.name]["t"])
-            self.p=self.create_variable(format,defs,conf[self.name]["p"])
+            self.rh=self.create_variable(format,defs,conf[self.name]["rh"],basetime)
+            self.t=self.create_variable(format,defs,conf[self.name]["t"],basetime)
+            self.p=self.create_variable(format,defs,conf[self.name]["p"],basetime)
         elif name == "windspeed" or name == "winddir":
-            self.x=self.create_variable(format,defs,conf[self.name]["x"])
-            self.y=self.create_variable(format,defs,conf[self.name]["y"])
+            self.x=self.create_variable(format,defs,conf[self.name]["x"],basetime)
+            self.y=self.create_variable(format,defs,conf[self.name]["y"],basetime)
         elif name == "totalprec":
-            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"])
-            self.snow = self.create_variable(format, defs, conf[self.name]["snow"])
+            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],basetime)
+            self.snow = self.create_variable(format, defs, conf[self.name]["snow"],basetime)
         else:
             forcing.util.error("Converter " + self.name + " not implemented")
 
         #print "Constructed the converter " + self.name
 
 
-    def create_variable(self,format,defs,var_dict):
+    def create_variable(self,format,defs,var_dict,basetime):
 
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables
@@ -50,7 +50,7 @@ class Converter:
 
         var=None
         if format == "netcdf":
-            var=forcing.variable.NetcdfVariable(merged_dict)
+            var=forcing.variable.NetcdfVariable(merged_dict,basetime)
         elif format == "grib1":
             forcing.util.error("Create variable for format "+format+" not implemented!")
         #    var = forcing.variable.GribVariable(var_dict)
@@ -59,16 +59,16 @@ class Converter:
 
         return var
 
-    def read_time_step(self,geo,validtime):
+    def read_time_step(self,geo,validtime,dry):
         print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         field=np.array([geo.npoints])
         # Specific reading for each converter
         if self.name == "none":
-            field=self.var.read_variable(geo,validtime)
+            field=self.var.read_variable(geo,validtime,dry)
         elif self.name == "windspeed" or self.name == "winddir":
-            field_x = self.x.read_variable(geo,validtime)
-            field_y = self.y.read_variable(geo,validtime)
+            field_x = self.x.read_variable(geo,validtime,dry)
+            field_y = self.y.read_variable(geo,validtime,dry)
             if self.name == "windspeed":
                 print "Wind Speed calculation start"
                 field=np.sqrt(np.square(field_x)+np.square(field_y))
@@ -92,9 +92,9 @@ class Converter:
                 #field=np.where(field==360.,0,field)
 
         elif self.name == "rh2q":
-            field_rh = self.rh.read_variable(geo, validtime) #
-            field_t = self.t.read_variable(geo, validtime)   # In K
-            field_p = self.p.read_variable(geo, validtime)   # In Pa
+            field_rh = self.rh.read_variable(geo, validtime,dry) #
+            field_t = self.t.read_variable(geo, validtime,dry)   # In K
+            field_p = self.p.read_variable(geo, validtime,dry)   # In Pa
             field_t_c=np.subtract(field_t,273.15)
             field_p_mb=np.divide(field_p,100.)
             exp=np.divide(np.multiply(17.67,field_t_c),np.multiply(field_t_c,243.5))
@@ -107,8 +107,8 @@ class Converter:
             #ZRATIO = 0.622 * ZE / (ZPRES / 100.)
             #RH2Q = 1. / (1. / ZRATIO + 1.)
         elif self.name == "totalprec":
-            field_totalprec=self.totalprec.read_variable(geo, validtime)
-            field_snow=self.snow.read_variable(geo, validtime)
+            field_totalprec=self.totalprec.read_variable(geo, validtime,dry)
+            field_snow=self.snow.read_variable(geo, validtime,dry)
             field=np.subtract(field_totalprec,field_snow)
         else:
             forcing.util.error("Converter "+self.name+" not implemented")

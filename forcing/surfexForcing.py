@@ -94,12 +94,14 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
 
-            if ( not dry ):
+            #if ( not dry ):
                 #print self.forcing_file[self.translation[this_var]]
                 #print self.forcing_file[self.translation[this_var]].shape
                 #print self.time_step
                 #print self.ntimes
-                self.forcing_file[self.translation[this_var]][self.time_step,:]=this_obj.read_time_step(this_time)
+            field=this_obj.read_time_step(this_time,dry)
+            if not dry:
+                self.forcing_file[self.translation[this_var]][self.time_step,:]=field
 
 
         if ( not dry ):

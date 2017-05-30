@@ -1,5 +1,5 @@
 netcdf:
-  filepattern: http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  filepattern: http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc+@LL@
 
 # Specific humidity
 QA:
@@ -9,7 +9,6 @@ QA:
         rh2q:
           rh:
             name: relative_humidity_ml
-            level: 62
             fstep: 0
             file_inc: 6
           t:

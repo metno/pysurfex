@@ -42,6 +42,7 @@ TA:
       converter:
         none:
           name: air_temperature_ml
+          level: 0.99851962924
     grib1:
       converter:
         none:
@@ -78,11 +79,14 @@ QA:
       converter:
         none:
           name: specific_humidity_ml
+          level: 0.99851962924
         rh2q:
           rh:
             name: relative_humidity_ml
+            level: 0.99851962924
           t:
             name: air_temperature_ml
+            level: 0.99851962924
           p:
             name: surface_air_pressure
 
@@ -112,14 +116,14 @@ WIND:
       converter:
         none:
           name: wind_speed_ml
-          level: 65
+          level: 0.99851962924
         windspeed:
           x:
             name: x_wind_ml
-            level: 65
+            level: 0.99851962924
           y:
             name: y_wind_ml
-            level: 65
+            level: 0.99851962924
     grib1:
       converter:
         none:
@@ -150,14 +154,14 @@ WIND_DIR:
       converter:
         none:
           name: wind_direction_ml
-          level: 65
+          level: 0.99851962924
         winddir:
           x:
             name: x_wind_ml
-            level: 65
+            level: 0.99851962924
           y:
             name: y_wind_ml
-            level: 65
+            level: 0.99851962924
     grib1:
       converter:
         none:
@@ -169,14 +173,16 @@ RAIN:
       none:
         name: rainfall_amount
         accumulated: False
-        instant: False
+        instant: 3600.
       totalprec:
         totalprec:
           name: precipitation_amount_acc
           accumulated: True
+          instant: 3600.
         snow:
           name: snowfall_amount_acc
           accumulated: True
+          instant: 3600.
 
 # Snow fall amount rate
 SNOW:
@@ -185,7 +191,7 @@ SNOW:
       none:
         name: snowfall_amount_acc
         accumulated: True
-        instant: False
+        instant: 3600.
 
 # Surface air pressure
 PS:
@@ -200,6 +206,8 @@ DIR_SW:
     converter:
       none:
         name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
+        accumulated: True
+        instant: 3600.
 
 # Direct scattered radiation
 SCA_SW:
@@ -217,6 +225,8 @@ LW:
     converter:
       none:
         name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
+        accumulated: True
+        instant: 3600.
 
 # Carbon dioxide
 CO2:
