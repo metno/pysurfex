@@ -19,9 +19,43 @@ ZS:
     converter:
       none:
         name: altitude
-      fhi2m:
-        name: surface_geopotential
+      phi2m:
+        phi:
+          name: surface_geopotential
   grib1:
+
+# Reference height Z
+ZREF:
+  screen:
+    netcdf:
+    constant:
+      value: 10
+    grib1:
+    constant:
+      value: 10
+  ml:
+    netcdf:
+    constant:
+      value: 12.5
+    grib1:
+      converter:
+        none:
+# Reference height U
+UREF:
+  screen:
+    netcdf:
+    constant:
+      value: 10
+    grib1:
+    constant:
+      value: 10
+  ml:
+    netcdf:
+    constant:
+      value: 12.5
+    grib1:
+      converter:
+        none:
 
 # Temperature
 TA:
@@ -69,11 +103,14 @@ QA:
           rh:
             name: relative_humidity_2m
             level: 2
+            units: "%"
           t:
             name: air_temperature_2m
             level: 2
+            units: "celsius"
           p:
             name: surface_air_pressure
+            units: "hPa"
   ml:
     netcdf:
       converter:
@@ -84,11 +121,14 @@ QA:
           rh:
             name: relative_humidity_ml
             level: 0.99851962924
+            units: "%"
           t:
             name: air_temperature_ml
             level: 0.99851962924
+            units: "celsius"
           p:
             name: surface_air_pressure
+            units: "hPa"
 
 
 # Wind speed

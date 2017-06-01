@@ -37,7 +37,7 @@ def parse_filepattern(file_pattern,basetime,validtime):
     file_name = file_name.replace('@LL@', ll)
     file_name = file_name.replace('@LLL@',lll)
     file_name = file_name.replace('@LLLL@',llll)
-    print file_name
+    #print file_name
     return file_name
 
 def unixtime_to_datenum(time):

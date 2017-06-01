@@ -10,6 +10,7 @@ from forcing.surfexForcing import NetCDFOutput
 import forcing.readInputForSurfex
 from forcing.geo import Points,Domain
 from datetime import datetime,timedelta
+from forcing.cache import Cache
 import ConfigParser
 import yaml
 
@@ -31,8 +32,8 @@ def run(argv):
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", nargs="?")
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
-    parser.add_argument('-z','--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
-    parser.add_argument('-u','--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
+    parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
+    parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
     parser.add_argument('--dry', help="Dry run (no reading/writing)", action="store_true")
     parser.add_argument('--debug', help="Show debug information", action="store_true")
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
@@ -81,6 +82,22 @@ def run(argv):
     group_co2.add_argument('--co2',type=str,help="CO2 input format",default="default",choices=["netcdf","grib1","constant"])
     group_co2.add_argument("--co2_converter", type=str, help="Converter function to carbon dioxide", default="none", choices=["none"])
 
+    group_zs = parser.add_argument_group('ZS', description="Surface geopotential")
+    group_zs.add_argument('--zsoro',type=str,help="ZS input format",default="default",choices=["netcdf","grib1","constant"])
+    group_zs.add_argument("--zsoro_converter", type=str, help="Converter function to ZS", default="none", choices=["none","phi2m"])
+
+    group_zval = parser.add_argument_group('ZREF', description="Reference height for temperature and humidity")
+    group_zval.add_argument('--zval', type=str, help="ZREF input format", default="default",
+                          choices=["netcdf", "grib1", "constant"])
+    group_zval.add_argument("--zval_converter", type=str, help="Converter function to ZREF", default="none",
+                          choices=["none"])
+
+    group_uval = parser.add_argument_group('UREF', description="Reference height for wind")
+    group_uval.add_argument('--uval', type=str, help="UREF input format", default="default",
+                          choices=["netcdf", "grib1", "constant"])
+    group_uval.add_argument("--uval_converter", type=str, help="Converter function to UREF", default="none",
+                          choices=["none"])
+
     if len(sys.argv) < 4:
         parser.print_help()
         sys.exit(1)
@@ -92,13 +109,9 @@ def run(argv):
     if not args.debug:
         np.seterr(invalid="ignore")
 
-    #geoOut=forcing.geo.domain(739,949,"+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs")
-
-    var_objs=list()
-    output=None
 
     # SURFEX values
-    atts=["lons","lats","zref","uref","zref"]
+    atts=["ZS","ZREF","UREF"]
     vars=["TA","QA","PS","DIR_SW","SCA_SW","LW","RAIN","SNOW","WIND","WIND_DIR","CO2"]
 
     # Read point/domain config
@@ -150,6 +163,7 @@ def run(argv):
     format = args.input_format
     if args.pattern: merged_conf[format]["filepattern"] = args.pattern
 
+    cache=Cache()
     def set_input_object(sfx_var,merged_conf,geo):
 
         #########################################
@@ -202,16 +216,28 @@ def run(argv):
         elif sfx_var == "CO2":
             if args.co2 != "default": format = args.co2
             selected_converter = args.co2_converter
+        elif sfx_var == "ZS":
+            if args.zsoro != "default": format = args.zsoro
+            selected_converter = args.zsoro_converter
+        elif sfx_var == "ZREF":
+            if args.zval != "default": format = args.zval
+            selected_converter = args.zval_converter
+            ref_height = args.zref
+        elif sfx_var == "UREF":
+            if args.uval != "default": format = args.uval
+            selected_converter = args.uval_converter
+            ref_height = args.uref
 
         # Now we know the CLA settings for each surfex variable
 
         # Set defaults (merged global and user settings)
         # Theses must be sent to the converter to be used for each variable
         defs={}
-        if ( format in conf ):
+        if format in conf:
             defs = copy.deepcopy(conf[format])
 
         # All objects with converters, find converter dict entry
+        print format
         if format != "constant":
 
             # Non-height dependent variables
@@ -238,18 +264,36 @@ def run(argv):
         ##############################################################
         # Create the object to be returned
         if format == "constant":
-            const_dict=conf[sfx_var]["constant"]
+            if ref_height != "":
+                if ref_height in conf[sfx_var]:
+                    if "constant" in conf[sfx_var][ref_height]:
+                        const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
+                    else:
+                        forcing.util.error("No constant defined for " + sfx_var)
+                else:
+                    forcing.util.error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+            else:
+                if "constant" in conf[sfx_var]:
+                    const_dict = copy.deepcopy(conf[sfx_var]["constant"])
+                else:
+                    forcing.util.error("No constant defined for " + sfx_var)
+
             obj = forcing.readInputForSurfex.ConstantValue(geo, sfx_var, const_dict)
         else:
             # Construct the converter
             basetime=start
+
             converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime,args.dry)
 
             # Construct the input object
             obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var,converter)
         return obj
 
-    var_objs=list()
+    att_objs=[]
+    for i in range(0,len(atts)):
+        att_objs.append(set_input_object(atts[i],merged_conf,geo_out))
+
+    var_objs=[]
     # Search in config file for parameters to override
     for i in range(0,len(vars)):
 
@@ -267,7 +311,9 @@ def run(argv):
 
     # Create output object
     if str.lower(args.output_format) == "netcdf":
-        output = NetCDFOutput(start, geo_out, ntimes, var_objs, args.dry)
+        # Set att_time the same as start
+        att_time=start
+        output = NetCDFOutput(start, geo_out, ntimes, var_objs, att_objs,att_time,args.dry,cache)
     elif str.lower(args.output_format) == "ascii":
         forcing.util.error("Output format "+args.output_format+" not implemented yet")
     else:
@@ -280,7 +326,7 @@ def run(argv):
 
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
-        output.write_forcing(var_objs,this_time,args.dry)
+        output.write_forcing(var_objs,this_time,args.dry,cache)
         output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=args.timestep)
 

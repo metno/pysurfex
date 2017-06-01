@@ -16,8 +16,8 @@ class ReadInputForSurfex(object):
 
 class ConvertedInput(ReadInputForSurfex):
 
-    def read_time_step(self,validtime,dry):
-        field=self.converter.read_time_step(self.geo_out,validtime,dry)
+    def read_time_step(self,validtime,dry,cache):
+        field=self.converter.read_time_step(self.geo_out,validtime,dry,cache)
         return field
 
     def __init__(self, geo, var_name,converter):
@@ -28,7 +28,7 @@ class ConvertedInput(ReadInputForSurfex):
 
 class ConstantValue(ReadInputForSurfex):
 
-    def read_time_step(self,validtime,dry):
+    def read_time_step(self,validtime,dry,cache):
         field = np.array([float(i) for i in range(0, self.geo_out.npoints)])
         field.fill(self.value)
         #print field.shape
