@@ -2,5 +2,16 @@ points:
   lons: 10,11,12
   lats: 60,61,62
 
-domains:
+domain:
+  proj4: +proj=lcc +lat_0=60 +lon_0=10 +lat_1=60 +lat_2=60 +no_defs +R=6.371e+06"
+  x: 0,1000,100000
+  y: 0,1000,100000
+  degrees: False
+
+  test:
+    proj4: +proj=lcc +lat_0=60 +lon_0=10 +lat_1=60 +lat_2=60 +no_defs +R=6.371e+06"
+    x: 0,1000,5000
+    y: 0,1000,5000
+    degrees: False
+
 

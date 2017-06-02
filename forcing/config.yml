@@ -275,4 +275,4 @@ CO2:
       none:
         name: carbon_dioxide
   constant:
-    value: 0.62
+    value: 0.00062

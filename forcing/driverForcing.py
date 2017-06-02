@@ -28,6 +28,7 @@ def run(argv):
     parser.add_argument('--options', type=open, action=LoadFromFile)
     parser.add_argument('-c','--config', type=str,help="Configuration file in yaml format describing customized variable setup",default="",nargs="?")
     parser.add_argument('-m','--mode',type=str,help="Type: domain/points",default="points",nargs="?")
+    parser.add_argument('-n','--name', type=str, help="Name of domian/points", default=None, nargs="?")
     parser.add_argument('-t','--timestep', type=int,help="Surfex time step",default=3600,nargs="?")
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", nargs="?")
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
@@ -122,31 +123,51 @@ def run(argv):
             sys.exit(1)
 
         area=yaml.load(open(args.area))
+        if args.mode not in area: forcing.util.error(args.mode+" not defined in " + area_file)
+        if args.name == None:
+            area_dict = area[args.mode]
+        else:
+            if not args.name in area[args.mode]: forcing.util.error(args.name+" not defined in " + area_file)
+            area_dict = area[args.mode][args.name]
         if args.mode == "points":
-            if "points" not in area:
-                forcing.util.error("Points not defined in "+area_file)
-            if "lons" in area["points"]:
-                lons = str.split(area["points"]["lons"], ",")
+            if "lons" in area_dict:
+                lons = str.split(area_dict[args.mode]["lons"], ",")
                 lons = [float(i) for i in lons]
             else:
                 forcing.util.error("Longitudes must be defined")
-            if "lats" in area["points"]:
-                lats = str.split(area["points"]["lats"], ",")
+            if "lats" in area_dict:
+                lats = str.split(area_dict["lats"], ",")
                 lats = [float(i) for i in lats]
             else:
                 forcing.util.error("Latitudes must be defined")
 
-        elif args.type == "domain":
+            geo_out = Points(len(lons), lons, lats)
+        elif args.mode == "domain":
             #TODO: Implement domain
-            pass
+            proj=None
+            if "proj4" in area_dict:
+                proj = str(area_dict["proj4"])
+            else:
+                forcing.util.error("Projection (proj4) must be defined")
+            if "x" in area_dict:
+                x = str.split(area_dict["x"], ",")
+                x = [float(i) for i in x]
+            else:
+                forcing.util.error("x must be defined")
+            if "y" in area_dict:
+                y = str.split(area_dict["y"], ",")
+                y = [float(i) for i in y]
+            else:
+                forcing.util.error("Latitudes must be defined")
+            ldegrees=False
+            if "ldegrees" in area_dict: ldegrees=bool(area_dict["ldegrees"])
+            geo_out = Domain(proj,x,y,ldegrees)
         else:
             parser.print_help()
             sys.exit(1)
     else:
         parser.print_help()
         sys.exit(1)
-
-    geo_out = Points(len(lons), lons, lats)
 
     # TODO: How to always find this file...
     default_conf = yaml.load(open("config.yml")) or {}
@@ -237,7 +258,6 @@ def run(argv):
             defs = copy.deepcopy(conf[format])
 
         # All objects with converters, find converter dict entry
-        print format
         if format != "constant":
 
             # Non-height dependent variables
@@ -251,6 +271,7 @@ def run(argv):
             # Variables with height dependency
             else:
                 if ref_height in conf[sfx_var]:
+                    if conf[sfx_var][ref_height][format] == None: forcing.util.error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
                     if "converter" in conf[sfx_var][ref_height][format]:
                         conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
                     else:
