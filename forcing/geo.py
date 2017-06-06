@@ -27,18 +27,23 @@ class Domain(Geo):
 
         print x[0],x[1],x[2]
         print y[0],y[1],y[2]
-        nlons=int((float(x[2])-float(x[0]))/float(x[1]))
-        nlats=int((float(y[2])-float(y[0]))/float(y[1]))
+        x0=float(x[0])
+        y0=float(y[0])
+        dx=float(x[1])
+        dy=float(x[1])
+        nlons=int(x[2])
+        nlats=int(y[2])
 
         # Convert to longitude/latiudes Set the list as surfex expects
         lons = []
         lats = []
         p=Proj(proj)
-        ii=0
-        jj=0
         for x in range(0,nlons):
             for y in range(0,nlats):
-                lon,lat = p(x,y,inverse=True)
+                xx=x0+(float(x)*float(dx))
+                yy=y0+(float(y)*float(dy))
+
+                lon,lat = p(xx,yy,inverse=True)
                 lons.append(lon)
                 lats.append(lat)
         print lons

@@ -4,14 +4,12 @@ points:
 
 domain:
   proj4: +proj=lcc +lat_0=60 +lon_0=10 +lat_1=60 +lat_2=60 +no_defs +R=6.371e+06"
-  x: 0,1000,100000
-  y: 0,1000,100000
+  x: -10000,1000,101
+  y: -10000,1000,101
   degrees: False
 
   test:
     proj4: +proj=lcc +lat_0=60 +lon_0=10 +lat_1=60 +lat_2=60 +no_defs +R=6.371e+06"
-    x: 0,1000,5000
-    y: 0,1000,5000
+    x: -30000,1000,61
+    y: -30000,1000,61
     degrees: False
-
-
