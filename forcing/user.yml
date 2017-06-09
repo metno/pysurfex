@@ -8,6 +8,7 @@ QA:
       converter:
         rh2q:
           rh:
+            interpolator: linear
             name: relative_humidity_ml
           t:
             name: air_temperature_ml

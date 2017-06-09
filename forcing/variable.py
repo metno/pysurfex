@@ -113,13 +113,29 @@ class NetcdfVariable(Variable):
             if "accumulated" in self.var_dict: accumulated = [self.var_dict["accumulated"]]
             if accumulated:
                 if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+            int_type="nearest"
+            if "interpolator" in self.var_dict: int_type=self.var_dict["interpolator"]
 
-            #print level, accumulated, instant
+            #print level, accumulated, instant,int_type
             if dry:
                 field=np.array(len(geo.lons))
             else:
-                field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],deaccumulate=accumulated,instantanious=instant,interpolation="nearest",units=units)
+                # Update the interpolator from cache if existing
+                if int_type == "nearest" and cache.interpolator_is_set(int_type):
+                    self.file_handler.nearest=cache.get_interpolator(int_type)
+                elif int_type == "linear" and cache.get_interpolator(int_type):
+                    self.file_handler.linear=cache.get_interpolator(int_type)
+
+                field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],deaccumulate=accumulated,instantanious=instant,interpolation=int_type,units=units)
                 field=np.reshape(field4d[:,0,0,0],len(geo.lons))
+
+                # Find used interpolator
+                if int_type == "nearest":
+                    interpolator=self.file_handler.nearest
+                elif int_type == "linear":
+                    interpolator = self.file_handler.linear
+                # Update cache
+                cache.update_interpolator(int_type,interpolator)
 
         return field
 

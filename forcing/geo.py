@@ -30,7 +30,7 @@ class Domain(Geo):
         x0=float(x[0])
         y0=float(y[0])
         dx=float(x[1])
-        dy=float(x[1])
+        dy=float(y[1])
         nlons=int(x[2])
         nlats=int(y[2])
 
@@ -44,6 +44,7 @@ class Domain(Geo):
                 yy=y0+(float(y)*float(dy))
 
                 lon,lat = p(xx,yy,inverse=True)
+                print xx,yy,lon,lat
                 lons.append(lon)
                 lats.append(lat)
         print lons

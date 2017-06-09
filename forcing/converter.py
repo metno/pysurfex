@@ -66,7 +66,7 @@ class Converter:
         #print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         gravity=9.81
-        field=np.array([geo.npoints])
+        field=np.empty(geo.npoints)
         # Specific reading for each converter
         if self.name == "none":
             field=self.var.read_variable(geo,validtime,dry,cache)

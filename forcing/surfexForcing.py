@@ -93,10 +93,10 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
 
+            print "Preparing " + this_obj.var_name
             field=this_obj.read_time_step(this_time,dry,cache)
             if not dry:
                 self.forcing_file[self.translation[this_var]][self.time_step,:]=field
-
 
         if ( not dry ):
             self.forcing_file['TIME'][self.time_step]=self.time_step
@@ -198,7 +198,8 @@ class NetCDFOutput(SurfexForcing):
                     sys.exit(1)
    
     def finalize(self):
-         self.file_handler.close()
+        print "Close file"
+        self.file_handler.close()
 
     
 
