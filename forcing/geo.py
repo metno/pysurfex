@@ -25,8 +25,8 @@ class Domain(Geo):
 
     def __init__(self,proj,x,y,ldegrees):
 
-        print x[0],x[1],x[2]
-        print y[0],y[1],y[2]
+        #print x[0],x[1],x[2]
+        #print y[0],y[1],y[2]
         x0=float(x[0])
         y0=float(y[0])
         dx=float(x[1])
@@ -44,10 +44,10 @@ class Domain(Geo):
                 yy=y0+(float(y)*float(dy))
 
                 lon,lat = p(xx,yy,inverse=True)
-                print xx,yy,lon,lat
+                #print xx,yy,lon,lat
                 lons.append(lon)
                 lats.append(lat)
-        print lons
-        print lats
+        #print lons
+        #print lats
         super(Domain,self).__init__(proj,nlons*nlats,nlons,nlats,lons,lats)
 

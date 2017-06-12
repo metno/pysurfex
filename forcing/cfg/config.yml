@@ -27,14 +27,14 @@ ZS:
 # Reference height Z
 ZREF:
   screen:
-    netcdf:
     constant:
-      value: 10
+      value: 2
     grib1:
-    constant:
-      value: 10
   ml:
     netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
     constant:
       value: 12.5
     grib1:
@@ -43,14 +43,13 @@ ZREF:
 # Reference height U
 UREF:
   screen:
-    netcdf:
-    constant:
-      value: 10
-    grib1:
     constant:
       value: 10
   ml:
     netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
     constant:
       value: 12.5
     grib1:

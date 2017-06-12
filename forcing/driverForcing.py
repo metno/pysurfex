@@ -15,9 +15,14 @@ import ConfigParser
 import yaml
 
 class LoadFromFile (argparse.Action):
-    def __call__ (self, parser, namespace, values, option_string = None):
+    def __call__ (self, parser, namespace, values,option_string=None):
+        print "Reading options from file"
         with values as f:
-            parser.parse_args(f.read().split(), namespace)
+            contents = f.read()
+            data = parser.parse_args(contents.split())
+            for k, v in vars(data).items():
+                if v and k != option_string.lstrip('-'):
+                    setattr(namespace, k, v)
 
 def run(argv):
 
@@ -25,7 +30,7 @@ def run(argv):
     parser.add_argument('dtg_start', type=int, help="Start DTG",nargs="?")
     parser.add_argument('dtg_stop', type=int, help="Stop DTG",nargs="?")
     parser.add_argument('area', type=str, help="Configuration file describing the points or locations",nargs="?")
-    parser.add_argument('--options', type=open, action=LoadFromFile)
+    parser.add_argument('--options',type=open, action=LoadFromFile)
     parser.add_argument('-c','--config', type=str,help="Configuration file in yaml format describing customized variable setup",default="",nargs="?")
     parser.add_argument('-m','--mode',type=str,help="Type: domain/points",default="points",nargs="?")
     parser.add_argument('-n','--name', type=str, help="Name of domian/points", default=None, nargs="?")
@@ -104,6 +109,9 @@ def run(argv):
         sys.exit(1)
 
     args = parser.parse_args()
+    if ( args.dtg_start or args.dtg_stop) < 1000010100:
+        print "Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop)
+        sys.exit(1)
     start=datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')
     stop=datetime.strptime(str.strip(str(args.dtg_stop)), '%Y%m%d%H')
 
@@ -131,7 +139,7 @@ def run(argv):
             area_dict = area[args.mode][args.name]
         if args.mode == "points":
             if "lons" in area_dict:
-                lons = str.split(area_dict[args.mode]["lons"], ",")
+                lons = str.split(area_dict["lons"], ",")
                 lons = [float(i) for i in lons]
             else:
                 forcing.util.error("Longitudes must be defined")
@@ -169,8 +177,13 @@ def run(argv):
         parser.print_help()
         sys.exit(1)
 
-    # TODO: How to always find this file...
-    default_conf = yaml.load(open("config.yml")) or {}
+    # Find name of global config file
+    root = __file__
+    if os.path.islink(root):
+      root = os.path.realpath(root)
+    base = os.path.dirname(os.path.abspath(root))
+    yaml_config=base+"/cfg/config.yml"
+    default_conf = yaml.load(open(yaml_config)) or die
 
     # Read user settings. This overrides all other configurations
     user_settings={}
@@ -244,10 +257,12 @@ def run(argv):
             if args.zval != "default": format = args.zval
             selected_converter = args.zval_converter
             ref_height = args.zref
+            if ref_height == "screen": format="constant"
         elif sfx_var == "UREF":
             if args.uval != "default": format = args.uval
             selected_converter = args.uval_converter
             ref_height = args.uref
+            if ref_height == "screen": format = "constant"
 
         # Now we know the CLA settings for each surfex variable
 
@@ -271,6 +286,7 @@ def run(argv):
             # Variables with height dependency
             else:
                 if ref_height in conf[sfx_var]:
+                    print sfx_var,ref_height,format
                     if conf[sfx_var][ref_height][format] == None: forcing.util.error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
                     if "converter" in conf[sfx_var][ref_height][format]:
                         conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
