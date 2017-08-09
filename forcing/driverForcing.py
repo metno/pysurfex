@@ -139,12 +139,12 @@ def run(argv):
             area_dict = area[args.mode][args.name]
         if args.mode == "points":
             if "lons" in area_dict:
-                lons = str.split(area_dict["lons"], ",")
+                lons = area_dict["lons"]
                 lons = [float(i) for i in lons]
             else:
                 forcing.util.error("Longitudes must be defined")
             if "lats" in area_dict:
-                lats = str.split(area_dict["lats"], ",")
+                lats = area_dict["lats"]
                 lats = [float(i) for i in lats]
             else:
                 forcing.util.error("Latitudes must be defined")

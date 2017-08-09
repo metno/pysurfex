@@ -13,7 +13,7 @@ class SurfFile(object):
 
     def __init__(self):
         self.geo=None
-        #print "Constructed SurfFile"
+        print "Constructed SurfFile"
 
     def one2two(self,field):
         if self.geo.nx < 0 or self.geo.ny < 0:
@@ -31,7 +31,7 @@ class SurfFile(object):
         field2d[field2d == 1e+20] = np.nan
         return field2d
 
-    def plot_field(self,field2d,title=None,intervals=20,bd=5000,zero=False,cmap_name=None):
+    def plot_field(self,field2d,title=None,intervals=20,bd=5000,zero=False,cmap_name=None,plot=False):
 
         if self.geo.X is None or self.geo.Y is None:
             print "Object does not have X and Y defined!"
@@ -90,14 +90,15 @@ class SurfFile(object):
         sm._A = []
         cb = plt.colorbar(sm, ticks=limits)
         cb.set_clim([min_value, max_value])
-        plt.show()
+        if plot: plt.show()
 
 class AsciiSurfFile(SurfFile):
 
     def __init__(self,fname):
         super(AsciiSurfFile, self).__init__()
         self.fname=fname
-        grid = self.read_field("&FULL", "GRID_TYPE", type="string")
+        grid = self.read_field("FULL", "GRID_TYPE", type="string")
+        if len(grid) == 0: print "No grid found"; sys.exit(1)
         if grid[0] == "IGN":
             lambert = self.read_field("&FULL", "LAMBERT", type="integer")[0]
             xx = self.read_field("&FULL", "XX")

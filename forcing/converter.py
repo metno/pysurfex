@@ -121,6 +121,7 @@ class Converter:
         elif self.name == "phi2m":
             field=self.phi.read_variable(geo, validtime,dry,cache)
             field=np.divide(field,gravity)
+            field[(field < 0)] = 0.
         else:
             forcing.util.error("Converter "+self.name+" not implemented")
         return field
