@@ -3,11 +3,10 @@ import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset
 from forcing.timeSeries import TimeSeries
-from forcing.surfexGeo import IGN
+from forcing.surfexGeo import IGN,LonLatVal,LonLatReg
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
-import types
 
 class SurfFile(object):
 
@@ -16,22 +15,23 @@ class SurfFile(object):
         print "Constructed SurfFile"
 
     def one2two(self,field):
-        if self.geo.nx < 0 or self.geo.ny < 0:
+        if int(self.geo.nx) < 0 or int(self.geo.ny) < 0:
             print "The dimensions are not initialized: ",self.geo.nx,self.geo.ny
             sys.exit(1)
-        fieldall = np.zeros(self.geo.nx * self.geo.ny)
+        fieldall = np.zeros(int(self.geo.nx) * int(self.geo.ny))
         fieldall.fill(np.nan)
         if self.geo.mask == None:
             print "Assuming uniform mask"
+            fieldall=field
         else:
             if len(self.geo.mask) != len(field): print "ERROR: Rank mismatch: ", len(self.geo.mask), len(field); sys.exit(1)
             for i in range(0, len(field)): fieldall[self.geo.mask[i]] = field[i]
 
-        field2d = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
-        field2d[field2d == 1e+20] = np.nan
-        return field2d
+        field = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
+        field[field == 1e+20] = np.nan
+        return field
 
-    def plot_field(self,field2d,title=None,intervals=20,bd=5000,zero=False,cmap_name=None,plot=False):
+    def plot_field(self,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False):
 
         if self.geo.X is None or self.geo.Y is None:
             print "Object does not have X and Y defined!"
@@ -43,23 +43,36 @@ class SurfFile(object):
         ny=self.geo.ny
         proj=self.geo.proj
 
-        if isinstance(field2d,list):
+        if isinstance(field,list) and self.geo.domain:
             print "Converting list to 2D numpy array"
-            field2d=self.one2two(field2d)
+            field=self.one2two(field)
 
-        ax = plt.axes(projection=proj)
+        if self.geo.domain:
+            x0=X[0, 0]
+            xN=X[ny - 1, nx - 1]
+            y0=Y[0,0]
+            yN= Y[ny - 1, nx - 1]
+        else:
+            field=np.asarray(field)
+            if bd == 5000: bd=2
+            x0=self.geo.X[0]
+            xN=self.geo.X[nx-1]
+            y0=Y[0]
+            yN=Y[ny-1]
+
+        ax = plt.axes(projection=self.geo.display_proj)
+
         ax.set_global()
         ax.coastlines(resolution="10m")
 
-        ax.set_extent([X[0, 0] - bd, X[ny - 1, nx - 1] + bd, Y[0, 0] - bd,
-                       Y[ny - 1, nx - 1] + bd], proj)
+        ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
 
-        if not zero: field2d[field2d == 0. ] =np.nan
+        if not zero: field[field == 0. ] =np.nan
 
-        min_value = float(np.nanmin(field2d))
-        max_value = float(np.nanmax(field2d))
+        min_value = float(np.nanmin(field))
+        max_value = float(np.nanmax(field))
 
-        #print min_value, max_value, intervals
+        print min_value, max_value, intervals
         limits = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
         #print limits
 
@@ -71,8 +84,12 @@ class SurfFile(object):
         if title is not None:
             plt.title(title)
 
-        plt.imshow(field2d, extent=(X.min(),X.max(),Y.max(),Y.min()),
+        if self.geo.domain:
+            plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
                    transform=proj, interpolation="nearest", cmap=cmap)
+        else:
+            plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
+
 
         def fmt(x, y):
             i = int((x - X[0, 0]) / 2500.)
@@ -80,10 +97,11 @@ class SurfFile(object):
 
             # print x,y,lon,lat,lon0,lat0,i,j,zs2d.shape[0],zs2d.shape[1]
             z = np.nan
-            if i >= 0 and i < field2d.shape[1] and j >= 0 and j < field2d.shape[0]:  z = field2d[j, i]
+            if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
             return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
 
-        ax.format_coord = fmt
+        if self.geo.domain: ax.format_coord = fmt
+
         plt.clim([min_value, max_value])
         norm = mcl.Normalize(min_value, max_value)
         sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -100,12 +118,28 @@ class AsciiSurfFile(SurfFile):
         grid = self.read_field("FULL", "GRID_TYPE", type="string")
         if len(grid) == 0: print "No grid found"; sys.exit(1)
         if grid[0] == "IGN":
-            lambert = self.read_field("&FULL", "LAMBERT", type="integer")[0]
-            xx = self.read_field("&FULL", "XX")
-            xdx = self.read_field("&FULL", "DX")
-            yy = self.read_field("&FULL", "XY")
-            xdy = self.read_field("&FULL", "DY")
+            lambert = self.read_field("FULL", "LAMBERT", type="integer")[0]
+            xx = self.read_field("FULL", "XX")
+            xdx = self.read_field("FULL", "DX")
+            yy = self.read_field("FULL", "XY")
+            xdy = self.read_field("FULL", "DY")
             self.geo = IGN(lambert, xx, yy, xdx, xdy)
+        elif grid[0] == "LONLATVAL":
+            xx = self.read_field("FULL", "XX")
+            xy = self.read_field("FULL", "XY")
+            xdx = self.read_field("FULL", "DX")
+            xdy = self.read_field("FULL", "DY")
+            self.geo = LonLatVal(xx, xy, xdx, xdy)
+        elif grid[0] == "LONLAT REG":
+            lonmin = self.read_field("FULL", "LONMIN")
+            lonmax = self.read_field("FULL", "LONMAX")
+            latmin = self.read_field("FULL", "LATMIN")
+            latmax = self.read_field("FULL", "LATMAX")
+            nlon = self.read_field("FULL", "NLON",type="integer")[0]
+            nlat = self.read_field("FULL", "NLAT",type="integer")[0]
+            reg_lon = self.read_field("FULL", "REG_LON")
+            reg_lat = self.read_field("FULL", "REG_LAT")
+            self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
         else:
             print "Grid " + str(grid[0]) + " not implemented!"
             exit()
@@ -119,9 +153,12 @@ class AsciiSurfFile(SurfFile):
         read_value=False
         values=[]
         for line in file:
+        #for line in file.read().splitlines():
+
             #print str(i)+":T:"+line
             words=line.split()
             if len(words) > 0:
+                #print "Line:",read_desc,read_value,":",line
                 if read_value and not read_desc:
                     if words[0].find('&') < 0:
                         #print "Value:", line
@@ -132,8 +169,10 @@ class AsciiSurfFile(SurfFile):
                                     if val == 1e+20: val=np.nan
                                     values.append(val)
                             elif type.lower() == "string":
+                                str_words=[]
                                 for i in range(0, len(words)):
-                                    values.append(words[i])
+                                    str_words.append(words[i])
+                                values.append(" ".join(str_words))
                             elif type.lower() == "integer" or  type.lower() == "int":
                                 for i in range(0, len(words)):
                                     values.append(int(words[i]))
@@ -158,7 +197,14 @@ class AsciiSurfFile(SurfFile):
                     if tile.strip().lower() == read_tile.lower() and par.lower() == read_par.lower():
                         read_desc=True
                         read_value=False
-                        #print "Found:", tile,par
+                        print "Found:", tile,par
+
+            # Description could be empty
+            else:
+                if read_desc:
+                    # print "Description: ", words[0]
+                    read_desc = False
+                    read_value = True
 
         if len(values) == 0: print "No values found!"
         return values

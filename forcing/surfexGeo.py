@@ -5,12 +5,53 @@ import os
 class SurfexGeo(object):
 
     def __init__(self):
+        self.display_proj=ccrs.Robinson()
+        self.domain=True
         self.X=None
         self.Y=None
         self.mask=None
         self.nx=-1
         self.ny=-1
-        #print "Contructed SurfexGeo"
+        print "Contructed SurfexGeo"
+
+class LonLatReg(SurfexGeo):
+
+    def __init__(self,lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat):
+
+        super(LonLatReg, self).__init__()
+
+        self.domain=True
+        self.lonmin=lonmin
+        self.lonmax=lonmax
+        self.latmin=latmin
+        self.latmax=latmax
+        self.nx=nlon
+        self.ny=nlat
+        self.reg_lon=reg_lon
+        self.reg_lat=reg_lat
+        self.X, self.Y = np.meshgrid(self.reg_lon, self.reg_lat)
+        #print self.X
+        #print self.Y
+        self.proj = ccrs.PlateCarree()
+        self.display_proj=ccrs.Miller()
+
+class LonLatVal(SurfexGeo):
+
+    def __init__(self,xx,xy,xdx,xdy):
+
+        super(LonLatVal, self).__init__()
+
+        self.domain=False
+        self.xx=xx
+        self.xy=xy
+        self.xdx=xdx
+        self.xdy=xdy
+        self.nx=len(self.xx)
+        self.ny=len(self.xy)
+        self.X=np.asarray(self.xx)
+        self.Y=np.asarray(self.xy)
+        self.proj = ccrs.PlateCarree()
+        self.display_proj=ccrs.Miller()
 
 class IGN(SurfexGeo):
 
@@ -21,6 +62,7 @@ class IGN(SurfexGeo):
         if lambert == 7:
             self.proj = ccrs.LambertConformal(central_longitude=15., central_latitude=63., false_easting=922442.1875,
                                          false_northing=1129321.75, standard_parallels=[63.])
+            self.display_proj=self.proj
         else:
             print "Lambert not defined:",lambert
             exit(1)
