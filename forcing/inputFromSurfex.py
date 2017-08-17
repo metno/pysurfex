@@ -3,8 +3,8 @@ import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset
 from forcing.timeSeries import TimeSeries
-from forcing.surfexGeo import IGN,LonLatVal,LonLatReg
-import sys
+from forcing.util import error,info,warning
+from forcing.surfexGeo import SurfexGeo,IGN,LonLatVal,LonLatReg
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
 
@@ -21,10 +21,10 @@ class SurfFile(object):
         fieldall = np.zeros(int(self.geo.nx) * int(self.geo.ny))
         fieldall.fill(np.nan)
         if self.geo.mask == None:
-            print "Assuming uniform mask"
+            info("Assuming uniform mask")
             fieldall=field
         else:
-            if len(self.geo.mask) != len(field): print "ERROR: Rank mismatch: ", len(self.geo.mask), len(field); sys.exit(1)
+            if len(self.geo.mask) != len(field): error("Rank mismatch: "+str(len(self.geo.mask))+" "+str(len(field)))
             for i in range(0, len(field)): fieldall[self.geo.mask[i]] = field[i]
 
         field = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
@@ -34,8 +34,7 @@ class SurfFile(object):
     def plot_field(self,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False):
 
         if self.geo.X is None or self.geo.Y is None:
-            print "Object does not have X and Y defined!"
-            sys.exit(1)
+            error("Object does not have X and Y defined!")
 
         X=self.geo.X
         Y=self.geo.Y
@@ -141,8 +140,7 @@ class AsciiSurfFile(SurfFile):
             reg_lat = self.read_field("FULL", "REG_LAT")
             self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
         else:
-            print "Grid " + str(grid[0]) + " not implemented!"
-            exit()
+            error("Grid " + str(grid[0]) + " not implemented!")
 
 
     def read_field(self,read_tile,read_par,type="float",patches=1):
@@ -177,12 +175,10 @@ class AsciiSurfFile(SurfFile):
                                 for i in range(0, len(words)):
                                     values.append(int(words[i]))
                             else:
-                                print "Type not implemented ",type
-                                exit(1)
+                                error("Type not implemented "+str(type))
                         except ValueError:
-                            print 'Conversion from '+str(words)+" to "+type+" does not work!"
-                            print "Try a different type!"
-                            sys.exit(1)
+                            error('Conversion from '+str(words)+" to "+str(type)+" does not work!"+
+                                                "\nTry a different type!")
 
                 if read_desc:
                     #print "Description: ", words[0]
@@ -197,7 +193,7 @@ class AsciiSurfFile(SurfFile):
                     if tile.strip().lower() == read_tile.lower() and par.lower() == read_par.lower():
                         read_desc=True
                         read_value=False
-                        print "Found:", tile,par
+                        info("Found:"+str(tile)+" "+str(par))
 
             # Description could be empty
             else:
@@ -206,17 +202,19 @@ class AsciiSurfFile(SurfFile):
                     read_desc = False
                     read_value = True
 
-        if len(values) == 0: print "No values found!"
+        if len(values) == 0: warning("No values found!")
         return values
 
+########################################################################################################################
 
 class TimeSeriesInputFromSurfex(TimeSeries):
      """ 
-     Reading surfex output
+     Reading surfex time series output
      """
 
-     def __init__(self,base_time="NA",npoints=1):
+     def __init__(self,geo,base_time="NA",npoints=1):
        super(TimeSeriesInputFromSurfex, self).__init__()
+       self.geo=geo
        self.base_time=base_time
        self.npoints=npoints
        self.my_data=list()
@@ -227,13 +225,13 @@ class ReadFromASCIIFile(TimeSeriesInputFromSurfex):
      Read from ASCII file
      """
 
-     def __init__(self,file,stnr,var):
-       super(ReadFromASCIIFile, self).__init__()
+     def __init__(self,geo,file,stnr,var):
+       super(ReadFromASCIIFile, self).__init__(geo)
        self.npoints=1
        self.stnr=stnr
        self.varname=var
  
-       forcing.util.info("Reading "+str(file)+" stnr:"+str(stnr))
+       info("Reading "+str(file)+" stnr:"+str(stnr))
        dtg2dt=lambda x: datetime.strptime(str.strip(x), '%Y%m%d%H')
 
        my_obsheader=np.genfromtxt(file,names=True,dtype=None,delimiter=";",max_rows=1)
@@ -268,8 +266,8 @@ class NetCDF(TimeSeriesInputFromSurfex):
      Reading surfex NetCDF output 
      """
 
-     def __init__(self,filename,var,patch,pos,base_time,interval):
-       super(NetCDF, self).__init__(base_time)
+     def __init__(self,geo,filename,var,patch,pos,base_time,interval):
+       super(NetCDF, self).__init__(geo,base_time)
 
        fh = Dataset(filename, "r")
        #dimensions = fh.variables[var].dimensions
@@ -287,8 +285,8 @@ class Texte(TimeSeriesInputFromSurfex):
      Reading surfex TEXTE output
      """
 
-     def __init__(self,var,npoints,pos,base_time,interval):
-       super(Texte, self).__init__(base_time,npoints)
+     def __init__(self,geo,var,npoints,pos,base_time,interval):
+       super(Texte, self).__init__(geo,base_time,npoints)
        double_to_exp=lambda x: float(x.replace("D", "E"))
 
        convert=dict()

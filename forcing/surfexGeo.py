@@ -1,6 +1,7 @@
 import numpy as np
 import cartopy.crs as ccrs
 import os
+import sys
 
 class SurfexGeo(object):
 
@@ -12,6 +13,7 @@ class SurfexGeo(object):
         self.mask=None
         self.nx=-1
         self.ny=-1
+        self.npoints=-1
         print "Contructed SurfexGeo"
 
 class LonLatReg(SurfexGeo):
@@ -20,13 +22,13 @@ class LonLatReg(SurfexGeo):
 
         super(LonLatReg, self).__init__()
 
-        self.domain=True
         self.lonmin=lonmin
         self.lonmax=lonmax
         self.latmin=latmin
         self.latmax=latmax
         self.nx=nlon
         self.ny=nlat
+        self.npoints=self.nx*self.ny
         self.reg_lon=reg_lon
         self.reg_lat=reg_lat
         self.X, self.Y = np.meshgrid(self.reg_lon, self.reg_lat)
@@ -48,6 +50,10 @@ class LonLatVal(SurfexGeo):
         self.xdy=xdy
         self.nx=len(self.xx)
         self.ny=len(self.xy)
+        if self.xx != self.ny:
+            print "For lonlatval the x and y dimensions should be equal!"
+            sys.exit(1)
+        self.npoints=self.nx
         self.X=np.asarray(self.xx)
         self.Y=np.asarray(self.xy)
         self.proj = ccrs.PlateCarree()
@@ -65,13 +71,14 @@ class IGN(SurfexGeo):
             self.display_proj=self.proj
         else:
             print "Lambert not defined:",lambert
-            exit(1)
+            sys.exit(1)
 
         self.pxall=self.get_coord(xx,xdx,"x",recreate)
         self.pyall=self.get_coord(yy,xdy,"y",recreate)
         self.mask=self.ign_mask(self.pxall,self.pyall,xx,yy,recreate)
         self.nx=len(self.pxall)
         self.ny=len(self.pyall)
+        self.npoints=self.nx
 
         self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
         self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)
