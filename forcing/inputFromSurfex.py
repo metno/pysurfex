@@ -1,12 +1,13 @@
 import forcing.util
 import numpy as np
 from datetime import datetime,timedelta
-from netCDF4 import Dataset
+from netCDF4 import Dataset,num2date
 from forcing.timeSeries import TimeSeries
 from forcing.util import error,info,warning
 from forcing.surfexGeo import SurfexGeo,IGN,LonLatVal,LonLatReg
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
+import cfunits as cf
 
 class SurfFile(object):
 
@@ -128,6 +129,7 @@ class AsciiSurfFile(SurfFile):
             xy = self.read_field("FULL", "XY")
             xdx = self.read_field("FULL", "DX")
             xdy = self.read_field("FULL", "DY")
+            print xx,xy,xdx,xdy
             self.geo = LonLatVal(xx, xy, xdx, xdy)
         elif grid[0] == "LONLAT REG":
             lonmin = self.read_field("FULL", "LONMIN")
@@ -262,22 +264,48 @@ class ReadFromASCIIFile(TimeSeriesInputFromSurfex):
 
 class NetCDF(TimeSeriesInputFromSurfex):
 
-     """
-     Reading surfex NetCDF output 
-     """
+    """
+    Reading surfex NetCDF output
+    """
 
-     def __init__(self,geo,filename,var,patch,pos,base_time,interval):
-       super(NetCDF, self).__init__(geo,base_time)
+    def __init__(self,geo,filename,var,base_time,pos=-1,patch=-1):
+        super(NetCDF, self).__init__(geo,base_time)
 
-       fh = Dataset(filename, "r")
-       #dimensions = fh.variables[var].dimensions
-       self.my_data=fh.variables[var][:,patch,pos]
+        fh = Dataset(filename, "r")
+        #print fh
 
-       for i in range(0,len(self.my_data)):
-         self.values.append(self.my_data[i])
-         self.times.append(self.base_time+timedelta(seconds=(i*interval)))
-         #print self.times[i],self.values[i]
-       fh.close()
+        ndims=0
+        dims={'time':-1,'Number_of_Tile':-1,'Number_of_points':-1}
+        size=dims
+        for dim in fh.variables[var].dimensions:
+            dims[dim]=ndims
+            size[dim]=fh.variables[var].shape[ndims]
+            ndims=ndims+1
+
+        print ndims,dims
+
+        if ndims == 2:
+            if pos != -1:
+                self.values = fh.variables[var][:, pos]
+            else:
+                self.values = fh.variables[var][:, :]
+        elif ndims == 3:
+            if dims['Number_of_Tile'] > 0 and patch >= 0:
+                if pos != -1:
+                    self.values = fh.variables[var][:, patch, pos]
+                else:
+                    self.values = fh.variables[var][:, patch,:]
+            else:
+                error("Not implemented for anything else than tiles")
+
+        times=fh.variables['time']
+        units = times.units
+        try:
+            t_cal = times.calendar
+        except AttributeError:  # Attribute doesn't exist
+            t_cal = u"gregorian"  # or standard
+        self.times=num2date(times[:],units=units, calendar=t_cal)
+        fh.close()
 
 
 class Texte(TimeSeriesInputFromSurfex):

@@ -2,6 +2,7 @@ import numpy as np
 import cartopy.crs as ccrs
 import os
 import sys
+from forcing.util import error
 
 class SurfexGeo(object):
 
@@ -48,11 +49,10 @@ class LonLatVal(SurfexGeo):
         self.xy=xy
         self.xdx=xdx
         self.xdy=xdy
-        self.nx=len(self.xx)
-        self.ny=len(self.xy)
-        if self.xx != self.ny:
-            print "For lonlatval the x and y dimensions should be equal!"
-            sys.exit(1)
+        self.nx=int(len(self.xx))
+        self.ny=int(len(self.xy))
+        if self.nx != self.ny:
+            error("For lonlatval the x and y dimensions should be equal! "+str(self.nx)+" != "+str(self.ny))
         self.npoints=self.nx
         self.X=np.asarray(self.xx)
         self.Y=np.asarray(self.xy)
