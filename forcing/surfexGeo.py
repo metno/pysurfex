@@ -78,7 +78,7 @@ class IGN(SurfexGeo):
         self.mask=self.ign_mask(self.pxall,self.pyall,xx,yy,recreate)
         self.nx=len(self.pxall)
         self.ny=len(self.pyall)
-        self.npoints=self.nx
+        self.npoints=len(xx)
 
         self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
         self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)

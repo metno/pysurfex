@@ -1,55 +1,42 @@
-import forcing.inputFromSurfex
 import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.dates as mdates
-from datetime import datetime,timedelta
 from operator import truediv,add
-from datetime import datetime
-import matplotlib.pylab as mpl
-from forcing.inputFromSurfex import ReadFromASCIIFile,Texte,NetCDF
+import numpy as np
+from forcing.util import info
+from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,TimeSeriesFromNetCDF
+from forcing.timeSeries import MetObservations
 import os
 
-#class plot():
-#   
-#    def __init__(self):
-#      print "Constructed a plot"
 
-
-def snowogram(stnr,index,patches,layers,sa_file,ta_file,input_path,format):
+def snowogram(stnr,name,index,patches,layers,start,end,geo,input_path,format):
 
         # Read obs
-        if ( sa_file != None ): sa=ReadFromASCIIFile(sa_file,stnr,"SA")
-        if ( ta_file != None ):
-            ta=ReadFromASCIIFile(ta_file,stnr,"TA")
-            pr=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"PR")
-            ff=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"FF")
-            dd=ReadFromASCIIFile("obs_norway_20141002-20150701.30stas",stnr,"DD")
+        sa=MetObservations(stnr,"SA",start,end,h=[6])
+        #ta=MetObservations(stnr,"TA",start,end)
+        #pr=MetObservations(stnr,"PR",start,end)
+        #ff=MetObservations(stnr,"FF",start,end)
+        #dd=MetObservations(stnr,"DD",start,end)
+
+        sa.values=np.true_divide(sa.values,100.)
 
         fig,ax1 = plt.subplots()
 
         # Plot obs
-        if ( sa_file != None ):
-          ax1.plot(sa.times,sa.values,label="SA_OBS",color="b")
-          ax1.set_xlabel("time")
-          ax1.set_ylabel("Snow depth (m)",color="b")
-          ax1.tick_params("y",colors="b")
+        plt.title(name)
+        ax1.plot(sa.times,sa.values,label="SA_OBS",color="black")
+        ax1.set_xlabel("time")
+        ax1.set_ylabel("Snow depth (m)",color="b")
+        ax1.tick_params("y",colors="b")
 
-        #print ta.values
-        if ( ta_file != None ):
-           ax2=ax1.twinx()
-           ax2.plot(ta.times,ta.values,'bs',label="TA")
-           ax2.set_ylabel("TA",color="r")
-           ax2.tick_params("y",colors="r")
 
-        # Read surfex DSNOW_T_ISBA from "TEXTE"
-        # TODO:
-        # Temporary basetime (at least not needed for netCDF)
-        dtg="2014100200"
-        basetime=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
+        #ax2=ax1.twinx()
+        #ax2.plot(ta.times,ta.values,label="TA",color="red")
+        #ax2.set_ylabel("TA",color="r")
+        #ax2.tick_params("y",colors="r")
 
-        #sfxfile=input_path+"/ISBA_DIAGNOSTICS.OUT.nc"
-        #sfx=netCDF(sfxfile,"DSNOW_VEGT_P",1,index,basetime,3600)
-        #ax1.plot(sfx.times,sfx.values,label="DSNOW_T_ISBA")
+        sfxfile = input_path + "/ISBA_DIAGNOSTICS.OUT.nc"
+        if (os.path.isfile(sfxfile)):
+            diag = TimeSeriesFromNetCDF(geo, sfxfile, "DSNOW_T_ISBA", pos=[index])
+            ax1.plot(diag.times,diag.values, label="DSNOW_T_ISBA",color="green")
 
         # Read snow SWE and density from NetCDF file
         flayer=layers
@@ -57,19 +44,50 @@ def snowogram(stnr,index,patches,layers,sa_file,ta_file,input_path,format):
             flayers=0
             layers=abs(layers)
 
-        for l in range(0,layers):
-          for p in range(0,patches):
+        for p in range(0, patches):
+            for l in range(0,layers):
+                #alpha=1-(0.25*(layers-l))
+                alpha=1
+                if l == 0:
+                    if layers == 1:
+                        linestyle = "dashed"
+                    else:
+                        linestyle= "dotted"
+                elif l == 1:
+                    linestyle = "dashdot"
+                elif l == 2:
+                    linestyle = "dashed"
 
-            if ( format == "nc" ):
-                sfxfile=input_path+"/ISBA_PROGNOSTIC.OUT.nc"
-                if ( os.path.isfile(sfxfile)):
-                  wsn_veg=NetCDF(sfxfile,"WSN_VEG"+str(l+1),p,index,basetime,3600)
-                  rsn_veg=NetCDF(sfxfile,"RSN_VEG"+str(l+1),p,index,basetime,3600)
-                  dsn_veg=map(truediv,wsn_veg.values,rsn_veg.values)
-                  ax1.plot(wsn_veg.times,dsn_veg,label="DSN_PATCH"+str(p)+"_VEG"+str(l))
+
+                if p == 0:
+                    color="red"
                 else:
-                  forcing.util.info(sfxfile+" does not exists!")
+                    color="blue"
 
+                print l,p,alpha,color,linestyle
+                if ( format == "nc" ):
+
+                    sfxfile=input_path+"/ISBA_PROGNOSTIC.OUT.nc"
+                    if ( os.path.isfile(sfxfile)):
+                        wsn_veg=TimeSeriesFromNetCDF(geo,sfxfile,"WSN_VEG"+str(l+1),patches=[p],pos=[index])
+                        rsn_veg=TimeSeriesFromNetCDF(geo,sfxfile,"RSN_VEG"+str(l+1),patches=[p],pos=[index])
+                        #print wsn_veg.values
+                        #print rsn_veg.values
+                        dsn_veg=np.true_divide(wsn_veg.values,rsn_veg.values).reshape(wsn_veg.values.shape[0])
+                        if l == 0:
+                            total=dsn_veg
+                        else:
+                            total=total+dsn_veg
+                        if l == layers-1:
+                            ax1.plot(wsn_veg.times,total, label="TOT P=" + str(p),linestyle="solid", color=color)
+
+                        ax1.plot(wsn_veg.times,dsn_veg,label="DSN P="+str(p)+" L="+str(l),linestyle=linestyle,color=color,alpha=alpha)
+
+                    else:
+                        info(sfxfile+" does not exists!")
+
+        ax1.legend(loc=2)
+        #ax2.legend()
         plt.gcf().autofmt_xdate()
         #plt.legend()
         return plt

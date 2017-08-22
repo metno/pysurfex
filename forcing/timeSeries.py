@@ -92,3 +92,35 @@ class MetObservationsNew(TimeSeries):
         #    else:
         #        error('\tstatus code: {}\n'.format(r.status_code)+'\tother error\n')
 
+
+class ObservationFromASCIIFile():
+
+    def __init__(self,file,stnr,var):
+        super(ObservationFromASCIIFile, self).__init__()
+                #  self.npoints=1
+                #  self.stnr=stnr
+                #  self.varname=var
+
+        info("Reading "+str(file)+" stnr:"+str(stnr))
+        dtg2dt=lambda x: datetime.strptime(str.strip(x), '%Y%m%d%H')
+
+        my_obsheader=np.genfromtxt(file,names=True,dtype=None,delimiter=";",max_rows=1)
+        #print my_obsheader.dtype.names
+        ncols=len(my_obsheader.dtype.names)
+
+        obs_data_type=["int","object"]
+        for i in range(2,ncols):
+            obs_data_type.append("float")
+            #print my_obsheader.dtype.names[i]
+            if ( str.strip(my_obsheader.dtype.names[i]) == var):
+                found=1
+                if ( found == 0 ): error("Variable "+var+" not found!")
+                my_obs=np.genfromtxt(file,names=True,dtype=obs_data_type,delimiter=";",converters={1: dtg2dt})
+
+                for i in range(0,len(my_obs)):
+                    if ( my_obs['STNR'][i] == stnr ):
+                        val=my_obs[var][i]
+                    print my_obs['TIME'][i],val
+
+                self.times=np.append(my_obs['TIME'][i])
+                self.values.append(val)
