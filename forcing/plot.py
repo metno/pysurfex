@@ -1,13 +1,35 @@
 import matplotlib.pyplot as plt
 from operator import truediv,add
 import numpy as np
-from forcing.util import info
+from forcing.util import error,info
 from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,TimeSeriesFromNetCDF
 from forcing.timeSeries import MetObservations
 import os
+from matplotlib.backends.backend_pdf import PdfPages
 
+def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True,slayers=1):
 
-def snowogram(stnr,name,index,patches,layers,start,end,geo,input_path,format):
+    patches=pgdfile.read("NATURE","PATCH_NUMBER",type="integer")[0]
+    #layers=pgdfile.read("NATURE","GROUND_LAYER",type="integer")[0]
+
+    if station_list == "": error("Station list is needed!")
+    if not os.path.isfile(station_list): error("Station list is not existing: "+station_list)
+
+    stations = np.genfromtxt(station_list, names=True, dtype=None, skip_header=0, delimiter=";")
+
+    if save_pdf:
+        pdfname="snowogram_"+str(patches)+"p_"+str(slayers)+"l.pdf"
+        pp = PdfPages(pdfname)
+        info("Creating: "+pdfname)
+
+    for iloop in range(0, len(stations)):
+        # for iloop in range (0,1):
+
+        name = unicode(str(stations['NAME'][iloop]), "utf-8")
+        #print stations['STNR'][iloop], iloop - 1, patches, layers, start, end
+
+        index=iloop
+        stnr=str(stations['STNR'][iloop])
 
         # Read obs
         sa=MetObservations(stnr,"SA",start,end,h=[6])
@@ -15,6 +37,13 @@ def snowogram(stnr,name,index,patches,layers,start,end,geo,input_path,format):
         #pr=MetObservations(stnr,"PR",start,end)
         #ff=MetObservations(stnr,"FF",start,end)
         #dd=MetObservations(stnr,"DD",start,end)
+
+        if sa.values.shape[0] > 0 and save_pdf:
+            pdfname="snowogram_stnr_"+str(stnr)+"_"+str(patches)+"p_"+str(slayers)+"l.pdf"
+            pp_station = PdfPages(pdfname)
+            info("Creating: "+pdfname)
+        else:
+            pp_station = None
 
         sa.values=np.true_divide(sa.values,100.)
 
@@ -33,23 +62,25 @@ def snowogram(stnr,name,index,patches,layers,start,end,geo,input_path,format):
         #ax2.set_ylabel("TA",color="r")
         #ax2.tick_params("y",colors="r")
 
-        sfxfile = input_path + "/ISBA_DIAGNOSTICS.OUT.nc"
-        if (os.path.isfile(sfxfile)):
-            diag = TimeSeriesFromNetCDF(geo, sfxfile, "DSNOW_T_ISBA", pos=[index])
-            ax1.plot(diag.times,diag.values, label="DSNOW_T_ISBA",color="green")
+        var="DSNOW_T_ISBA"
+        input_path = os.path.dirname(surfexfile.fname)
+        if isinstance(surfexfile,TimeSeriesFromNetCDF):
+            sfxtsfile = input_path + "/ISBA_DIAGNOSTICS.OUT.nc"
+            diag_times,diag_values=TimeSeriesFromNetCDF(pgdfile.geo,sfxtsfile).read(var,pos=[index])
+        else:
+            diag_times,diag_values=surfexfile.read(var,pos=[index])
+        # Plot the time series
+        ax1.plot(diag_times,diag_values, label=var,color="green")
 
-        # Read snow SWE and density from NetCDF file
-        flayer=layers
-        if ( layers < 0 ):
-            flayers=0
-            layers=abs(layers)
+
+
 
         for p in range(0, patches):
-            for l in range(0,layers):
+            for l in range(0,slayers):
                 #alpha=1-(0.25*(layers-l))
                 alpha=1
                 if l == 0:
-                    if layers == 1:
+                    if slayers == 1:
                         linestyle = "dashed"
                     else:
                         linestyle= "dotted"
@@ -64,31 +95,45 @@ def snowogram(stnr,name,index,patches,layers,start,end,geo,input_path,format):
                 else:
                     color="blue"
 
-                print l,p,alpha,color,linestyle
-                if ( format == "nc" ):
+                print l,p,alpha,color,linestyle,format
 
-                    sfxfile=input_path+"/ISBA_PROGNOSTIC.OUT.nc"
-                    if ( os.path.isfile(sfxfile)):
-                        wsn_veg=TimeSeriesFromNetCDF(geo,sfxfile,"WSN_VEG"+str(l+1),patches=[p],pos=[index])
-                        rsn_veg=TimeSeriesFromNetCDF(geo,sfxfile,"RSN_VEG"+str(l+1),patches=[p],pos=[index])
-                        #print wsn_veg.values
-                        #print rsn_veg.values
-                        dsn_veg=np.true_divide(wsn_veg.values,rsn_veg.values).reshape(wsn_veg.values.shape[0])
-                        if l == 0:
-                            total=dsn_veg
-                        else:
-                            total=total+dsn_veg
-                        if l == layers-1:
-                            ax1.plot(wsn_veg.times,total, label="TOT P=" + str(p),linestyle="solid", color=color)
-
-                        ax1.plot(wsn_veg.times,dsn_veg,label="DSN P="+str(p)+" L="+str(l),linestyle=linestyle,color=color,alpha=alpha)
-
+                vars="WSN_VEG","RSN_VEG"
+                diag_times=[]
+                diag_values=[]
+                for v in range(0,len(vars)):
+                    var = vars[v]+str(l+1)
+                    if isinstance(surfexfile, TimeSeriesFromNetCDF):
+                        sfxtsfile=input_path+"/ISBA_PROGNOSTIC.OUT.nc"
+                        diag_t, diag_v = TimeSeriesFromNetCDF(pgdfile.geo, sfxtsfile).read(var, pos=[index],patches=[p])
                     else:
-                        info(sfxfile+" does not exists!")
+                        diag_t, diag_v = surfexfile.read(var, pos=[index],patches=[p])
+                    diag_times.append(diag_t)
+                    diag_values.append(diag_v)
+
+                print diag_values[0].shape,diag_values[1].shape
+                dsn_veg=np.true_divide(diag_values[0],diag_values[1]).reshape(diag_values[0].shape[0])
+                ax1.plot(diag_times[0], dsn_veg, label="DSN P=" + str(p) + " L=" + str(l), linestyle=linestyle,
+                         color=color, alpha=alpha)
+
+                if l == 0:
+                    total=dsn_veg
+                else:
+                    total=total+dsn_veg
+
+                if l == slayers-1:
+                    ax1.plot(diag_times[0],total, label="TOT P=" + str(p),linestyle="solid", color=color)
+
 
         ax1.legend(loc=2)
         #ax2.legend()
         plt.gcf().autofmt_xdate()
         #plt.legend()
-        return plt
 
+        if save_pdf: 
+            pp.savefig()
+            if pp_station != None: 
+               pp_station.savefig()
+               pp_station.close()
+
+        if plot : plt.show()
+    if save_pdf: pp.close()

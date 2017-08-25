@@ -1,8 +1,6 @@
 import sys
 from datetime import datetime,timedelta
 import matplotlib.dates
-import numpy as np
-
 
 def error(message):
     """ Write error message to console and abort """

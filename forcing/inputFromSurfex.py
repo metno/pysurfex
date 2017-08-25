@@ -1,24 +1,86 @@
-import forcing.util
 import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset,num2date
-from forcing.timeSeries import TimeSeries
-from forcing.util import error,info,warning
-from forcing.surfexGeo import SurfexGeo,IGN,LonLatVal,LonLatReg
+from forcing.util import error,info,warning,parse_filepattern
+from forcing.surfexGeo import IGN,LonLatVal,LonLatReg
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
-import cfunits as cf
 import os
+import re
+
+
+def get_sfx_io(fname,format=None,ftype=None,pgdfile=None):
+
+    print fname
+    if not os.path.isfile(fname): error("The input file \"" + fname + "\" does not exist!")
+    fn=os.path.basename(fname)
+    print fn
+
+    ext = fn.split(".")[-1]
+    if ftype == None:
+        info("Trying to guess the file type")
+        needles=["PREP","PGD"]
+        for needle in range(0,len(needles)):
+            if re.search(needles[needle],fn) : ftype="surf";
+        needles = [".*PROGNOSTIC.*", ".*DIAGNOSTICS.*","SURF_ATM.*"]
+        for needle in range(0, len(needles)):
+            if re.search(needles[needle],fn): ftype = "ts"; format="netcdf";
+        for needle in range(0, len(needles)):
+            if re.search("TXT",ext): ftype = "ts"; format="texte";
+        needles = ["Forc_.*", "FORCING.*"]
+        for needle in range(0, len(needles)):
+            if re.search(needles[needle],fn): ftype = "forcing";
+        if re.search("SURFOUT.*",fn) and ftype == None:
+            error("Can not-auto decide filetype for files called SURFOUT.*.txt. Specify either surf or ts")
+
+    if format == None:
+        info("Trying to guess the file format from extension: "+ext)
+        if re.search("txt",ext): format = "ascii";
+        if re.search("TXT",ext): format = "texte";
+        if re.search("nc",ext): format = "netcdf";
+
+    if ftype == None or format == None: error("Filetype and/or format not set: " + str(ftype) + " & " + str(format))
+    info("Filetype: "+ftype+" format: "+format)
+
+    obj=None
+    if ftype.lower() == "surf":
+        if format.lower() == "netcdf":
+            error("File format not implemented yet: "+format)
+        elif format.lower() == "ascii":
+            obj=AsciiSurfFile(fname)
+        else:
+            error("File format not implemented: "+format)
+    elif ftype.lower() == "ts":
+        if pgdfile == None: error("Time series need a pgdfile")
+        if format.lower() == "netcdf":
+            obj = TimeSeriesFromNetCDF(pgdfile.geo,fname)
+        elif format.lower() == "ascii":
+            TimeSeriesFromTexte(pgdfile.geo,fname)
+        elif format.lower() == "texte":
+            obj=TimeSeriesFromTexte(pgdfile.geo,fname)
+        else:
+            error("Fileformat not implemented " + format)
+    elif ftype.lower() == "forcing":
+        if format.lower() == "netcdf":
+            error("Format not implemented yet: " + format)
+        else:
+            error("Format not implemented: " + format)
+    else:
+        error("Filetype not implemented "+ftype)
+    return obj
 
 class SurfexFile(object):
 
-    def __init__(self):
+    def __init__(self,fname):
+        if not os.path.isfile(fname) : error("File does not exist: "+fname)
+        self.fname=fname
         self.geo=None
         self.values = np.array([])
         self.times = np.array([])
         self.varname = ""
         self.stnr = -1
         print "Constructed SurfFile"
+
 
     def one2two(self,field):
         if int(self.geo.nx) < 0 or int(self.geo.ny) < 0:
@@ -117,40 +179,40 @@ class SurfexFile(object):
 class AsciiSurfFile(SurfexFile):
 
     def __init__(self,fname):
-        super(AsciiSurfFile, self).__init__()
-        self.fname=fname
+        super(AsciiSurfFile, self).__init__(fname)
         if not os.path.isfile(self.fname): error("File does not exist: "+str(fname))
-        grid = self.read_field("FULL", "GRID_TYPE", type="string")
+        grid = self.read("FULL", "GRID_TYPE", type="string")
         if len(grid) == 0: error("No grid found")
         if grid[0] == "IGN":
-            lambert = self.read_field("FULL", "LAMBERT", type="integer")[0]
-            xx = self.read_field("FULL", "XX")
-            xdx = self.read_field("FULL", "DX")
-            yy = self.read_field("FULL", "XY")
-            xdy = self.read_field("FULL", "DY")
+            lambert = self.read("FULL", "LAMBERT", type="integer")[0]
+            xx = self.read("FULL", "XX")
+            xdx = self.read("FULL", "DX")
+            yy = self.read("FULL", "XY")
+            xdy = self.read("FULL", "DY")
             self.geo = IGN(lambert, xx, yy, xdx, xdy)
         elif grid[0] == "LONLATVAL":
-            xx = self.read_field("FULL", "XX")
-            xy = self.read_field("FULL", "XY")
-            xdx = self.read_field("FULL", "DX")
-            xdy = self.read_field("FULL", "DY")
+            xx = self.read("FULL", "XX")
+            xy = self.read("FULL", "XY")
+            xdx = self.read("FULL", "DX")
+            xdy = self.read("FULL", "DY")
             print xx,xy,xdx,xdy
             self.geo = LonLatVal(xx, xy, xdx, xdy)
         elif grid[0] == "LONLAT REG":
-            lonmin = self.read_field("FULL", "LONMIN")
-            lonmax = self.read_field("FULL", "LONMAX")
-            latmin = self.read_field("FULL", "LATMIN")
-            latmax = self.read_field("FULL", "LATMAX")
-            nlon = self.read_field("FULL", "NLON",type="integer")[0]
-            nlat = self.read_field("FULL", "NLAT",type="integer")[0]
-            reg_lon = self.read_field("FULL", "REG_LON")
-            reg_lat = self.read_field("FULL", "REG_LAT")
+            lonmin = self.read("FULL", "LONMIN")
+            lonmax = self.read("FULL", "LONMAX")
+            latmin = self.read("FULL", "LATMIN")
+            latmax = self.read("FULL", "LATMAX")
+            nlon = self.read("FULL", "NLON",type="integer")[0]
+            nlat = self.read("FULL", "NLAT",type="integer")[0]
+            reg_lon = self.read("FULL", "REG_LON")
+            reg_lat = self.read("FULL", "REG_LAT")
             self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
         else:
             error("Grid " + str(grid[0]) + " not implemented!")
 
 
-    def read_field(self,read_tile,read_par,type="float",patches=1):
+    def read(self,read_tile,read_par,type="float",patches=1):
+
         # Add & if not given
         if read_tile.find('&') < 0: read_tile='&'+read_tile
         file = open(self.fname,mode="r")
@@ -215,13 +277,13 @@ class AsciiSurfFile(SurfexFile):
 ########################################################################################################################
 
 class TimeSeriesInputFromSurfex(SurfexFile):
-     """ 
-     Reading surfex time series output
-     """
+    """ 
+    Reading surfex time series output
+    """
 
-     def __init__(self,geo):
-       super(TimeSeriesInputFromSurfex, self).__init__()
-       self.geo=geo
+    def __init__(self,geo,fname):
+        super(TimeSeriesInputFromSurfex, self).__init__(fname)
+        self.geo=geo
 
 
 class TimeSeriesFromASCIIFile(AsciiSurfFile):
@@ -230,12 +292,12 @@ class TimeSeriesFromASCIIFile(AsciiSurfFile):
      Read from ASCII time series files (SURFOUT.*.txt)
     """
 
-    def __init__(self,pattern,tile,par,start,end,interval,npatch=1,patches=1,type="float",pos=[],times=[]):
+    def __init__(self,pattern,tile,par,start,end,interval,npatch=1,patches=1,type="float",pos=None,times=None):
 
-        if not isinstance(times, (list, tuple)): error("times must be list or tuple")
-        if not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
+        if times != None and not isinstance(times, (list, tuple)): error("times must be list or tuple")
+        if pos != None and not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
 
-        super(TimeSeriesFromASCIIFile, self).__init__(self.parse_string(pattern,start))
+        super(TimeSeriesFromASCIIFile, self).__init__(parse_filepattern(pattern,start,start))
 
         end_of_line = self.geo.npoints * npatch
         if len(pos) == 0:
@@ -248,10 +310,10 @@ class TimeSeriesFromASCIIFile(AsciiSurfFile):
 
         dtg=start
         while dtg <= end:
-            self.fname=self.parse_string(pattern,dtg)
+            self.fname=parse_filepattern(pattern,dtg,dtg)
             if os.path.isfile(self.fname):
                 if dtg in times or len(times) == 0:
-                    read_field=self.read_field(tile,par,type=type,patches=patches)
+                    read_field=self.read(tile,par,type=type,patches=patches)
                     if len(read_field) != this_time.shape[0]: error("Dimension of read field does not match expected size!")
                     this_time_all=np.asarray(read_field)
                     if len(pos) > 0:
@@ -271,69 +333,60 @@ class TimeSeriesFromASCIIFile(AsciiSurfFile):
         else:
             warning("No data found!")
 
-    def parse_string(self,string,dtg):
-        yyyy = dtg.strftime("%Y")
-        mm = dtg.strftime("%m")
-        dd = dtg.strftime("%d")
-        hh = dtg.strftime("%H")
-        min= dtg.strftime("%M")
-        fname = string
-        fname = fname.replace('@YYYY@', yyyy)
-        fname = fname.replace('@MM@', mm)
-        fname = fname.replace('@DD@', dd)
-        fname = fname.replace('@HH@', hh)
-        fname = fname.replace('@mm@', min)
-        print fname
-        return fname
-
 class TimeSeriesFromNetCDF(TimeSeriesInputFromSurfex):
 
     """
     Reading surfex NetCDF output
     """
 
-    def __init__(self,geo,filename,var,pos=[],patches=[],times=[],xx=[],yy=[],lons=[],lats=[],interpolation="nearest"):
-        super(TimeSeriesFromNetCDF, self).__init__(geo)
+    def __init__(self,geo,filename):
+        super(TimeSeriesFromNetCDF, self).__init__(geo,filename)
 
-        if not isinstance(times, (list, tuple)): error("times must be list or tuple")
-        if not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
-        if not isinstance(patches, (list, tuple)): error("patches must be list or tuple")
-        if not isinstance(xx, (list, tuple)): error("xx must be list or tuple")
-        if not isinstance(yy, (list, tuple)): error("yy must be list or tuple")
-        if not isinstance(lons, (list, tuple)): error("lons must be list or tuple")
-        if not isinstance(lats, (list, tuple)): error("lats must be list or tuple")
+        self.fh = Dataset(filename, "r")
 
-        fh = Dataset(filename, "r")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.fh.close()
 
-        pos=list(pos)
+    def read(self,var,pos=None,patches=None,times=None,xx=None,yy=None,lons=None,lats=None,interpolation="nearest"):
+
+
+        if times != None and not isinstance(times, (list, tuple)): error("times must be list or tuple")
+        if pos != None and not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
+        if patches != None and not isinstance(patches, (list, tuple)): error("patches must be list or tuple")
+        if xx != None and not isinstance(xx, (list, tuple)): error("xx must be list or tuple")
+        if yy != None and not isinstance(yy, (list, tuple)): error("yy must be list or tuple")
+        if lons != None and not isinstance(lons, (list, tuple)): error("lons must be list or tuple")
+        if lats != None and not isinstance(lats, (list, tuple)): error("lats must be list or tuple")
+
         ndims=0
         dim_indices=[]
-        for dim in fh.variables[var].dimensions:
-            dimlen=fh.variables[var].shape[ndims]
+        for dim in self.fh.variables[var].dimensions:
+            dimlen=self.fh.variables[var].shape[ndims]
             this_dim=[]
             if dim == "time":
-                if len(times) != 0:
+                if times != None:
                     this_dim=times
                 else:
+                    times=[]
                     [times.append(i) for i in range(0,dimlen)]
                     this_dim=times
             elif dim == "Number_of_points":
-                if len(pos) != 0:
+                if pos != None:
                     this_dim=pos
                 else:
                     [ this_dim.append(i) for i in range(0,dimlen)]
             elif dim == "xx":
-                if len(xx) != 0:
+                if xx != None:
                     this_dim=xx
                 else:
                     [ this_dim.append(i) for i in range(0,dimlen)]
             elif dim == "yy":
-                if len(yy) != 0:
+                if yy != None:
                     this_dim=yy
                 else:
                     [ this_dim.append(i) for i in range(0,dimlen) ]
             elif dim == "Number_of_Tile":
-                if len(patches) != 0:
+                if patches != None:
                     this_dim=patches
                 else:
                     [ this_dim.append(i) for i in range(0,dimlen) ]
@@ -344,17 +397,20 @@ class TimeSeriesFromNetCDF(TimeSeriesInputFromSurfex):
             dim_indices.append(this_dim)
             ndims=ndims+1
 
-        self.values = fh.variables[var][dim_indices]
+        values = self.fh.variables[var][dim_indices]
 
-        times_read=fh.variables['time']
+        times_read=self.fh.variables['time']
         units = times_read.units
         try:
             t_cal = times_read.calendar
         except AttributeError:  # Attribute doesn't exist
             t_cal = u"gregorian"  # or standard
 
-        self.times=num2date(times_read[times],units=units, calendar=t_cal)
-        fh.close()
+        times_read=num2date(times_read[times],units=units, calendar=t_cal)
+
+        return times_read,values
+
+
 
 
 class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
@@ -363,15 +419,15 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
     Reading surfex TEXTE output
     """
 
-    def __init__(self,geo,fname,base_time,interval,npatch=1,pos=[],times=[]):
-        super(TimeSeriesFromTexte, self).__init__(geo)
+    def __init__(self,geo,fname,base_time,interval,npatch=1,pos=None,times=None):
+        super(TimeSeriesFromTexte, self).__init__(geo,fname)
 
         if not isinstance(times, (list, tuple)): error("times must be list or tuple")
         if not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
 
         file = open(fname, mode="r")
         end_of_line = self.geo.npoints*npatch
-        if len(pos) == 0:
+        if pos == None:
             this_time = np.empty(self.geo.npoints*npatch)
         else:
             this_time = np.empty(len(pos))
@@ -395,7 +451,7 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
                     col = col + 1
                     if col == end_of_line:
 
-                        if len(times) == 0 or t in times:
+                        if times == None or t in times:
                             self.values = np.append(self.values,this_time)
                             self.times=np.append(self.times,base_time + timedelta(seconds=(t * interval)))
                             print i,j,col,base_time + timedelta(seconds=(t * interval)),this_time
