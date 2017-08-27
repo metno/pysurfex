@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
 import os
 import re
-
+import abc
 
 def get_sfx_io(fname,format=None,ftype=None,pgdfile=None):
 
@@ -69,112 +69,117 @@ def get_sfx_io(fname,format=None,ftype=None,pgdfile=None):
         error("Filetype not implemented "+ftype)
     return obj
 
+def one2two(self,field):
+    if int(self.geo.nx) < 0 or int(self.geo.ny) < 0:
+        error("The dimensions are not initialized: "+self.geo.nx+" "+self.geo.ny)
+    fieldall = np.zeros(int(self.geo.nx) * int(self.geo.ny))
+    fieldall.fill(np.nan)
+    if self.geo.mask == None:
+        info("Assuming uniform mask")
+        fieldall=field
+    else:
+        if len(self.geo.mask) != len(field): error("Rank mismatch: "+str(len(self.geo.mask))+" "+str(len(field)))
+        for i in range(0, len(field)): fieldall[self.geo.mask[i]] = field[i]
+
+    field = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
+    field[field == 1e+20] = np.nan
+    return field
+
 class SurfexFile(object):
 
+    __metaclass__ = abc.ABCMeta
     def __init__(self,fname):
         if not os.path.isfile(fname) : error("File does not exist: "+fname)
         self.fname=fname
         self.geo=None
-        self.values = np.array([])
-        self.times = np.array([])
-        self.varname = ""
-        self.stnr = -1
-        print "Constructed SurfFile"
+        #self.values = np.array([])
+        #self.times = np.array([])
+        #self.varname = ""
+        #self.stnr = -1
+        info("Constructed SurfFile")
 
+    @abc.abstractmethod
+    def read(self):
+        error("This method is not implemented for this class!")
+        return
 
-    def one2two(self,field):
-        if int(self.geo.nx) < 0 or int(self.geo.ny) < 0:
-            error("The dimensions are not initialized: "+self.geo.nx+" "+self.geo.ny)
-        fieldall = np.zeros(int(self.geo.nx) * int(self.geo.ny))
-        fieldall.fill(np.nan)
-        if self.geo.mask == None:
-            info("Assuming uniform mask")
-            fieldall=field
-        else:
-            if len(self.geo.mask) != len(field): error("Rank mismatch: "+str(len(self.geo.mask))+" "+str(len(field)))
-            for i in range(0, len(field)): fieldall[self.geo.mask[i]] = field[i]
+#    def plot_field(self,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False):
+#
+#        if self.geo.X is None or self.geo.Y is None:
+#            error("Object does not have X and Y defined!")
 
-        field = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
-        field[field == 1e+20] = np.nan
-        return field
+#        X=self.geo.X
+#        Y=self.geo.Y
+#        nx=self.geo.nx
+#        ny=self.geo.ny
+#        proj=self.geo.proj
 
-    def plot_field(self,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False):
+#        if isinstance(field,list) and self.geo.domain:
+#            print "Converting list to 2D numpy array"
+#            field=self.one2two(field)
 
-        if self.geo.X is None or self.geo.Y is None:
-            error("Object does not have X and Y defined!")
+#        if self.geo.domain:
+#            x0=X[0, 0]
+#            xN=X[ny - 1, nx - 1]
+#            y0=Y[0,0]
+#            yN= Y[ny - 1, nx - 1]
+#        else:
+#            field=np.asarray(field)
+#            if bd == 5000: bd=2
+#            x0=self.geo.X[0]
+#            xN=self.geo.X[nx-1]
+#            y0=Y[0]
+#            yN=Y[ny-1]
 
-        X=self.geo.X
-        Y=self.geo.Y
-        nx=self.geo.nx
-        ny=self.geo.ny
-        proj=self.geo.proj
+#        ax = plt.axes(projection=self.geo.display_proj)
 
-        if isinstance(field,list) and self.geo.domain:
-            print "Converting list to 2D numpy array"
-            field=self.one2two(field)
+#        ax.set_global()
+#        ax.coastlines(resolution="10m")
 
-        if self.geo.domain:
-            x0=X[0, 0]
-            xN=X[ny - 1, nx - 1]
-            y0=Y[0,0]
-            yN= Y[ny - 1, nx - 1]
-        else:
-            field=np.asarray(field)
-            if bd == 5000: bd=2
-            x0=self.geo.X[0]
-            xN=self.geo.X[nx-1]
-            y0=Y[0]
-            yN=Y[ny-1]
+#        ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
 
-        ax = plt.axes(projection=self.geo.display_proj)
+#        if not zero: field[field == 0. ] =np.nan
 
-        ax.set_global()
-        ax.coastlines(resolution="10m")
+#        min_value = float(np.nanmin(field))
+#        max_value = float(np.nanmax(field))
 
-        ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
-
-        if not zero: field[field == 0. ] =np.nan
-
-        min_value = float(np.nanmin(field))
-        max_value = float(np.nanmax(field))
-
-        print min_value, max_value, intervals
-        limits = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
+#        print min_value, max_value, intervals
+#        limits = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
         #print limits
 
-        if cmap_name is None:
-            cmap = plt.get_cmap('Purples')
-        else:
-            cmap = plt.get_cmap(cmap_name)
+#        if cmap_name is None:
+#            cmap = plt.get_cmap('Purples')
+#        else:
+#            cmap = plt.get_cmap(cmap_name)
 
-        if title is not None:
-            plt.title(title)
+#        if title is not None:
+#            plt.title(title)
 
-        if self.geo.domain:
-            plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
-                   transform=proj, interpolation="nearest", cmap=cmap)
-        else:
-            plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
+#        if self.geo.domain:
+#            plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
+#                   transform=proj, interpolation="nearest", cmap=cmap)
+#        else:
+#            plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
 
 
-        def fmt(x, y):
-            i = int((x - X[0, 0]) / 2500.)
-            j = int((y - Y[0, 0]) / 2500.)
+#        def fmt(x, y):
+#            i = int((x - X[0, 0]) / 2500.)
+#            j = int((y - Y[0, 0]) / 2500.)
 
             # print x,y,lon,lat,lon0,lat0,i,j,zs2d.shape[0],zs2d.shape[1]
-            z = np.nan
-            if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
-            return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
+#            z = np.nan
+#            if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
+#            return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
 
-        if self.geo.domain: ax.format_coord = fmt
+#        if self.geo.domain: ax.format_coord = fmt
 
-        plt.clim([min_value, max_value])
-        norm = mcl.Normalize(min_value, max_value)
-        sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-        sm._A = []
-        cb = plt.colorbar(sm, ticks=limits)
-        cb.set_clim([min_value, max_value])
-        if plot: plt.show()
+#        plt.clim([min_value, max_value])
+#        norm = mcl.Normalize(min_value, max_value)
+#        sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+#        sm._A = []
+#        cb = plt.colorbar(sm, ticks=limits)
+#        cb.set_clim([min_value, max_value])
+#        if plot: plt.show()
 
 class AsciiSurfFile(SurfexFile):
 
@@ -292,14 +297,17 @@ class TimeSeriesFromASCIIFile(AsciiSurfFile):
      Read from ASCII time series files (SURFOUT.*.txt)
     """
 
-    def __init__(self,pattern,tile,par,start,end,interval,npatch=1,patches=1,type="float",pos=None,times=None):
+    def __init__(self,pattern):
+        super(TimeSeriesFromASCIIFile, self).__init__(pattern)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def read(self,tile,par,start,end,interval,npatch=1,patches=1,type="float",pos=None,times=None):
 
         if times != None and not isinstance(times, (list, tuple)): error("times must be list or tuple")
         if pos != None and not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
 
-        super(TimeSeriesFromASCIIFile, self).__init__(parse_filepattern(pattern,start,start))
-
-        end_of_line = self.geo.npoints * npatch
         if len(pos) == 0:
             this_time = np.empty(self.geo.npoints * npatch)
         else:
@@ -308,30 +316,34 @@ class TimeSeriesFromASCIIFile(AsciiSurfFile):
         for t in range(0,len(times)):
             if not isinstance(times[t],(datetime)): error("times must contain datetime objects")
 
+        values=np.array([])
+        times_read=np.array([])
         dtg=start
         while dtg <= end:
-            self.fname=parse_filepattern(pattern,dtg,dtg)
-            if os.path.isfile(self.fname):
+            fname=parse_filepattern(self.fname,dtg,dtg)
+            if os.path.isfile(fname):
                 if dtg in times or len(times) == 0:
-                    read_field=self.read(tile,par,type=type,patches=patches)
+                    read_field=super(TimeSeriesFromASCIIFile,self).read(tile,par,type=type,patches=patches)
                     if len(read_field) != this_time.shape[0]: error("Dimension of read field does not match expected size!")
                     this_time_all=np.asarray(read_field)
                     if len(pos) > 0:
                         for i in range(0,len(pos)):
                             this_time[i] = this_time_all[pos[i]]
-                        self.values = np.append(self.values, this_time)
+                        values = np.append(values, this_time)
                     else:
-                        self.values=np.append(self.values,this_time_all)
-                    self.times=np.append(self.times,dtg)
+                        values=np.append(values,this_time_all)
+                    times_read=np.append(times_read,dtg)
 
                 dtg=dtg+timedelta(seconds=interval)
             else:
                 error("File does not exists: "+str(self.fname))
 
-        if self.times.shape[0] > 0 and this_time.shape[0] > 0:
-            self.values = np.reshape(self.values,[self.times.shape[0],this_time.shape[0]])
+        if times_read.shape[0] > 0 and this_time.shape[0] > 0:
+            values = np.reshape(values,[times_read.shape[0],this_time.shape[0]])
         else:
             warning("No data found!")
+
+        return times_read,values
 
 class TimeSeriesFromNetCDF(TimeSeriesInputFromSurfex):
 
@@ -349,7 +361,6 @@ class TimeSeriesFromNetCDF(TimeSeriesInputFromSurfex):
 
     def read(self,var,pos=None,patches=None,times=None,xx=None,yy=None,lons=None,lats=None,interpolation="nearest"):
 
-
         if times != None and not isinstance(times, (list, tuple)): error("times must be list or tuple")
         if pos != None and not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
         if patches != None and not isinstance(patches, (list, tuple)): error("patches must be list or tuple")
@@ -358,59 +369,61 @@ class TimeSeriesFromNetCDF(TimeSeriesInputFromSurfex):
         if lons != None and not isinstance(lons, (list, tuple)): error("lons must be list or tuple")
         if lats != None and not isinstance(lats, (list, tuple)): error("lats must be list or tuple")
 
+        values=np.array([])
+        times_read=np.array([])
         ndims=0
         dim_indices=[]
-        for dim in self.fh.variables[var].dimensions:
-            dimlen=self.fh.variables[var].shape[ndims]
-            this_dim=[]
-            if dim == "time":
-                if times != None:
-                    this_dim=times
+        if self.fh.variables[var].shape[0] > 0:
+            for dim in self.fh.variables[var].dimensions:
+                dimlen=self.fh.variables[var].shape[ndims]
+                this_dim=[]
+                if dim == "time":
+                    if times != None:
+                        this_dim=times
+                    else:
+                        times=[]
+                        [times.append(i) for i in range(0,dimlen)]
+                        this_dim=times
+                elif dim == "Number_of_points":
+                    if pos != None:
+                        this_dim=pos
+                    else:
+                        [ this_dim.append(i) for i in range(0,dimlen)]
+                elif dim == "xx":
+                    if xx != None:
+                        this_dim=xx
+                    else:
+                        [ this_dim.append(i) for i in range(0,dimlen)]
+                elif dim == "yy":
+                    if yy != None:
+                        this_dim=yy
+                    else:
+                        [ this_dim.append(i) for i in range(0,dimlen) ]
+                elif dim == "Number_of_Tile":
+                    if patches != None:
+                        this_dim=patches
+                    else:
+                        [ this_dim.append(i) for i in range(0,dimlen) ]
                 else:
-                    times=[]
-                    [times.append(i) for i in range(0,dimlen)]
-                    this_dim=times
-            elif dim == "Number_of_points":
-                if pos != None:
-                    this_dim=pos
-                else:
-                    [ this_dim.append(i) for i in range(0,dimlen)]
-            elif dim == "xx":
-                if xx != None:
-                    this_dim=xx
-                else:
-                    [ this_dim.append(i) for i in range(0,dimlen)]
-            elif dim == "yy":
-                if yy != None:
-                    this_dim=yy
-                else:
-                    [ this_dim.append(i) for i in range(0,dimlen) ]
-            elif dim == "Number_of_Tile":
-                if patches != None:
-                    this_dim=patches
-                else:
-                    [ this_dim.append(i) for i in range(0,dimlen) ]
-            else:
-                error("Not implemented for: "+dim)
+                    error("Not implemented for: "+dim)
 
-            #print this_dim
-            dim_indices.append(this_dim)
-            ndims=ndims+1
+                #print this_dim
+                dim_indices.append(this_dim)
+                ndims=ndims+1
 
-        values = self.fh.variables[var][dim_indices]
+            values = self.fh.variables[var][dim_indices]
+            times_read=self.fh.variables['time']
+            units = times_read.units
+            try:
+                t_cal = times_read.calendar
+            except AttributeError:  # Attribute doesn't exist
+                t_cal = u"gregorian"  # or standard
 
-        times_read=self.fh.variables['time']
-        units = times_read.units
-        try:
-            t_cal = times_read.calendar
-        except AttributeError:  # Attribute doesn't exist
-            t_cal = u"gregorian"  # or standard
-
-        times_read=num2date(times_read[times],units=units, calendar=t_cal)
+            times_read=num2date(times_read[times],units=units, calendar=t_cal)
+        else:
+            warning("Variable "+var+" not found!")
 
         return times_read,values
-
-
 
 
 class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
@@ -419,13 +432,19 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
     Reading surfex TEXTE output
     """
 
-    def __init__(self,geo,fname,base_time,interval,npatch=1,pos=None,times=None):
+    def __init__(self,geo,fname):
         super(TimeSeriesFromTexte, self).__init__(geo,fname)
+        self.file = open(self.fname, mode="r")
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.file.close()
+
+    def read(self,base_time,interval,npatch=1,pos=None,times=None):
         if not isinstance(times, (list, tuple)): error("times must be list or tuple")
         if not isinstance(pos, (list, tuple)): error("pos must be list or tuple")
 
-        file = open(fname, mode="r")
+        values = np.array([])
+        times_read =  np.array([])
         end_of_line = self.geo.npoints*npatch
         if pos == None:
             this_time = np.empty(self.geo.npoints*npatch)
@@ -435,7 +454,7 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
         j=0
         t=0
         col = 0
-        for line in file.read().splitlines():
+        for line in self.file.read().splitlines():
 
             words=line.split()
             if len(words) > 0:
@@ -452,8 +471,8 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
                     if col == end_of_line:
 
                         if times == None or t in times:
-                            self.values = np.append(self.values,this_time)
-                            self.times=np.append(self.times,base_time + timedelta(seconds=(t * interval)))
+                            values = np.append(values,this_time)
+                            times_read=np.append(times_read,base_time + timedelta(seconds=(t * interval)))
                             print i,j,col,base_time + timedelta(seconds=(t * interval)),this_time
 
                         t=t+1
@@ -462,12 +481,13 @@ class TimeSeriesFromTexte(TimeSeriesInputFromSurfex):
                         this_time[:]=np.nan
                         if i != len(words)-1: error("Dimension of domain does not match end of line!")
 
-        if self.times.shape[0] > 0:
-            self.values = np.reshape(self.values,[self.times.shape[0],this_time.shape[0]])
+        if times_read.shape[0] > 0:
+            values = np.reshape(values,[times_read.shape[0],this_time.shape[0]])
         else:
             warning("No data found!")
 
-        file.close()
+        return times_read,values
+
 
 
 

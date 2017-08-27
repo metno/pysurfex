@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import forcing.version
 from forcing.util import error,info
-from forcing.plot import snowogram
+from forcing.plot import snowogram,plot_field
 from forcing.inputFromSurfex import get_sfx_io
 from datetime import datetime
 
@@ -12,7 +12,8 @@ def run(argv):
     parser = argparse.ArgumentParser(description="Plot offline surfex examples")
     parser.add_argument('pgdfile', type=str, help="PGD file", nargs="?")
     parser.add_argument('surfexfile', type=str, help="Surfex file file", nargs="?")
-    parser.add_argument('type', type=str, default="snowOgram", help="Surfex file file", nargs="?")
+    parser.add_argument('type', type=str, default=None, help="Type of plot", nargs="?")
+    parser.add_argument('-var', type=str, default=None, help="Variable", nargs="?")
     parser.add_argument('-filetype', type=str, default=None, help="File type for surfex file", nargs="?",
                        choices=["netcdf","ascii","ts","forcing"])
     parser.add_argument('-fileformat', type=str, default=None, help="Input format for pgdfile", nargs="?",
@@ -57,7 +58,11 @@ def run(argv):
 
     surfexfile=get_sfx_io(str(args.surfexfile),ftype=args.filetype,format=args.fileformat,pgdfile=pgdfile)
 
-    if ( plot_type == "snowOgram" ):
+    if plot_type == None:
+        var=args.var
+        times,values=surfexfile.read(var,times=[0])
+        plot_field(pgdfile.geo,values)
+    elif plot_type == "snowOgram":
         snowogram(pgdfile,surfexfile,station_list,start,stop,plot=args.plot,save_pdf=args.save_pdf,slayers=args.slayers)
     else:
         error("Plot \""+str(plot_type)+"\" not defined!")

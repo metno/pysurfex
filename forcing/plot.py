@@ -6,6 +6,7 @@ from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,
 from forcing.timeSeries import MetObservations
 import os
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.colors as mcl
 
 def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True,slayers=1):
 
@@ -137,3 +138,88 @@ def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True
 
         if plot : plt.show()
     if save_pdf: pp.close()
+
+###############################################################################################
+def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False,limits=None):
+
+    if geo.X is None or geo.Y is None:
+        error("Object does not have X and Y defined!")
+
+    X=geo.X
+    Y=geo.Y
+    nx=geo.nx
+    ny=geo.ny
+    proj=geo.proj
+
+    if len(np.shape(field)) != 2: error("Can only plot two-dimensional fields")
+    if isinstance(field,list) and geo.domain:
+        print "Converting list to 2D numpy array"
+        error("Not posible longer")
+
+    if geo.domain:
+        x0=X[0, 0]
+        xN=X[ny - 1, nx - 1]
+        y0=Y[0,0]
+        yN= Y[ny - 1, nx - 1]
+    else:
+        field=np.asarray(field)
+        if bd == 5000: bd=2
+        x0=geo.X[0]
+        xN=geo.X[nx-1]
+        y0=Y[0]
+        yN=Y[ny-1]
+
+    ax = plt.axes(projection=geo.display_proj)
+
+    ax.set_global()
+    ax.coastlines(resolution="10m")
+
+    ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
+
+    field[field > 2.] = 2.
+    if not zero: field[field == 0. ] =np.nan
+
+    min_value = float(np.nanmin(field))
+    max_value = float(np.nanmax(field))
+
+    print min_value, max_value, intervals
+    if limits != None:
+        lims=limits
+    else:
+        lims = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
+    print lims
+
+    if cmap_name is None:
+        cmap = plt.get_cmap('Purples')
+    else:
+        cmap = plt.get_cmap(cmap_name)
+
+    if title is not None:
+        plt.title(title)
+
+    if geo.domain:
+        plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
+                   transform=proj, interpolation="nearest", cmap=cmap)
+    else:
+        plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
+
+
+    def fmt(x, y):
+        i = int((x - X[0, 0]) / 2500.)
+        j = int((y - Y[0, 0]) / 2500.)
+
+        # print x,y,lon,lat,lon0,lat0,i,j,zs2d.shape[0],zs2d.shape[1]
+        z = np.nan
+        if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
+        return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
+
+    if geo.domain: ax.format_coord = fmt
+
+    plt.clim([min_value, max_value])
+    norm = mcl.Normalize(min_value, max_value)
+    #norm=mcl.LogNorm(max_value,min_value)
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    sm._A = []
+    cb = plt.colorbar(sm, ticks=lims)
+    cb.set_clim([min_value, max_value])
+    if plot: plt.show()
