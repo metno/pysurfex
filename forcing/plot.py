@@ -125,7 +125,7 @@ def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True
                     ax1.plot(diag_times[0],total, label="TOT P=" + str(p),linestyle="solid", color=color)
 
 
-        ax1.legend(loc=2)
+        ax1.legend(loc=2,prop={'size': 11})
         #ax2.legend()
         plt.gcf().autofmt_xdate()
         #plt.legend()

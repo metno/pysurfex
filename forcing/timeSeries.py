@@ -18,18 +18,18 @@ class TimeSeries(object):
       self.stnr=-1
 
 
-
 class MetObservations(TimeSeries):
 
 
-    def __init__(self,station,varname,start,end,h=-1,utc=True):
+    def __init__(self,station,varname,start,end,h=-1,utc=True,nob=0.,nod=np.nan):
         super(MetObservations,self).__init__()
 
 
-        url="http://klapp/metnopub/production/metno?re=17&ddel=dot&del=semicolon&ct=text/plain&nod=NA&nob=NA"
+        url="http://klapp/metnopub/production/metno?re=17&ddel=dot&del=semicolon&ct=text/plain&nod=NOD&nob=NOB"
         url=url+"&s="+station
         url=url+"&p="+varname
         url=url+"&fd="+str(datetime.strftime(start,'%d.%m.%Y'))
+        #url = url + "&h=6"
         if h != -1: url=url+"&h="+str(h)[1:-1].replace(" ","")
         url=url+"&td="+str(datetime.strftime(end,'%d.%m.%Y'))
         if utc:
@@ -38,21 +38,32 @@ class MetObservations(TimeSeries):
             url=url+"&nmt=1"
 
         #print url
-        request=np.genfromtxt(requests.get(url).iter_lines(),dtype=None,skip_header=1,delimiter=";")
-        #print request.shape[0]
+        dtypes = "i4,i4,i4,i4,i4,|U3"
+        try:
+            request=np.genfromtxt(requests.get(url).iter_lines(),dtype=dtypes,skip_header=1,delimiter=";")
+            if (np.size(request) == 1): request.shape = 1
 
-        test=request[0]
-        if test and str(test) != str("Ingen data er funnet."):
-            for i in range(0,request.shape[0]):
-                #print request[i]
-                dtg="{0:0>4}".format(request[i][1])+"{0:0>2}".format(request[i][2])+"{0:0>2}".format(request[i][3])+"{0:0>2}".format(request[i][4])
+            recs=request.shape[0]
+            for i in range(0,recs):
+                year = request[i][1]
+                mm = request[i][2]
+                dd = request[i][3]
+                hh = request[i][4]
+                val = request[i][5]
+
+                dtg="{0:0>4}".format(year)+"{0:0>2}".format(mm)+"{0:0>2}".format(dd)+"{0:0>2}".format(hh)
                 time=datetime.strptime(str.strip(dtg), '%Y%m%d%H')
-                if request[i][5] == "NA":
-                    val=np.nan
+                if val == "NOB":
+                    val=nob
+                elif val == "NOD":
+                    val=nod
                 else:
-                    val=float(request[i][5])
+                    val=float(val)
+
                 self.values = np.append(self.values,val)
                 self.times = np.append(self.times,time)
+        except:
+            print "No data found"
 
 
 class MetObservationsNew(TimeSeries):
