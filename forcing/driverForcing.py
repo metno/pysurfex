@@ -167,9 +167,9 @@ def run(argv):
                 y = [float(i) for i in y]
             else:
                 forcing.util.error("Latitudes must be defined")
-            ldegrees=False
-            if "ldegrees" in area_dict: ldegrees=bool(area_dict["ldegrees"])
-            geo_out = Domain(proj,x,y,ldegrees)
+            degrees=False
+            if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
+            geo_out = Domain(proj,x,y,degrees)
         else:
             parser.print_help()
             sys.exit(1)

@@ -38,15 +38,19 @@ class Domain(Geo):
         lons = []
         lats = []
         p=Proj(proj)
-        for x in range(0,nlons):
-            for y in range(0,nlats):
+        for y in range(0, nlats):
+            for x in range(0,nlons):
                 xx=x0+(float(x)*float(dx))
                 yy=y0+(float(y)*float(dy))
 
-                lon,lat = p(xx,yy,inverse=True)
-                #print xx,yy,lon,lat
+                if ( ldegrees ):
+                    lon,lat=xx,yy
+                else:
+                    lon,lat = p(xx,yy,inverse=True)
+
                 lons.append(lon)
                 lats.append(lat)
+                #print xx, yy, lon, lat
         #print lons
         #print lats
         super(Domain,self).__init__(proj,nlons*nlats,nlons,nlats,lons,lats)
