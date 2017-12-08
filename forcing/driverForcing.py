@@ -27,7 +27,6 @@ class LoadFromFile (argparse.Action):
 
 def parseArgs(argv):
 
-    print argv
     parser = argparse.ArgumentParser(description="Create offline forcing")
     parser.add_argument('dtg_start', type=int, help="Start DTG",nargs="?")
     parser.add_argument('dtg_stop', type=int, help="Stop DTG",nargs="?")
@@ -139,21 +138,23 @@ def parseArgs(argv):
         else:
             if not args.name in area[args.mode]: forcing.util.error(args.name+" not defined in " + area_file)
             area_dict = area[args.mode][args.name]
+
         if args.mode == "points":
             if "lons" in area_dict:
-                lons = area_dict["lons"]
+                lons = str.split(area_dict["lons"],",")
+                print lons
                 lons = [float(i) for i in lons]
             else:
                 forcing.util.error("Longitudes must be defined")
             if "lats" in area_dict:
-                lats = area_dict["lats"]
+                lats = str.split(area_dict["lats"],",")
                 lats = [float(i) for i in lats]
             else:
                 forcing.util.error("Latitudes must be defined")
 
+            if ( len(lons) != len(lats)): forcing.util.error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
             geo_out = Points(len(lons), lons, lats)
         elif args.mode == "domain":
-            #TODO: Implement domain
             proj=None
             if "proj4" in area_dict:
                 proj = str(area_dict["proj4"])
