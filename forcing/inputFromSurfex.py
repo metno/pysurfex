@@ -69,19 +69,21 @@ def get_sfx_io(fname,format=None,ftype=None,pgdfile=None):
         error("Filetype not implemented "+ftype)
     return obj
 
-def one2two(self,field):
-    if int(self.geo.nx) < 0 or int(self.geo.ny) < 0:
-        error("The dimensions are not initialized: "+self.geo.nx+" "+self.geo.ny)
-    fieldall = np.zeros(int(self.geo.nx) * int(self.geo.ny))
+def one2two(geo,field):
+    if int(geo.nx) < 0 or int(geo.ny) < 0:
+        error("The dimensions are not initialized: "+geo.nx+" "+geo.ny)
+    if geo.__class__ == LonLatVal: return field
+
+    fieldall = np.zeros(int(geo.nx) * int(geo.ny))
     fieldall.fill(np.nan)
-    if self.geo.mask == None:
+    if geo.mask == None:
         info("Assuming uniform mask")
         fieldall=field
     else:
-        if len(self.geo.mask) != len(field): error("Rank mismatch: "+str(len(self.geo.mask))+" "+str(len(field)))
-        for i in range(0, len(field)): fieldall[self.geo.mask[i]] = field[i]
+        if len(geo.mask) != len(field): error("Rank mismatch: "+str(len(geo.mask))+" "+str(len(field)))
+        for i in range(0, len(field)): fieldall[geo.mask[i]] = field[i]
 
-    field = np.reshape(fieldall, [self.geo.ny, self.geo.nx])
+    field = np.reshape(fieldall, [geo.ny,geo.nx])
     field[field == 1e+20] = np.nan
     return field
 
@@ -103,87 +105,9 @@ class SurfexFile(object):
         error("This method is not implemented for this class!")
         return
 
-#    def plot_field(self,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False):
-#
-#        if self.geo.X is None or self.geo.Y is None:
-#            error("Object does not have X and Y defined!")
-
-#        X=self.geo.X
-#        Y=self.geo.Y
-#        nx=self.geo.nx
-#        ny=self.geo.ny
-#        proj=self.geo.proj
-
-#        if isinstance(field,list) and self.geo.domain:
-#            print "Converting list to 2D numpy array"
-#            field=self.one2two(field)
-
-#        if self.geo.domain:
-#            x0=X[0, 0]
-#            xN=X[ny - 1, nx - 1]
-#            y0=Y[0,0]
-#            yN= Y[ny - 1, nx - 1]
-#        else:
-#            field=np.asarray(field)
-#            if bd == 5000: bd=2
-#            x0=self.geo.X[0]
-#            xN=self.geo.X[nx-1]
-#            y0=Y[0]
-#            yN=Y[ny-1]
-
-#        ax = plt.axes(projection=self.geo.display_proj)
-
-#        ax.set_global()
-#        ax.coastlines(resolution="10m")
-
-#        ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
-
-#        if not zero: field[field == 0. ] =np.nan
-
-#        min_value = float(np.nanmin(field))
-#        max_value = float(np.nanmax(field))
-
-#        print min_value, max_value, intervals
-#        limits = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
-        #print limits
-
-#        if cmap_name is None:
-#            cmap = plt.get_cmap('Purples')
-#        else:
-#            cmap = plt.get_cmap(cmap_name)
-
-#        if title is not None:
-#            plt.title(title)
-
-#        if self.geo.domain:
-#            plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
-#                   transform=proj, interpolation="nearest", cmap=cmap)
-#        else:
-#            plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
-
-
-#        def fmt(x, y):
-#            i = int((x - X[0, 0]) / 2500.)
-#            j = int((y - Y[0, 0]) / 2500.)
-
-            # print x,y,lon,lat,lon0,lat0,i,j,zs2d.shape[0],zs2d.shape[1]
-#            z = np.nan
-#            if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
-#            return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
-
-#        if self.geo.domain: ax.format_coord = fmt
-
-#        plt.clim([min_value, max_value])
-#        norm = mcl.Normalize(min_value, max_value)
-#        sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-#        sm._A = []
-#        cb = plt.colorbar(sm, ticks=limits)
-#        cb.set_clim([min_value, max_value])
-#        if plot: plt.show()
-
 class AsciiSurfFile(SurfexFile):
 
-    def __init__(self,fname):
+    def __init__(self,fname,recreate=False):
         super(AsciiSurfFile, self).__init__(fname)
         if not os.path.isfile(self.fname): error("File does not exist: "+str(fname))
         grid = self.read("FULL", "GRID_TYPE", type="string")
@@ -194,7 +118,7 @@ class AsciiSurfFile(SurfexFile):
             xdx = self.read("FULL", "DX")
             yy = self.read("FULL", "XY")
             xdy = self.read("FULL", "DY")
-            self.geo = IGN(lambert, xx, yy, xdx, xdy)
+            self.geo = IGN(lambert, xx, yy, xdx, xdy,recreate)
         elif grid[0] == "LONLATVAL":
             xx = self.read("FULL", "XX")
             xy = self.read("FULL", "XY")
@@ -278,6 +202,7 @@ class AsciiSurfFile(SurfexFile):
                     read_value = True
 
         if len(values) == 0: warning("No values found!")
+        values=np.asarray(values)
         return values
 
 ########################################################################################################################

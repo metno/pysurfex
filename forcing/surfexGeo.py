@@ -9,6 +9,8 @@ class SurfexGeo(object):
     def __init__(self):
         self.display_proj=ccrs.Robinson()
         self.domain=True
+        self.ign=False
+        self.lonlat=True
         self.X=None
         self.Y=None
         self.mask=None
@@ -60,7 +62,7 @@ class LonLatVal(SurfexGeo):
 
 class IGN(SurfexGeo):
 
-    def __init__(self,lambert,xx,yy,xdx,xdy,recreate=False):
+    def __init__(self,lambert,xx,yy,xdx,xdy,recreate):
 
         super(IGN, self).__init__()
 
@@ -72,6 +74,10 @@ class IGN(SurfexGeo):
             print "Lambert not defined:",lambert
             sys.exit(1)
 
+        self.ign=True
+        self.lonlat=False
+        self.xdx=xdx
+        self.xdy=xdy
         self.pxall=self.get_coord(xx,xdx,"x",recreate)
         self.pyall=self.get_coord(yy,xdy,"y",recreate)
         self.mask=self.ign_mask(self.pxall,self.pyall,xx,yy,recreate)
@@ -79,19 +85,21 @@ class IGN(SurfexGeo):
         self.ny=len(self.pyall)
         self.npoints=len(xx)
 
-        self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
+        #self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
+        self.X = np.asarray(self.pxall)
+        self.Y = np.asarray(self.pyall)
         self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)
 
         g0 = ccrs.Geodetic()
         self.lons=[]
         self.lats=[]
+
         for i in range(0, len(self.pxall)):
             for j in range(0, len(self.pyall)):
-                self.X[j, i] = self.pxall[i]
-                self.Y[j, i] = self.pyall[j]
                 lon,lat=g0.transform_point(self.pxall[i],self.pyall[j],self.proj)
                 self.lons.append(lon)
                 self.lats.append(lat)
+                print lon,lat,self.pxall[i],self.pyall[j]
 
     def get_coord(self,pin,pdin,coord,recreate=False):
 

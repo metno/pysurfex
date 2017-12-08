@@ -1,9 +1,10 @@
 import unittest
 from forcing.readInputForSurfex import ReadInputForSurfex
 from forcing.driverForcing import parseArgs,runTimeLoop
-from forcing.inputFromSurfex import AsciiSurfFile
+from forcing.inputFromSurfex import AsciiSurfFile,one2two
 import sys
 from forcing.plot import plot_field
+import numpy as np
 
 def testVarDict(test,var_objs,name,key,expected,msg):
     found=False
@@ -30,12 +31,17 @@ class CommandLineOptions(unittest.TestCase):
             testVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
             testVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
 
-#class PlotTest(unittest.TestCase):
-
-    #def plot_ascii(self):
         pgd=AsciiSurfFile("data/LONLAT_REG/txt/PGD.txt")
         field=pgd.read("FULL","ZS")
         plot_field(pgd.geo,field,plot=True)
+
+        pgd = AsciiSurfFile("data/IGN/txt/PGD.txt",recreate=True)
+        field = pgd.read("FULL", "ZS")
+        plot_field(pgd.geo, field, plot=True,bd=90000,limits=[-500,0,100,500],cmap_name="Accent")
+
+        pgd = AsciiSurfFile("data/LONLATVAL/txt/PGD.txt")
+        field = pgd.read("FULL", "ZS")
+        plot_field(pgd.geo, field, plot=True)
 
 if __name__ == '__main__':
     unittest.main()

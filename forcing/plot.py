@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from operator import truediv,add
 import numpy as np
 from forcing.util import error,info
-from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,TimeSeriesFromNetCDF
+from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,TimeSeriesFromNetCDF,one2two
 from forcing.timeSeries import MetObservations
 import os
 from matplotlib.backends.backend_pdf import PdfPages
@@ -151,14 +151,16 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     ny=geo.ny
     proj=geo.proj
 
-    if len(np.shape(field)) != 2: error("Can only plot two-dimensional fields")
+    print nx,ny
+    if len(np.shape(field)) == 1: field=one2two(geo,field)
+    #if len(np.shape(field)) != 2: error("Can only plot two-dimensional fields")
     if isinstance(field,list) and geo.domain:
         print "Converting list to 2D numpy array"
         error("Not posible longer")
 
 
-    if geo.domain:
-        #x0=X[0, 0]
+    if geo.ign:
+        #x0=X[0]
         #xN=X[ny - 1, nx - 1]
         #y0=Y[0,0]
         #yN= Y[ny - 1, nx - 1]
@@ -193,8 +195,8 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if limits != None:
         lims=limits
     else:
-        lims = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
-    print lims
+        lims=np.arange(min_value-1,max_value+1,1)
+        if min_value != max_value: lims = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
 
     if cmap_name is None:
         cmap = plt.get_cmap('Purples')
@@ -204,26 +206,29 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if title is not None:
         plt.title(title)
 
-    print X.min(),X.max(),Y.max(),Y.min()
+    print X.min(),X.max(),Y.min(),Y.max()
+    print X
+    print Y
+    print field
     if geo.domain:
-        plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
+        plt.imshow(field, extent=(X.min(),X.max(),Y.min(),Y.max()),
                    transform=proj, interpolation="nearest", cmap=cmap)
     else:
         plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
 
 
     def fmt(x, y):
-        i = int((x - X[0, 0]) / 2500.)
-        j = int((y - Y[0, 0]) / 2500.)
-        #i = int((x - X[0]) / float(geo.xdx[0]))
-        #j = int((y - Y[0]) / float(geo.xdy[0]))
+        #i = int((x - X[0]) / 2500.)
+        #j = int((y - Y[0]) / 2500.)
+        i = int((x - X[0]) / float(geo.xdx[0]))
+        j = int((y - Y[0]) / float(geo.xdy[0]))
 
         #print x,y,i,j,X[0],Y[0]
         z = np.nan
         if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
         return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
 
-    #if geo.domain: ax.format_coord = fmt
+    if not geo.lonlat: ax.format_coord = fmt
 
     plt.clim([min_value, max_value])
     norm = mcl.Normalize(min_value, max_value)
