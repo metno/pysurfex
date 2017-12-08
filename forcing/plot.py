@@ -156,11 +156,18 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
         print "Converting list to 2D numpy array"
         error("Not posible longer")
 
+
     if geo.domain:
-        x0=X[0, 0]
-        xN=X[ny - 1, nx - 1]
-        y0=Y[0,0]
-        yN= Y[ny - 1, nx - 1]
+        #x0=X[0, 0]
+        #xN=X[ny - 1, nx - 1]
+        #y0=Y[0,0]
+        #yN= Y[ny - 1, nx - 1]
+        x0 = X[0]
+        xN = X[nx - 1]
+        y0 = Y[0]
+        yN = Y[ny - 1]
+        if bd == 5000: bd = 1
+        print x0,xN,y0,yN
     else:
         field=np.asarray(field)
         if bd == 5000: bd=2
@@ -176,7 +183,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
 
     ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
 
-    field[field > 2.] = 2.
+    #field[field > 2.] = 2.
     if not zero: field[field == 0. ] =np.nan
 
     min_value = float(np.nanmin(field))
@@ -197,6 +204,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if title is not None:
         plt.title(title)
 
+    print X.min(),X.max(),Y.max(),Y.min()
     if geo.domain:
         plt.imshow(field, extent=(X.min(),X.max(),Y.max(),Y.min()),
                    transform=proj, interpolation="nearest", cmap=cmap)
@@ -207,13 +215,15 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     def fmt(x, y):
         i = int((x - X[0, 0]) / 2500.)
         j = int((y - Y[0, 0]) / 2500.)
+        #i = int((x - X[0]) / float(geo.xdx[0]))
+        #j = int((y - Y[0]) / float(geo.xdy[0]))
 
-        # print x,y,lon,lat,lon0,lat0,i,j,zs2d.shape[0],zs2d.shape[1]
+        #print x,y,i,j,X[0],Y[0]
         z = np.nan
         if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
         return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
 
-    if geo.domain: ax.format_coord = fmt
+    #if geo.domain: ax.format_coord = fmt
 
     plt.clim([min_value, max_value])
     norm = mcl.Normalize(min_value, max_value)

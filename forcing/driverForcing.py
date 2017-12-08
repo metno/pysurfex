@@ -24,8 +24,10 @@ class LoadFromFile (argparse.Action):
                 if v and k != option_string.lstrip('-'):
                     setattr(namespace, k, v)
 
-def run(argv):
 
+def parseArgs(argv):
+
+    print argv
     parser = argparse.ArgumentParser(description="Create offline forcing")
     parser.add_argument('dtg_start', type=int, help="Start DTG",nargs="?")
     parser.add_argument('dtg_stop', type=int, help="Stop DTG",nargs="?")
@@ -104,11 +106,11 @@ def run(argv):
     group_uval.add_argument("--uval_converter", type=str, help="Converter function to UREF", default="none",
                           choices=["none"])
 
-    if len(sys.argv) < 4:
+    if len(argv) < 4:
         parser.print_help()
         sys.exit(1)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if ( args.dtg_start or args.dtg_stop) < 1000010100:
         print "Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop)
         sys.exit(1)
@@ -183,7 +185,7 @@ def run(argv):
       root = os.path.realpath(root)
     base = os.path.dirname(os.path.abspath(root))
     yaml_config=base+"/cfg/config.yml"
-    default_conf = yaml.load(open(yaml_config)) or die
+    default_conf = yaml.load(open(yaml_config)) or sys.exit(1)
 
     # Read user settings. This overrides all other configurations
     user_settings={}
@@ -197,7 +199,7 @@ def run(argv):
     format = args.input_format
     if args.pattern: merged_conf[format]["filepattern"] = args.pattern
 
-    cache=Cache()
+
     def set_input_object(sfx_var,merged_conf,geo):
 
         #########################################
@@ -337,38 +339,51 @@ def run(argv):
         sfx_var=vars[i]
         var_objs.append(set_input_object(sfx_var,merged_conf,geo_out))
 
+    # Save options
+    options=dict()
+    options['output_format']=args.output_format
+    options['start']=start
+    options['stop'] = stop
+    options['timestep']=args.timestep
+    options['geo_out']=geo_out
+    options['dry']=args.dry
 
+    return options,var_objs,att_objs
 
+def runTimeLoop(options,var_objs,att_objs):
+
+    cache = Cache()
     # Find how many time steps we want to write
     ntimes=0
-    this_time=start
-    while this_time <= stop:
+    this_time=options['start']
+    while this_time <= options['stop']:
         ntimes=ntimes+1
-        this_time=this_time+timedelta(seconds=args.timestep)
+        this_time=this_time+timedelta(seconds=options['timestep'])
 
     # Create output object
-    if str.lower(args.output_format) == "netcdf":
+    if str.lower(options['output_format']) == "netcdf":
         # Set att_time the same as start
-        att_time=start
-        output = NetCDFOutput(start, geo_out, ntimes, var_objs, att_objs,att_time,args.dry,cache)
-    elif str.lower(args.output_format) == "ascii":
-        forcing.util.error("Output format "+args.output_format+" not implemented yet")
+        att_time=options['start']
+        output = NetCDFOutput(options['start'], options['geo_out'], ntimes, var_objs, att_objs,att_time,options['dry'],cache)
+    elif str.lower(options['output_format']) == "ascii":
+        forcing.util.error("Output format "+options['output_format']+" not implemented yet")
     else:
-        forcing.util.error("Invalid output format "+args.output_format)
+        forcing.util.error("Invalid output format "+input['output_format'])
 
     # Loop output time steps
     t=0
-    this_time=start
-    while this_time <= stop:
+    this_time=options['start']
+    while this_time <= options['stop']:
 
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
-        output.write_forcing(var_objs,this_time,args.dry,cache)
+        output.write_forcing(var_objs,this_time,options['dry'],cache)
         output.time_step = output.time_step + 1
-        this_time=this_time+timedelta(seconds=args.timestep)
+        this_time=this_time+timedelta(seconds=options['timestep'])
 
     # Finalize forcing
     output.finalize()
 
 if __name__ == '__main__':
-   run(sys.argv)
+   options,var_objs,att_objs=parseArgs(sys.argv)
+   runTimeLoop(options,var_objs,att_objs)

@@ -3,7 +3,8 @@ import forcing.driverPlots
 import forcing.driverForcing
 
 def create_forcing():
-   forcing.driverForcing.run(sys.argv)
+   options,var_objs,att_objs=forcing.driverForcing.parseArgs(sys.argv)
+   forcing.driverForcing.runTimeLoop(options,var_objs,att_objs)
 
 def plot_offline():
    forcing.driverPlots.run(sys.argv)

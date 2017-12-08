@@ -23,20 +23,19 @@ class LonLatReg(SurfexGeo):
 
         super(LonLatReg, self).__init__()
 
-        self.lonmin=lonmin
-        self.lonmax=lonmax
-        self.latmin=latmin
-        self.latmax=latmax
+        self.lonmin=float(lonmin[0])
+        self.lonmax=float(lonmax[0])
+        self.latmin=float(latmin[0])
+        self.latmax=float(latmax[0])
         self.nx=nlon
         self.ny=nlat
-        self.npoints=self.nx*self.ny
-        self.reg_lon=reg_lon
-        self.reg_lat=reg_lat
-        self.X, self.Y = np.meshgrid(self.reg_lon, self.reg_lat)
-        #print self.X
-        #print self.Y
+        self.reg_lon = reg_lon
+        self.reg_lat = reg_lat
+        self.npoints = self.nx * self.ny
+        self.X=np.asarray(self.reg_lon[0:self.nx])
+        self.Y=np.asarray(self.reg_lat[0:self.npoints:self.nx])
         self.proj = ccrs.PlateCarree()
-        self.display_proj=ccrs.Miller()
+        self.display_proj=ccrs.PlateCarree()
 
 class LonLatVal(SurfexGeo):
 

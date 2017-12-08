@@ -220,6 +220,7 @@ class AsciiSurfFile(SurfexFile):
 
         # Add & if not given
         if read_tile.find('&') < 0: read_tile='&'+read_tile
+        print read_tile,read_par
         file = open(self.fname,mode="r")
         read_desc=False
         read_value=False
@@ -227,7 +228,7 @@ class AsciiSurfFile(SurfexFile):
         for line in file:
         #for line in file.read().splitlines():
 
-            #print str(i)+":T:"+line
+            #print "T:"+line
             words=line.split()
             if len(words) > 0:
                 #print "Line:",read_desc,read_value,":",line
