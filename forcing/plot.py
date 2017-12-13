@@ -140,7 +140,7 @@ def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True
     if save_pdf: pp.close()
 
 ###############################################################################################
-def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False,limits=None):
+def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=None,plot=False,limits=None,interpolation="nearest"):
 
     if geo.X is None or geo.Y is None:
         error("Object does not have X and Y defined!")
@@ -151,7 +151,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     ny=geo.ny
     proj=geo.proj
 
-    print nx,ny
+    #print nx,ny
     if len(np.shape(field)) == 1: field=one2two(geo,field)
     #if len(np.shape(field)) != 2: error("Can only plot two-dimensional fields")
     if isinstance(field,list) and geo.domain:
@@ -169,7 +169,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
         y0 = Y[0]
         yN = Y[ny - 1]
         if bd == 5000: bd = 1
-        print x0,xN,y0,yN
+        #print x0,xN,y0,yN
     else:
         field=np.asarray(field)
         if bd == 5000: bd=2
@@ -191,7 +191,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     min_value = float(np.nanmin(field))
     max_value = float(np.nanmax(field))
 
-    print min_value, max_value, intervals
+    #print min_value, max_value, intervals
     if limits != None:
         lims=limits
     else:
@@ -206,20 +206,16 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if title is not None:
         plt.title(title)
 
-    print X.min(),X.max(),Y.min(),Y.max()
-    print X
-    print Y
-    print field
+    #print X.min(),X.max(),Y.min(),Y.max()
+    #print field.shape
     if geo.domain:
-        plt.imshow(field, extent=(X.min(),X.max(),Y.min(),Y.max()),
-                   transform=proj, interpolation="nearest", cmap=cmap)
+        plt.imshow(field, origin="lower",extent=(X.min(),X.max(),Y.min(),Y.max()),
+                   transform=proj, interpolation=interpolation, cmap=cmap)
     else:
         plt.scatter(X,Y,transform=proj,c=field,linewidths=0.7,edgecolors="black",cmap=cmap,s=50)
 
 
     def fmt(x, y):
-        #i = int((x - X[0]) / 2500.)
-        #j = int((y - Y[0]) / 2500.)
         i = int((x - X[0]) / float(geo.xdx[0]))
         j = int((y - Y[0]) / float(geo.xdy[0]))
 
@@ -228,7 +224,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
         if i >= 0 and i < field.shape[1] and j >= 0 and j < field.shape[0]:  z = field[j, i]
         return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=i, y=j, z=z)
 
-    if not geo.lonlat: ax.format_coord = fmt
+    if geo.ign: ax.format_coord = fmt
 
     plt.clim([min_value, max_value])
     norm = mcl.Normalize(min_value, max_value)
@@ -238,3 +234,5 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     cb = plt.colorbar(sm, ticks=lims)
     cb.set_clim([min_value, max_value])
     if plot: plt.show()
+    # Clear plot
+    plt.close()

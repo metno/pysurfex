@@ -31,17 +31,23 @@ class CommandLineOptions(unittest.TestCase):
             testVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
             testVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
 
+        # Reading of PGD files
         pgd=AsciiSurfFile("data/LONLAT_REG/txt/PGD.txt")
         field=pgd.read("FULL","ZS")
-        plot_field(pgd.geo,field,plot=True)
+        plot_field(pgd.geo,field,limits=[0,100,200,400,600],plot=False)
 
         pgd = AsciiSurfFile("data/IGN/txt/PGD.txt",recreate=True)
         field = pgd.read("FULL", "ZS")
-        plot_field(pgd.geo, field, plot=True,bd=90000,limits=[-500,0,100,500],cmap_name="Accent")
+        plot_field(pgd.geo, field, plot=False,bd=90000,limits=[0,100,200,400,600],cmap_name="Purples")
 
         pgd = AsciiSurfFile("data/LONLATVAL/txt/PGD.txt")
         field = pgd.read("FULL", "ZS")
-        plot_field(pgd.geo, field, plot=True)
+        plot_field(pgd.geo, field, plot=False)
+
+        pgd = AsciiSurfFile("data/CONF_PROJ/txt/PGD.txt")
+        field = pgd.read("FULL", "ZS")
+        plot_field(pgd.geo, field, plot=False)
+
 
 if __name__ == '__main__':
     unittest.main()

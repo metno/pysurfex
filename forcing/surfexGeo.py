@@ -60,6 +60,23 @@ class LonLatVal(SurfexGeo):
         self.proj = ccrs.PlateCarree()
         self.display_proj=ccrs.Miller()
 
+class ConfProj(SurfexGeo):
+    def __init__(self,lonori,latori,lon0,lat0,imax,jmax,xx,xy):
+
+        super(ConfProj,self).__init__()
+
+        self.proj = ccrs.LambertConformal(central_longitude=lonori, central_latitude=latori,standard_parallels=[lat0])
+
+        self.domain=True
+        self.xx=xx
+        self.xy=xy
+        self.nx=imax
+        self.ny=jmax
+        self.X = np.asarray(self.xx[0:self.nx])
+        self.Y = np.asarray(self.xy[0:self.npoints:self.nx])
+        self.npoints=self.nx*self.ny
+        self.display_proj = ccrs.Miller()
+
 class IGN(SurfexGeo):
 
     def __init__(self,lambert,xx,yy,xdx,xdy,recreate):
@@ -94,12 +111,12 @@ class IGN(SurfexGeo):
         self.lons=[]
         self.lats=[]
 
-        for i in range(0, len(self.pxall)):
-            for j in range(0, len(self.pyall)):
+        for j in range(0, len(self.pyall)):
+            for i in range(0, len(self.pxall)):
                 lon,lat=g0.transform_point(self.pxall[i],self.pyall[j],self.proj)
                 self.lons.append(lon)
                 self.lats.append(lat)
-                print lon,lat,self.pxall[i],self.pyall[j]
+                #print lon,lat,self.pxall[i],self.pyall[j]
 
     def get_coord(self,pin,pdin,coord,recreate=False):
 
@@ -181,15 +198,18 @@ class IGN(SurfexGeo):
 
         print "Creating mask. This takes time:"
         l=-1
-        for j in range(0, len(pyall)):
-            for i in range(0,len(pxall)):
+
+        for i in range(0, len(pxall)):
+            for j in range(0, len(pyall)):
+
                 l=l+1
                 for k in range (0,len(xx)):
                     if xx[k] == pxall[i] and yy[k] == pyall[j]:
+                        #print i,j,k,l,xx[k],pxall[i],yy[k],pyall[j]
                         mask.append(l)
                         break
 
-            print j,"/",len(pyall)
+            print i,"/",len(pxall)
 
         # Cache mask for later use
         #if len(mask) != len(xx) or len(mask) != len(yy): print "Mask mismatch! ", len(mask), len(xx), len(yy); exit(1)

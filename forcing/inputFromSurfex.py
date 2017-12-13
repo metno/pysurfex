@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset,num2date
 from forcing.util import error,info,warning,parse_filepattern
-from forcing.surfexGeo import IGN,LonLatVal,LonLatReg
+from forcing.surfexGeo import IGN,LonLatVal,LonLatReg,ConfProj
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcl
 import os
@@ -81,11 +81,19 @@ def one2two(geo,field):
         fieldall=field
     else:
         if len(geo.mask) != len(field): error("Rank mismatch: "+str(len(geo.mask))+" "+str(len(field)))
-        for i in range(0, len(field)): fieldall[geo.mask[i]] = field[i]
+        for i in range(0, len(field)):
+            #print i,geo.mask[i]
+            fieldall[geo.mask[i]] = field[i]
 
-    field = np.reshape(fieldall, [geo.ny,geo.nx])
+    if geo.ign:
+        field = np.reshape(fieldall, [geo.nx, geo.ny])
+        field = np.transpose(field)
+    else:
+        field = np.reshape(fieldall, [geo.ny,geo.nx])
+
     field[field == 1e+20] = np.nan
     return field
+
 
 class SurfexFile(object):
 
@@ -104,6 +112,11 @@ class SurfexFile(object):
     def read(self):
         error("This method is not implemented for this class!")
         return
+
+    # Try first with a new name
+    def read_from_parent(self,filename,varname,tile="FULL"):
+        print "hei"
+
 
 class AsciiSurfFile(SurfexFile):
 
@@ -136,6 +149,18 @@ class AsciiSurfFile(SurfexFile):
             reg_lon = self.read("FULL", "REG_LON")
             reg_lat = self.read("FULL", "REG_LAT")
             self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
+        elif grid[0] == "CONF PROJ":
+            lon0 = self.read("FULL", "LON0")[0]
+            lat0 = self.read("FULL", "LAT0")[0]
+            #rpk = self.read("FULL", "RPK")[0]
+            #beta = self.read("FULL", "BETA")[0]
+            lonori=self.read("FULL", "LONORI")[0]
+            latori=self.read("FULL", "LATORI")[0]
+            imax=self.read("FULL", "IMAX",type="integer")[0]
+            jmax=self.read("FULL", "JMAX",type="integer")[0]
+            xx = self.read("FULL", "XX")
+            xy = self.read("FULL", "YY")
+            self.geo  = ConfProj(lonori,latori,lon0,lat0,imax,jmax,xx,xy)
         else:
             error("Grid " + str(grid[0]) + " not implemented!")
 

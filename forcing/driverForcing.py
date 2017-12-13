@@ -27,9 +27,10 @@ class LoadFromFile (argparse.Action):
 
 def parseArgs(argv):
 
+    print argv
     parser = argparse.ArgumentParser(description="Create offline forcing")
-    parser.add_argument('dtg_start', type=int, help="Start DTG",nargs="?")
-    parser.add_argument('dtg_stop', type=int, help="Stop DTG",nargs="?")
+    parser.add_argument('dtg_start', type=str, help="Start DTG",nargs="?")
+    parser.add_argument('dtg_stop', type=str, help="Stop DTG",nargs="?")
     parser.add_argument('area', type=str, help="Configuration file describing the points or locations",nargs="?")
     parser.add_argument('--options',type=open, action=LoadFromFile)
     parser.add_argument('-c','--config', type=str,help="Configuration file in yaml format describing customized variable setup",default="",nargs="?")
@@ -141,6 +142,7 @@ def parseArgs(argv):
 
         if args.mode == "points":
             if "lons" in area_dict:
+                print area_dict
                 lons = str.split(area_dict["lons"],",")
                 print lons
                 lons = [float(i) for i in lons]
@@ -386,5 +388,5 @@ def runTimeLoop(options,var_objs,att_objs):
     output.finalize()
 
 if __name__ == '__main__':
-   options,var_objs,att_objs=parseArgs(sys.argv)
+   options,var_objs,att_objs=parseArgs(sys.argv[1:])
    runTimeLoop(options,var_objs,att_objs)
