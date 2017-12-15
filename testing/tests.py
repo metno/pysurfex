@@ -33,93 +33,135 @@ class CommandLineOptions(unittest.TestCase):
 
 class IGNTest(unittest.TestCase):
 
-    def test_pgd_ign(self):
-        # IGN
+    def pgd_ascii(self):
+
         pgd = SurfexIO("data/IGN/txt/PGD.txt",recreate=True)
         field = pgd.read(SurfexVariable("ZS"))
         plot_field(pgd.geo, field, plot=False,bd=90000,limits=[0,100,200,400,600],cmap_name="Purples")
-
-class LonLatValTest(unittest.TestCase):
-
-    def test_pgd_ascii(self):
-        # LONLATVAL
-        pgd = SurfexIO("data/LONLATVAL/txt/PGD.txt")
-        field = pgd.read(SurfexVariable("ZS"))
-        plot_field(pgd.geo, field, plot=False)
-
-class LonLatRegTest(unittest.TestCase):
-
-    def pgd_ascii(self):
-        pgd_lonlat_reg = SurfexIO("data/LONLAT_REG/txt/PGD.txt")
-        field = pgd_lonlat_reg.read(SurfexVariable("ZS"))
-        plot_field(pgd_lonlat_reg.geo, field, limits=[0, 100, 200, 400, 600], plot=False)
-        return pgd_lonlat_reg
+        return pgd
 
     def test_read_nc_and_plot(self):
-        file_lonlat_reg_nc = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/IGN/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
-        times_read, field = file_lonlat_reg_nc.read(SurfexVariable("TG1", times=times))
+        times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = np.reshape(field[:, :, t, 0, 0], [file_lonlat_reg_nc.geo.nx, file_lonlat_reg_nc.geo.ny])
-            plot_field(file_lonlat_reg_nc.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
+            field2 = field[:,:,t,0,0]
+            plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
 
     def test_read_texte_and_plot(self):
-        file_lonlat_reg_texte=SurfexIO("data/LONLAT_REG/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        file=SurfexIO("data/IGN/TXT/TG1.TXT",surffile=self.pgd_ascii())
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval=3600
         times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
 
-        times_read,field=file_lonlat_reg_texte.read(SurfexVariable("TG1",basetime=basetime,interval=interval,times=times))
+        times_read,field=file.read(SurfexVariable("TG1",basetime=basetime,interval=interval,times=times))
         for t in range(0,2):
-            field2=field[t,0:file_lonlat_reg_texte.geo.npoints]
-            plot_field(file_lonlat_reg_texte.geo,field2,plot=False,interpolation="nearest",title="TG1 "+str(times_read[t]))
+            field2=field[t,0:file.geo.npoints]
+            plot_field(file.geo,field2,plot=False,interpolation="nearest",title="TG1 "+str(times_read[t]))
+
+
+class LonLatValTest(unittest.TestCase):
+
+    def pgd_ascii(self):
+
+        pgd = SurfexIO("data/LONLATVAL/txt/PGD.txt")
+        field = pgd.read(SurfexVariable("ZS"))
+        plot_field(pgd.geo, field, plot=False)
+        return pgd
+
+    def test_read_nc_and_plot(self):
+        file = SurfexIO("data/LONLATVAL/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
+        times_read, field = file.read(SurfexVariable("TG1", times=times))
+        for t in range(0, 2):
+            field2 = field[0,0, t, 0, :]
+            plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
+
+
+    def test_read_texte_and_plot(self):
+        file=SurfexIO("data/LONLATVAL/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        basetime = datetime.strptime("2017090100", '%Y%m%d%H')
+        interval=3600
+        times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
+
+        times_read,field=file.read(SurfexVariable("TG1",basetime=basetime,interval=interval,times=times))
+        for t in range(0,2):
+            field2=field[t,0:file.geo.npoints]
+            plot_field(file.geo,field2,plot=False,interpolation="nearest",title="TG1 "+str(times_read[t]))
+
+class LonLatRegTest(unittest.TestCase):
+
+    def pgd_ascii(self):
+        pgd = SurfexIO("data/LONLAT_REG/txt/PGD.txt")
+        field = pgd.read(SurfexVariable("ZS"))
+        plot_field(pgd.geo, field, limits=[0, 100, 200, 400, 600], plot=False)
+        return pgd
+
+    def test_read_nc_and_plot(self):
+        file = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
+        times_read, field = file.read(SurfexVariable("TG1", times=times))
+        for t in range(0, 2):
+            field2 = np.reshape(field[:, :, t, 0, 0], [file.geo.nx, file.geo.ny])
+            plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
+
+    def test_read_texte_and_plot(self):
+        file=SurfexIO("data/LONLAT_REG/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        basetime = datetime.strptime("2017090100", '%Y%m%d%H')
+        interval=3600
+        times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
+
+        times_read,field=file.read(SurfexVariable("TG1",basetime=basetime,interval=interval,times=times))
+        for t in range(0,2):
+            field2=field[t,0:file.geo.npoints]
+            plot_field(file.geo,field2,plot=False,interpolation="nearest",title="TG1 "+str(times_read[t]))
 
     def test_compare_nc_and_texte(self):
         pgdfile=self.pgd_ascii()
-        file_lonlat_reg_texte = SurfexIO("data/LONLAT_REG/TXT/TG1.TXT", surffile=pgdfile)
-        file_lonlat_reg_nc = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
-        times_read_nc, field_nc = file_lonlat_reg_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
+        file_texte = SurfexIO("data/LONLAT_REG/TXT/TG1.TXT", surffile=pgdfile)
+        file_nc = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
+        times_read_nc, field_nc = file_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
-        times_read_texte, field_texte = file_lonlat_reg_texte.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')], basetime=basetime,interval=interval))
+        times_read_texte, field_texte = file_texte.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')], basetime=basetime,interval=interval))
 
         self.assertEquals(times_read_nc, times_read_texte)
 
 class ConfProjTest(unittest.TestCase):
 
     def pgd_ascii(self):
-        pgd_conf_proj = SurfexIO("data/CONF_PROJ/txt/PGD.txt")
-        field_ascii_zs = pgd_conf_proj.read(SurfexVariable("ZS"))
-        plot_field(pgd_conf_proj.geo, field_ascii_zs, plot=False)
-        return pgd_conf_proj
+        pgd = SurfexIO("data/CONF_PROJ/txt/PGD.txt")
+        field_ascii_zs = pgd.read(SurfexVariable("ZS"))
+        plot_field(pgd.geo, field_ascii_zs, plot=False)
+        return pgd
 
     def test_read_nc_and_plot(self):
-        file_conf_proj_nc = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
-        times_read, field = file_conf_proj_nc.read(SurfexVariable("TG1", times=times))
+        times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = np.reshape(field[:, :, t, 0, 0], [file_conf_proj_nc.geo.nx, file_conf_proj_nc.geo.ny])
-            plot_field(file_conf_proj_nc.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
+            field2 = np.reshape(field[:, :, t, 0, 0], [file.geo.nx, file.geo.ny])
+            plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
     def test_read_texte_and_plot(self):
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
-        file_conf_proj_texte = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=self.pgd_ascii())
+        file = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=self.pgd_ascii())
         times = [datetime.strptime("2017090110", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
-        times_read, field = file_conf_proj_texte.read(SurfexVariable("TG1", basetime=basetime, interval=interval, times=times))
+        times_read, field = file.read(SurfexVariable("TG1", basetime=basetime, interval=interval, times=times))
         for t in range(0, 2):
-            field2 = field[t, 0:file_conf_proj_texte.geo.npoints]
-            plot_field(file_conf_proj_texte.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
+            field2 = field[t, 0:file.geo.npoints]
+            plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
     def test_compare_nc_and_texte(self):
         pgdfile=self.pgd_ascii()
-        file_conf_proj_nc = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
-        times_read_nc, field_nc = file_conf_proj_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
+        file_nc = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
+        times_read_nc, field_nc = file_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
-        file_conf_proj_texte = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=pgdfile)
-        times_read_texte, field_texte = file_conf_proj_texte.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')],basetime=basetime, interval=interval))
+        file_texte = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=pgdfile)
+        times_read_texte, field_texte = file_texte.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')],basetime=basetime, interval=interval))
 
         self.assertEquals(times_read_nc,times_read_texte)
 
