@@ -189,7 +189,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if limits != None:
         lims=limits
     else:
-        print min_value,max_value
+        #print min_value,max_value
         lims=np.arange(min_value-1,max_value+1,1)
         if min_value != max_value: lims = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
 
@@ -201,10 +201,6 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if title is not None:
         plt.title(title)
 
-    print X.min(),X.max(),Y.min(),Y.max()
-    print field.shape
-    print X
-    print Y
     if geo.domain:
         # imshow need the transposed
         field=np.transpose(field,[1,0])

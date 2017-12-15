@@ -2,7 +2,7 @@ import numpy as np
 import cartopy.crs as ccrs
 import os
 import sys
-from forcing.util import error
+from forcing.util import error,info
 
 class SurfexGeo(object):
 
@@ -17,7 +17,7 @@ class SurfexGeo(object):
         self.nx=-1
         self.ny=-1
         self.npoints=-1
-        print "Contructed SurfexGeo"
+        info("Contructed SurfexGeo")
 
 class LonLatReg(SurfexGeo):
 
