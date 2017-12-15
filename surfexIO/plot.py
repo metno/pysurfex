@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from operator import truediv,add
 import numpy as np
 from forcing.util import error,info
-from forcing.inputFromSurfex import TimeSeriesFromASCIIFile,TimeSeriesFromTexte,TimeSeriesFromNetCDF,one2two
-from forcing.timeSeries import MetObservations
+from surfexIO.inputFromSurfex import one2two
+from surfexIO.timeSeries import MetObservations
 import os
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors as mcl
@@ -153,17 +153,12 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
 
     #print nx,ny
     if len(np.shape(field)) == 1: field=one2two(geo,field)
-    #if len(np.shape(field)) != 2: error("Can only plot two-dimensional fields")
     if isinstance(field,list) and geo.domain:
         print "Converting list to 2D numpy array"
         error("Not posible longer")
 
 
     if geo.ign:
-        #x0=X[0]
-        #xN=X[ny - 1, nx - 1]
-        #y0=Y[0,0]
-        #yN= Y[ny - 1, nx - 1]
         x0 = X[0]
         xN = X[nx - 1]
         y0 = Y[0]
@@ -185,7 +180,6 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
 
     ax.set_extent([x0 - bd, xN + bd, y0 - bd, yN + bd], proj)
 
-    #field[field > 2.] = 2.
     if not zero: field[field == 0. ] =np.nan
 
     min_value = float(np.nanmin(field))
@@ -195,6 +189,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if limits != None:
         lims=limits
     else:
+        print min_value,max_value
         lims=np.arange(min_value-1,max_value+1,1)
         if min_value != max_value: lims = np.arange(min_value,max_value, (max_value - min_value) / float(intervals), dtype=float)
 
@@ -206,9 +201,13 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     if title is not None:
         plt.title(title)
 
-    #print X.min(),X.max(),Y.min(),Y.max()
-    #print field.shape
+    print X.min(),X.max(),Y.min(),Y.max()
+    print field.shape
+    print X
+    print Y
     if geo.domain:
+        # imshow need the transposed
+        field=np.transpose(field,[1,0])
         plt.imshow(field, origin="lower",extent=(X.min(),X.max(),Y.min(),Y.max()),
                    transform=proj, interpolation=interpolation, cmap=cmap)
     else:

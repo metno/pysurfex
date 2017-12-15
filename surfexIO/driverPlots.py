@@ -4,8 +4,8 @@ import argparse
 import numpy as np
 import forcing.version
 from forcing.util import error,info
-from forcing.plot import snowogram,plot_field
-from forcing.inputFromSurfex import get_sfx_io
+from surfexIO.plot import snowogram,plot_field
+from surfexIO.inputFromSurfex import SurfexIO
 from datetime import datetime
 
 def run(argv):
@@ -30,7 +30,7 @@ def run(argv):
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
     #print len(sys.argv)
-    if len(sys.argv) < 3:
+    if len(argv) < 3:
         parser.print_help()
         sys.exit(1)
 
@@ -41,7 +41,7 @@ def run(argv):
 
     # Check required arguments
     station_list= args.station_list
-    pgdfile=get_sfx_io(str(args.pgdfile),ftype="surf",format=args.pgdformat)
+    pgdfile=SurfexIO(str(args.pgdfile),filetype="surf",format=args.pgdformat)
 
     plot_type=args.type
     info("Plotting "+plot_type)
@@ -56,7 +56,7 @@ def run(argv):
     else:
         stop = None
 
-    surfexfile=get_sfx_io(str(args.surfexfile),ftype=args.filetype,format=args.fileformat,pgdfile=pgdfile)
+    surfexfile=SurfexIO(str(args.surfexfile),filetype=args.filetype,format=args.fileformat,pgdfile=pgdfile)
 
     if plot_type == None:
         var=args.var

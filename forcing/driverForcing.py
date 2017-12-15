@@ -171,7 +171,7 @@ def parseArgs(argv):
                 y = str.split(area_dict["y"], ",")
                 y = [float(i) for i in y]
             else:
-                forcing.util.error("Latitudes must be defined")
+                forcing.util.error("y must be defined")
             degrees=False
             if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
             geo_out = Domain(proj,x,y,degrees)

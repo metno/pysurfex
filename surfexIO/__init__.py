@@ -5,5 +5,5 @@ def plot_offline():
    surfexIO.driverPlots.run(sys.argv)
 
 if __name__ == '__main__':
-   create_forcing()
+   plot_offline()
 
