@@ -83,7 +83,7 @@ class SurfexIO(object):
       General SURFEX IO class for reading an arbitrary SURFEX file
     """
 
-    def __init__(self,fname,filetype="surf",format=None,surffile=None,recreate=False):
+    def __init__(self,fname,filetype="surf",format=None,geo=None,recreate=False):
 
 
         if not os.path.isfile(fname):
@@ -102,27 +102,30 @@ class SurfexIO(object):
         else:
             self.format=format
 
-        self.surffile=surffile
         self.obj=None
         if self.format == "ascii":
             self.obj = AsciiSurfexFile(fname,recreate)
         elif self.format == "netcdf":
-            if self.surffile == None: error("Format NetCDF needs a pgd/prep file for the geometry")
-            self.obj= NetCDFSurfexFile(self.surffile.geo,self.surffile.info,fname)
+            if geo == None: error("Format NetCDF needs a pgd/prep file for the geometry")
+            self.obj= NetCDFSurfexFile(geo,fname)
         elif self.format == "texte":
-            if self.surffile == None: error("Format TEXTE needs a pgd/prep file for the geometry")
-            self.obj = TexteSurfexFile(self.surffile.geo,self.surffile.info,fname)
+            if geo == None: error("Format TEXTE needs a pgd/prep file for the geometry")
+            self.obj = TexteSurfexFile(geo,fname)
         else:
             error("Format not implemented: "+self.format)
         self.geo=self.obj.geo
         self.info=self.obj.info
 
-    def read(self,variable,fieldManipulation=None):
+    def read2d(self,variable,fieldManipulation=None):
 
         field=self.obj.read(variable)
         if fieldManipulation != None:
             field=fieldManipulation.convert(self.geo,field)
 
+        return field
+
+    def read(self,variable):
+        field=self.obj.read(variable)
         return field
 
     def guess_file_format(self,fname,ftype):
@@ -181,50 +184,54 @@ class SurfexFile(object):
 
 class AsciiSurfexFile(SurfexFile):
 
-    def __init__(self,fname,recreate=False):
+    def __init__(self,fname,recreate=False,geo=None):
         super(AsciiSurfexFile, self).__init__(fname)
         if not os.path.isfile(self.fname): error("File does not exist: "+str(fname))
-        grid = self.read(SurfexVariable("GRID_TYPE", type="string"))
-        if len(grid) == 0: error("No grid found")
-        if grid[0] == "IGN":
-            lambert = self.read(SurfexVariable("LAMBERT", type="integer"))[0]
-            xx = self.read(SurfexVariable("XX"))
-            xdx = self.read(SurfexVariable("DX"))
-            yy = self.read(SurfexVariable("XY"))
-            xdy = self.read(SurfexVariable("DY"))
-            self.geo = IGN(lambert, xx, yy, xdx, xdy,recreate)
-        elif grid[0] == "LONLATVAL":
-            xx = self.read(SurfexVariable("XX"))
-            xy = self.read(SurfexVariable("XY"))
-            xdx = self.read(SurfexVariable("DX"))
-            xdy = self.read(SurfexVariable("DY"))
-            self.geo = LonLatVal(xx, xy, xdx, xdy)
-        elif grid[0] == "LONLAT REG":
-            lonmin = self.read(SurfexVariable("LONMIN"))
-            lonmax = self.read(SurfexVariable("LONMAX"))
-            latmin = self.read(SurfexVariable("LATMIN"))
-            latmax = self.read(SurfexVariable("LATMAX"))
-            nlon = self.read(SurfexVariable("NLON",type="integer"))[0]
-            nlat = self.read(SurfexVariable("NLAT",type="integer"))[0]
-            reg_lon = self.read(SurfexVariable("REG_LON"))
-            reg_lat = self.read(SurfexVariable("REG_LAT"))
-            self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
-        elif grid[0] == "CONF PROJ":
-            lon0 = self.read(SurfexVariable("LON0"))[0]
-            lat0 = self.read(SurfexVariable("LAT0"))[0]
-            lonori=self.read(SurfexVariable("LONORI"))[0]
-            latori=self.read(SurfexVariable("LATORI"))[0]
-            imax=self.read(SurfexVariable("IMAX",type="integer"))[0]
-            jmax=self.read(SurfexVariable("JMAX",type="integer"))[0]
-            xx = self.read(SurfexVariable("XX"))
-            xy = self.read(SurfexVariable("YY"))
-            self.geo  = ConfProj(lonori,latori,lon0,lat0,imax,jmax,xx,xy)
-        else:
-            error("Grid " + str(grid[0]) + " not implemented!")
 
-        # Surfex version
-        self.geo.version=self.read(SurfexVariable("VERSION",type="integer"))[0]
-        self.geo.bug = self.read(SurfexVariable("BUG", type="integer"))[0]
+        if geo == None:
+            grid = self.read(SurfexVariable("GRID_TYPE", type="string"))
+            if len(grid) == 0: error("No grid found")
+            if grid[0] == "IGN":
+                lambert = self.read(SurfexVariable("LAMBERT", type="integer"))[0]
+                xx = self.read(SurfexVariable("XX"))
+                xdx = self.read(SurfexVariable("DX"))
+                yy = self.read(SurfexVariable("XY"))
+                xdy = self.read(SurfexVariable("DY"))
+                self.geo = IGN(lambert, xx, yy, xdx, xdy,recreate)
+            elif grid[0] == "LONLATVAL":
+                xx = self.read(SurfexVariable("XX"))
+                xy = self.read(SurfexVariable("XY"))
+                xdx = self.read(SurfexVariable("DX"))
+                xdy = self.read(SurfexVariable("DY"))
+                self.geo = LonLatVal(xx, xy, xdx, xdy)
+            elif grid[0] == "LONLAT REG":
+                lonmin = self.read(SurfexVariable("LONMIN"))
+                lonmax = self.read(SurfexVariable("LONMAX"))
+                latmin = self.read(SurfexVariable("LATMIN"))
+                latmax = self.read(SurfexVariable("LATMAX"))
+                nlon = self.read(SurfexVariable("NLON",type="integer"))[0]
+                nlat = self.read(SurfexVariable("NLAT",type="integer"))[0]
+                reg_lon = self.read(SurfexVariable("REG_LON"))
+                reg_lat = self.read(SurfexVariable("REG_LAT"))
+                self.geo = LonLatReg(lonmin,lonmax,latmin,latmax,nlon,nlat,reg_lon,reg_lat)
+            elif grid[0] == "CONF PROJ":
+                lon0 = self.read(SurfexVariable("LON0"))[0]
+                lat0 = self.read(SurfexVariable("LAT0"))[0]
+                lonori=self.read(SurfexVariable("LONORI"))[0]
+                latori=self.read(SurfexVariable("LATORI"))[0]
+                imax=self.read(SurfexVariable("IMAX",type="integer"))[0]
+                jmax=self.read(SurfexVariable("JMAX",type="integer"))[0]
+                xx = self.read(SurfexVariable("XX"))
+                xy = self.read(SurfexVariable("YY"))
+                self.geo  = ConfProj(lonori,latori,lon0,lat0,imax,jmax,xx,xy)
+            else:
+                error("Grid " + str(grid[0]) + " not implemented!")
+
+            # Surfex version
+            self.geo.version = self.read(SurfexVariable("VERSION", type="integer"))[0]
+            self.geo.bug = self.read(SurfexVariable("BUG", type="integer"))[0]
+        else:
+            self.geo=geo
 
     def read(self,variable):
 
@@ -302,10 +309,9 @@ class NetCDFSurfexFile(SurfexFile):
     Reading surfex NetCDF output
     """
 
-    def __init__(self,geo,info,filename):
+    def __init__(self,geo,filename):
         super(NetCDFSurfexFile, self).__init__(filename)
         self.geo = geo
-        self.info=info
 
         self.fh = Dataset(filename, "r")
 
@@ -315,14 +321,15 @@ class NetCDFSurfexFile(SurfexFile):
     def read(self,variable):
         """
 
-        Read a field, return a 5D array
+        Read a field, return a 2D array
         :param variable:
-        :return: [times],field[x/points,y,t,patches]
+        :return: times,values[t,vals (1-D) ]
         """
 
         var=variable.varname
         patches=variable.patches2read
         times=variable.times
+        npatch=1
 
         if not isinstance(times, (list, tuple)): error("times must be list or tuple")
         if not isinstance(patches, (list, tuple)): error("patches must be list or tuple")
@@ -340,7 +347,7 @@ class NetCDFSurfexFile(SurfexFile):
                 this_dim=[]
 
                 if dim == "time":
-                    mapping[2] = ndims
+                    mapping[0] = ndims
                     times_for_var = self.fh.variables['time']
                     units = times_for_var.units
                     try:
@@ -363,25 +370,27 @@ class NetCDFSurfexFile(SurfexFile):
                         [this_dim.append(i) for i in range(0,dimlen)]
 
                 elif dim == "Number_of_points":
-                    mapping[0] = ndims
+                    mapping[1] = ndims
                     [ this_dim.append(i) for i in range(0,dimlen)]
                 elif dim == "xx":
-                    mapping[0] = ndims
+                    mapping[1] = ndims
                     [ this_dim.append(i) for i in range(0,dimlen)]
                 elif dim == "yy":
-                    mapping[1] = ndims
+                    mapping[2] = ndims
                     [ this_dim.append(i) for i in range(0,dimlen) ]
                 elif dim == "Number_of_Tile":
                     mapping[3] = ndims
+                    npatch=dimlen
                     if len(patches)>0:
+                        npatch=len(patches)
                         this_dim=patches
                     else:
                         [ this_dim.append(i) for i in range(0,dimlen) ]
                 elif dim == "lon":
-                    mapping[0] = ndims
+                    mapping[1] = ndims
                     [ this_dim.append(i) for i in range(0,dimlen) ]
                 elif dim == "lat":
-                    mapping[1] = ndims
+                    mapping[2] = ndims
                     [this_dim.append(i) for i in range(0, dimlen)]
                 else:
                     error("Not implemented for: "+dim)
@@ -390,6 +399,7 @@ class NetCDFSurfexFile(SurfexFile):
                 ndims=ndims+1
 
             field=self.fh.variables[var][dim_indices]
+
             # Add extra dimensions
             #print mapping
             i = 0
@@ -403,16 +413,30 @@ class NetCDFSurfexFile(SurfexFile):
                 else:
                     reverse_mapping.append(mapping[d])
 
-            # Transpose to 5D array
-            #print "Transpose to 5D array"
+            # Transpose to 4D array
+            #print "Transpose to 4D array"
             #print reverse_mapping
-            values = np.transpose(field, reverse_mapping)
+            field = np.transpose(field, reverse_mapping)
+
+            npoints=self.geo.npoints*npatch
+            # Create 2-D array with times and points as for the other formats
+            for t in range(0,field.shape[0]):
+                field2d=np.empty(npoints)
+                i=0
+                for p in range(0, npatch):
+                    for y in range(0, field.shape[2]):
+                        for x in range(0,field.shape[1]):
+                            field2d[i]=field[t, x, y, p]
+                            i=i+1
+                if i != npoints: error("Mismatch in points")
+                values=np.append(values,field2d)
+            # Re-shape to proper format
+            values = np.reshape(values, [field.shape[0],npoints])
 
             # Set undefined values as NAN
             values[values > 1e+19] = np.nan
         else:
             warning("Variable "+var+" not found!")
-
 
         return np.asarray(times_read),values
 
@@ -423,10 +447,9 @@ class TexteSurfexFile(SurfexFile):
     Reading surfex TEXTE output
     """
 
-    def __init__(self,geo,info,fname):
+    def __init__(self,geo,fname):
         super(TexteSurfexFile, self).__init__(fname)
         self.geo = geo
-        self.info=info
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         info("Exit TEXTE")
@@ -448,7 +471,7 @@ class TexteSurfexFile(SurfexFile):
         end_of_line = self.geo.npoints*npatch
         this_time = np.empty(self.geo.npoints*npatch)
 
-        t=0
+        t=1
         col = 0
         for line in self.file.read().splitlines():
 

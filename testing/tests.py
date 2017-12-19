@@ -50,7 +50,7 @@ class IGNTest(unittest.TestCase):
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 2017090110 patch: "+str(p+1))
 
     def test_read_nc_and_plot(self):
-        file = SurfexIO("data/IGN/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/IGN/nc/ISBA_PROGNOSTIC.OUT.nc",geo=self.pgd_ascii().geo)
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
@@ -60,7 +60,7 @@ class IGNTest(unittest.TestCase):
 
 
     def test_read_texte_and_plot(self):
-        file=SurfexIO("data/IGN/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        file=SurfexIO("data/IGN/TXT/TG1.TXT",geo=self.pgd_ascii().geo)
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval=3600
         times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
@@ -90,7 +90,7 @@ class LonLatValTest(unittest.TestCase):
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 2017090110 patch: "+str(p+1))
 
     def test_read_nc_and_plot(self):
-        file = SurfexIO("data/LONLATVAL/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/LONLATVAL/nc/ISBA_PROGNOSTIC.OUT.nc",geo=self.pgd_ascii().geo)
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
@@ -100,7 +100,7 @@ class LonLatValTest(unittest.TestCase):
 
 
     def test_read_texte_and_plot(self):
-        file=SurfexIO("data/LONLATVAL/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        file=SurfexIO("data/LONLATVAL/TXT/TG1.TXT",geo=self.pgd_ascii().geo)
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval=3600
         times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
@@ -128,7 +128,7 @@ class LonLatRegTest(unittest.TestCase):
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 2017090110 patch: "+str(p+1))
 
     def test_read_nc_and_plot(self):
-        file = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc",geo=self.pgd_ascii().geo)
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
@@ -137,7 +137,7 @@ class LonLatRegTest(unittest.TestCase):
                 plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t])+" patch: "+str(p+1))
 
     def test_read_texte_and_plot(self):
-        file=SurfexIO("data/LONLAT_REG/TXT/TG1.TXT",surffile=self.pgd_ascii())
+        file=SurfexIO("data/LONLAT_REG/TXT/TG1.TXT",geo=self.pgd_ascii().geo)
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval=3600
         times=[datetime.strptime("2017090110", '%Y%m%d%H'),datetime.strptime("2017090115", '%Y%m%d%H')]
@@ -150,8 +150,8 @@ class LonLatRegTest(unittest.TestCase):
 
     def test_compare_nc_and_texte(self):
         pgdfile=self.pgd_ascii()
-        file_texte = SurfexIO("data/LONLAT_REG/TXT/TG1.TXT", surffile=pgdfile)
-        file_nc = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
+        file_texte = SurfexIO("data/LONLAT_REG/TXT/TG1.TXT",geo=pgdfile.geo)
+        file_nc = SurfexIO("data/LONLAT_REG/nc/ISBA_PROGNOSTIC.OUT.nc",geo=pgdfile.geo)
         times_read_nc, field_nc = file_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
@@ -179,7 +179,7 @@ class ConfProjTest(unittest.TestCase):
             ]
             print fm
             print formats[fm].lower()
-            surffile=self.pgd_ascii()
+            geo=self.pgd_ascii().geo
             if formats[fm].lower() == "ascii":
                 fname="data/CONF_PROJ/txt/SURFOUT.@YYYY@@MM@@DD@_@HH@h00.txt"
             elif formats[fm].lower() == "netcdf":
@@ -189,8 +189,9 @@ class ConfProjTest(unittest.TestCase):
             else:
                 fname="not_defined"
             print fname
-            ts=SurfexTimeSeries(formats[fm],surffile.geo,fname,SurfexVariable("TG1",tile="NATURE",basetime=basetime,times=times,interval=3600,patches=2),lons=[10.],lats=[60.],surffile=surffile)
-
+            var=SurfexVariable("TG1",tile="NATURE",basetime=basetime,times=times,interval=3600,patches=2)
+            ts=SurfexTimeSeries(formats[fm],fname,var,pos=[0,1],lons=[10.],lats=[60.],geo=geo).interpolated_ts
+            print ts.shape
 
     def test_read_ascii_and_plot(self):
         file = SurfexIO("data/CONF_PROJ/txt/SURFOUT.20170901_10h00.txt")
@@ -202,7 +203,7 @@ class ConfProjTest(unittest.TestCase):
 
 
     def test_read_nc_and_plot(self):
-        file = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=self.pgd_ascii())
+        file = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc",geo=self.pgd_ascii().geo)
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
@@ -213,7 +214,7 @@ class ConfProjTest(unittest.TestCase):
     def test_read_texte_and_plot(self):
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
-        file = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=self.pgd_ascii())
+        file = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", geo=self.pgd_ascii().geo)
         times = [datetime.strptime("2017090110", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", basetime=basetime, interval=interval, times=times,patches=2))
         for t in range(0, 2):
@@ -223,11 +224,11 @@ class ConfProjTest(unittest.TestCase):
 
     def test_compare_nc_and_texte(self):
         pgdfile=self.pgd_ascii()
-        file_nc = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc", surffile=pgdfile)
+        file_nc = SurfexIO("data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc",geo=pgdfile.geo)
         times_read_nc, field_nc = file_nc.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')]))
         basetime = datetime.strptime("2017090100", '%Y%m%d%H')
         interval = 3600
-        file_texte = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT", surffile=pgdfile)
+        file_texte = SurfexIO("data/CONF_PROJ/TXT/TG1.TXT",geo=pgdfile.geo)
         times_read_texte, field_texte = file_texte.read(SurfexVariable("TG1", times=[datetime.strptime("2017090110", '%Y%m%d%H')],basetime=basetime, interval=interval,patches=2))
 
         self.assertEquals(times_read_nc,times_read_texte)
