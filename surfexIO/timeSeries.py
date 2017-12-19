@@ -7,6 +7,8 @@ import numpy as np
 from datetime import datetime,timedelta
 from netCDF4 import Dataset,num2date
 from forcing.util import error,info,warning,parse_filepattern
+from surfexIO.surfexGeo import ConfProj,IGN,LonLatReg,LonLatVal
+from surfexIO.inputFromSurfex import SurfexIO
 
 class TimeSeries(object):
     """
@@ -20,6 +22,64 @@ class TimeSeries(object):
       self.varname=""
       self.stnr=-1
 
+class SurfexTimeSeries(object):
+
+    def __init__(self,type,geo,filename,var,pos=[],lons=[],lats=[],surffile=None):
+
+        times=var.times
+        basetime=var.basetime
+        interval=var.interval
+        patch=var.patches
+
+        # Read fields
+        if type.lower() == "ascii":
+            values=[]
+            for t in range(0,len(times)):
+                fname=parse_filepattern(filename,times[t],times[t])
+                read_field=SurfexIO(fname).read(var)
+                if read_field.shape[0] > 1:
+                    field=read_field[(patch-1)*geo.npoints:(patch)*geo.npoints]
+                    values.append(field)
+                else:
+                    error("Field must be larger than 1 value")
+            values=np.asarray(values)
+        elif type.lower() == "texte":
+            if basetime == None: error("Need basetime!")
+            if interval == None: error("Need interval!")
+            if surffile == None: error("Need surffile")
+            read_times,read_field = SurfexIO(filename,surffile=surffile).read(var)
+            print read_field.shape
+            values = read_field[:,(patch - 1) * geo.npoints:(patch) * geo.npoints]
+            print values.shape
+        elif type.lower() == "netcdf":
+            if surffile == None: error("Need surffile")
+            read_times, read_field = SurfexIO(filename,surffile=surffile).read(var)
+            print read_field.shape
+            values=read_field[:,:,:,patch-1]
+            print values.shape
+            values=np.transpose(values,[2,0,1])
+            print values.shape
+            values=np.reshape(values,[len(times),geo.npoints])
+        else:
+            error("Not implemented " + type.lower)
+
+        print times
+        print values.shape
+        print values[:,0],values[:,1]
+
+        # Interpolate to positions
+        if geo.__class__ == LonLatVal:
+            if len(pos) == 0: error("Positions are needed for LonLatVal")
+        else:
+            print lons,lats
+            if geo.__class__ == ConfProj:
+                print geo.__class__
+            elif geo.__class__ == LonLatReg:
+                print geo.__class__
+            elif geo.__class__ == IGN:
+                print geo.__class__
+            else:
+                error("Class "+geo.__class__+" not implemented!")
 
 class MetObservations(TimeSeries):
 

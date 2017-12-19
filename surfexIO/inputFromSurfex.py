@@ -40,78 +40,17 @@ def one2two(geo,field):
     return field
 
 
-class SurfexTile(object):
-
-    def __init__(self,name):
-        self.name=name
-        self.scheme="none"
-
-class Nature(SurfexTile):
-
-    def __init__(self,scheme):
-        super(Nature,self).__init__("NATURE")
-        self.scheme=scheme
-
-class Isba(Nature):
-
-    def __init__(self,patches,layers):
-        super(Isba,self).__init__("ISBA")
-        self.patches=patches
-        self.layers=layers
-
-    def set_snow_scheme(self,snow):
-        self.snow=snow
-
-class Snow(object):
-
-    def __init__(self,name,layers):
-        self.name=name
-        self.layers=layers
-
-class Sea(SurfexTile):
-
-    def __init__(self,scheme):
-        super(Sea, self).__init__("SEA")
-        self.scheme=scheme
-
-class Water(SurfexTile):
-
-    def __init__(self,scheme):
-        super(Water, self).__init__("WATER")
-        self.scheme=scheme
-
-class Town(SurfexTile):
-
-    def __init__(self,scheme):
-        super(Town,self).__init__("TOWN")
-        self.scheme=scheme
-
-class TEB(Town):
-
-    def __init__(self):
-        super(TEB,self).__init__("TEB")
-
-class SurfexInfo(object):
-
-    def __init__(self,version,bug,sea,water,nature,town):
-        self.version=version
-        self.bug=bug
-        self.sea=sea
-        self.water=water
-        self.nature=nature
-        self.town=town
-
-
 class SurfexVariable(object):
 
     """
     Surfex Variable
     """
 
-    def __init__(self,varname,tile="FULL",patches2read=[],layers2read=[],basetime=None,interval=None,type="float",times=[]):
+    def __init__(self,varname,tile="FULL",patches=1,patches2read=[],layers2read=[],basetime=None,interval=None,type="float",times=[]):
         self.varname=varname
         self.tile=tile
         self.type=type
+        self.patches=patches
         self.patches2read = patches2read
         self.layers2read = layers2read
         self.basetime=basetime
@@ -242,7 +181,7 @@ class SurfexFile(object):
 
 class AsciiSurfexFile(SurfexFile):
 
-    def __init__(self,fname,recreate=False,pgd=True):
+    def __init__(self,fname,recreate=False):
         super(AsciiSurfexFile, self).__init__(fname)
         if not os.path.isfile(self.fname): error("File does not exist: "+str(fname))
         grid = self.read(SurfexVariable("GRID_TYPE", type="string"))
@@ -283,41 +222,15 @@ class AsciiSurfexFile(SurfexFile):
         else:
             error("Grid " + str(grid[0]) + " not implemented!")
 
-        # Set info
-        if pgd:
-            version=self.read(SurfexVariable("VERSION",type="integer"))[0]
-            bug = self.read(SurfexVariable("BUG", type="integer"))[0]
-            print version,bug
-            csea = self.read(SurfexVariable("SEA", type="string"))
-            print csea
-            sea=Sea(csea)
-            cwater = self.read(SurfexVariable("WATER", type="string"))
-            print cwater
-            water=Water(cwater)
-            cnature = self.read(SurfexVariable("NATURE", type="string"))
-            print cnature
-            if cnature == "ISBA":
-                # PGD fields
-                patches=self.read(SurfexVariable("PATCH_NUMBER", tile="NATURE",type="integer"))[0]
-                layers=self.read(SurfexVariable("GROUND_LAYER", tile="NATURE",type="integer"))[0]
-
-                nature=Isba(int(patches),int(layers))
-            else:
-                nature=Nature(cnature)
-            ctown = self.read(SurfexVariable("TOWN", type="string"))
-            if ctown == "TEB":
-                town=TEB()
-            else:
-                town=Town(ctown)
-            self.info=SurfexInfo(version, bug, sea, water, nature, town)
+        # Surfex version
+        self.geo.version=self.read(SurfexVariable("VERSION",type="integer"))[0]
+        self.geo.bug = self.read(SurfexVariable("BUG", type="integer"))[0]
 
     def read(self,variable):
 
         read_tile=variable.tile
         read_par=variable.varname
         type=variable.type
-        #npatches=variable.patches
-        patches = variable.patches2read
 
         # Add & if not given
         if read_tile.find('&') < 0: read_tile='&'+read_tile
@@ -380,9 +293,7 @@ class AsciiSurfexFile(SurfexFile):
 
         if len(values) == 0: warning("No values found!")
         values=np.asarray(values)
-        #if  len(patches) > 0:
-        #
-        #    if len(values) >
+
         return values
 
 class NetCDFSurfexFile(SurfexFile):
@@ -525,11 +436,7 @@ class TexteSurfexFile(SurfexFile):
 
         base_time=variable.basetime
         interval=variable.interval
-        npatch=1
-        if self.info.nature.scheme == "ISBA":
-            npatch=self.info.nature.patches
-
-        patches = variable.patches2read
+        npatch=variable.patches
         times=variable.times
 
         if base_time == None: error("Basetime must be set for TEXTE")

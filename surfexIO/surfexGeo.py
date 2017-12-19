@@ -16,6 +16,8 @@ class SurfexGeo(object):
         self.mask=None
         self.nx=-1
         self.ny=-1
+        self.version=-1
+        self.bug=-1
         self.npoints=-1
         info("Contructed SurfexGeo")
 

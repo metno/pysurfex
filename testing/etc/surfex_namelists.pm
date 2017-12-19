@@ -21,7 +21,7 @@
     YCLAYFILETYPE       => '"DIRECT",',
     YSAND               => '"sand_fao",',
     YSANDFILETYPE       => '"DIRECT",',
-    #NPATCH              => '2',
+    NPATCH              => '2',
  },
 );
 
