@@ -45,7 +45,7 @@ class IGNTest(unittest.TestCase):
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = field[:,:,t,0,0]
+            field2 = field[:,:,t,0]
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
 
@@ -75,7 +75,7 @@ class LonLatValTest(unittest.TestCase):
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = field[0,0, t, 0, :]
+            field2 = field[:,0,t, 0]
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
 
@@ -103,7 +103,7 @@ class LonLatRegTest(unittest.TestCase):
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = np.reshape(field[:, :, t, 0, 0], [file.geo.nx, file.geo.ny])
+            field2 = np.reshape(field[:, :, t, 0], [file.geo.nx, file.geo.ny])
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
     def test_read_texte_and_plot(self):
@@ -141,7 +141,7 @@ class ConfProjTest(unittest.TestCase):
         times = [datetime.strptime("2017090101", '%Y%m%d%H'), datetime.strptime("2017090115", '%Y%m%d%H')]
         times_read, field = file.read(SurfexVariable("TG1", times=times))
         for t in range(0, 2):
-            field2 = np.reshape(field[:, :, t, 0, 0], [file.geo.nx, file.geo.ny])
+            field2 = np.reshape(field[:, :, t, 0], [file.geo.nx, file.geo.ny])
             plot_field(file.geo, field2, plot=False, interpolation="nearest", title="TG1 " + str(times_read[t]))
 
     def test_read_texte_and_plot(self):
