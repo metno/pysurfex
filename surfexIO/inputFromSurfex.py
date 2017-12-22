@@ -418,14 +418,23 @@ class NetCDFSurfexFile(SurfexFile):
             #print reverse_mapping
             field = np.transpose(field, reverse_mapping)
 
-            npoints=self.geo.npoints*npatch
+            if self.geo.__class__ == LonLatVal:
+                npoints=self.geo.npoints*npatch
+            elif self.geo.__class__ == IGN:
+                npoints=(self.geo.nx-2)*(self.geo.ny-2)*npatch
+            else:
+                npoints=self.geo.nx*self.geo.ny*npatch
+
             # Create 2-D array with times and points as for the other formats
             for t in range(0,field.shape[0]):
                 field2d=np.empty(npoints)
                 i=0
+                #print t,npatch,npoints,field.shape,field2d.shape
                 for p in range(0, npatch):
+
                     for y in range(0, field.shape[2]):
                         for x in range(0,field.shape[1]):
+                            #print t,x,y,p
                             field2d[i]=field[t, x, y, p]
                             i=i+1
                 if i != npoints: error("Mismatch in points")

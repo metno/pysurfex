@@ -13,6 +13,8 @@ class SurfexGeo(object):
         self.lonlat=True
         self.X=None
         self.Y=None
+        self.lons=None
+        self.lats=None
         self.mask=None
         self.nx=-1
         self.ny=-1
@@ -38,8 +40,16 @@ class LonLatReg(SurfexGeo):
         self.npoints = self.nx * self.ny
         self.X=np.asarray(self.reg_lon[0:self.nx])
         self.Y=np.asarray(self.reg_lat[0:self.npoints:self.nx])
+        self.lons=self.reg_lon[0:self.nx]
+        self.lats=self.reg_lat[0:self.npoints:self.nx]
         self.proj = ccrs.PlateCarree()
         self.display_proj=ccrs.PlateCarree()
+        self.lons = reg_lon
+        self.lats = reg_lat
+        #for j in range(0, len(self.Y)):
+        #    for i in range(0, len(self.X)):
+                #self.lons.append(lon)
+                #self.lats.append(lat)
 
 class LonLatVal(SurfexGeo):
 
@@ -59,6 +69,8 @@ class LonLatVal(SurfexGeo):
         self.npoints=self.nx
         self.X=np.asarray(self.xx)
         self.Y=np.asarray(self.xy)
+        self.lons=self.xx
+        self.lats=self.xy
         self.proj = ccrs.PlateCarree()
         self.display_proj=ccrs.Miller()
 
@@ -78,6 +90,15 @@ class ConfProj(SurfexGeo):
         self.Y = np.asarray(self.xy[0:self.npoints:self.nx])
         self.npoints=self.nx*self.ny
         self.display_proj = ccrs.Miller()
+
+        g0 = ccrs.Geodetic()
+        self.lons = []
+        self.lats = []
+        for j in range(0, len(self.Y)):
+            for i in range(0, len(self.X)):
+                lon,lat=g0.transform_point(self.X[i],self.Y[j],self.proj)
+                self.lons.append(lon)
+                self.lats.append(lat)
 
 class IGN(SurfexGeo):
 
@@ -107,18 +128,17 @@ class IGN(SurfexGeo):
         #self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
         self.X = np.asarray(self.pxall)
         self.Y = np.asarray(self.pyall)
-        self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)
+        #self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)
 
         g0 = ccrs.Geodetic()
         self.lons=[]
         self.lats=[]
 
-        for j in range(0, len(self.pyall)):
-            for i in range(0, len(self.pxall)):
-                lon,lat=g0.transform_point(self.pxall[i],self.pyall[j],self.proj)
+        for i in range(0, len(xx)):
+                lon,lat=g0.transform_point(xx[i],yy[i],self.proj)
                 self.lons.append(lon)
                 self.lats.append(lat)
-                #print lon,lat,self.pxall[i],self.pyall[j]
+                #print i,lon,lat,xx[i],yy[i]
 
     def get_coord(self,pin,pdin,coord,recreate=False):
 

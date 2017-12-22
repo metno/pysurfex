@@ -16,34 +16,48 @@ class ConfProjTest(unittest.TestCase):
         return pgd
 
     def test_timeseries_ascii(self):
-        tseries=[]
-        formats=["ascii","texte","netcdf"]
-        for fm in range(0,len(formats)):
-            basetime=datetime.strptime("2017090100", '%Y%m%d%H')
-            times=[
-                datetime.strptime("2017090101", '%Y%m%d%H'),
-                datetime.strptime("2017090102", '%Y%m%d%H'),
-                datetime.strptime("2017090103", '%Y%m%d%H'),
-                datetime.strptime("2017090104", '%Y%m%d%H')
-            ]
+        gtypes=["CONF_PROJ","LONLATVAL","LONLAT_REG","IGN"]
+        #gtypes=["LONLAT_REG"]
+        tseries_all=[]
+        for gtype in gtypes:
+            tseries=[]
+            pgd = SurfexIO("data/"+gtype+"/txt/PGD.txt")
+            geo=pgd.geo
+            formats=["ascii","texte","netcdf"]
+            for fm in range(0,len(formats)):
+                basetime=datetime.strptime("2017090100", '%Y%m%d%H')
+                times=[
+                    datetime.strptime("2017090101", '%Y%m%d%H'),
+                    datetime.strptime("2017090102", '%Y%m%d%H'),
+                    datetime.strptime("2017090103", '%Y%m%d%H'),
+                   datetime.strptime("2017090104", '%Y%m%d%H')
+                ]
 
-            geo=self.pgd_ascii().geo
-            if formats[fm].lower() == "ascii":
-                fname="data/CONF_PROJ/txt/SURFOUT.@YYYY@@MM@@DD@_@HH@h00.txt"
-            elif formats[fm].lower() == "netcdf":
-                fname="data/CONF_PROJ/nc/ISBA_PROGNOSTIC.OUT.nc"
-            elif formats[fm].lower() == "texte":
-                fname="data/CONF_PROJ/TXT/TG1.TXT"
+                if formats[fm].lower() == "ascii":
+                    fname="data/"+gtype+"/txt/SURFOUT.@YYYY@@MM@@DD@_@HH@h00.txt"
+                elif formats[fm].lower() == "netcdf":
+                    fname="data/"+gtype+"/nc/ISBA_PROGNOSTIC.OUT.nc"
+                elif formats[fm].lower() == "texte":
+                    fname="data/"+gtype+"/TXT/TG1.TXT"
 
-            var=SurfexVariable("TG1",tile="NATURE",basetime=basetime,times=times,interval=3600,patches=2)
-            ts=SurfexTimeSeries(formats[fm],fname,var,pos=[0,1],lons=[10.],lats=[60.],geo=geo).interpolated_ts
-            tseries.append(ts)
-            print ts.shape
+                print gtype,fname
+                var=SurfexVariable("TG1",tile="NATURE",basetime=basetime,times=times,interval=3600,patches=2)
+                ts=SurfexTimeSeries(formats[fm],fname,var,pos=[1,3],lons=[10.,10.4],lats=[60.,59.6],geo=geo).interpolated_ts
+                tseries.append(ts)
+            tseries_all.append(tseries)
 
-        tseries=np.asarray(tseries)
-        print tseries.shape
-        for t in range(0,tseries.shape[1]):
-            print t,tseries[0:tseries.shape[0],t,0],tseries[0:tseries.shape[0],t,1]
+        tseries=np.asarray(tseries_all)
+        #print tseries.shape
+
+        for gp in range(0,tseries.shape[0]):
+            print str(gtypes[gp])
+            for t in range(0,tseries.shape[2]):
+                line = str(t)
+                for p in range(0, tseries.shape[3]):
+                    for e in range(0,tseries.shape[1]):
+                        line=line+" "+str(tseries[gp,e,t,p])
+
+                print line
 
     def test_read_ascii_and_plot(self):
         file = SurfexIO("data/CONF_PROJ/txt/SURFOUT.20170901_10h00.txt")

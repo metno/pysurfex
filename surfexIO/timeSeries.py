@@ -9,6 +9,7 @@ from netCDF4 import Dataset,num2date
 from forcing.util import error,info,warning,parse_filepattern
 from surfexIO.surfexGeo import ConfProj,IGN,LonLatReg,LonLatVal
 from surfexIO.inputFromSurfex import SurfexIO
+from scipy.interpolate import griddata,NearestNDInterpolator
 
 class TimeSeries(object):
     """
@@ -60,13 +61,23 @@ class SurfexTimeSeries(object):
             error("Not implemented " + type.lower)
 
         # Interpolate to positions/longitude/latitude
+        print geo.__class__
         if geo.__class__ == LonLatVal:
             if len(pos) == 0: error("Positions are needed for LonLatVal")
             self.interpolated_ts=values[:,pos]
         else:
             #print values.shape
-            print lons,lats,pos
-            self.interpolated_ts=values[:,pos]
+            #print lons,lats,pos
+            self.interpolated_ts=np.empty([len(times),len(lons)])
+            nn=NearestNeighbour(lons, lats,geo)
+
+            for t in range(0, len(times)):
+                for i in range(0, len(lons)):
+                    ind_x = nn.index[i]
+                    #ind_y = index[i][1]
+                    #print t,i,ind_x
+                    self.interpolated_ts[t][i] = values[t,ind_x]
+
             if geo.__class__ == ConfProj:
                 print geo.__class__
             elif geo.__class__ == LonLatReg:
@@ -77,6 +88,48 @@ class SurfexTimeSeries(object):
                 error("Class "+geo.__class__+" not implemented!")
 
         print self.interpolated_ts.shape
+
+class NearestNeighbour(object):
+
+    def __init__(self,interpolated_lons,interpolated_lats,geo):
+        self.index=self.create_index(interpolated_lons, interpolated_lats,geo)
+
+    def create_index(self,interpolated_lons, interpolated_lats,geo):
+        lons=np.asarray(geo.lons)
+        lats=np.asarray(geo.lats)
+
+        dim_x = lons.shape[0]
+        dim_y = lats.shape[0]
+        npoints = len(interpolated_lons)
+
+        lons_vec = np.reshape(lons, lons.size)
+        lats_vec = np.reshape(lats, lats.size)
+        points = (lons_vec, lats_vec)
+
+        values = np.empty([dim_x])
+        ii = 0
+        for i in range(0, dim_x):
+                values[i] = ii
+                ii = ii + 1
+
+        values_vec = values
+
+        #print lons_vec.shape
+        #print lats_vec.shape
+        #print values_vec.shape
+        nn = NearestNDInterpolator(points, values_vec)
+        grid_points = []
+        for n in range(0, npoints):
+            ii = nn(interpolated_lons[n], interpolated_lats[n])
+            ii = int(ii)
+            #i = x[ii]
+            #j = y[ii]
+            #print n,ii
+
+            grid_points.append(ii)
+
+        #print grid_points
+        return grid_points
 
 class MetObservations(TimeSeries):
 
