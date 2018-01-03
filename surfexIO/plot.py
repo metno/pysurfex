@@ -173,6 +173,8 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
         y0=Y[0]
         yN=Y[ny-1]
 
+    # Clear plot
+    plt.close()
     ax = plt.axes(projection=geo.display_proj)
 
     ax.set_global()
@@ -228,6 +230,6 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     sm._A = []
     cb = plt.colorbar(sm, ticks=lims)
     cb.set_clim([min_value, max_value])
-    if plot: plt.show()
-    # Clear plot
-    plt.close()
+    if plot:
+        plt.show()
+        plt.close()

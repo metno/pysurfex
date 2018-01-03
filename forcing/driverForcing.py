@@ -4,10 +4,10 @@ import copy
 import argparse
 import numpy as np
 import forcing.version
-import forcing.util
+from forcing.util import error,data_merge
 import forcing.converter
 from forcing.surfexForcing import NetCDFOutput
-import forcing.readInputForSurfex
+from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
 from datetime import datetime,timedelta
 from forcing.cache import Cache
@@ -112,8 +112,8 @@ def parseArgs(argv):
 
     args = parser.parse_args(argv)
     if ( args.dtg_start or args.dtg_stop) < 1000010100:
-        print "Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop)
-        sys.exit(1)
+        error("Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop))
+
     start=datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')
     stop=datetime.strptime(str.strip(str(args.dtg_stop)), '%Y%m%d%H')
 
@@ -129,49 +129,48 @@ def parseArgs(argv):
     area_file=args.area
     if area_file != "":
         if not os.path.isfile(area_file):
-            forcing.util.error("The area config file \""+area_file+"\" does not exist!")
-            sys.exit(1)
+            error("The area config file \""+area_file+"\" does not exist!")
 
         area=yaml.load(open(args.area))
-        if args.mode not in area: forcing.util.error(args.mode+" not defined in " + area_file)
+        if args.mode not in area: error(args.mode+" not defined in " + area_file)
         if args.name == None:
             area_dict = area[args.mode]
         else:
-            if not args.name in area[args.mode]: forcing.util.error(args.name+" not defined in " + area_file)
+            if not args.name in area[args.mode]: error(args.name+" not defined in " + area_file)
             area_dict = area[args.mode][args.name]
 
         if args.mode == "points":
             if "lons" in area_dict:
-                print area_dict
+                #print area_dict
                 lons = str.split(area_dict["lons"],",")
-                print lons
+                #print lons
                 lons = [float(i) for i in lons]
             else:
-                forcing.util.error("Longitudes must be defined")
+                error("Longitudes must be defined")
             if "lats" in area_dict:
                 lats = str.split(area_dict["lats"],",")
                 lats = [float(i) for i in lats]
             else:
-                forcing.util.error("Latitudes must be defined")
+                error("Latitudes must be defined")
 
-            if ( len(lons) != len(lats)): forcing.util.error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
+            if ( len(lons) != len(lats)): error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
             geo_out = Points(len(lons), lons, lats)
         elif args.mode == "domain":
             proj=None
             if "proj4" in area_dict:
                 proj = str(area_dict["proj4"])
             else:
-                forcing.util.error("Projection (proj4) must be defined")
+                error("Projection (proj4) must be defined")
             if "x" in area_dict:
                 x = str.split(area_dict["x"], ",")
                 x = [float(i) for i in x]
             else:
-                forcing.util.error("x must be defined")
+                error("x must be defined")
             if "y" in area_dict:
                 y = str.split(area_dict["y"], ",")
                 y = [float(i) for i in y]
             else:
-                forcing.util.error("y must be defined")
+                error("y must be defined")
             degrees=False
             if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
             geo_out = Domain(proj,x,y,degrees)
@@ -196,7 +195,7 @@ def parseArgs(argv):
         user_settings = yaml.load(open(args.config)) or {}
 
     # Merge all settings with user all settings
-    merged_conf=forcing.util.data_merge(default_conf,user_settings)
+    merged_conf=data_merge(default_conf,user_settings)
 
     # Replace global settings from
     format = args.input_format
@@ -287,18 +286,18 @@ def parseArgs(argv):
                 if "converter" in conf[sfx_var][format]:
                     conf_dict = copy.deepcopy(conf[sfx_var][format]["converter"])
                 else:
-                    forcing.util.error("No converter defined for "+sfx_var)
+                    error("No converter defined for "+sfx_var)
             # Variables with height dependency
             else:
                 if ref_height in conf[sfx_var]:
-                    print sfx_var,ref_height,format
-                    if conf[sfx_var][ref_height][format] == None: forcing.util.error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
+                    #print sfx_var,ref_height,format
+                    if conf[sfx_var][ref_height][format] == None: error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
                     if "converter" in conf[sfx_var][ref_height][format]:
                         conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
                     else:
-                        forcing.util.error("No converter defined for "+sfx_var)
+                        error("No converter defined for "+sfx_var)
                 else:
-                    forcing.util.error("No ref height \""+ref_height+"\" defined for " + sfx_var)
+                    error("No ref height \""+ref_height+"\" defined for " + sfx_var)
 
 
         ##############################################################
@@ -311,16 +310,16 @@ def parseArgs(argv):
                     if "constant" in conf[sfx_var][ref_height]:
                         const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
                     else:
-                        forcing.util.error("No constant defined for " + sfx_var)
+                        error("No constant defined for " + sfx_var)
                 else:
-                    forcing.util.error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                    error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
             else:
                 if "constant" in conf[sfx_var]:
                     const_dict = copy.deepcopy(conf[sfx_var]["constant"])
                 else:
-                    forcing.util.error("No constant defined for " + sfx_var)
+                    error("No constant defined for " + sfx_var)
 
-            obj = forcing.readInputForSurfex.ConstantValue(geo, sfx_var, const_dict)
+            obj = ConstantValue(geo, sfx_var, const_dict)
         else:
             # Construct the converter
             basetime=start
@@ -328,7 +327,7 @@ def parseArgs(argv):
             converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime,args.dry)
 
             # Construct the input object
-            obj = forcing.readInputForSurfex.ConvertedInput(geo, sfx_var,converter)
+            obj = ConvertedInput(geo, sfx_var,converter)
         return obj
 
     att_objs=[]

@@ -22,7 +22,7 @@ class Variable(object):
         self.opendap = False
 
         self.filename = forcing.util.parse_filepattern(var_dict["filepattern"], self.basetime,self.validtime)
-        print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
+        #print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
     @abc.abstractmethod
@@ -76,7 +76,7 @@ class NetcdfVariable(Variable):
 
         super(NetcdfVariable,self).__init__(basetime,validtime,var_dict)
 
-        print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
+        #print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
 
     def read_variable(self,geo,validtime,dry,cache):
 

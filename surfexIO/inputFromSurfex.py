@@ -85,11 +85,7 @@ class SurfexIO(object):
 
     def __init__(self,fname,filetype="surf",format=None,geo=None,recreate=False):
 
-
-        if not os.path.isfile(fname):
-            error("The input file \"" + fname + "\" does not exist!")
-        else:
-            self.fname=fname
+        self.fname=fname
 
         # Do I need filetype. ASCII/TEXTE are no problem. Depends on NetCDF in SURFEX 8 maybe
         if filetype.lower() != "surf" and filetype.lower() != "ts" and filetype.lower() != "forcing":
@@ -115,6 +111,10 @@ class SurfexIO(object):
             error("Format not implemented: "+self.format)
         self.geo=self.obj.geo
         self.info=self.obj.info
+
+
+        if not os.path.isfile(fname):
+            error("The input file \"" + fname + "\" does not exist!")
 
     def read2d(self,variable,fieldManipulation=None):
 
@@ -421,7 +421,7 @@ class NetCDFSurfexFile(SurfexFile):
             if self.geo.__class__ == LonLatVal:
                 npoints=self.geo.npoints*npatch
             elif self.geo.__class__ == IGN:
-                npoints=(self.geo.nx-2)*(self.geo.ny-2)*npatch
+                npoints=self.geo.npoints*npatch
             else:
                 npoints=self.geo.nx*self.geo.ny*npatch
 
@@ -431,19 +431,35 @@ class NetCDFSurfexFile(SurfexFile):
                 i=0
                 #print t,npatch,npoints,field.shape,field2d.shape
                 for p in range(0, npatch):
+                    if self.geo.__class__ == IGN:
+                        ii=0
+                        j=0
+                        # For some reason the NetCDF files have one less dimension in all
+                        # dimensions than the PGD dimension and mask needs x first.
+                        for x in range(-1, field.shape[1]+1):
+                            for y in range(-1, field.shape[2] + 1):
+                                if x in range(0,field.shape[1]) and y in range(0,field.shape[2]):
+                                    #print i, ii,j, t, x, y, p, self.geo.mask[j]
+                                    if self.geo.mask[j] == ii:
+                                        field2d[i] = np.nan
+                                        if field[t, x, y, p] != np.nan:
+                                            field2d[i] = field[t, x, y, p]
+                                        i=i+1
+                                        j=j+1
+                                ii=ii+1
+                    else:
+                        for y in range(0, field.shape[2]):
+                            for x in range(0,field.shape[1]):
+                                field2d[i] = np.nan
+                                if field[t, x, y, p] != np.nan:
+                                    field2d[i] = field[t, x, y, p]
+                                i = i + 1
+                if i != npoints: error("Mismatch in points "+str(i)+"!="+str(npoints))
 
-                    for y in range(0, field.shape[2]):
-                        for x in range(0,field.shape[1]):
-                            #print t,x,y,p
-                            field2d[i]=field[t, x, y, p]
-                            i=i+1
-                if i != npoints: error("Mismatch in points")
                 values=np.append(values,field2d)
             # Re-shape to proper format
             values = np.reshape(values, [field.shape[0],npoints])
 
-            # Set undefined values as NAN
-            values[values > 1e+19] = np.nan
         else:
             warning("Variable "+var+" not found!")
 

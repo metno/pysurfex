@@ -1,5 +1,5 @@
-import forcing.variable
-import forcing.util
+from forcing.variable import NetcdfVariable
+from forcing.util import error,data_merge
 import copy
 import numpy as np
 from datetime import timedelta
@@ -38,10 +38,12 @@ class Converter:
         elif name == "phi2m":
             self.phi = self.create_variable(format, defs, conf[self.name]["phi"],dry)
         else:
-            forcing.util.error("Converter " + self.name + " not implemented")
+            error("Converter " + self.name + " not implemented")
 
         #print "Constructed the converter " + self.name
 
+    def print_info(self):
+        print self.name
 
     def create_variable(self,format,defs,var_dict,dry):
 
@@ -49,16 +51,16 @@ class Converter:
         # Create deep copies not to inherit between variables
         defs=copy.deepcopy(defs)
         var_dict=copy.deepcopy(var_dict)
-        merged_dict=forcing.util.data_merge(defs,var_dict)
+        merged_dict=data_merge(defs,var_dict)
 
         var=None
         if format == "netcdf":
-            var=forcing.variable.NetcdfVariable(merged_dict,self.basetime,self.validtime,dry)
+            var=NetcdfVariable(merged_dict,self.basetime,self.validtime,dry)
         elif format == "grib1":
-            forcing.util.error("Create variable for format "+format+" not implemented!")
+            error("Create variable for format "+format+" not implemented!")
         #    var = forcing.variable.GribVariable(var_dict)
         elif format == "constant":
-            forcing.util.error("Create variable for format " + format + " not implemented!")
+            error("Create variable for format " + format + " not implemented!")
 
         return var
 
@@ -123,5 +125,5 @@ class Converter:
             field=np.divide(field,gravity)
             field[(field < 0)] = 0.
         else:
-            forcing.util.error("Converter "+self.name+" not implemented")
+            error("Converter "+self.name+" not implemented")
         return field

@@ -61,7 +61,7 @@ class SurfexTimeSeries(object):
             error("Not implemented " + type.lower)
 
         # Interpolate to positions/longitude/latitude
-        print geo.__class__
+        #print geo.__class__
         if geo.__class__ == LonLatVal:
             if len(pos) == 0: error("Positions are needed for LonLatVal")
             self.interpolated_ts=values[:,pos]
@@ -78,16 +78,16 @@ class SurfexTimeSeries(object):
                     #print t,i,ind_x
                     self.interpolated_ts[t][i] = values[t,ind_x]
 
-            if geo.__class__ == ConfProj:
-                print geo.__class__
-            elif geo.__class__ == LonLatReg:
-                print geo.__class__
-            elif geo.__class__ == IGN:
-                print geo.__class__
-            else:
-                error("Class "+geo.__class__+" not implemented!")
+            #if geo.__class__ == ConfProj:
+            #    print geo.__class__
+            #elif geo.__class__ == LonLatReg:
+            #    print geo.__class__
+            #elif geo.__class__ == IGN:
+            #    print geo.__class__
+            #else:
+            #    error("Class "+geo.__class__+" not implemented!")
 
-        print self.interpolated_ts.shape
+        #print self.interpolated_ts.shape
 
 class NearestNeighbour(object):
 

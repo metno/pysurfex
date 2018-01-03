@@ -11,7 +11,7 @@ class Geo(object):
         self.nlats=nlats
         self.lons = np.array(lons)
         self.lats = np.array(lats)
-        print "Created geo object "+str(self.npoints)+" "+str(self.nlons)+" "+str(self.nlats)
+        #print "Created geo object "+str(self.npoints)+" "+str(self.nlons)+" "+str(self.nlats)
 
 
 class Points(Geo):

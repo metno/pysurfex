@@ -125,10 +125,9 @@ class IGN(SurfexGeo):
         self.ny=len(self.pyall)
         self.npoints=len(xx)
 
-        #self.X, self.Y = np.meshgrid(self.pxall, self.pyall)
+        #print self.npoints,self.nx,self.ny
         self.X = np.asarray(self.pxall)
         self.Y = np.asarray(self.pyall)
-        #self.lons,self.lats = np.meshgrid(self.pxall, self.pyall)
 
         g0 = ccrs.Geodetic()
         self.lons=[]

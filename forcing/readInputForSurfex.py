@@ -9,10 +9,14 @@ class ReadInputForSurfex(object):
     def read_time_step(self):
         raise NotImplementedError('users must define read_time_step to use this base class')
 
+    @abc.abstractmethod
+    def print_info(self):
+        raise NotImplementedError('users must define read_time_step to use this base class')
+
     def __init__(self, geo, var_name):
         self.geo_out = geo
         self.var_name = var_name
-        print "Constructed "+self.__class__.__name__+" for " + self.var_name
+        #print "Constructed "+self.__class__.__name__+" for " + self.var_name
 
 class ConvertedInput(ReadInputForSurfex):
 
@@ -28,6 +32,10 @@ class ConvertedInput(ReadInputForSurfex):
         self.geo_out = geo
         self.var_name = var_name
         self.converter = converter
+
+    def print_info(self):
+        print self.var_name
+        self.converter.print_info()
 
 class ConstantValue(ReadInputForSurfex):
 
@@ -47,4 +55,5 @@ class ConstantValue(ReadInputForSurfex):
         else:
             forcing.util.error("Constant value must have a value!")
 
-
+    def print_info(self):
+        print self.var_name
