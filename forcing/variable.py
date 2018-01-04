@@ -144,12 +144,74 @@ class NetcdfVariable(Variable):
 
 
 class GribVariable(Variable):
+
+    from forcing.grib import Grib
+
     """
     Grib variable
     """
-    def __init__(self,parameter,type,level,tri):
-        super(GribVariable,self).__init__()
-        self.parameter=parameter
-        self.type=type
-        self.level=level
-        self.tri=tri
+    def __init__(self,var_dict,basetime,validtime,dry):
+        super(GribVariable,self).__init__(basetime,validtime,var_dict)
+        #self.parameter=parameter
+        #self.type=type
+        #self.level=level
+        #self.tri=tri
+
+    def read_variable(self, geo, validtime, dry, cache):
+        self.validtime = validtime
+        if (
+        self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]), int(self.var_dict["file_inc"]))):
+            # print "Updating filehandler for "+self.print_variable_info()
+            if dry:
+                print "Check if " + self.filename + " exists!"
+            else:
+                if cache.file_open(self.filename):
+                    self.file_handler = cache.get_file_handler(self.filename)
+                else:
+                    self.file_handler = Grib(self.filename)
+                    cache.set_file_handler(self.filename, self.file_handler)
+
+        if (self.file_handler == None):
+            forcing.util.warning("No file handler exist for this time step")
+            field = np.array(len(geo.lons))
+            # TODO: Fill with NAN
+        else:
+            if "par" in self.var_dict: par=self.var_dict["par"]
+            if "type" in self.var_dict: type=self.var_dict["type"]
+            if "level" in self.var_dict: level=self.var_dict["level"]
+            if "tri" in self.var_dict: tri=self.var_dict["tri"]
+
+            accumulated = False
+            instant = 0.
+            if "accumulated" in self.var_dict: accumulated = [self.var_dict["accumulated"]]
+            if accumulated:
+                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+            int_type = "nearest"
+            if "interpolator" in self.var_dict: int_type = self.var_dict["interpolator"]
+
+            # print level, accumulated, instant,int_type
+            if dry:
+                field = np.array(len(geo.lons))
+            else:
+                # Update the interpolator from cache if existing
+                if int_type == "nearest" and cache.interpolator_is_set(int_type):
+                    self.file_handler.nearest = cache.get_interpolator(int_type)
+                elif int_type == "linear" and cache.get_interpolator(int_type):
+                    self.file_handler.linear = cache.get_interpolator(int_type)
+
+                field4d = self.file_handler.points(par,type,level,tri, lons=geo.lons, lats=geo.lats, levels=level,
+                                                   times=[validtime], deaccumulate=accumulated, instantanious=instant,
+                                                   interpolation=int_type)
+                field = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
+
+                # Find used interpolator
+                if int_type == "nearest":
+                    interpolator = self.file_handler.nearest
+                elif int_type == "linear":
+                    interpolator = self.file_handler.linear
+                # Update cache
+                cache.update_interpolator(int_type, interpolator)
+        return field
+
+    def print_variable_info(self):
+        return ":"+str(self.var_dict)+":"
