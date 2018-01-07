@@ -1,3 +1,4 @@
+
 class Cache:
 
     def __init__(self):
@@ -35,17 +36,25 @@ class Cache:
                 found=True
         return found
 
-    def interpolator_is_set(self,type):
+    def interpolator_is_set(self,type,format):
         if type in self.interpolators:
-            return True
+            if format in self.interpolators[type]:
+                return True
+            else:
+                return False
         else:
             return False
 
-    def get_interpolator(self,type):
-        if self.interpolator_is_set(type):
-            return self.interpolators[type]
+    def get_interpolator(self,type,format):
+        if self.interpolator_is_set(type,format):
+            return self.interpolators[type][format]
         else:
             return None
 
-    def update_interpolator(self,type,value):
-        self.interpolators[type]=value
+    def update_interpolator(self,type,format,value):
+        print "Update interpolator ",type,format,self.interpolators
+        this_dict={format:value}
+        if type in self.interpolators:
+            for f in self.interpolators[type]:
+                this_dict.update({f:self.interpolators[type][f]})
+        self.interpolators.update({type:this_dict})

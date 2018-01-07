@@ -37,7 +37,7 @@ def parseArgs(argv):
     parser.add_argument('-m','--mode',type=str,help="Type: domain/points",default="points",nargs="?")
     parser.add_argument('-n','--name', type=str, help="Name of domian/points", default=None, nargs="?")
     parser.add_argument('-t','--timestep', type=int,help="Surfex time step",default=3600,nargs="?")
-    parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", nargs="?")
+    parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", choices=["netcdf","grib"])
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
@@ -47,51 +47,51 @@ def parseArgs(argv):
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
     group_ta = parser.add_argument_group('TA', description="Air temperature [K]")
-    group_ta.add_argument("--ta", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
+    group_ta.add_argument("--ta", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
     group_ta.add_argument("--ta_converter", type=str, help="Converter function to air temperature", default="none",choices=["none"])
 
     group_qa = parser.add_argument_group('QA', description="Specific humidity")
-    group_qa.add_argument("--qa", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
+    group_qa.add_argument("--qa", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
     group_qa.add_argument("--qa_converter", type=str, help="Converter function to specific humidity", default="none",choices=["none", "rh2q"])
 
     group_ps = parser.add_argument_group('PS', description="Surface air pressure [Pa]")
-    group_ps.add_argument('--ps',type=str,help="Surface air pressure input format",default="default",choices=["default","netcdf","grib1","constant"])
+    group_ps.add_argument('--ps',type=str,help="Surface air pressure input format",default="default",choices=["default","netcdf","grib","constant"])
     group_ps.add_argument("--ps_converter", type=str, help="Converter function to surface air pressure", default="none",choices=["none"])
 
     group_dir_sw = parser.add_argument_group('DIR_SW', description="Direct shortwave radiation")
-    group_dir_sw.add_argument('--dir_sw',type=str,help="Direct short wave radiation input format",default="default",choices=["default","netcdf","grib1","constant"])
+    group_dir_sw.add_argument('--dir_sw',type=str,help="Direct short wave radiation input format",default="default",choices=["default","netcdf","grib","constant"])
     group_dir_sw.add_argument("--dir_sw_converter", type=str, help="Converter function to direct short wave radiation", default="none",choices=["none"])
 
     group_sca_sw = parser.add_argument_group('SCA_SW', description="Scattered short wave radiation flux")
-    group_sca_sw.add_argument('--sca_sw',type=str,help="Scattered short wave radiation input format",default="default",choices=["netcdf","grib1","constant"])
+    group_sca_sw.add_argument('--sca_sw',type=str,help="Scattered short wave radiation input format",default="default",choices=["netcdf","grib","constant"])
     group_sca_sw.add_argument("--sca_sw_converter", type=str, help="Converter function to scattered shortwave radiation flux", default="none",choices=["none"])
 
     group_lw = parser.add_argument_group('LW', description="Long wave radiation flux")
-    group_lw.add_argument('--lw',type=str,help="Long wave radiation input format",default="default",choices=["netcdf","grib1","constant"])
+    group_lw.add_argument('--lw',type=str,help="Long wave radiation input format",default="default",choices=["netcdf","grib","constant"])
     group_lw.add_argument("--lw_converter", type=str, help="Converter function to long wave radiation flux", default="none", choices=["none"])
 
     group_rain = parser.add_argument_group('RAIN',description="Rainfall rate")
-    group_rain.add_argument("--rain", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
+    group_rain.add_argument("--rain", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
     group_rain.add_argument("--rain_converter",type=str,help="Converter function to rainfall rate",default="totalprec",choices=["none","totalprec"])
 
     group_snow = parser.add_argument_group('SNOW', description="Snowfall rate")
-    group_snow.add_argument("--snow", type=str, help="Input format", default="default",choices=["default", "netcdf", "grib1"])
+    group_snow.add_argument("--snow", type=str, help="Input format", default="default",choices=["default", "netcdf", "grib"])
     group_snow.add_argument("--snow_converter", type=str, help="Converter function to snowfall rate", default="none", choices=["none"])
 
     group_wind = parser.add_argument_group('WIND', description="Wind speed")
-    group_wind.add_argument("--wind", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
+    group_wind.add_argument("--wind", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
     group_wind.add_argument("--wind_converter", type=str, help="Converter function to windspeed", default="windspeed",choices=["none", "windspeed"])
 
     group_wind_dir = parser.add_argument_group('WIND_DIR', description="Wind direction")
-    group_wind_dir.add_argument("--wind_dir", type=str, help="Input format", default="default",choices=["default","netcdf","grib1"])
+    group_wind_dir.add_argument("--wind_dir", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
     group_wind_dir.add_argument("--wind_dir_converter", type=str, help="Converter function to wind direction", default="winddir",choices=["none", "winddir"])
 
     group_co2 = parser.add_argument_group('CO2', description="Carbon dioxide")
-    group_co2.add_argument('--co2',type=str,help="CO2 input format",default="default",choices=["netcdf","grib1","constant"])
+    group_co2.add_argument('--co2',type=str,help="CO2 input format",default="default",choices=["netcdf","grib","constant"])
     group_co2.add_argument("--co2_converter", type=str, help="Converter function to carbon dioxide", default="none", choices=["none"])
 
     group_zs = parser.add_argument_group('ZS', description="Surface geopotential")
-    group_zs.add_argument('--zsoro',type=str,help="ZS input format",default="default",choices=["netcdf","grib1","constant"])
+    group_zs.add_argument('--zsoro',type=str,help="ZS input format",default="default",choices=["netcdf","grib","constant"])
     group_zs.add_argument("--zsoro_converter", type=str, help="Converter function to ZS", default="none", choices=["none","phi2m"])
 
     group_zval = parser.add_argument_group('ZREF', description="Reference height for temperature and humidity")
@@ -290,7 +290,8 @@ def parseArgs(argv):
             # Variables with height dependency
             else:
                 if ref_height in conf[sfx_var]:
-                    #print sfx_var,ref_height,format
+                    print sfx_var,ref_height,format
+                    if not format in conf[sfx_var][ref_height]: error(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var+" and format: "+format)
                     if conf[sfx_var][ref_height][format] == None: error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
                     if "converter" in conf[sfx_var][ref_height][format]:
                         conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
@@ -323,7 +324,10 @@ def parseArgs(argv):
         else:
             # Construct the converter
             basetime=start
+            # TODO
+            basetime = datetime.strptime("2018010318", '%Y%m%d%H')
 
+            print sfx_var
             converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime,args.dry)
 
             # Construct the input object
@@ -354,10 +358,10 @@ def parseArgs(argv):
 
 def runTimeLoop(options,var_objs,att_objs):
 
+    this_time = options['start']
     cache = Cache()
     # Find how many time steps we want to write
     ntimes=0
-    this_time=options['start']
     while this_time <= options['stop']:
         ntimes=ntimes+1
         this_time=this_time+timedelta(seconds=options['timestep'])
@@ -368,9 +372,9 @@ def runTimeLoop(options,var_objs,att_objs):
         att_time=options['start']
         output = NetCDFOutput(options['start'], options['geo_out'], ntimes, var_objs, att_objs,att_time,options['dry'],cache)
     elif str.lower(options['output_format']) == "ascii":
-        forcing.util.error("Output format "+options['output_format']+" not implemented yet")
+        error("Output format "+options['output_format']+" not implemented yet")
     else:
-        forcing.util.error("Invalid output format "+input['output_format'])
+        error("Invalid output format "+input['output_format'])
 
     # Loop output time steps
     t=0

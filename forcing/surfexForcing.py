@@ -108,6 +108,7 @@ class NetCDFOutput(SurfexForcing):
         for i in range (0,len(att_objs)):
             this_obj=att_objs[i]
             this_var=this_obj.var_name
+            print "Preparing " + this_obj.var_name
             if this_var == "ZS":
                 zs=this_obj.read_time_step(att_time,dry,cache)
             elif this_var == "ZREF":

@@ -1,17 +1,16 @@
 # General netcdf settings
 netcdf:
-  filepattern: http://thredds.met.no/thredds/dodsC/meps25files/meps_det_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  filepattern: http://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
   offset: 10800
   file_inc: 21600
   fcint: 21600
 
-# General grib1 settings
-grib1:
-  filepattern:
-
-# General grib2 settings
-grib2:
-  filepattern:
+# General grib settings
+grib:
+  filepattern: not_defined
+  offset: 10800
+  file_inc: 3600
+  fcint: 21600
 
 # Orography
 ZS:
@@ -22,14 +21,25 @@ ZS:
       phi2m:
         phi:
           name: surface_geopotential
-  grib1:
+  grib:
+    converter:
+      none:
+        parameter: -1
+        type: sfc
+        level: 0
+        tri: 0
+      phi2m:
+        phi:
+          parameter: 6
+          type: sfc
+          level: 0
+          tri: 0
 
 # Reference height Z
 ZREF:
   screen:
     constant:
       value: 2
-    grib1:
   ml:
     netcdf:
       converter:
@@ -37,9 +47,13 @@ ZREF:
           name: air_temperature_ml
     constant:
       value: 12.5
-    grib1:
+    grib:
       converter:
         none:
+          parameter: -1
+          type: sfc
+          level: 0
+          tri: 0
 # Reference height U
 UREF:
   screen:
@@ -52,9 +66,13 @@ UREF:
           name: air_temperature_ml
     constant:
       value: 12.5
-    grib1:
+    grib:
       converter:
         none:
+          parameter: -1
+          type: sfc
+          level: 0
+          tri: 0
 
 # Temperature
 TA:
@@ -63,12 +81,12 @@ TA:
       converter:
         none:
           name: air_temperature_2m
-    grib1:
+    grib:
       converter:
         none:
           parameter: 11
-          level: 105
-          height: 2
+          type: sfc
+          level: 2
           tri: 0
   ml:
     netcdf:
@@ -76,20 +94,13 @@ TA:
         none:
           name: air_temperature_ml
           level: 0.99851962924
-    grib1:
+    grib:
       converter:
         none:
           parameter: 11
-          level: 109
-          height: 65
+          type: ml
+          level: 65
           tri: 0
-    grib2:
-      converter:
-        none:
-    ascii:
-      converter:
-        none:
-
 
 # Specific humidity
 QA:
@@ -110,6 +121,29 @@ QA:
           p:
             name: surface_air_pressure
             units: "hPa"
+    grib:
+      converter:
+        none:
+          parameter: 51
+          type: sfc
+          level: 2
+          tri: 0
+        rh2q:
+          rh:
+            parameter: 52
+            type: sfc
+            level: 2
+            tri: 0
+          t:
+            parameter: 11
+            type: sfc
+            level: 2
+            tri: 0
+          p:
+            parameter: 1
+            type: sfc
+            level: 0
+            tri: 0
   ml:
     netcdf:
       converter:
@@ -128,7 +162,29 @@ QA:
           p:
             name: surface_air_pressure
             units: "hPa"
-
+    grib:
+      converter:
+        none:
+          parameter: 51
+          type: ml
+          level: 65
+          tri: 0
+        rh2q:
+          rh:
+            parameter: 52
+            type: ml
+            level: 65
+            tri: 0
+          t:
+            parameter: 11
+            type: ml
+            level: 65
+            tri: 0
+          p:
+            parameter: 1
+            type: ml
+            level: 65
+            tri: 0
 
 # Wind speed
 WIND:
@@ -142,14 +198,24 @@ WIND:
             name: x_wind_10m
           y:
             name: y_wind_10m
-    grib1:
+    grib:
       converter:
         none:
-          parameter:
+          parameter: 207
+          type: sfc
+          level: 10
+          tri: 0
         windspeed:
           x:
+            parameter: 33
+            type: sfc
+            level: 10
+            tri: 0
           y:
-
+            parameter: 34
+            type: sfc
+            level: 10
+            tri: 0
   ml:
     netcdf:
       converter:
@@ -163,10 +229,24 @@ WIND:
           y:
             name: y_wind_ml
             level: 0.99851962924
-    grib1:
+    grib:
       converter:
         none:
-          parameter:
+          parameter: 207
+          type: sfc
+          level: 10
+          tri: 0
+        windspeed:
+          x:
+            parameter: 33
+            type: ml
+            level: 65
+            tri: 0
+          y:
+            parameter: 34
+            type: ml
+            level: 65
+            tri: 0
 
 # Wind direction
 WIND_DIR:
@@ -180,14 +260,24 @@ WIND_DIR:
             name: x_wind_10m
           y:
             name: y_wind_10m
-    grib1:
+    grib:
       converter:
         none:
-          parameter:
+          parameter: 249
+          type: sfc
+          level: 0
+          tri: 0
         windspeed:
           x:
+            parameter: 33
+            type: sfc
+            level: 10
+            tri: 0
           y:
-
+            parameter: 34
+            type: sfc
+            level: 10
+            tri: 0
   ml:
     netcdf:
       converter:
@@ -201,9 +291,24 @@ WIND_DIR:
           y:
             name: y_wind_ml
             level: 0.99851962924
-    grib1:
+    grib:
       converter:
         none:
+          parameter: 249
+          type: ml
+          level: 65
+          tri: 0
+        winddir:
+          x:
+            parameter: 33
+            type: ml
+            level: 65
+            tri: 0
+          y:
+            parameter: 34
+            type: ml
+            level: 65
+            tri: 0
 
 # Rainfall rate
 RAIN:
@@ -222,6 +327,27 @@ RAIN:
           name: snowfall_amount_acc
           accumulated: True
           instant: 3600.
+  grib:
+    converter:
+      none:
+        parameter: 221
+        type: sfc
+        level: 0
+        tri: 4
+      totalprec:
+        totalprec:
+          parameter: 61
+          type: sfc
+          level: 0
+          tri: 4
+          instant: 3600.
+        snow:
+          parameter: 185
+          type: sfc
+          level: 0
+          tri: 4
+          instant: 3600.
+
 
 # Snow fall amount rate
 SNOW:
@@ -231,6 +357,14 @@ SNOW:
         name: snowfall_amount_acc
         accumulated: True
         instant: 3600.
+  grib:
+    converter:
+      none:
+        parameter: 185
+        type: sfc
+        level: 0
+        tri: 4
+        instant: 3600.
 
 # Surface air pressure
 PS:
@@ -238,6 +372,13 @@ PS:
     converter:
       none:
         name: surface_air_pressure
+  grib:
+    converter:
+      none:
+        parameter: 1
+        type: sfc
+        level: 0
+        tri: 0
 
 # Direct shortwave radiation
 DIR_SW:
@@ -247,6 +388,13 @@ DIR_SW:
         name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
         accumulated: True
         instant: 3600.
+  grib:
+    converter:
+      none:
+        parameter: 117
+        type: sfc
+        level: 0
+        tri: 4
 
 # Direct scattered radiation
 SCA_SW:
@@ -254,9 +402,15 @@ SCA_SW:
     converter:
       none:
         name: scattered_short_wave_radiation
-
   constant:
     value: 0
+  grib:
+    converter:
+      none:
+        parameter: 14
+        type: sfc
+        level: 0
+        tri: 0
 
 # Long wave radiation
 LW:
@@ -266,6 +420,13 @@ LW:
         name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
         accumulated: True
         instant: 3600.
+  grib:
+    converter:
+      none:
+        parameter: 115
+        type: sfc
+        level: 0
+        tri: 4
 
 # Carbon dioxide
 CO2:
@@ -273,5 +434,12 @@ CO2:
     converter:
       none:
         name: carbon_dioxide
+  grib:
+    converter:
+      none:
+        parameter: -1
+        type: sfc
+        level: 0
+        tri: 0
   constant:
     value: 0.00062

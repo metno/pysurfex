@@ -1,4 +1,4 @@
-from forcing.variable import NetcdfVariable
+from forcing.variable import NetcdfVariable,GribVariable
 from forcing.util import error,data_merge
 import copy
 import numpy as np
@@ -51,15 +51,19 @@ class Converter:
         # Create deep copies not to inherit between variables
         defs=copy.deepcopy(defs)
         var_dict=copy.deepcopy(var_dict)
+        print format
+        print defs
+        print var_dict
         merged_dict=data_merge(defs,var_dict)
 
         var=None
         if format == "netcdf":
             var=NetcdfVariable(merged_dict,self.basetime,self.validtime,dry)
-        elif format == "grib1":
-            error("Create variable for format "+format+" not implemented!")
-        #    var = forcing.variable.GribVariable(var_dict)
+        elif format == "grib":
+            var = GribVariable(merged_dict,self.basetime,self.validtime,dry)
         elif format == "constant":
+            error("Create variable for format " + format + " not implemented!")
+        else:
             error("Create variable for format " + format + " not implemented!")
 
         return var

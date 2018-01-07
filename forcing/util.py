@@ -25,7 +25,6 @@ def parse_filepattern(file_pattern,basetime,validtime):
     day=basetime.strftime('%d')
     hour=basetime.strftime('%H')
     dt=validtime-basetime
-    #print dt
     ll = "%02d" % (dt.seconds / 3600)
     lll = "%03d" % (dt.seconds / 3600)
     llll = "%04d" % (dt.seconds / 3600)
@@ -37,7 +36,6 @@ def parse_filepattern(file_pattern,basetime,validtime):
     file_name = file_name.replace('@LL@', ll)
     file_name = file_name.replace('@LLL@',lll)
     file_name = file_name.replace('@LLLL@',llll)
-    #print file_name
     return file_name
 
 def unixtime_to_datenum(time):
