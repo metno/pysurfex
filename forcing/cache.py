@@ -5,7 +5,7 @@ class Cache:
         self.files=[]
         self.file_handler=[]
         self.interpolators={}
-        print "Constructed cache"
+        #print "Constructed cache"
 
     @property
     def files(self):
@@ -15,12 +15,12 @@ class Cache:
     def set_file_handler(self,filename,file_handler):
         self.files.append(filename)
         self.file_handler.append(file_handler)
-        print "Setting filename "+str(filename)
-        print "Setting filehandler "+str(file_handler)
-        print "Cache inventory: "
-        print str(self.files)
-        print str(self.file_handler)
-        print str(self.interpolators)
+        #print "Setting filename "+str(filename)
+        #print "Setting filehandler "+str(file_handler)
+        #print "Cache inventory: "
+        #print str(self.files)
+        #print str(self.file_handler)
+        #print str(self.interpolators)
 
     def get_file_handler(self,filename):
         fh = None
@@ -52,7 +52,7 @@ class Cache:
             return None
 
     def update_interpolator(self,type,format,value):
-        print "Update interpolator ",type,format,self.interpolators
+        #print "Update interpolator ",type,format,self.interpolators
         this_dict={format:value}
         if type in self.interpolators:
             for f in self.interpolators[type]:

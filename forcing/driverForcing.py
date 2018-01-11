@@ -9,10 +9,12 @@ import forcing.converter
 from forcing.surfexForcing import NetCDFOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
+from forcing.grib import Grib
 from datetime import datetime,timedelta
 from forcing.cache import Cache
 import ConfigParser
 import yaml
+
 
 class LoadFromFile (argparse.Action):
     def __call__ (self, parser, namespace, values,option_string=None):
@@ -25,13 +27,171 @@ class LoadFromFile (argparse.Action):
                     setattr(namespace, k, v)
 
 
+def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_height,start,firstBaseTime,timestep,dry):
+    """
+    Set the input parameter for a specific SURFEX forcing variable based on input
+    
+    :param sfx_var: 
+    :param merged_conf: 
+    :param geo: 
+    :param format: 
+    :param selected_converter: 
+    :param ref_height: 
+    :param start: 
+    :param firstBaseTime: 
+    :param timestep: 
+    :param dry: 
+    :return: 
+    """
+
+    #########################################
+    # 1. Gobal configuration from yaml file
+    #########################################
+
+    conf=copy.deepcopy(merged_conf)
+
+    # Now we know the CLA settings for each surfex variable
+
+    # Set defaults (merged global and user settings)
+    # Theses must be sent to the converter to be used for each variable
+    defs={}
+    if format in conf:
+        defs = copy.deepcopy(conf[format])
+
+    # All objects with converters, find converter dict entry
+    if format != "constant":
+
+        # Non-height dependent variables
+        var_defs={}
+        conf_dict={}
+        if ref_height == None:
+            if "converter" in conf[sfx_var][format]:
+                conf_dict = copy.deepcopy(conf[sfx_var][format]["converter"])
+            else:
+                error("No converter defined for "+sfx_var)
+        # Variables with height dependency
+        else:
+            if ref_height in conf[sfx_var]:
+                #print sfx_var,ref_height,format
+                if not format in conf[sfx_var][ref_height]: error(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var+" and format: "+format)
+                if conf[sfx_var][ref_height][format] == None: error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
+                if "converter" in conf[sfx_var][ref_height][format]:
+                    conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
+                else:
+                    error("No converter defined for "+sfx_var)
+            else:
+                error("No ref height \""+ref_height+"\" defined for " + sfx_var)
+
+
+    ##############################################################
+    ##############################################################
+    ##############################################################
+    # Create the object to be returned
+    if format == "constant":
+        if ref_height == None:
+            if "constant" in conf[sfx_var]:
+                const_dict = copy.deepcopy(conf[sfx_var]["constant"])
+            else:
+                error("No constant defined for " + sfx_var)
+        else:
+            if ref_height in conf[sfx_var]:
+                if "constant" in conf[sfx_var][ref_height]:
+                    const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
+                else:
+                    error("No constant defined for " + sfx_var)
+            else:
+                error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+        obj = ConstantValue(geo, sfx_var, const_dict)
+    else:
+
+        # Construct the converter
+        #print sfx_var
+        converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,firstBaseTime,timestep,dry)
+
+        # Construct the input object
+        obj = ConvertedInput(geo, sfx_var,converter)
+    return obj
+
+
+def parseAreaFile(area_file,mode,name,format="grib"):
+
+
+    geo_out=None
+    if mode == "file":
+        if format == "grib":
+            grib=Grib(area_file)
+            par=6
+            typ="sfc"
+            lev=0
+            tri=0
+            field=grib.field(par,typ,lev,tri)
+            x=[grib.x0,grib.dx,grib.nx]
+            y=[grib.y0,grib.dy,grib.ny]
+            geo_out = Domain(grib.projection,x,y,False)
+        else:
+            error("Set up domain from input format "+format+" is not defined!")
+    else:
+        if not os.path.isfile(area_file):
+            error("The area config file \""+area_file+"\" does not exist!")
+
+        area=yaml.load(open(area_file))
+        if mode not in area: error(mode+" not defined in " + area_file)
+        if name == None:
+            area_dict = area[mode]
+        else:
+            if not name in area[mode]: error(name+" not defined in " + area_file)
+            area_dict = area[mode][name]
+
+        if mode == "points":
+            if "lons" in area_dict:
+                #print area_dict
+                lons = str.split(area_dict["lons"],",")
+                #print lons
+                lons = [float(i) for i in lons]
+            else:
+                error("Longitudes must be defined")
+            if "lats" in area_dict:
+                lats = str.split(area_dict["lats"],",")
+                lats = [float(i) for i in lats]
+            else:
+                error("Latitudes must be defined")
+
+            if ( len(lons) != len(lats)): error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
+            geo_out = Points(len(lons), lons, lats)
+        elif mode == "domain":
+            file=None
+            format=None
+
+            if file == None or format == None:
+                proj=None
+                if "proj4" in area_dict:
+                    proj = str(area_dict["proj4"])
+                else:
+                    error("Projection (proj4) must be defined")
+                if "x" in area_dict:
+                    x = str.split(area_dict["x"], ",")
+                    x = [float(i) for i in x]
+                else:
+                    error("x must be defined")
+                if "y" in area_dict:
+                    y = str.split(area_dict["y"], ",")
+                    y = [float(i) for i in y]
+                else:
+                    error("y must be defined")
+                degrees=False
+                if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
+                geo_out = Domain(proj,x,y,degrees)
+
+    return geo_out
+
 def parseArgs(argv):
 
-    print argv
+    #print argv
     parser = argparse.ArgumentParser(description="Create offline forcing")
     parser.add_argument('dtg_start', type=str, help="Start DTG",nargs="?")
     parser.add_argument('dtg_stop', type=str, help="Stop DTG",nargs="?")
     parser.add_argument('area', type=str, help="Configuration file describing the points or locations",nargs="?")
+    parser.add_argument('-fb',type=str, help="First base time unless equal to dtg_start",default=None)
     parser.add_argument('--options',type=open, action=LoadFromFile)
     parser.add_argument('-c','--config', type=str,help="Configuration file in yaml format describing customized variable setup",default="",nargs="?")
     parser.add_argument('-m','--mode',type=str,help="Type: domain/points",default="points",nargs="?")
@@ -110,76 +270,30 @@ def parseArgs(argv):
         parser.print_help()
         sys.exit(1)
 
+    # Time information
     args = parser.parse_args(argv)
     if ( args.dtg_start or args.dtg_stop) < 1000010100:
         error("Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop))
 
     start=datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')
     stop=datetime.strptime(str.strip(str(args.dtg_stop)), '%Y%m%d%H')
+    if args.fb == None:
+        firstBaseTime=start
+    else:
+        firstBaseTime = datetime.strptime(str.strip(str(args.fb)), '%Y%m%d%H')
 
     if not args.debug:
         np.seterr(invalid="ignore")
 
 
-    # SURFEX values
-    atts=["ZS","ZREF","UREF"]
-    vars=["TA","QA","PS","DIR_SW","SCA_SW","LW","RAIN","SNOW","WIND","WIND_DIR","CO2"]
-
     # Read point/domain config
     area_file=args.area
+    geo_out=None
     if area_file != "":
-        if not os.path.isfile(area_file):
-            error("The area config file \""+area_file+"\" does not exist!")
+        geo_out=parseAreaFile(area_file,args.mode,args.name)
 
-        area=yaml.load(open(args.area))
-        if args.mode not in area: error(args.mode+" not defined in " + area_file)
-        if args.name == None:
-            area_dict = area[args.mode]
-        else:
-            if not args.name in area[args.mode]: error(args.name+" not defined in " + area_file)
-            area_dict = area[args.mode][args.name]
-
-        if args.mode == "points":
-            if "lons" in area_dict:
-                #print area_dict
-                lons = str.split(area_dict["lons"],",")
-                #print lons
-                lons = [float(i) for i in lons]
-            else:
-                error("Longitudes must be defined")
-            if "lats" in area_dict:
-                lats = str.split(area_dict["lats"],",")
-                lats = [float(i) for i in lats]
-            else:
-                error("Latitudes must be defined")
-
-            if ( len(lons) != len(lats)): error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
-            geo_out = Points(len(lons), lons, lats)
-        elif args.mode == "domain":
-            proj=None
-            if "proj4" in area_dict:
-                proj = str(area_dict["proj4"])
-            else:
-                error("Projection (proj4) must be defined")
-            if "x" in area_dict:
-                x = str.split(area_dict["x"], ",")
-                x = [float(i) for i in x]
-            else:
-                error("x must be defined")
-            if "y" in area_dict:
-                y = str.split(area_dict["y"], ",")
-                y = [float(i) for i in y]
-            else:
-                error("y must be defined")
-            degrees=False
-            if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
-            geo_out = Domain(proj,x,y,degrees)
-        else:
-            parser.print_help()
-            sys.exit(1)
-    else:
-        parser.print_help()
-        sys.exit(1)
+    if geo_out == None:
+        error("Could not set up output geometry")
 
     # Find name of global config file
     root = __file__
@@ -202,148 +316,77 @@ def parseArgs(argv):
     if args.pattern: merged_conf[format]["filepattern"] = args.pattern
 
 
-    def set_input_object(sfx_var,merged_conf,geo):
-
-        #########################################
-        # 1. Gobal configuration from yaml file
-        #########################################
-
-        conf=copy.deepcopy(merged_conf)
-
-        ###########################################################
-        # 2. Override specific variable settings from command line
-        ###########################################################
-
-        # Override with command line options for a given variable
-        ref_height = ""
-        format = args.input_format
-        if sfx_var == "TA":
-            if args.ta != "default": format = args.ta
-            selected_converter = args.ta_converter
-            ref_height = args.zref
-        elif sfx_var == "QA":
-            if args.qa != "default": format = args.qa
-            selected_converter = args.qa_converter
-            ref_height = args.zref
-        elif sfx_var == "PS":
-            if args.ps != "default": format = args.ps
-            selected_converter = args.ps_converter
-        elif sfx_var == "DIR_SW":
-            if args.dir_sw != "default": format = args.dir_sw
-            selected_converter = args.dir_sw_converter
-        elif sfx_var == "SCA_SW":
-            if args.sca_sw != "default": format = args.sca_sw
-            selected_converter = args.sca_sw_converter
-        elif sfx_var == "LW":
-            if args.lw != "default": format = args.lw
-            selected_converter = args.lw_converter
-        elif sfx_var == "RAIN":
-            if args.rain != "default": format = args.rain
-            selected_converter = args.rain_converter
-        elif sfx_var == "SNOW":
-            if args.snow != "default": format = args.snow
-            selected_converter = args.snow_converter
-        elif sfx_var == "WIND":
-            if args.wind != "default": format = args.wind
-            selected_converter = args.wind_converter
-            ref_height = args.uref
-        elif sfx_var == "WIND_DIR":
-            if args.wind_dir != "default": format = args.wind_dir
-            selected_converter = args.wind_dir_converter
-            ref_height = args.uref
-        elif sfx_var == "CO2":
-            if args.co2 != "default": format = args.co2
-            selected_converter = args.co2_converter
-        elif sfx_var == "ZS":
-            if args.zsoro != "default": format = args.zsoro
-            selected_converter = args.zsoro_converter
-        elif sfx_var == "ZREF":
-            if args.zval != "default": format = args.zval
-            selected_converter = args.zval_converter
-            ref_height = args.zref
-            if ref_height == "screen": format="constant"
-        elif sfx_var == "UREF":
-            if args.uval != "default": format = args.uval
-            selected_converter = args.uval_converter
-            ref_height = args.uref
-            if ref_height == "screen": format = "constant"
-
-        # Now we know the CLA settings for each surfex variable
-
-        # Set defaults (merged global and user settings)
-        # Theses must be sent to the converter to be used for each variable
-        defs={}
-        if format in conf:
-            defs = copy.deepcopy(conf[format])
-
-        # All objects with converters, find converter dict entry
-        if format != "constant":
-
-            # Non-height dependent variables
-            var_defs={}
-            conf_dict={}
-            if ref_height == "":
-                if "converter" in conf[sfx_var][format]:
-                    conf_dict = copy.deepcopy(conf[sfx_var][format]["converter"])
-                else:
-                    error("No converter defined for "+sfx_var)
-            # Variables with height dependency
-            else:
-                if ref_height in conf[sfx_var]:
-                    print sfx_var,ref_height,format
-                    if not format in conf[sfx_var][ref_height]: error(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var+" and format: "+format)
-                    if conf[sfx_var][ref_height][format] == None: error(str(conf[sfx_var])+"\n Missing definitions for " + sfx_var)
-                    if "converter" in conf[sfx_var][ref_height][format]:
-                        conf_dict = copy.deepcopy(conf[sfx_var][ref_height][format]["converter"])
-                    else:
-                        error("No converter defined for "+sfx_var)
-                else:
-                    error("No ref height \""+ref_height+"\" defined for " + sfx_var)
-
-
-        ##############################################################
-        ##############################################################
-        ##############################################################
-        # Create the object to be returned
-        if format == "constant":
-            if ref_height != "":
-                if ref_height in conf[sfx_var]:
-                    if "constant" in conf[sfx_var][ref_height]:
-                        const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
-                    else:
-                        error("No constant defined for " + sfx_var)
-                else:
-                    error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
-            else:
-                if "constant" in conf[sfx_var]:
-                    const_dict = copy.deepcopy(conf[sfx_var]["constant"])
-                else:
-                    error("No constant defined for " + sfx_var)
-
-            obj = ConstantValue(geo, sfx_var, const_dict)
-        else:
-            # Construct the converter
-            basetime=start
-            # TODO
-            basetime = datetime.strptime("2018010318", '%Y%m%d%H')
-
-            print sfx_var
-            converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,basetime,args.dry)
-
-            # Construct the input object
-            obj = ConvertedInput(geo, sfx_var,converter)
-        return obj
-
+    # Set attributes
+    atts = ["ZS", "ZREF", "UREF"]
     att_objs=[]
     for i in range(0,len(atts)):
-        att_objs.append(set_input_object(atts[i],merged_conf,geo_out))
 
+        att_var = atts[i]
+        # Override with command line options for a given variable
+        ref_height = None
+        cformat=format
+        if att_var == "ZS":
+            if args.zsoro != "default": cformat = args.zsoro
+            selected_converter = args.zsoro_converter
+        elif att_var == "ZREF":
+            if args.zval != "default": cformat = args.zval
+            selected_converter = args.zval_converter
+            ref_height = args.zref
+            if ref_height == "screen": cformat="constant"
+        elif att_var == "UREF":
+            if args.uval != "default": cformat = args.uval
+            selected_converter = args.uval_converter
+            ref_height = args.uref
+            if ref_height == "screen": cformat = "constant"
+        att_objs.append(set_input_object(atts[i],merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,args.dry))
+
+    # Set forcing variables (time dependent)
+    vars = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR", "CO2"]
     var_objs=[]
     # Search in config file for parameters to override
     for i in range(0,len(vars)):
 
-        sfx_var=vars[i]
-        var_objs.append(set_input_object(sfx_var,merged_conf,geo_out))
+        ref_height=None
+        sfx_var = vars[i]
+        cformat=format
+        if sfx_var == "TA":
+            if args.ta != "default": cformat = args.ta
+            selected_converter = args.ta_converter
+            ref_height = args.zref
+        elif sfx_var == "QA":
+            if args.qa != "default": cformat = args.qa
+            selected_converter = args.qa_converter
+            ref_height = args.zref
+        elif sfx_var == "PS":
+            if args.ps != "default": cformat = args.ps
+            selected_converter = args.ps_converter
+        elif sfx_var == "DIR_SW":
+            if args.dir_sw != "default": cformat = args.dir_sw
+            selected_converter = args.dir_sw_converter
+        elif sfx_var == "SCA_SW":
+            if args.sca_sw != "default": cformat = args.sca_sw
+            selected_converter = args.sca_sw_converter
+        elif sfx_var == "LW":
+            if args.lw != "default": cformat = args.lw
+            selected_converter = args.lw_converter
+        elif sfx_var == "RAIN":
+            if args.rain != "default": cformat = args.rain
+            selected_converter = args.rain_converter
+        elif sfx_var == "SNOW":
+            if args.snow != "default": cformat = args.snow
+            selected_converter = args.snow_converter
+        elif sfx_var == "WIND":
+            if args.wind != "default": cformat = args.wind
+            selected_converter = args.wind_converter
+            ref_height = args.uref
+        elif sfx_var == "WIND_DIR":
+            if args.wind_dir != "default": cformat = args.wind_dir
+            selected_converter = args.wind_dir_converter
+            ref_height = args.uref
+        elif sfx_var == "CO2":
+            if args.co2 != "default": cformat = args.co2
+            selected_converter = args.co2_converter
+        var_objs.append(set_input_object(sfx_var,merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,args.dry))
 
     # Save options
     options=dict()
@@ -374,7 +417,7 @@ def runTimeLoop(options,var_objs,att_objs):
     elif str.lower(options['output_format']) == "ascii":
         error("Output format "+options['output_format']+" not implemented yet")
     else:
-        error("Invalid output format "+input['output_format'])
+        error("Invalid output format "+options['output_format'])
 
     # Loop output time steps
     t=0

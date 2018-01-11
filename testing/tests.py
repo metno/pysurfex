@@ -47,7 +47,7 @@ def pgd_ascii(gtype,plot=False,varName="ZS"):
     plot_field(pgd.geo, field_ascii, plot=plot)
     return pgd
 
-def testVarDict(test,var_objs,name,key,expected,msg):
+def LocTestVarDict(test,var_objs,name,key,expected,msg):
     found=False
     for obj in var_objs:
         if obj.var_name == name:
@@ -72,8 +72,8 @@ class CommandLineOptions(unittest.TestCase):
                   "--zsoro_converter","phi2m","--zref","ml","--zval","constant","--uref","ml","--uval","constant"]
 
             options,var_objs,att_objs=parseArgs(args)
-            testVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
-            testVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
+            LocTestVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
+            LocTestVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
 
 class ReadTimeSeries(unittest.TestCase):
 

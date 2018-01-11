@@ -18,8 +18,10 @@ class Grib(object):
         if not HAS_ECCODES:
             error("You must install eccodes properly with python support to read grib files")
         self.fname=fname
-        #self.filehandler = open(self.fname)
-        print "Grib constructor "
+        self.projection=None
+        self.lons=None
+        self.lats=None
+        #print "Grib constructor "
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.filehandler.close()
@@ -52,6 +54,7 @@ class Grib(object):
         fh = open(self.fname)
         while 1:
             gid = codes_grib_new_from_file(fh)
+
             if gid is None:
                 print "Could not find:"
                 print " Parameter:"+str(w_par)
@@ -66,7 +69,7 @@ class Grib(object):
                 typ = codes_get(gid, "indicatorOfTypeOfLevel")
                 tri = codes_get(gid, "timeRangeIndicator")
                 if w_par == par and w_lev == lev and w_typ == typ and w_tri == tri:
-                    print "Found:", par, lev, typ, tri
+                    #print "Found:", par, lev, typ, tri
 
                     geo = {}
                     for key in geography:
@@ -75,13 +78,13 @@ class Grib(object):
                         except CodesInternalError as err:
                             print('Error with key="%s" : %s' % (key, err.msg))
 
-
-                    print('There are %d values, average is %f, min is %f, max is %f' % (
-                        codes_get_size(gid, 'values'),
-                        codes_get(gid, 'average'),
-                        codes_get(gid, 'min'),
-                        codes_get(gid, 'max')
-                    ))
+                    #if par == 61:
+                    #    print('There are %d values, average is %f, min is %f, max is %f' % (
+                    #        codes_get_size(gid, 'values'),
+                    #        codes_get(gid, 'average'),
+                    #        codes_get(gid, 'min'),
+                    #        codes_get(gid, 'max')
+                    #    ))
 
                     if geo["gridType"].lower() == "lambert":
                         values = codes_get_values(gid)
@@ -97,6 +100,7 @@ class Grib(object):
                         dy = geo["DyInMetres"]
 
                         proj4_string="+proj=lcc +lat_0="+str(latCenter)+" +lon_0="+str(lonCenter)+" +lat_1="+str(latRef)+" +lat_2="+str(latRef)+" +no_defs +units=m +R=6.371e+06"
+                        self.projection=proj4_string
                         proj4=Proj(proj4_string)
 
                         x0,y0=proj4(lon0,lat0)
@@ -112,8 +116,17 @@ class Grib(object):
                             for i in range(0, nx):
                                 field[i, j] = values[ii]
                                 lons[i, j], lats[i, j] = proj4(X[i],Y[j],inverse=True)
+                                #print i,j,lons[i, j], lats[i, j]
                                 ii = ii + 1
 
+                        self.lons=lons
+                        self.lats=lats
+                        self.x0=x0
+                        self.y0=y0
+                        self.dx=dx
+                        self.dy=dy
+                        self.nx=nx
+                        self.ny=ny
                     else:
                         error(geo["gridType"]+" not implemented yet!")
 
@@ -121,27 +134,36 @@ class Grib(object):
                         proj = ccrs.LambertConformal(central_longitude=lonCenter, central_latitude=latCenter,
                                                      standard_parallels=[latRef])
                         ax = plt.axes(projection=proj)
+                        ax.set_global()
+                        ax.coastlines(resolution="10m")
+                        bd=10000
+                        ax.set_extent([X[0] - bd, X[len(X)-1] + bd, Y[0] - bd, Y[len(Y)-1] + bd], proj)
                         plt.contourf(X, Y, np.transpose(field), transform=proj)
+                        plt.colorbar()
                         plt.show()
 
                     codes_release(gid)
                     fh.close()
+                    #print lons
+                    #print lats
                     return lons,lats,field
+                codes_release(gid)
 
     def points(self,par,type,level,tri,time,plot=False,lons=None, lats=None,instantanious=0.,interpolation=None):
 
         """
-                Assembles a 5D slice and interpolates it to requested positions
+                Reads a 2-D field and interpolates it to requested positions
 
                 Arguments:
 
 
                 Returns:
-                 np.array: 4D array with inpterpolated values in order pos,time,height,ensemble
+                 np.array: vector with inpterpolated values
 
         """
 
-        print "Read points"
+        #print "Read points"
+        #if par==61: plot=True
         var_lons,var_lats,field=self.field(par,type,level,tri,plot)
 
         if lons is None or lats is None:
@@ -168,7 +190,9 @@ class Grib(object):
                     self.linear = Linear(lons, lats, var_lons,var_lats)
 
                 interpolated_field[:]=self.linear.interpolate(field)
-
+        elif interpolation == None:
+            # TODO Make sure conversion from 2-D to 1-D is correct
+            interpolated_field[:] = field
         else:
             error("Interpolation type "+interpolation+" not implemented!")
 

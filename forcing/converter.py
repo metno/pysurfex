@@ -10,7 +10,7 @@ class Converter:
     The converter is default "None" to read a plain field
     """
 
-    def __init__(self,name,validtime,defs,conf,format,basetime,dry):
+    def __init__(self,name,validtime,defs,conf,format,basetime,intervall,dry):
         """
         Initializing the converter
         
@@ -22,6 +22,7 @@ class Converter:
         self.name=name
         self.validtime=validtime
         self.basetime=basetime
+        self.intervall=intervall
 
         if self.name == "none" :
             self.var=self.create_variable(format,defs,conf[self.name],dry)
@@ -51,21 +52,19 @@ class Converter:
         # Create deep copies not to inherit between variables
         defs=copy.deepcopy(defs)
         var_dict=copy.deepcopy(var_dict)
-        print format
-        print defs
-        print var_dict
         merged_dict=data_merge(defs,var_dict)
 
         var=None
         if format == "netcdf":
-            var=NetcdfVariable(merged_dict,self.basetime,self.validtime,dry)
+            var=NetcdfVariable(merged_dict,self.basetime,self.validtime,self.intervall,dry)
         elif format == "grib":
-            var = GribVariable(merged_dict,self.basetime,self.validtime,dry)
+            var = GribVariable(merged_dict,self.basetime,self.validtime,self.intervall,dry)
         elif format == "constant":
             error("Create variable for format " + format + " not implemented!")
         else:
             error("Create variable for format " + format + " not implemented!")
 
+        var.print_variable_info()
         return var
 
     def read_time_step(self,geo,validtime,dry,cache):

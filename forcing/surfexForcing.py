@@ -93,7 +93,6 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
 
-            print "Preparing " + this_obj.var_name
             field=this_obj.read_time_step(this_time,dry,cache)
             if not dry:
                 self.forcing_file[self.translation[this_var]][self.time_step,:]=field
@@ -108,7 +107,6 @@ class NetCDFOutput(SurfexForcing):
         for i in range (0,len(att_objs)):
             this_obj=att_objs[i]
             this_var=this_obj.var_name
-            print "Preparing " + this_obj.var_name
             if this_var == "ZS":
                 zs=this_obj.read_time_step(att_time,dry,cache)
             elif this_var == "ZREF":

@@ -15,16 +15,20 @@ class Variable(object):
     The variable read it self
     """
 
-    def __init__(self,basetime,validtime,var_dict):
+    def __init__(self,basetime,validtime,var_dict,intervall,dry):
         self.initialtime=validtime
-        self.previoustime=validtime
+        self.previoustime=validtime-timedelta(seconds=intervall)
         self.basetime=basetime
+        self.previousbasetime=basetime
         self.validtime=validtime
         self.var_dict = copy.deepcopy(var_dict)
         self.opendap = False
         self.filepattern=var_dict["filepattern"]
+        self.previousfilename=None
+        self.ReRead=False
+        self.dry=dry
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
-        print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
+        #print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
     @abc.abstractmethod
@@ -35,14 +39,40 @@ class Variable(object):
     def print_variable_info(self):
         raise NotImplementedError('users must define print_variable_info to use this base class')
 
+    def deaccumulate(self,field,previousField,instant):
+
+        self.previousvalues = field
+
+        field = np.subtract(field, previousField)
+        if any(field[field < 0.]):
+            neg=[]
+            for i in range(0,field.shape[0]):
+                if field[i] < 0.:
+                    neg.append(field[i])
+            neg=np.asarray(neg)
+            #print field
+            warning("Deaccumulated field has "+str(neg.shape[0])+" negative lowest:"+str(np.nanmin(neg))+" mean: "+str(np.nanmean(neg)))
+        field[field < 0.]=0
+        if float(instant) != 0.: field = np.divide(field, float(instant))
+        return field
+
     def open_new_file(self,fcint,offset,file_inc):
         new_basetime=self.basetime+timedelta(seconds=fcint)
         last_time=new_basetime+timedelta(seconds=offset)
 
+        self.reRead=False
+        if self.previousbasetime != self.basetime:
+            self.reRead=True
+
+        self.previousbasetime = self.basetime
+        #print "0",self.validtime,self.basetime,new_basetime,last_time
+        #print "0",(self.validtime - self.basetime),(timedelta(seconds=file_inc)+timedelta(seconds=offset)),timedelta(seconds=offset),timedelta(seconds=file_inc)
         new=False
         # Normal test
         if (self.validtime - self.basetime) >= (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
-            if timedelta(seconds=offset) > timedelta(seconds=file_inc):
+            if timedelta(seconds=offset) == timedelta(seconds=0):
+                self.filename = parse_filepattern(self.var_dict["filepattern"], self.basetime, self.validtime)
+            elif timedelta(seconds=offset) > timedelta(seconds=file_inc):
                 self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime,self.validtime)
             else:
                 self.filename = parse_filepattern(self.var_dict["filepattern"],new_basetime,self.validtime)
@@ -58,10 +88,19 @@ class Variable(object):
         if self.validtime == self.initialtime:
             new=True
 
+        # Check previous file
+        if new:
+            self.previousbasetime=self.basetime
+            self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime, self.previoustime)
+
         # Adjust basetime if we should read from a new cycle
         if (self.validtime >= last_time):
+            self.reReadNext=True
             self.basetime = new_basetime
 
+        #print "1",self.validtime, self.basetime, new_basetime, last_time
+        #print self.filepattern
+        #print new,self.filename
         return new
 
 class NetcdfVariable(Variable):
@@ -70,15 +109,34 @@ class NetcdfVariable(Variable):
     NetCDF variable
     """
 
-    def __init__(self,var_dict,basetime,validtime,dry):
+    def __init__(self,var_dict,basetime,validtime,intervall,dry):
         mandatory=["name","fcint","offset","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in var_dict:
                 error("NetCDF variable must have attribute "+mandatory[i]+" var_dict:"+str(var_dict))
 
-        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict)
+        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,dry)
 
         #print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
+
+    def get_previous_values(self,var_name,level,units,geo,int_type):
+        #previousfilename = parse_filepattern(self.filepattern, self.basetime, self.previoustime)
+
+        previousvalues = np.zeros(len(geo.lons))
+        if hasattr(self, "previousvalues"):
+            previousvalues = self.previousvalues
+            if self.reRead:
+                # Modify filename in handler
+                fname = self.filename
+                self.file_handler.fname = self.previousfilename
+                field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
+                                                   times=[self.previoustime], interpolation=int_type, units=units)
+                previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
+
+                # Change filename back in handler. Ready to read this time step
+                self.file_handler.fname = fname
+
+        return previousvalues
 
     def read_variable(self,geo,validtime,dry,cache):
 
@@ -102,8 +160,8 @@ class NetcdfVariable(Variable):
 
         if ( self.file_handler == None):
             if not self.opendap: warning("No file handler exist for this time step")
-            field = np.array(len(geo.lons))
-            #TODO: Fill with NAN
+            field = np.array([len(geo.lons)])
+            field=field.fill(np.nan)
         else:
             var_name=self.var_dict["name"]
             level=None
@@ -120,7 +178,8 @@ class NetcdfVariable(Variable):
 
             #print level, accumulated, instant,int_type
             if dry:
-                field=np.array(len(geo.lons))
+                field=np.array([len(geo.lons)])
+                field=field.fill(np.nan)
             else:
                 # Update the interpolator from cache if existing
                 if int_type == "nearest" and cache.interpolator_is_set(int_type,"netcdf"):
@@ -129,27 +188,22 @@ class NetcdfVariable(Variable):
                     self.file_handler.linear=cache.get_interpolator(int_type,"netcdf")
 
                 # Re-read field
+                previousField = None
                 if accumulated:
-                    if self.initialtime == self.validtime:
-                        self.previousvalues = np.zeros(len(geo.lons))
-                        #TODO
+                    # Re-read field
+                    previousField = self.get_previous_values(var_name,level,units,geo,int_type)
 
                 field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
                 field=np.reshape(field4d[:,0,0,0],len(geo.lons))
 
                 if accumulated:
-                    print "deaccumulate"
-                    print field
-                    print self.previousvalues
-                    field = np.subtract(field, self.previousvalues)
-                    instant = (validtime - self.previoustime).total_seconds()
+                    instant = [(validtime - self.previoustime).total_seconds()]
                     if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                    if instant != 0: field = np.divide(field, float(instant))
-                    print field
-                    # Update prevous values
-                    self.previousvalues = field
+                    field = self.deaccumulate(field, previousField, float(instant[0]))
+
 
                 # Find used interpolator
+                interpolator=None
                 if int_type == "nearest":
                     interpolator=self.file_handler.nearest
                 elif int_type == "linear":
@@ -162,7 +216,7 @@ class NetcdfVariable(Variable):
         return field
 
     def print_variable_info(self):
-        return ":"+str(self.var_dict)+":"
+        print ":"+str(self.var_dict)+":"
 
 
 class GribVariable(Variable):
@@ -170,13 +224,29 @@ class GribVariable(Variable):
     """
     Grib variable
     """
-    def __init__(self,var_dict,basetime,validtime,dry):
+    def __init__(self,var_dict,basetime,validtime,intervall,dry):
         mandatory = ["parameter", "type","level","tri","fcint", "offset", "file_inc", "filepattern"]
         for i in range(0, len(mandatory)):
             if mandatory[i] not in var_dict:
                 error("Grib variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
 
-        super(GribVariable,self).__init__(basetime,validtime,var_dict)
+        super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,dry)
+
+    def get_previous_values(self,par,type,level,tri,geo,int_type):
+
+        previousvalues = np.zeros(len(geo.lons))
+        if hasattr(self, "previousvalues"):
+            previousvalues=self.previousvalues
+            if self.reRead:
+                # Modify filename in handler
+                fname = self.filename
+                self.file_handler.fname = self.previousfilename
+                previousvalues = self.file_handler.points(par, type, level, tri, self.previoustime, lons=geo.lons,
+                                                               lats=geo.lats, interpolation=int_type)
+
+                # Change filename back in handler. Ready to read this time step
+                self.file_handler.fname = fname
+        return previousvalues
 
     def read_variable(self, geo, validtime, dry, cache):
         self.validtime = validtime
@@ -194,8 +264,8 @@ class GribVariable(Variable):
 
         if (self.file_handler == None):
             warning("No file handler exist for this time step")
-            field = np.array(len(geo.lons))
-            # TODO: Fill with NAN
+            field = np.array([len(geo.lons)])
+            field=field.fill(np.nan)
         else:
             par=self.var_dict["parameter"]
             type=self.var_dict["type"]
@@ -206,8 +276,8 @@ class GribVariable(Variable):
             if "interpolator" in self.var_dict: int_type = self.var_dict["interpolator"]
 
             # print level, accumulated, instant,int_type
-            if dry:
-                field = np.array(len(geo.lons))
+            if self.dry:
+                field = np.array([len(geo.lons)])
             else:
                 # Update the interpolator from cache if existing
                 if int_type == "nearest" and cache.interpolator_is_set(int_type,"grib"):
@@ -216,46 +286,23 @@ class GribVariable(Variable):
                     self.file_handler.linear = cache.get_interpolator(int_type,"grib")
 
                 #Re-read field
+                previousField=None
                 if tri == 4:
-                    # If start of forecast
-                    if self.basetime == self.validtime:
-                        print "First values=0"
-                        self.previousvalues=np.zeros(len(geo.lons))
-                    else:
-                        previous_fname=parse_filepattern(self.filepattern,self.basetime,self.previoustime)
-                        print "Not first. Previous file:",previous_fname
-                        if self.filename != previous_fname:
-                            fname=self.filename
-                            self.file_handler.fname=previous_fname
-                            print "Not equal -> reread",self.validtime,self.previoustime
-                            print self.file_handler.fname
-                            self.previousvalues=self.file_handler.points(par,type,level,tri,self.previoustime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
-                            print self.previousvalues
-                            self.file_handler.fname=fname
+                    previousField=self.get_previous_values(par,type,level,tri,geo,int_type)
 
-                # read field
+                # Read field
                 field = self.file_handler.points(par,type,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
+                #if par == 61:
+                #    print self.validtime,field
 
                 # Deaccumulate
                 if tri == 4:
-                    print "deaccumulate"
-                    print "Field0",field
-                    print "self.previousvalues0",self.previousvalues
-                    previousvalues=self.previousvalues
-                    print "self.previousvalues1", self.previousvalues
-                    print "previousvalues",previousvalues
-                    self.previousvalues = field
-                    print "Field1", field
-                    field=np.subtract(field,previousvalues)
-                    instant = (validtime - self.previoustime).total_seconds()
-                    print instant
+                    instant = [(validtime - self.previoustime).total_seconds()]
                     if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                    print instant
-                    if isinstance(instant,list): instant=instant[0]
-                    if float(instant) != 0.: field = np.divide(field, float(instant))
-                    print "Field:",field
+                    field=self.deaccumulate(field,previousField,float(instant[0]))
 
                 # Find used interpolator
+                interpolator=None
                 if int_type == "nearest":
                     interpolator = self.file_handler.nearest
                 elif int_type == "linear":
@@ -263,9 +310,8 @@ class GribVariable(Variable):
                 # Update cache
                 cache.update_interpolator(int_type,"grib",interpolator)
 
-
         self.previoustime = validtime
         return field
 
     def print_variable_info(self):
-        return ":"+str(self.var_dict)+":"
+        print ":"+str(self.var_dict)+":"
