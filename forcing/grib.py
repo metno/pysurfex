@@ -23,9 +23,6 @@ class Grib(object):
         self.lats=None
         #print "Grib constructor "
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.filehandler.close()
-
     def field(self,w_par,w_typ,w_lev,w_tri,plot=False,lons=None,lats=None):
 
         """
@@ -68,6 +65,8 @@ class Grib(object):
                 lev = codes_get(gid, "level")
                 typ = codes_get(gid, "indicatorOfTypeOfLevel")
                 tri = codes_get(gid, "timeRangeIndicator")
+
+                #print "Read:", par, lev, typ, tri
                 if w_par == par and w_lev == lev and w_typ == typ and w_tri == tri:
                     #print "Found:", par, lev, typ, tri
 

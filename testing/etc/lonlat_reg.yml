@@ -1,0 +1,5 @@
+domain:
+  proj4: +proj=latlon +datum=WGS84
+  x: 9.75, 0.05, 28
+  y: 59.50, 0.05, 12
+  degrees: True

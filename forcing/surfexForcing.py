@@ -79,11 +79,12 @@ class NetCDFOutput(SurfexForcing):
     }
 
  
-    def __init__(self,base_time,geo,ntimes,var_objs,att_objs,att_time,dry,cache):
+    def __init__(self,base_time,geo,fname,ntimes,var_objs,att_objs,att_time,dry,cache):
         super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs,dry)
         print "Forcing type is netCDF"
         self.forcing_file={}
-        self.file_handler= netCDF4.Dataset("FORCING.nc", 'w',format=self.output_format)
+        if fname == None: fname="FORCING.nc"
+        self.file_handler= netCDF4.Dataset(fname, 'w',format=self.output_format)
         self._define_forcing(geo,att_objs,att_time,dry,cache)
 
     def write_forcing(self,var_objs,this_time,dry,cache):

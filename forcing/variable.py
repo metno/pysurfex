@@ -50,7 +50,6 @@ class Variable(object):
                 if field[i] < 0.:
                     neg.append(field[i])
             neg=np.asarray(neg)
-            #print field
             warning("Deaccumulated field has "+str(neg.shape[0])+" negative lowest:"+str(np.nanmin(neg))+" mean: "+str(np.nanmean(neg)))
         field[field < 0.]=0
         if float(instant) != 0.: field = np.divide(field, float(instant))
@@ -65,8 +64,6 @@ class Variable(object):
             self.reRead=True
 
         self.previousbasetime = self.basetime
-        #print "0",self.validtime,self.basetime,new_basetime,last_time
-        #print "0",(self.validtime - self.basetime),(timedelta(seconds=file_inc)+timedelta(seconds=offset)),timedelta(seconds=offset),timedelta(seconds=file_inc)
         new=False
         # Normal test
         if (self.validtime - self.basetime) >= (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
@@ -98,9 +95,8 @@ class Variable(object):
             self.reReadNext=True
             self.basetime = new_basetime
 
-        #print "1",self.validtime, self.basetime, new_basetime, last_time
-        #print self.filepattern
-        #print new,self.filename
+        #if new:
+        #    print "Open new file ",self.filename
         return new
 
 class NetcdfVariable(Variable):

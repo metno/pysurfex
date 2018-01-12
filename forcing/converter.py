@@ -64,7 +64,8 @@ class Converter:
         else:
             error("Create variable for format " + format + " not implemented!")
 
-        var.print_variable_info()
+        #TODO: Put this under verbose flag and format printing
+        #var.print_variable_info()
         return var
 
     def read_time_step(self,geo,validtime,dry,cache):

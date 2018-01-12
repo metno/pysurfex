@@ -1,9 +1,8 @@
 import unittest
-from forcing.driverForcing import parseArgs
+from forcing.driverForcing import parseArgs,runTimeLoop
 from forcing.util import info,error
-from surfexIO.inputFromSurfex import SurfexIO,SurfexVariable,parse_filepattern
+from surfexIO.inputFromSurfex import SurfexIO,SurfexVariable,parse_filepattern,ForcingFileNetCDF
 from surfexIO.timeSeries import SurfexTimeSeries
-import sys
 from surfexIO.plot import plot_field
 import numpy as np
 from datetime import datetime
@@ -66,7 +65,7 @@ class CommandLineOptions(unittest.TestCase):
     def test_from_met_norway_thredds_to_netcdf(self):
         dtgstart="2017090100"
         dtgend="2017090103"
-        area="data/LONLAT_REG/area.yml"
+        area="etc/lonlat_reg.yml"
         for mode in ["domain"]:
             args=[dtgstart,dtgend,area,"-m",mode,"--sca_sw","constant","--co2","constant",\
                   "--zsoro_converter","phi2m","--zref","ml","--zval","constant","--uref","ml","--uval","constant"]
@@ -74,6 +73,122 @@ class CommandLineOptions(unittest.TestCase):
             options,var_objs,att_objs=parseArgs(args)
             LocTestVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
             LocTestVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
+
+class ForcingFromGrib(unittest.TestCase):
+
+
+    def test_file_test11(self):
+        """
+            Create forcing for TEST_11 domain based on grib files from testbed
+        """
+
+        pdf = PdfPages("plots/forcing_test_11_from_grib.pdf")
+        dtgstart = "2008093018"
+        dtgend = "2008100100"
+        format = "grib"
+        file = "data/input/TEST_11/2008/09/30/18/fc2008093018+000grib_fp"
+        pattern = "data/input/TEST_11/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@+@LLL@grib_fp"
+        of="data/CONF_PROJ/nc/FORCING_TEST_11.nc"
+        args = [dtgstart,dtgend,file, "-m","file", "--sca_sw", "constant", "--co2", "constant", \
+               "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval", "constant",\
+                "-of",of,"-p",pattern,"-i",format]
+
+        options, var_objs, att_objs = parseArgs(args)
+        runTimeLoop(options, var_objs, att_objs)
+        forc = ForcingFileNetCDF(of)
+        field = forc.read_field("ZS")
+        plt = forc.plot_field(field)
+        pdf.savefig()
+        pdf.close()
+
+    dtgstart = "2018011100"
+    dtgend = "2018011112"
+    format = "grib"
+    file = "data/input/grib/2018/01/11/00/fc2018011100+000grib_fp_mbr000"
+    pattern = "data/input/grib/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@+@LLL@grib_fp_mbr000"
+    def test_file(self):
+        pdf = PdfPages("plots/forcing_file_from_grib.pdf")
+        of = "data/CONF_PROJ/nc/FORCING_file_from_grib.nc"
+        args = [self.dtgstart, self.dtgend, self.file, "-m", "file", "--sca_sw", "constant", "--co2", "constant", \
+                "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval",
+                "constant", \
+                "-c","../forcing/cfg/user.yml", \
+                "-of",of,"-p", self.pattern, "-i", self.format]
+
+        options, var_objs, att_objs = parseArgs(args)
+        runTimeLoop(options, var_objs, att_objs)
+        forc = ForcingFileNetCDF(of)
+        field = forc.read_field("ZS")
+        plt = forc.plot_field(field)
+        pdf.savefig()
+        pdf.close()
+
+    def test_gtype(self):
+        for gtype in gtypes:
+            pdf = PdfPages("plots/forcing_" + gtype + "_from_grib.pdf")
+            of="data/"+str(gtype)+"/nc/FORCING_from_grib.nc"
+            print "Testing gtype " + gtype
+            mode="points"
+            if gtype == "LONLAT_REG" or gtype == "CONF_PROJ":
+                mode="domain"
+            print "etc/"+str(gtype).lower()+".yml"
+            args = [self.dtgstart,self.dtgend,"etc/"+str(gtype).lower()+".yml", "-m",
+                    mode, "--sca_sw", "constant", "--co2", "constant", \
+                    "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval",
+                    "constant", \
+                    "-c", "../forcing/cfg/user.yml", \
+                    "-of",of,"-p",self.pattern,"-i",self.format]
+            options, var_objs, att_objs = parseArgs(args)
+            runTimeLoop(options, var_objs, att_objs)
+
+            forc = ForcingFileNetCDF(of)
+            field=forc.read_field("ZS")
+            plt=forc.plot_field(field,title="ZS")
+            pdf.savefig()
+            pdf.close()
+
+class ForcingFromNetCDF(unittest.TestCase):
+
+    dtgstart="2018011100"
+    dtgend="2018011112"
+    format = "netcdf"
+    file="data/input/netcdf/SubsetMetCoOp_2018011100.nc"
+    pattern="data/input/netcdf/SubsetMetCoOp_@YYYY@@MM@@DD@@HH@.nc"
+    def test_file(self):
+        pdf = PdfPages("plots/forcing_file_from_netcdf.pdf")
+        of = "data/CONF_PROJ/nc/FORCING_file_netcdf.nc"
+        args = [self.dtgstart,self.dtgend,self.file, "-m","file", "--sca_sw", "constant", "--co2", "constant", \
+               "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval", "constant",\
+                "-of",of,"-p",self.pattern,"-i",self.format]
+
+        options, var_objs, att_objs = parseArgs(args)
+        runTimeLoop(options, var_objs, att_objs)
+        forc = ForcingFileNetCDF(of)
+        field = forc.read_field("ZS")
+        plt = forc.plot_field(field)
+        pdf.savefig()
+        pdf.close()
+
+    def test_gtype(self):
+        for gtype in gtypes:
+            pdf = PdfPages("plots/forcing_" + gtype + "_from_netcdf.pdf")
+            of = "data/"+str(gtype)+"/nc/FORCING_from_netcdf.nc"
+            print "Testing gtype "+gtype
+            mode="points"
+            if gtype == "LONLAT_REG" or gtype == "CONF_PROJ":
+                mode="domain"
+            args = [self.dtgstart,self.dtgend,"etc/"+str(gtype).lower()+".yml", "-m",
+                    mode, "--sca_sw", "constant", "--co2", "constant", \
+                    "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval",
+                    "constant", \
+                    "-of",of,"-p",self.pattern,"-i",self.format]
+            options, var_objs, att_objs = parseArgs(args)
+            runTimeLoop(options, var_objs, att_objs)
+            forc = ForcingFileNetCDF(of)
+            field = forc.read_field("ZS")
+            plt = forc.plot_field(field)
+            pdf.savefig()
+            pdf.close()
 
 class ReadTimeSeries(unittest.TestCase):
 
@@ -137,6 +252,8 @@ class ReadPGDAndPlot(unittest.TestCase):
         for gtype in gtypes:
             info("Testing CGRID=" + gtype + " CSURF_FILETYPE=ASCII",level=1)
             pgd_ascii(gtype,plot=False)
+            #print [float(round(n, 4)) for n in p.geo.lons]
+            #print [float(round(n, 4)) for n in p.geo.lats]
 
 class ReadTimeStepAndPlot(unittest.TestCase):
 
@@ -147,7 +264,7 @@ class ReadTimeStepAndPlot(unittest.TestCase):
         :return: 
         """
         for gtype in gtypes:
-            pdf = PdfPages(gtype + ".pdf")
+            pdf = PdfPages("plots/"+gtype + ".pdf")
             plot_time = datetime.strptime("2017090110", '%Y%m%d%H')
             file={}
             var={}
@@ -193,6 +310,30 @@ class ReadTimeStepAndPlot(unittest.TestCase):
                     pdf.savefig()
                     self.assertAlmostEqual(field2[0],testvals[gtype][p][0],2,msg=str(gtype)+" "+str(format)+" patch:"+str(p+1)+" differ from expected value")
             pdf.close()
+
+class ReadForcing(unittest.TestCase):
+
+    def test_forcing(self):
+
+        from datetime import datetime, timedelta
+
+        of="data/CONF_PROJ/nc/FORCING_file_from_grib.nc"
+        forc=ForcingFileNetCDF(of)
+
+        vars=["Tair","Qair","PSurf","DIR_SWdown","SCA_SWdown","LWdown","Rainf","Snowf","Wind","Wind_DIR","CO2air"]
+
+        times = [datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011101", '%Y%m%d%H'),\
+                 #datetime.strptime("2018011102", '%Y%m%d%H'),datetime.strptime("2018011103", '%Y%m%d%H'),\
+                 #datetime.strptime("2018011104", '%Y%m%d%H'),datetime.strptime("2018011105", '%Y%m%d%H'),\
+                 #datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011107", '%Y%m%d%H'),\
+                 datetime.strptime("2018011108", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
+        for var in vars:
+            field=forc.read_field(var,times=times)
+            for t in range(0,len(times)):
+                forc.plot_field(field[t,:],plot=True,title=str(var)+ " "+str(times[t]))
+                #print field
+
+
 
 if __name__ == '__main__':
     unittest.main()

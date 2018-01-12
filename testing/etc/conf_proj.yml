@@ -1,0 +1,6 @@
+domain: 
+  proj4: "+proj=lcc +lat_0=59.75 +lon_0=10.2 +lat_1=59.75 +lat_2=59.75 +no_defs +R=6.371e+06 +units=m"
+  x: -25000, 2500, 20
+  y: -25000, 2500, 30
+  degrees: False
+

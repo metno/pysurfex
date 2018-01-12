@@ -4,12 +4,13 @@ import copy
 import argparse
 import numpy as np
 import forcing.version
-from forcing.util import error,data_merge
+from forcing.util import error,data_merge,warning
 import forcing.converter
 from forcing.surfexForcing import NetCDFOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
 from forcing.grib import Grib
+from netcdfpy.netcdf import Netcdf
 from datetime import datetime,timedelta
 from forcing.cache import Cache
 import ConfigParser
@@ -118,7 +119,7 @@ def parseAreaFile(area_file,mode,name,format="grib"):
 
     geo_out=None
     if mode == "file":
-        if format == "grib":
+        if format.lower() == "grib":
             grib=Grib(area_file)
             par=6
             typ="sfc"
@@ -128,6 +129,12 @@ def parseAreaFile(area_file,mode,name,format="grib"):
             x=[grib.x0,grib.dx,grib.nx]
             y=[grib.y0,grib.dy,grib.ny]
             geo_out = Domain(grib.projection,x,y,False)
+        elif format.lower() == "netcdf":
+            warning("Domain definition hard-coded to test domain")
+            proj="+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs +R=6.371e+06"
+            x=[-422442.2,2500,101]
+            y=[-429321.8,2500,101]
+            geo_out=Domain(proj,x,y,False)
         else:
             error("Set up domain from input format "+format+" is not defined!")
     else:
@@ -199,6 +206,7 @@ def parseArgs(argv):
     parser.add_argument('-t','--timestep', type=int,help="Surfex time step",default=3600,nargs="?")
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", choices=["netcdf","grib"])
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
+    parser.add_argument('-of', type=str, help="Output file format", default=None, nargs="?")
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
     parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
@@ -290,7 +298,7 @@ def parseArgs(argv):
     area_file=args.area
     geo_out=None
     if area_file != "":
-        geo_out=parseAreaFile(area_file,args.mode,args.name)
+        geo_out=parseAreaFile(area_file,args.mode,args.name,args.input_format)
 
     if geo_out == None:
         error("Could not set up output geometry")
@@ -391,6 +399,7 @@ def parseArgs(argv):
     # Save options
     options=dict()
     options['output_format']=args.output_format
+    options['output_file']=args.of
     options['start']=start
     options['stop'] = stop
     options['timestep']=args.timestep
@@ -413,7 +422,7 @@ def runTimeLoop(options,var_objs,att_objs):
     if str.lower(options['output_format']) == "netcdf":
         # Set att_time the same as start
         att_time=options['start']
-        output = NetCDFOutput(options['start'], options['geo_out'], ntimes, var_objs, att_objs,att_time,options['dry'],cache)
+        output = NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,options['dry'],cache)
     elif str.lower(options['output_format']) == "ascii":
         error("Output format "+options['output_format']+" not implemented yet")
     else:

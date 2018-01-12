@@ -528,4 +528,73 @@ class TexteSurfexFile(SurfexFile):
         #print values.shape
         self.file.close()
         return times_read,values
- 
+
+class ForcingFileNetCDF():
+
+    def __init__(self,fname):
+        self.fname=fname
+        self.fh = Dataset(fname, "r")
+        self.lons=self.fh.variables["LON"]
+        self.lats=self.fh.variables["LAT"]
+        self.nx=self.lons.shape[0]
+        self.ny=self.lats.shape[0]
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.fh.close()
+
+    def read_field(self,var,times=[],plot=False):
+
+        field=None
+        if self.fh.variables[var].shape[0] > 0:
+            if len(self.fh.variables[var].dimensions) == 1:
+                dimlen = self.fh.variables[var].shape[0]
+                field = self.fh.variables[var][0:dimlen]
+            else:
+                if len(times) == 0: error("You must set time!")
+                times_read=[]
+                ndims=0
+                for dim in self.fh.variables[var].dimensions:
+                    dimlen = self.fh.variables[var].shape[ndims]
+
+                    if dim == "time":
+                        times_for_var = self.fh.variables['time']
+                        units = times_for_var.units
+                        try:
+                            t_cal = times_for_var.calendar
+                        except AttributeError:  # Attribute doesn't exist
+                            t_cal = u"gregorian"  # or standard
+
+                        indices = []
+                        [indices.append(i) for i in range(0, dimlen)]
+                        times_for_var = num2date(times_for_var[indices], units=units, calendar=t_cal)
+                        for times_to_read in range(0,len(times)):
+                            for t in range(0, len(times_for_var)):
+                                if times_for_var[t] == times[times_to_read]: times_read.append(t)
+                    else:
+                        npoints=dimlen
+
+                    ndims=ndims+1
+
+                if len(times) == 0: error("Time index was not found for times "+str(times))
+                field = self.fh.variables[var][times_read, 0:npoints]
+        return field
+
+    def plot_field(self,field,plot=False,title=""):
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        plt.close()
+        ax = plt.axes(projection=ccrs.Miller())
+
+        ax.set_global()
+        ax.coastlines(resolution="10m")
+
+        print "Plot",field
+        ax.set_extent([min(self.lons)-1,max(self.lons)+1,min(self.lats)-1,max(self.lats)+1],ccrs.PlateCarree())
+        plt.scatter(self.lons,self.lats,c=field,transform=ccrs.PlateCarree())
+        plt.title(title)
+        plt.colorbar()
+        if plot == True:
+            plt.show()
+        return plt
+
