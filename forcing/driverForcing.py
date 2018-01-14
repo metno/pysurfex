@@ -1,7 +1,7 @@
 import sys
 import os
 import copy
-import argparse
+from argparse import ArgumentParser,Action
 import numpy as np
 import forcing.version
 from forcing.util import error,data_merge,warning
@@ -17,9 +17,9 @@ import ConfigParser
 import yaml
 
 
-class LoadFromFile (argparse.Action):
+class LoadFromFile (Action):
     def __call__ (self, parser, namespace, values,option_string=None):
-        print "Reading options from file"
+        error("Reading options from file is not supported yet")
         with values as f:
             contents = f.read()
             data = parser.parse_args(contents.split())
@@ -28,7 +28,7 @@ class LoadFromFile (argparse.Action):
                     setattr(namespace, k, v)
 
 
-def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_height,start,firstBaseTime,timestep,dry):
+def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_height,start,firstBaseTime,timestep,debug):
     """
     Set the input parameter for a specific SURFEX forcing variable based on input
     
@@ -41,7 +41,7 @@ def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_heigh
     :param start: 
     :param firstBaseTime: 
     :param timestep: 
-    :param dry: 
+    :param debug:
     :return: 
     """
 
@@ -107,7 +107,7 @@ def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_heigh
 
         # Construct the converter
         #print sfx_var
-        converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,firstBaseTime,timestep,dry)
+        converter = forcing.converter.Converter(selected_converter, start, defs, conf_dict, format,firstBaseTime,timestep,debug)
 
         # Construct the input object
         obj = ConvertedInput(geo, sfx_var,converter)
@@ -194,7 +194,7 @@ def parseAreaFile(area_file,mode,name,format="grib"):
 def parseArgs(argv):
 
     #print argv
-    parser = argparse.ArgumentParser(description="Create offline forcing")
+    parser = ArgumentParser(description="Create offline forcing")
     parser.add_argument('dtg_start', type=str, help="Start DTG",nargs="?")
     parser.add_argument('dtg_stop', type=str, help="Stop DTG",nargs="?")
     parser.add_argument('area', type=str, help="Configuration file describing the points or locations",nargs="?")
@@ -210,7 +210,6 @@ def parseArgs(argv):
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
     parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
-    parser.add_argument('--dry', help="Dry run (no reading/writing)", action="store_true")
     parser.add_argument('--debug', help="Show debug information", action="store_true")
     parser.add_argument('--version', action="version", version=forcing.version.__version__)
 
@@ -280,6 +279,7 @@ def parseArgs(argv):
 
     # Time information
     args = parser.parse_args(argv)
+    debug = args.debug
     if ( args.dtg_start or args.dtg_stop) < 1000010100:
         error("Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop))
 
@@ -289,10 +289,6 @@ def parseArgs(argv):
         firstBaseTime=start
     else:
         firstBaseTime = datetime.strptime(str.strip(str(args.fb)), '%Y%m%d%H')
-
-    if not args.debug:
-        np.seterr(invalid="ignore")
-
 
     # Read point/domain config
     area_file=args.area
@@ -346,7 +342,7 @@ def parseArgs(argv):
             selected_converter = args.uval_converter
             ref_height = args.uref
             if ref_height == "screen": cformat = "constant"
-        att_objs.append(set_input_object(atts[i],merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,args.dry))
+        att_objs.append(set_input_object(atts[i],merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,debug))
 
     # Set forcing variables (time dependent)
     vars = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR", "CO2"]
@@ -394,7 +390,7 @@ def parseArgs(argv):
         elif sfx_var == "CO2":
             if args.co2 != "default": cformat = args.co2
             selected_converter = args.co2_converter
-        var_objs.append(set_input_object(sfx_var,merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,args.dry))
+        var_objs.append(set_input_object(sfx_var,merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,debug))
 
     # Save options
     options=dict()
@@ -404,14 +400,14 @@ def parseArgs(argv):
     options['stop'] = stop
     options['timestep']=args.timestep
     options['geo_out']=geo_out
-    options['dry']=args.dry
+    options['debug']=args.debug
 
     return options,var_objs,att_objs
 
 def runTimeLoop(options,var_objs,att_objs):
 
     this_time = options['start']
-    cache = Cache()
+    cache = Cache(options['debug'])
     # Find how many time steps we want to write
     ntimes=0
     while this_time <= options['stop']:
@@ -422,7 +418,7 @@ def runTimeLoop(options,var_objs,att_objs):
     if str.lower(options['output_format']) == "netcdf":
         # Set att_time the same as start
         att_time=options['start']
-        output = NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,options['dry'],cache)
+        output = NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
     elif str.lower(options['output_format']) == "ascii":
         error("Output format "+options['output_format']+" not implemented yet")
     else:
@@ -435,7 +431,7 @@ def runTimeLoop(options,var_objs,att_objs):
 
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
-        output.write_forcing(var_objs,this_time,options['dry'],cache)
+        output.write_forcing(var_objs,this_time,cache)
         output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=options['timestep'])
 

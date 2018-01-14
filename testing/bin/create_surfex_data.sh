@@ -56,7 +56,7 @@ for type in $gridtypes; do
       # cforcingfiletype
       case $forc in
         "NETCDF")
-           cp $FORCING_DIR/$type/nc/FORCING.nc . || exit 1
+           cp $FORCING_DIR/$type/nc/FORCING_benchmark.nc FORCING.nc || exit 1
         ;;
         *)
           echo "Define forcing for $forc"

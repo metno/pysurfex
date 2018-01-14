@@ -74,7 +74,7 @@ class CommandLineOptions(unittest.TestCase):
             LocTestVarDict(self, var_objs,"SCA_SW",'value',0,"Scattered SW radiation does not have expected constant value")
             LocTestVarDict(self, var_objs,"CO2",'value',0.00062,"CO2 does not have expected constant value")
 
-class ForcingFromGrib(unittest.TestCase):
+class ForcingFromGribToNetCDF(unittest.TestCase):
 
 
     def test_file_test11(self):
@@ -144,10 +144,21 @@ class ForcingFromGrib(unittest.TestCase):
             forc = ForcingFileNetCDF(of)
             field=forc.read_field("ZS")
             plt=forc.plot_field(field,title="ZS")
+            forc_bm=ForcingFileNetCDF("data/"+str(gtype)+"/nc/FORCING_benchmark.nc")
+            field_bm=forc_bm.read_field("ZS")
+            self.assertAlmostEquals(field.all(),field_bm.all(),2,msg="ZS for "+str(gtype))
+            vars = ["Tair", "Qair", "PSurf", "DIR_SWdown", "SCA_SWdown", "LWdown", "Rainf", "Snowf", "Wind", "Wind_DIR",
+                    "CO2air"]
+            times = [datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
+            for var in vars:
+                print "Testing: ",var
+                field = forc.read_field(var, times=times)
+                field_bm=forc_bm.read_field(var,times=times)
+                self.assertAlmostEquals(field.all(), field_bm.all(), 2,msg=str(var)+" for "+str(gtype))
             pdf.savefig()
             pdf.close()
 
-class ForcingFromNetCDF(unittest.TestCase):
+class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
 
     dtgstart="2018011100"
     dtgend="2018011112"
@@ -187,6 +198,18 @@ class ForcingFromNetCDF(unittest.TestCase):
             forc = ForcingFileNetCDF(of)
             field = forc.read_field("ZS")
             plt = forc.plot_field(field)
+            forc_bm = ForcingFileNetCDF("data/" + str(gtype) + "/nc/FORCING_benchmark.nc")
+            field_bm = forc_bm.read_field("ZS")
+            self.assertAlmostEquals(field.all(), field_bm.all(), 2, msg="ZS for " + str(gtype))
+            vars = ["Tair", "Qair", "PSurf", "DIR_SWdown", "SCA_SWdown", "LWdown", "Rainf", "Snowf", "Wind", "Wind_DIR",
+                    "CO2air"]
+            times = [datetime.strptime("2018011100", '%Y%m%d%H'), datetime.strptime("2018011106", '%Y%m%d%H'),
+                     datetime.strptime("2018011109", '%Y%m%d%H')]
+            for var in vars:
+                print "Testing: ", var
+                field = forc.read_field(var, times=times)
+                field_bm = forc_bm.read_field(var, times=times)
+                self.assertAlmostEquals(field.all(), field_bm.all(), 2, msg=str(var) + " for " + str(gtype))
             pdf.savefig()
             pdf.close()
 
@@ -322,15 +345,16 @@ class ReadForcing(unittest.TestCase):
 
         vars=["Tair","Qair","PSurf","DIR_SWdown","SCA_SWdown","LWdown","Rainf","Snowf","Wind","Wind_DIR","CO2air"]
 
-        times = [datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011101", '%Y%m%d%H'),\
+        times = [datetime.strptime("2018011109", '%Y%m%d%H')]
+                #datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011101", '%Y%m%d%H'),\
                  #datetime.strptime("2018011102", '%Y%m%d%H'),datetime.strptime("2018011103", '%Y%m%d%H'),\
                  #datetime.strptime("2018011104", '%Y%m%d%H'),datetime.strptime("2018011105", '%Y%m%d%H'),\
                  #datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011107", '%Y%m%d%H'),\
-                 datetime.strptime("2018011108", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
+                 #datetime.strptime("2018011108", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
         for var in vars:
             field=forc.read_field(var,times=times)
             for t in range(0,len(times)):
-                forc.plot_field(field[t,:],plot=True,title=str(var)+ " "+str(times[t]))
+                forc.plot_field(field[t,:],plot=False,title=str(var)+ " "+str(times[t]))
                 #print field
 
 

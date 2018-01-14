@@ -20,8 +20,8 @@ class ReadInputForSurfex(object):
 
 class ConvertedInput(ReadInputForSurfex):
 
-    def read_time_step(self,validtime,dry,cache):
-        field=self.converter.read_time_step(self.geo_out,validtime,dry,cache)
+    def read_time_step(self,validtime,cache):
+        field=self.converter.read_time_step(self.geo_out,validtime,cache)
         # Preserve positive values for precipitation
         if self.var_name == "RAIN" or self.var_name == "SNOW":
             field[field < 0.] = 0.
@@ -39,7 +39,7 @@ class ConvertedInput(ReadInputForSurfex):
 
 class ConstantValue(ReadInputForSurfex):
 
-    def read_time_step(self,validtime,dry,cache):
+    def read_time_step(self,validtime,cache):
         field = np.array([float(i) for i in range(0, self.geo_out.npoints)])
         field.fill(self.value)
         #print field.shape

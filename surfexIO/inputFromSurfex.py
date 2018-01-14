@@ -589,7 +589,6 @@ class ForcingFileNetCDF():
         ax.set_global()
         ax.coastlines(resolution="10m")
 
-        print "Plot",field
         ax.set_extent([min(self.lons)-1,max(self.lons)+1,min(self.lats)-1,max(self.lats)+1],ccrs.PlateCarree())
         plt.scatter(self.lons,self.lats,c=field,transform=ccrs.PlateCarree())
         plt.title(title)

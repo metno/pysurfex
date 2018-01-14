@@ -15,7 +15,7 @@ class Variable(object):
     The variable read it self
     """
 
-    def __init__(self,basetime,validtime,var_dict,intervall,dry):
+    def __init__(self,basetime,validtime,var_dict,intervall,debug):
         self.initialtime=validtime
         self.previoustime=validtime-timedelta(seconds=intervall)
         self.basetime=basetime
@@ -26,13 +26,12 @@ class Variable(object):
         self.filepattern=var_dict["filepattern"]
         self.previousfilename=None
         self.ReRead=False
-        self.dry=dry
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
-        #print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
+        if debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
     @abc.abstractmethod
-    def read_variable(self,geo, validtime, dry, cache):
+    def read_variable(self,geo, validtime,cache):
         raise NotImplementedError('users must define read_variable to use this base class')
 
     @abc.abstractmethod
@@ -105,13 +104,13 @@ class NetcdfVariable(Variable):
     NetCDF variable
     """
 
-    def __init__(self,var_dict,basetime,validtime,intervall,dry):
+    def __init__(self,var_dict,basetime,validtime,intervall,debug):
         mandatory=["name","fcint","offset","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in var_dict:
                 error("NetCDF variable must have attribute "+mandatory[i]+" var_dict:"+str(var_dict))
 
-        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,dry)
+        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
 
         #print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
 
@@ -134,25 +133,16 @@ class NetcdfVariable(Variable):
 
         return previousvalues
 
-    def read_variable(self,geo,validtime,dry,cache):
+    def read_variable(self,geo,validtime,cache):
 
         self.validtime=validtime
         if (self.open_new_file(int(self.var_dict["fcint"]),int(self.var_dict["offset"]),int(self.var_dict["file_inc"]))):
             #print "Updating filehandler for "+self.print_variable_info()
-            if dry:
-                if re.search("http",self.filename):
-                    self.file_handler=None
-                    self.opendap=True
-                    print "File assumed to be served by opendap "+self.filename
-                else:
-                    self.opendap = False
-                    print "Check if "+self.filename+" exists!"
+            if cache.file_open(self.filename):
+                self.file_handler=cache.get_file_handler(self.filename)
             else:
-                if cache.file_open(self.filename):
-                    self.file_handler=cache.get_file_handler(self.filename)
-                else:
-                    self.file_handler = Netcdf(self.filename)
-                    cache.set_file_handler(self.filename,self.file_handler)
+                self.file_handler = Netcdf(self.filename)
+                cache.set_file_handler(self.filename,self.file_handler)
 
         if ( self.file_handler == None):
             if not self.opendap: warning("No file handler exist for this time step")
@@ -163,49 +153,42 @@ class NetcdfVariable(Variable):
             level=None
             accumulated=False
             units=None
-            instant=0.
             if "level" in self.var_dict: level=[self.var_dict["level"]]
             if "units" in self.var_dict: units = str([self.var_dict["units"]][0])
             if "accumulated" in self.var_dict: accumulated = [self.var_dict["accumulated"]]
-            if accumulated:
-                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
             int_type="nearest"
             if "interpolator" in self.var_dict: int_type=self.var_dict["interpolator"]
 
             #print level, accumulated, instant,int_type
-            if dry:
-                field=np.array([len(geo.lons)])
-                field=field.fill(np.nan)
-            else:
-                # Update the interpolator from cache if existing
-                if int_type == "nearest" and cache.interpolator_is_set(int_type,"netcdf"):
-                    self.file_handler.nearest=cache.get_interpolator(int_type,"netcdf")
-                elif int_type == "linear" and cache.get_interpolator(int_type,"netcdf"):
-                    self.file_handler.linear=cache.get_interpolator(int_type,"netcdf")
+            # Update the interpolator from cache if existing
+            if int_type == "nearest" and cache.interpolator_is_set(int_type,"netcdf"):
+                self.file_handler.nearest=cache.get_interpolator(int_type,"netcdf")
+            elif int_type == "linear" and cache.get_interpolator(int_type,"netcdf"):
+                self.file_handler.linear=cache.get_interpolator(int_type,"netcdf")
 
+            # Re-read field
+            previousField = None
+            if accumulated:
                 # Re-read field
-                previousField = None
-                if accumulated:
-                    # Re-read field
-                    previousField = self.get_previous_values(var_name,level,units,geo,int_type)
+                previousField = self.get_previous_values(var_name,level,units,geo,int_type)
 
-                field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
-                field=np.reshape(field4d[:,0,0,0],len(geo.lons))
+            field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
+            field=np.reshape(field4d[:,0,0,0],len(geo.lons))
 
-                if accumulated:
-                    instant = [(validtime - self.previoustime).total_seconds()]
-                    if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                    field = self.deaccumulate(field, previousField, float(instant[0]))
+            if accumulated:
+                instant = [(validtime - self.previoustime).total_seconds()]
+                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+                field = self.deaccumulate(field, previousField, float(instant[0]))
 
 
-                # Find used interpolator
-                interpolator=None
-                if int_type == "nearest":
-                    interpolator=self.file_handler.nearest
-                elif int_type == "linear":
-                    interpolator = self.file_handler.linear
-                # Update cache
-                cache.update_interpolator(int_type,"netcdf",interpolator)
+            # Find used interpolator
+            interpolator=None
+            if int_type == "nearest":
+                interpolator=self.file_handler.nearest
+            elif int_type == "linear":
+                interpolator = self.file_handler.linear
+            # Update cache
+            cache.update_interpolator(int_type,"netcdf",interpolator)
 
 
         self.previoustime = validtime
@@ -220,13 +203,13 @@ class GribVariable(Variable):
     """
     Grib variable
     """
-    def __init__(self,var_dict,basetime,validtime,intervall,dry):
+    def __init__(self,var_dict,basetime,validtime,intervall,debug):
         mandatory = ["parameter", "type","level","tri","fcint", "offset", "file_inc", "filepattern"]
         for i in range(0, len(mandatory)):
             if mandatory[i] not in var_dict:
                 error("Grib variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
 
-        super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,dry)
+        super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
 
     def get_previous_values(self,par,type,level,tri,geo,int_type):
 
@@ -244,19 +227,16 @@ class GribVariable(Variable):
                 self.file_handler.fname = fname
         return previousvalues
 
-    def read_variable(self, geo, validtime, dry, cache):
+    def read_variable(self, geo, validtime,cache):
         self.validtime = validtime
         if (
         self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]), int(self.var_dict["file_inc"]))):
             # print "Updating filehandler for "+self.print_variable_info()
-            if dry:
-                print "Check if " + self.filename + " exists!"
+            if cache.file_open(self.filename):
+                self.file_handler = cache.get_file_handler(self.filename)
             else:
-                if cache.file_open(self.filename):
-                    self.file_handler = cache.get_file_handler(self.filename)
-                else:
-                    self.file_handler = Grib(self.filename)
-                    cache.set_file_handler(self.filename, self.file_handler)
+                self.file_handler = Grib(self.filename)
+                cache.set_file_handler(self.filename, self.file_handler)
 
         if (self.file_handler == None):
             warning("No file handler exist for this time step")
@@ -272,39 +252,34 @@ class GribVariable(Variable):
             if "interpolator" in self.var_dict: int_type = self.var_dict["interpolator"]
 
             # print level, accumulated, instant,int_type
-            if self.dry:
-                field = np.array([len(geo.lons)])
-            else:
-                # Update the interpolator from cache if existing
-                if int_type == "nearest" and cache.interpolator_is_set(int_type,"grib"):
-                    self.file_handler.nearest = cache.get_interpolator(int_type,"grib")
-                elif int_type == "linear" and cache.get_interpolator(int_type,"grib"):
-                    self.file_handler.linear = cache.get_interpolator(int_type,"grib")
+            # Update the interpolator from cache if existing
+            if int_type == "nearest" and cache.interpolator_is_set(int_type,"grib"):
+                self.file_handler.nearest = cache.get_interpolator(int_type,"grib")
+            elif int_type == "linear" and cache.get_interpolator(int_type,"grib"):
+                self.file_handler.linear = cache.get_interpolator(int_type,"grib")
 
-                #Re-read field
-                previousField=None
-                if tri == 4:
-                    previousField=self.get_previous_values(par,type,level,tri,geo,int_type)
+            #Re-read field
+            previousField=None
+            if tri == 4:
+                previousField=self.get_previous_values(par,type,level,tri,geo,int_type)
 
-                # Read field
-                field = self.file_handler.points(par,type,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
-                #if par == 61:
-                #    print self.validtime,field
+            # Read field
+            field = self.file_handler.points(par,type,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
 
-                # Deaccumulate
-                if tri == 4:
-                    instant = [(validtime - self.previoustime).total_seconds()]
-                    if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                    field=self.deaccumulate(field,previousField,float(instant[0]))
+            # Deaccumulate
+            if tri == 4:
+                instant = [(validtime - self.previoustime).total_seconds()]
+                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+                field=self.deaccumulate(field,previousField,float(instant[0]))
 
-                # Find used interpolator
-                interpolator=None
-                if int_type == "nearest":
-                    interpolator = self.file_handler.nearest
-                elif int_type == "linear":
-                    interpolator = self.file_handler.linear
-                # Update cache
-                cache.update_interpolator(int_type,"grib",interpolator)
+            # Find used interpolator
+            interpolator=None
+            if int_type == "nearest":
+                interpolator = self.file_handler.nearest
+            elif int_type == "linear":
+                interpolator = self.file_handler.linear
+            # Update cache
+            cache.update_interpolator(int_type,"grib",interpolator)
 
         self.previoustime = validtime
         return field

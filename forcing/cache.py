@@ -1,8 +1,9 @@
 
 class Cache:
 
-    def __init__(self):
+    def __init__(self,debug):
         self.files=[]
+        self.debug=debug
         self.file_handler=[]
         self.interpolators={}
         #print "Constructed cache"
