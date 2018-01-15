@@ -27,9 +27,9 @@
 
 %prep=(
  NAM_PREP_SURF_ATM=>{
-  NYEAR  => '2017,',
-  NMONTH => '9,',
-  NDAY   => '1,',
+  NYEAR  => '2018,',
+  NMONTH => '1,',
+  NDAY   => '11,',
   XTIME  => '0,',
  },
  NAM_PREP_ISBA=>{

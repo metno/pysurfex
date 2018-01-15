@@ -11,14 +11,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 ################## Settings ##############################
 gtypes=["CONF_PROJ","LONLATVAL","LONLAT_REG","IGN"]
 formats=["ascii","texte","netcdf"]
-basetime_str="2017090100"
-times_str=["2017090101","2017090102","2017090103","2017090104"]
+basetime_str="2018011100"
+times_str=["2018011101","2018011102","2018011103","2018011104"]
 patches=[0,1]
 
-testvals={  "IGN"       :{0:[290.86902],1:[290.11491]},\
-            "LONLATVAL" :{0:[293.83825],1:[293.64643]},\
-            "LONLAT_REG":{0:[294.2936 ],1:[293.14951]},\
-            "CONF_PROJ" :{0:[288.72793],1:[286.5136 ]}}
+testvals={  "IGN"       :{0:[271.922],1:[270.316]},\
+            "LONLATVAL" :{0:[272.830],1:[272.065]},\
+            "LONLAT_REG":{0:[269.363],1:[267.527]},\
+            "CONF_PROJ" :{0:[271.266],1:[269.636]}}
 
 basetime=datetime.strptime(basetime_str, '%Y%m%d%H')
 times=[]
@@ -131,7 +131,6 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
             mode="points"
             if gtype == "LONLAT_REG" or gtype == "CONF_PROJ":
                 mode="domain"
-            print "etc/"+str(gtype).lower()+".yml"
             args = [self.dtgstart,self.dtgend,"etc/"+str(gtype).lower()+".yml", "-m",
                     mode, "--sca_sw", "constant", "--co2", "constant", \
                     "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval",
@@ -144,9 +143,10 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
             forc = ForcingFileNetCDF(of)
             field=forc.read_field("ZS")
             plt=forc.plot_field(field,title="ZS")
-            forc_bm=ForcingFileNetCDF("data/"+str(gtype)+"/nc/FORCING_benchmark.nc")
+            forc_bm=ForcingFileNetCDF("data/"+str(gtype)+"/nc/FORCING_grib_benchmark.nc")
             field_bm=forc_bm.read_field("ZS")
             self.assertAlmostEquals(field.all(),field_bm.all(),2,msg="ZS for "+str(gtype))
+            np.testing.assert_almost_equal(field,field_bm,decimal=2,err_msg="ZS for "+str(gtype))
             vars = ["Tair", "Qair", "PSurf", "DIR_SWdown", "SCA_SWdown", "LWdown", "Rainf", "Snowf", "Wind", "Wind_DIR",
                     "CO2air"]
             times = [datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
@@ -154,7 +154,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
                 print "Testing: ",var
                 field = forc.read_field(var, times=times)
                 field_bm=forc_bm.read_field(var,times=times)
-                self.assertAlmostEquals(field.all(), field_bm.all(), 2,msg=str(var)+" for "+str(gtype))
+                np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg=str(var)+" for " + str(gtype))
             pdf.savefig()
             pdf.close()
 
@@ -198,9 +198,9 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
             forc = ForcingFileNetCDF(of)
             field = forc.read_field("ZS")
             plt = forc.plot_field(field)
-            forc_bm = ForcingFileNetCDF("data/" + str(gtype) + "/nc/FORCING_benchmark.nc")
+            forc_bm = ForcingFileNetCDF("data/" + str(gtype) + "/nc/FORCING_netcdf_benchmark.nc")
             field_bm = forc_bm.read_field("ZS")
-            self.assertAlmostEquals(field.all(), field_bm.all(), 2, msg="ZS for " + str(gtype))
+            np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg="ZS for " + str(gtype))
             vars = ["Tair", "Qair", "PSurf", "DIR_SWdown", "SCA_SWdown", "LWdown", "Rainf", "Snowf", "Wind", "Wind_DIR",
                     "CO2air"]
             times = [datetime.strptime("2018011100", '%Y%m%d%H'), datetime.strptime("2018011106", '%Y%m%d%H'),
@@ -209,7 +209,7 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
                 print "Testing: ", var
                 field = forc.read_field(var, times=times)
                 field_bm = forc_bm.read_field(var, times=times)
-                self.assertAlmostEquals(field.all(), field_bm.all(), 2, msg=str(var) + " for " + str(gtype))
+                np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg=str(var)+" for " + str(gtype))
             pdf.savefig()
             pdf.close()
 
@@ -275,8 +275,6 @@ class ReadPGDAndPlot(unittest.TestCase):
         for gtype in gtypes:
             info("Testing CGRID=" + gtype + " CSURF_FILETYPE=ASCII",level=1)
             pgd_ascii(gtype,plot=False)
-            #print [float(round(n, 4)) for n in p.geo.lons]
-            #print [float(round(n, 4)) for n in p.geo.lats]
 
 class ReadTimeStepAndPlot(unittest.TestCase):
 
@@ -288,7 +286,7 @@ class ReadTimeStepAndPlot(unittest.TestCase):
         """
         for gtype in gtypes:
             pdf = PdfPages("plots/"+gtype + ".pdf")
-            plot_time = datetime.strptime("2017090110", '%Y%m%d%H')
+            plot_time = datetime.strptime("2018011110", '%Y%m%d%H')
             file={}
             var={}
             for format in formats:
@@ -331,31 +329,9 @@ class ReadTimeStepAndPlot(unittest.TestCase):
                     plot=False
                     plt=plot_field(file[format].geo, field2, plot=plot, interpolation="bilinear", bd=bd, title=str(gtype)+" "+str(format)+" TG1 "+str(plot_time)+" patch: "+str(p+1))
                     pdf.savefig()
+                    #print gtype,p,field2[0]
                     self.assertAlmostEqual(field2[0],testvals[gtype][p][0],2,msg=str(gtype)+" "+str(format)+" patch:"+str(p+1)+" differ from expected value")
             pdf.close()
-
-class ReadForcing(unittest.TestCase):
-
-    def test_forcing(self):
-
-        from datetime import datetime, timedelta
-
-        of="data/CONF_PROJ/nc/FORCING_file_from_grib.nc"
-        forc=ForcingFileNetCDF(of)
-
-        vars=["Tair","Qair","PSurf","DIR_SWdown","SCA_SWdown","LWdown","Rainf","Snowf","Wind","Wind_DIR","CO2air"]
-
-        times = [datetime.strptime("2018011109", '%Y%m%d%H')]
-                #datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011101", '%Y%m%d%H'),\
-                 #datetime.strptime("2018011102", '%Y%m%d%H'),datetime.strptime("2018011103", '%Y%m%d%H'),\
-                 #datetime.strptime("2018011104", '%Y%m%d%H'),datetime.strptime("2018011105", '%Y%m%d%H'),\
-                 #datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011107", '%Y%m%d%H'),\
-                 #datetime.strptime("2018011108", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
-        for var in vars:
-            field=forc.read_field(var,times=times)
-            for t in range(0,len(times)):
-                forc.plot_field(field[t,:],plot=False,title=str(var)+ " "+str(times[t]))
-                #print field
 
 
 

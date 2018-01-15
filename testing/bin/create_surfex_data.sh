@@ -75,6 +75,7 @@ for type in $gridtypes; do
         export CTIMESERIES_FILETYPE=$ts
         export CFORCING_FILETYPE=$forc
         # cgridtype
+        # $GIT_ROOT/testing/etc/surfex_namelists_set_forc_zs.pm
         case $type in
           "IGN")
               Get_namelist ALL $GIT_ROOT/testing/etc/surfex_namelists.pm $GIT_ROOT/testing/etc/surfex_namelists_ign.pm $GIT_ROOT/testing/etc/surfex_namelists_set_forc_zs.pm > OPTIONS.nam

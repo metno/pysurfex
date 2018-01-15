@@ -542,7 +542,7 @@ class ForcingFileNetCDF():
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.fh.close()
 
-    def read_field(self,var,times=[],plot=False):
+    def read_field(self,var,times=[]):
 
         field=None
         if self.fh.variables[var].shape[0] > 0:
@@ -579,7 +579,7 @@ class ForcingFileNetCDF():
                 field = self.fh.variables[var][times_read, 0:npoints]
         return field
 
-    def plot_field(self,field,plot=False,title=""):
+    def plot_field(self,field,plot=False,title="",block=True):
         import matplotlib.pyplot as plt
         import cartopy.crs as ccrs
 
@@ -594,6 +594,6 @@ class ForcingFileNetCDF():
         plt.title(title)
         plt.colorbar()
         if plot == True:
-            plt.show()
+            plt.show(block=block)
         return plt
 
