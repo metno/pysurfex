@@ -27,7 +27,8 @@ class Variable(object):
         self.previousfilename=None
         self.ReRead=False
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
-        if debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
+        self.debug=debug
+        if self.debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
     @abc.abstractmethod
@@ -59,8 +60,8 @@ class Variable(object):
         last_time=new_basetime+timedelta(seconds=offset)
 
         self.reRead=False
-        if self.previousbasetime != self.basetime:
-            self.reRead=True
+        #if self.previousbasetime != self.basetime:
+        #    self.reRead=True
 
         self.previousbasetime = self.basetime
         new=False
@@ -91,11 +92,15 @@ class Variable(object):
 
         # Adjust basetime if we should read from a new cycle
         if (self.validtime >= last_time):
-            self.reReadNext=True
             self.basetime = new_basetime
 
-        #if new:
-        #    print "Open new file ",self.filename
+        if new:
+            if timedelta(seconds=offset) > timedelta(seconds=0):
+                self.previousbasetime = self.basetime
+                self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime,
+                                                          self.previoustime)
+            self.reRead=True
+            if self.debug: print "Open new file ",self.filename
         return new
 
 class NetcdfVariable(Variable):
@@ -123,6 +128,7 @@ class NetcdfVariable(Variable):
             if self.reRead:
                 # Modify filename in handler
                 fname = self.filename
+                if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
                 self.file_handler.fname = self.previousfilename
                 field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
                                                    times=[self.previoustime], interpolation=int_type, units=units)
@@ -219,6 +225,7 @@ class GribVariable(Variable):
             if self.reRead:
                 # Modify filename in handler
                 fname = self.filename
+                if self.debug: print "Re-read ", self.previoustime, " from ", self.previousfilename
                 self.file_handler.fname = self.previousfilename
                 previousvalues = self.file_handler.points(par, type, level, tri, self.previoustime, lons=geo.lons,
                                                                lats=geo.lats, interpolation=int_type)
