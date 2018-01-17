@@ -91,7 +91,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
         of="data/CONF_PROJ/nc/FORCING_TEST_11.nc"
         args = [dtgstart,dtgend,file, "-m","file", "--sca_sw", "constant", "--co2", "constant", \
                "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval", "constant",\
-                "-of",of,"-p",pattern,"-i",format]
+                "-of",of,"-p",pattern,"-i",format,"--debug"]
 
         options, var_objs, att_objs = parseArgs(args)
         runTimeLoop(options, var_objs, att_objs)
@@ -113,7 +113,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
                 "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval",
                 "constant", \
                 "-c","../forcing/cfg/user.yml", \
-                "-of",of,"-p", self.pattern, "-i", self.format]
+                "-of",of,"-p", self.pattern, "-i", self.format,"--debug"]
 
         options, var_objs, att_objs = parseArgs(args)
         runTimeLoop(options, var_objs, att_objs)
@@ -170,7 +170,7 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
         of = "data/CONF_PROJ/nc/FORCING_file_netcdf.nc"
         args = [self.dtgstart,self.dtgend,self.file, "-m","file", "--sca_sw", "constant", "--co2", "constant", \
                "--zsoro_converter", "phi2m", "--zref", "ml", "--zval", "constant", "--uref", "ml", "--uval", "constant",\
-                "-of",of,"-p",self.pattern,"-i",self.format]
+                "-of",of,"-p",self.pattern,"-i",self.format,"--debug"]
 
         options, var_objs, att_objs = parseArgs(args)
         runTimeLoop(options, var_objs, att_objs)

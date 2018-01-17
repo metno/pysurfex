@@ -25,7 +25,8 @@ class Variable(object):
         self.opendap = False
         self.filepattern=var_dict["filepattern"]
         self.previousfilename=None
-        self.ReRead=False
+        self.timeElapsed=validtime-basetime
+        self.reRead=False
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
         self.debug=debug
         if self.debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
@@ -56,51 +57,101 @@ class Variable(object):
         return field
 
     def open_new_file(self,fcint,offset,file_inc):
-        new_basetime=self.basetime+timedelta(seconds=fcint)
-        last_time=new_basetime+timedelta(seconds=offset)
 
-        self.reRead=False
-        #if self.previousbasetime != self.basetime:
-        #    self.reRead=True
+        new = False
+        self.reRead = False
+        filepattern=self.var_dict["filepattern"]
+        basetime=self.basetime
+        validtime=self.validtime
+        new_basetime=basetime
 
-        self.previousbasetime = self.basetime
-        new=False
-        # Normal test
-        if (self.validtime - self.basetime) >= (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
-            if timedelta(seconds=offset) == timedelta(seconds=0):
-                self.filename = parse_filepattern(self.var_dict["filepattern"], self.basetime, self.validtime)
-            elif timedelta(seconds=offset) > timedelta(seconds=file_inc):
-                self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime,self.validtime)
-            else:
-                self.filename = parse_filepattern(self.var_dict["filepattern"],new_basetime,self.validtime)
-            new=True
 
-        # Special test between initial time and offset
-        if timedelta(seconds=offset) > timedelta(seconds=file_inc):
-            if timedelta(seconds=offset) >= (self.validtime-self.initialtime):
-                self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime, self.validtime)
-                new = True
+        # Basetime checks
+        if offset >= 0:
+            # Change basetime if offset is exceeded
+            if (validtime-basetime) > (timedelta(seconds=fcint)+timedelta(seconds=offset)):
+                if self.debug: print "Changing basetime to ",new_basetime
+                new_basetime=basetime+timedelta(seconds=fcint)
+        else:
+            error("Negative offset does not make sense here")
 
         # Always open the file for the first step
         if self.validtime == self.initialtime:
+            if self.debug: print "Same as initial time ",self.initialtime
+            new = True
+
+        # File increment checks
+        if file_inc > 0:
+            print "Time elapsed: ",self.timeElapsed,timedelta(seconds=file_inc),timedelta(seconds=offset),file_inc,offset
+            if file_inc > offset:
+                if offset == 0:
+                    if (self.timeElapsed) == timedelta(seconds=file_inc):
+                        if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset)
+                        self.timeElapsed=timedelta(seconds=0)
+                        new=True
+                else:
+                    if (self.timeElapsed) > (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
+                        if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset)
+                        self.timeElapsed=timedelta(seconds=0)
+                        new=True
+
+            else:
+                if (self.timeElapsed) >= timedelta(seconds=file_inc):
+                    if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)
+                    self.timeElapsed=timedelta(seconds=0)
+                    new=True
+        else:
+            error("file_inc must be a positive value > 0")
+
+        # Set filename. New basetime is the same as previous or the updated one
+        self.filename = parse_filepattern(filepattern, new_basetime, validtime)
+        self.previousfilename = parse_filepattern(filepattern, new_basetime,self.previoustime)
+
+        # Reread if the basetime has changed
+        if new_basetime != basetime:
             new=True
-
-        # Check previous file
-        if new:
-            self.previousbasetime=self.basetime
-            self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime, self.previoustime)
-
-        # Adjust basetime if we should read from a new cycle
-        if (self.validtime >= last_time):
-            self.basetime = new_basetime
-
-        if new:
-            if timedelta(seconds=offset) > timedelta(seconds=0):
-                self.previousbasetime = self.basetime
-                self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime,
-                                                          self.previoustime)
             self.reRead=True
-            if self.debug: print "Open new file ",self.filename
+
+        self.timeElapsed = self.timeElapsed + (validtime - self.previoustime)
+        self.basetime=new_basetime
+        if new and self.debug: print "Open new file ", self.filename,self.validtime,self.basetime,self.reRead
+
+    #    # Normal test
+    #    if (self.validtime - self.basetime) >= (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
+    #        if timedelta(seconds=offset) == timedelta(seconds=0):
+    #            self.filename = parse_filepattern(self.var_dict["filepattern"], self.basetime, self.validtime)
+    #        elif timedelta(seconds=offset) > timedelta(seconds=file_inc):
+    #            self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime,self.validtime)
+    #        else:
+    #            self.filename = parse_filepattern(self.var_dict["filepattern"],new_basetime,self.validtime)
+    #        new=True
+
+    #    # Special test between initial time and offset
+    #    if timedelta(seconds=offset) > timedelta(seconds=file_inc):
+    #        if timedelta(seconds=offset) >= (self.validtime-self.initialtime):
+    #            self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime, self.validtime)
+    #            new = True
+
+    #    # Always open the file for the first step
+    #    if self.validtime == self.initialtime:
+    #        new=True
+
+    #    # Check previous file
+    #    if new:
+    #        self.previousbasetime=self.basetime
+    #        self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime, self.previoustime)
+
+    #    # Adjust basetime if we should read from a new cycle
+    #    if (self.validtime >= last_time):
+    #        self.basetime = new_basetime
+
+    #    if new:
+    #        if timedelta(seconds=offset) > timedelta(seconds=0):
+    #            self.previousbasetime = self.basetime
+    #            self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime,
+    #                                                      self.previoustime)
+    #        self.reRead=True
+    #        if self.debug: print "Open new file ",self.filename
         return new
 
 class NetcdfVariable(Variable):
