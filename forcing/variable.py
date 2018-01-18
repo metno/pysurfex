@@ -2,9 +2,13 @@ import abc
 from forcing.util import error,parse_filepattern,warning
 import copy
 import numpy as np
-from datetime import datetime,timedelta
-from netcdfpy.netcdf import Netcdf
-import re
+from datetime import timedelta
+HAS_NETCDFPY=True
+try:
+    from netcdfpy.netcdf import Netcdf
+except:
+    HAS_NETCDFPY=False
+
 from forcing.grib import Grib
 
 class Variable(object):
@@ -82,7 +86,6 @@ class Variable(object):
 
         # File increment checks
         if file_inc > 0:
-            print "Time elapsed: ",self.timeElapsed,timedelta(seconds=file_inc),timedelta(seconds=offset),file_inc,offset
             if file_inc > offset:
                 if offset == 0:
                     if (self.timeElapsed) == timedelta(seconds=file_inc):
@@ -116,42 +119,6 @@ class Variable(object):
         self.basetime=new_basetime
         if new and self.debug: print "Open new file ", self.filename,self.validtime,self.basetime,self.reRead
 
-    #    # Normal test
-    #    if (self.validtime - self.basetime) >= (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
-    #        if timedelta(seconds=offset) == timedelta(seconds=0):
-    #            self.filename = parse_filepattern(self.var_dict["filepattern"], self.basetime, self.validtime)
-    #        elif timedelta(seconds=offset) > timedelta(seconds=file_inc):
-    #            self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime,self.validtime)
-    #        else:
-    #            self.filename = parse_filepattern(self.var_dict["filepattern"],new_basetime,self.validtime)
-    #        new=True
-
-    #    # Special test between initial time and offset
-    #    if timedelta(seconds=offset) > timedelta(seconds=file_inc):
-    #        if timedelta(seconds=offset) >= (self.validtime-self.initialtime):
-    #            self.filename = parse_filepattern(self.var_dict["filepattern"],self.basetime, self.validtime)
-    #            new = True
-
-    #    # Always open the file for the first step
-    #    if self.validtime == self.initialtime:
-    #        new=True
-
-    #    # Check previous file
-    #    if new:
-    #        self.previousbasetime=self.basetime
-    #        self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime, self.previoustime)
-
-    #    # Adjust basetime if we should read from a new cycle
-    #    if (self.validtime >= last_time):
-    #        self.basetime = new_basetime
-
-    #    if new:
-    #        if timedelta(seconds=offset) > timedelta(seconds=0):
-    #            self.previousbasetime = self.basetime
-    #            self.previousfilename = parse_filepattern(self.var_dict["filepattern"], self.previousbasetime,
-    #                                                      self.previoustime)
-    #        self.reRead=True
-    #        if self.debug: print "Open new file ",self.filename
         return new
 
 class NetcdfVariable(Variable):
@@ -161,6 +128,8 @@ class NetcdfVariable(Variable):
     """
 
     def __init__(self,var_dict,basetime,validtime,intervall,debug):
+
+        if not HAS_NETCDFPY: error("You nead netcdfpy in installed and in your path read NetCDF files")
         mandatory=["name","fcint","offset","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in var_dict:
@@ -168,10 +137,7 @@ class NetcdfVariable(Variable):
 
         super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
 
-        #print("Initialized with " + self.var_dict["name"] + " file=" + self.filename)
-
     def get_previous_values(self,var_name,level,units,geo,int_type):
-        #previousfilename = parse_filepattern(self.filepattern, self.basetime, self.previoustime)
 
         previousvalues = np.zeros(len(geo.lons))
         if hasattr(self, "previousvalues"):

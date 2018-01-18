@@ -209,6 +209,8 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
                 print "Testing: ", var
                 field = forc.read_field(var, times=times)
                 field_bm = forc_bm.read_field(var, times=times)
+                for i in range(0,field_bm.shape[0]):
+                    print i,field[i],field_bm[i]
                 np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg=str(var)+" for " + str(gtype))
             pdf.savefig()
             pdf.close()

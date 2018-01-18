@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from forcing.util import error
-from netcdfpy.interpolation import NearestNeighbour,Linear
-import sys
+from forcing.interpolation import NearestNeighbour,Linear
 from pyproj import Proj
 import cartopy.crs as ccrs
 HAS_ECCODES=True
@@ -77,7 +76,7 @@ class Grib(object):
                         except CodesInternalError as err:
                             print('Error with key="%s" : %s' % (key, err.msg))
 
-                    #if par == 61:
+
                     #    print('There are %d values, average is %f, min is %f, max is %f' % (
                     #        codes_get_size(gid, 'values'),
                     #        codes_get(gid, 'average'),
@@ -161,8 +160,6 @@ class Grib(object):
 
         """
 
-        #print "Read points"
-        #if par==61: plot=True
         var_lons,var_lats,field=self.field(par,type,level,tri,plot)
 
         if lons is None or lats is None:
