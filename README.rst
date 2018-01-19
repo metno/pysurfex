@@ -17,7 +17,9 @@ The following depencies are needed. Install the non-standard ones e.g. with pip 
 
 General dependencies
 ---------------------
+
 .. code-block:: bash
+
   sys
   os
   re
@@ -33,24 +35,34 @@ General dependencies
   yaml
 
 To read NetCDF files:
+
 .. code-block:: bash
+
   netcdfpy https://github.com/metno/offline-surfex-forcing
 
 To read grib files:
+
 .. code-block:: bash
+
   eccodes from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with ENABLE_PYTHON=ON
 
 To plot:
+
 .. code-block:: bash
+
   matplotlib
   cartopy
 
 To get observations from frost.met.no API:
+
 .. code-block:: bash
+
   requests
 
 For testing:
+
 .. code-block:: bash
+
   unittest
   Testdata from https://drive.google.com/open?id=1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
 
