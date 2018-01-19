@@ -1,5 +1,5 @@
 from scipy.interpolate import griddata,NearestNDInterpolator
-from netcdfpy.util import log,error
+from forcing.util import info,error
 import numpy as np
 import abc
 import scipy.spatial.qhull as qhull
@@ -49,7 +49,7 @@ class NearestNeighbour(Interpolation):
 
     def interpolator_ok(self, nx, ny,var_lons,var_lats):
         if self.nx == nx and self.ny == ny and var_lons[0,0] == var_lons[0,0] and self.var_lats[0,0] == var_lats[0,0]:
-            log(2, "Assume interpolator is ok because dimensions and the first points are the same")
+            info("Assume interpolator is ok because dimensions and the first points are the same")
             return True
         else:
             return False
@@ -78,9 +78,9 @@ class NearestNeighbour(Interpolation):
                 y.append(j)
                 ii = ii + 1
 
-        log(0, "Interpolating..." + str(len(interpolated_lons)) + " points")
+        info("Interpolating..." + str(len(interpolated_lons)) + " points")
         nn = NearestNDInterpolator(points, values_vec)
-        log(0, "Interpolation finished")
+        info("Interpolation finished")
 
         # Set max distance as sanity
         if len(lons_vec) > 1 and len(lats_vec) > 1:
@@ -88,11 +88,6 @@ class NearestNeighbour(Interpolation):
         else:
             error("You only have one point is your input field!")
 
-        #ii=0
-        #for i in range(0, dim_x):
-        #    for j in range(0, dim_y):
-        #        print ii,i,j,lons_vec[ii],lats_vec[ii],nn(lons_vec[ii],lats_vec[ii])
-        #        ii=ii+1
 
         grid_points = []
         for n in range(0, npoints):
@@ -119,13 +114,13 @@ class Linear(Interpolation):
 
     def interpolator_ok(self, nx, ny,var_lons,var_lats):
         if self.nx == nx and self.ny == ny and var_lons[0,0] == var_lons[0,0] and self.var_lats[0,0] == var_lats[0,0]:
-            log(2,"Assume interpolator is ok because dimensions and the first points are the same")
+            info("Assume interpolator is ok because dimensions and the first points are the same")
             return True
         else:
             return False
 
     def setup_weights(self, int_lons, int_lats, var_lons,var_lats):
-        log(1, "Setup weights for linear interpolation")
+        info("Setup weights for linear interpolation")
 
         # Posistions in input file
         lons=var_lons

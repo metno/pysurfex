@@ -1,8 +1,13 @@
 import numpy as np
-import cartopy.crs as ccrs
 import os
 import sys
 from forcing.util import error,info
+try:
+    import cartopy.crs as ccrs
+except:
+    error("You are missing cartopy wich is still needed for projection. Should be rewritten to pyproj. Maybe you need to add them to PYTHONPATH?")
+
+
 
 class SurfexGeo(object):
 

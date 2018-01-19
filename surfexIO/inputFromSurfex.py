@@ -3,6 +3,12 @@ from datetime import datetime,timedelta
 from netCDF4 import Dataset,num2date
 from forcing.util import error,info,warning,parse_filepattern
 from surfexIO.surfexGeo import IGN,LonLatVal,LonLatReg,ConfProj
+CAN_PLOT=True
+try:
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+except:
+    CAN_PLOT=False
 
 import os
 import re
@@ -580,8 +586,8 @@ class ForcingFileNetCDF():
         return field
 
     def plot_field(self,field,plot=False,title="",block=True):
-        import matplotlib.pyplot as plt
-        import cartopy.crs as ccrs
+
+        if not CAN_PLOT: error("You are missing either matplotlib or cartopy. Maybe you need to add them to PYTHONPATH?")
 
         plt.close()
         ax = plt.axes(projection=ccrs.Miller())

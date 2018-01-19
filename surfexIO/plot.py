@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from operator import truediv,add
 import numpy as np
 from forcing.util import error,info
 from surfexIO.inputFromSurfex import one2two

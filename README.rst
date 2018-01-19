@@ -1,4 +1,4 @@
-Offline Surfex Forcing and Visualization
+Offline SURFEX Forcing and Visualization of SURFEX data
 ========================================
 
 Tool to create offline SURFEX forcing and plotting and verification of results
@@ -12,7 +12,47 @@ Install the required pacakges:
 
   sudo apt-get update
   sudo apt-get install python-setuptools python-pip
-  sudo apt-get install python-numpy python-scipy python-matplotlib
+
+The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.
+
+General dependencies
+---------------------
+.. code-block:: bash
+  sys
+  os
+  re
+  cartopy
+  abc
+  numpy
+  pyproj
+  copy
+  datetime
+  ConfigParser
+  argparse
+  scipy
+  yaml
+
+To read NetCDF files:
+.. code-block:: bash
+  netcdfpy https://github.com/metno/offline-surfex-forcing
+
+To read grib files:
+.. code-block:: bash
+  eccodes from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with ENABLE_PYTHON=ON
+
+To plot:
+.. code-block:: bash
+  matplotlib
+  cartopy
+
+To get observations from frost.met.no API:
+.. code-block:: bash
+  requests
+
+For testing:
+.. code-block:: bash
+  unittest
+  Testdata from https://drive.google.com/open?id=1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
 
 Download the source code, then install ``offline-surfex-forcing`` by executing the following inside the extracted
 folder:
@@ -31,5 +71,7 @@ Usage
 
   create_forcing
   plot_offline
+
+
 
 

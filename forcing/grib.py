@@ -1,9 +1,18 @@
 import numpy as np
-import matplotlib.pyplot as plt
+
 from forcing.util import error
 from forcing.interpolation import NearestNeighbour,Linear
 from pyproj import Proj
-import cartopy.crs as ccrs
+
+# Check matplotlib and cartopy
+CAN_PLOT=True
+try:
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+except:
+    CAN_PLOT=False
+
+# Check ECCODES
 HAS_ECCODES=True
 try:
     from eccodes import *
@@ -129,6 +138,7 @@ class Grib(object):
                         error(geo["gridType"]+" not implemented yet!")
 
                     if plot:
+                        if not CAN_PLOT: error("You are missing either matplotlib or cartopy. Maybe you need to add them to PYTHONPATH?")
                         proj = ccrs.LambertConformal(central_longitude=lonCenter, central_latitude=latCenter,
                                                      standard_parallels=[latRef])
                         ax = plt.axes(projection=proj)
