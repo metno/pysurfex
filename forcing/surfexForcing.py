@@ -94,6 +94,7 @@ class NetCDFOutput(SurfexForcing):
         for i in range (0,len(self.var_objs)):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
+            print this_obj.var_name
 
             field=this_obj.read_time_step(this_time,cache)
             self.forcing_file[self.translation[this_var]][self.time_step,:]=field
@@ -107,6 +108,7 @@ class NetCDFOutput(SurfexForcing):
         for i in range (0,len(att_objs)):
             this_obj=att_objs[i]
             this_var=this_obj.var_name
+            print this_obj.var_name
             if this_var == "ZS":
                 zs=this_obj.read_time_step(att_time,cache)
             elif this_var == "ZREF":
@@ -200,5 +202,89 @@ class NetCDFOutput(SurfexForcing):
         self.file_handler.close()
 
     
+class asciiOutput(SurfexForcing):
+    """
+    
+    Forcing in ASCII format
+    
+    """
+    
+    output_format="ascii"
+    
+    # TODO
+    # 
+    # what do we need to create forcing files?
+    # separate file for each parameter + Params_config
+    # line per timestep, line contains all points in domain
+    # 
+    # sequence: 
+    # 1. write params_config.txt
+    # 2. loop (define forcing?) open parameter files called from __init__
+    # 3. loop through parameters and append values
+    # 
+
+    def __init__(self,base_time,geo,fname,ntimes,var_objs,att_objs,att_time,cache):
+        super(asciiOutput,self).__init__("ASCII",base_time,geo,ntimes,var_objs,cache.debug)
+       # print "Forcing type is ASCII"
+        self.forcing_file={}
+        self.file_handler = {}
+        self._define_forcing(geo,att_objs,att_time,cache)
+    
+    
+    def write_forcing(self,var_objs,this_time,cache):
+        for i in range (0,len(self.var_objs)):
+            this_obj=self.var_objs[i]
+            this_var=this_obj.var_name
+            print this_obj.var_name
+            field=this_obj.read_time_step(this_time,cache)
+            
+            field.tofile(self.file_handler[this_var], sep=" ")
+            self.file_handler[this_var].write('\n')
+            
+
+    def _define_forcing(self,geo,att_objs,att_time,cache):
+       # print("Writing Params_config.txt")
+        for i in range (0,len(att_objs)):
+            this_obj=att_objs[i]
+            this_var=this_obj.var_name
+            print this_obj.var_name
+            if this_var == "ZS":
+                zs=this_obj.read_time_step(att_time,cache)
+            elif this_var == "ZREF":
+                zref = this_obj.read_time_step(att_time,cache)
+            elif this_var == "UREF":
+                uref = this_obj.read_time_step(att_time,cache)
+        
+        second = int((self.base_time - self.base_time.replace(hour=0, 
+                                                              minute=0, 
+                                                              second=0, 
+                                                              microsecond=0)).total_seconds())
+        f = open("Params_config.txt",'w')
+        f.write(str(geo.npoints)                 + '\n')
+        f.write(str(self.ntimes)                 + '\n')
+        f.write(str(self.time_step_intervall)    + '\n')
+        f.write(self.base_time.strftime("%Y")    + '\n')
+        f.write(self.base_time.strftime("%m")    + '\n')
+        f.write(self.base_time.strftime("%d")    + '\n')
+        f.write(str(second)                      + '\n')
+        geo.lons.tofile(f, sep=" ")
+        f.write('\n')
+        geo.lats.tofile(f, sep=" ")
+        f.write('\n')
+        zs.tofile(f,sep=" ")
+        f.write('\n')
+        zref.tofile(f,sep=" ")
+        f.write('\n')
+        uref.tofile(f,sep=" ")
+        f.close()
+
+        for key in self.parameters:
+            self.forcing_file[key] = "Forc_" + key + '.txt'
+            self.file_handler[key] = open(self.forcing_file[key],'w')
 
 
+    def finalize(self):
+        print "Close file"
+        for key in self.parameters:
+          self.file_handler[key].close()
+          

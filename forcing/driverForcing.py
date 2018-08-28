@@ -6,7 +6,7 @@ import numpy as np
 import forcing.version
 from forcing.util import error,data_merge,warning
 import forcing.converter
-from forcing.surfexForcing import NetCDFOutput
+from forcing.surfexForcing import NetCDFOutput,asciiOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
 from forcing.grib import Grib
@@ -420,7 +420,8 @@ def runTimeLoop(options,var_objs,att_objs):
         att_time=options['start']
         output = NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
     elif str.lower(options['output_format']) == "ascii":
-        error("Output format "+options['output_format']+" not implemented yet")
+        att_time=options['start']
+        output = asciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
     else:
         error("Invalid output format "+options['output_format'])
 
