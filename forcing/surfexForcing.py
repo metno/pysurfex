@@ -203,7 +203,7 @@ class NetCDFOutput(SurfexForcing):
         self.file_handler.close()
 
     
-class asciiOutput(SurfexForcing):
+class AsciiOutput(SurfexForcing):
     """
     
     Forcing in ASCII format

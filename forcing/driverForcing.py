@@ -421,7 +421,7 @@ def runTimeLoop(options,var_objs,att_objs):
         output = NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
     elif str.lower(options['output_format']) == "ascii":
         att_time=options['start']
-        output = asciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
+        output = AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs, att_objs,att_time,cache)
     else:
         error("Invalid output format "+options['output_format'])
 
