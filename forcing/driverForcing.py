@@ -6,7 +6,7 @@ import numpy as np
 import forcing.version
 from forcing.util import error,data_merge,warning
 import forcing.converter
-from forcing.surfexForcing import NetCDFOutput,asciiOutput
+from forcing.surfexForcing import NetCDFOutput,AsciiOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
 from forcing.grib import Grib
