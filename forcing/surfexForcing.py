@@ -213,7 +213,7 @@ class AsciiOutput(SurfexForcing):
     output_format="ascii"
     
     def __init__(self,base_time,geo,fname,ntimes,var_objs,att_objs,att_time,cache):
-        super(asciiOutput,self).__init__("ASCII",base_time,geo,ntimes,var_objs,cache.debug)
+        super(AsciiOutput,self).__init__("ASCII",base_time,geo,ntimes,var_objs,cache.debug)
        # print "Forcing type is ASCII"
         self.forcing_file={}
         self.file_handler = {}
