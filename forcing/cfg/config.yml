@@ -202,7 +202,7 @@ WIND:
     grib:
       converter:
         none:
-          parameter: 207
+          parameter: 32
           type: sfc
           level: 10
           tri: 0
@@ -264,7 +264,7 @@ WIND_DIR:
     grib:
       converter:
         none:
-          parameter: 249
+          parameter: 31
           type: sfc
           level: 0
           tri: 0
