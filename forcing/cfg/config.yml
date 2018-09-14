@@ -266,7 +266,7 @@ WIND_DIR:
         none:
           parameter: 31
           type: sfc
-          level: 0
+          level: 10
           tri: 0
         windspeed:
           x:
