@@ -218,7 +218,7 @@ class AsciiOutput(SurfexForcing):
         self.forcing_file={}
         self.file_handler = {}
         self._define_forcing(geo,att_objs,att_time,cache)
-    
+
     
     def write_forcing(self,var_objs,this_time,cache):
         for i in range (0,len(self.var_objs)):
@@ -288,8 +288,8 @@ def write_formatted_array(file, array, columns, format):
     mlw = (len(format % 0) )*(columns + 1)
     k=0
     while k < lines:
-      file.write(( np.array2string(array[k*columns:(k+1)*columns], 
+        file.write(( np.array2string(array[k*columns:(k+1)*columns], 
                          max_line_width=mlw, 
                          separator='',
                          formatter=formatter)[1:-1] ) + '\n')
-      k += 1
+        k += 1

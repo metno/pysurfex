@@ -118,14 +118,9 @@ class Grib(object):
                         lats= np.empty([nx, ny])
                         X = np.arange(x0, x0 + (nx * dx), dx)
                         Y = np.arange(y0, y0 + (ny * dy), dy)
-                        ii = 0
-                        for j in range(0, ny):
-                            for i in range(0, nx):
-                                field[i, j] = values[ii]
-                                lons[i, j], lats[i, j] = proj4(X[i],Y[j],inverse=True)
-                                #print i,j,lons[i, j], lats[i, j]
-                                ii = ii + 1
-
+                        yv, xv = np.meshgrid(Y,X)
+                        field = values.reshape((nx,ny))
+                        lons, lats = proj4(xv,yv,inverse=True)
                         self.lons=lons
                         self.lats=lats
                         self.x0=x0
