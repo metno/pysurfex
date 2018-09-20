@@ -42,23 +42,19 @@ class Domain(Geo):
         nlats=int(y[2])
 
         # Convert to longitude/latiudes Set the list as surfex expects
-        lons = []
-        lats = []
         p=Proj(proj)
-        for y in range(0, nlats):
-            for x in range(0,nlons):
-                xx=x0+(float(x)*float(dx))
-                yy=y0+(float(y)*float(dy))
 
-                if ( ldegrees ):
-                    lon,lat=xx,yy
-                else:
-                    lon,lat = p(xx,yy,inverse=True)
+        ii = np.arange(nlons*nlats)
+        xx = x0 + np.mod(ii,nlons)*dx
+        yy = y0 + np.floor_divide(ii,nlons)*dy
 
-                lons.append(lon)
-                lats.append(lat)
-                #print xx, yy, lon, lat
-        #print lons
-        #print lats
+        if ( ldegrees ):
+            lons,lats=xx,yy
+        else:
+            lons,lats = p(xx,yy,inverse=True)
+
+        lons = lons.tolist()
+        lats = lats.tolist()
+
         super(Domain,self).__init__(proj,nlons*nlats,nlons,nlats,lons,lats)
 

@@ -67,16 +67,9 @@ class NearestNeighbour(Interpolation):
         points[:,0]=lons_vec
         points[:,1]=lats_vec
 
-        values_vec=np.empty([dim_x*dim_y])
-        x = []
-        y = []
-        ii = 0
-        for i in range(0, dim_x):
-            for j in range(0, dim_y):
-                values_vec[ii] = ii
-                x.append(i)
-                y.append(j)
-                ii = ii + 1
+        values_vec = np.arange(dim_x*dim_y)
+        x = np.floor_divide(values_vec,dim_y)
+        y = np.mod(values_vec,dim_y)
 
         info("Interpolating..." + str(len(interpolated_lons)) + " points")
         nn = NearestNDInterpolator(points, values_vec)
@@ -89,20 +82,13 @@ class NearestNeighbour(Interpolation):
             error("You only have one point is your input field!")
 
 
-        grid_points = []
-        for n in range(0, npoints):
-            ii = nn(interpolated_lons[n], interpolated_lats[n])
-            #print ii
-            ii = int(ii)
-            i = x[ii]
-            j = y[ii]
-            #print ii,i,j,dim_x,dim_y,interpolated_lons[n],interpolated_lats[n],interpolated_lats[n],lons_vec[ii],lats_vec[ii]
-            dist=distance(interpolated_lons[n],interpolated_lats[n],lons_vec[[ii]],lats_vec[ii])
-            #print dist,max_distance
-            if dist > max_distance:
-                error("Point is too far away from nearest point: "+str(dist)+" Max distance="+str(max_distance))
-
-            grid_points.append([i, j])
+        ii = nn(interpolated_lons, interpolated_lats)
+        i = x[ii]
+        j = y[ii]
+        dist = distance(interpolated_lons,interpolated_lats,lons_vec[ii],lats_vec[ii])
+        if dist.max() > max_distance:
+            error("Point is too far away from nearest point: "+str(dist.max())+" Max distance="+str(max_distance))
+        grid_points = np.column_stack((i,j)).tolist()
         return grid_points
 
 class Linear(Interpolation):
