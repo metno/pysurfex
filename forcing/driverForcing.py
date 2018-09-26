@@ -1,3 +1,4 @@
+import time
 import sys
 import os
 import copy
@@ -204,6 +205,7 @@ def parseArgs(argv):
     parser.add_argument('-m','--mode',type=str,help="Type: domain/points",default="points",nargs="?")
     parser.add_argument('-n','--name', type=str, help="Name of domian/points", default=None, nargs="?")
     parser.add_argument('-t','--timestep', type=int,help="Surfex time step",default=3600,nargs="?")
+    parser.add_argument('-ci','--cache_interval', type=int, help="clear cached fields after..", default=3600,nargs="?")
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", choices=["netcdf","grib"])
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
     parser.add_argument('-of', type=str, help="Output file format", default=None, nargs="?")
@@ -401,13 +403,14 @@ def parseArgs(argv):
     options['timestep']=args.timestep
     options['geo_out']=geo_out
     options['debug']=args.debug
+    options['cache_interval'] = args.cache_interval
 
     return options,var_objs,att_objs
 
 def runTimeLoop(options,var_objs,att_objs):
 
     this_time = options['start']
-    cache = Cache(options['debug'])
+    cache = Cache(options['debug'],options['cache_interval'])
     # Find how many time steps we want to write
     ntimes=0
     while this_time <= options['stop']:
@@ -429,13 +432,16 @@ def runTimeLoop(options,var_objs,att_objs):
     t=0
     this_time=options['start']
     while this_time <= options['stop']:
-
+        tic = time.time()
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
         output.write_forcing(var_objs,this_time,cache)
+#        cache.clean_fields(this_time)
         output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=options['timestep'])
-
+        cache.clean_fields(this_time)
+        toc = time.time()
+        print("*** Loop iteration: " + str(toc-tic))
     # Finalize forcing
     output.finalize()
 

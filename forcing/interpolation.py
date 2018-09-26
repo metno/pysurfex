@@ -89,20 +89,13 @@ class NearestNeighbour(Interpolation):
             error("You only have one point is your input field!")
 
 
-        grid_points = []
-        for n in range(0, npoints):
-            ii = nn(interpolated_lons[n], interpolated_lats[n])
-            #print ii
-            ii = int(ii)
-            i = x[ii]
-            j = y[ii]
-            #print ii,i,j,dim_x,dim_y,interpolated_lons[n],interpolated_lats[n],interpolated_lats[n],lons_vec[ii],lats_vec[ii]
-            dist=distance(interpolated_lons[n],interpolated_lats[n],lons_vec[[ii]],lats_vec[ii])
-            #print dist,max_distance
-            if dist > max_distance:
-                error("Point is too far away from nearest point: "+str(dist)+" Max distance="+str(max_distance))
-
-            grid_points.append([i, j])
+        ii = nn(interpolated_lons, interpolated_lats)
+        i = x[ii]
+        j = y[ii]
+        dist = distance(interpolated_lons,interpolated_lats,lons_vec[ii],lats_vec[ii])
+        if dist.max() > max_distance:
+            error("Point is too far away from nearest point: "+str(dist.max())+" Max distance="+str(max_distance))
+        grid_points = np.column_stack((i,j))
         return grid_points
 
 class Linear(Interpolation):

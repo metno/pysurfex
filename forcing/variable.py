@@ -1,3 +1,4 @@
+import time
 import abc
 from forcing.util import error,parse_filepattern,warning
 import copy
@@ -252,6 +253,7 @@ class GribVariable(Variable):
         return previousvalues
 
     def read_variable(self, geo, validtime,cache):
+        tic = time.time()
         self.validtime = validtime
         if (
         self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]), int(self.var_dict["file_inc"]))):
@@ -268,7 +270,7 @@ class GribVariable(Variable):
             field=field.fill(np.nan)
         else:
             par=self.var_dict["parameter"]
-            type=self.var_dict["type"]
+            typ=self.var_dict["type"]
             level=self.var_dict["level"]
             tri=self.var_dict["tri"]
 
@@ -285,26 +287,37 @@ class GribVariable(Variable):
             #Re-read field
             previousField=None
             if tri == 4:
-                previousField=self.get_previous_values(par,type,level,tri,geo,int_type)
+                tic1 = time.time()
+                id_str = cache.generate_grib_id(level, tri, par,typ,self.previousfilename,self.previoustime)               
+                if cache.is_saved(id_str):
+                   previousField = cache.saved_fields[id_str]
+                else:
+                   previousField=self.get_previous_values(par,typ,level,tri,geo,int_type)
+                toc1 = time.time()
+                print("Read_previous field: " + str(toc1-tic1))
 
             # Read field
-            field = self.file_handler.points(par,type,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
-
-            # Deaccumulate
-            if tri == 4:
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                field=self.deaccumulate(field,previousField,float(instant[0]))
-
-            # Find used interpolator
-            interpolator=None
-            if int_type == "nearest":
-                interpolator = self.file_handler.nearest
-            elif int_type == "linear":
-                interpolator = self.file_handler.linear
-            # Update cache
-            cache.update_interpolator(int_type,"grib",interpolator)
-
+            id_str = cache.generate_grib_id(level, tri, par,typ,self.filename,self.validtime)
+            if cache.is_saved(id_str):
+                field = cache.saved_fields[id_str]
+            else:
+                field = self.file_handler.points(par,typ,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
+                if tri == 4:
+                    instant = [(validtime - self.previoustime).total_seconds()]
+                    if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+                    field=self.deaccumulate(field,previousField,float(instant[0]))
+    
+                # Find used interpolator
+                interpolator=None
+                if int_type == "nearest":
+                    interpolator = self.file_handler.nearest
+                elif int_type == "linear":
+                    interpolator = self.file_handler.linear
+                # Update cache
+                cache.update_interpolator(int_type,"grib",interpolator)
+                cache.save_field(id_str, field)
+        toc = time.time()
+        print("file_handler.points (" + str(par) + ") " + str(toc-tic))
         self.previoustime = validtime
         return field
 

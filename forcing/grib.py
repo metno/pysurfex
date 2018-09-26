@@ -152,7 +152,7 @@ class Grib(object):
                     return lons,lats,field
                 codes_release(gid)
 
-    def points(self,par,type,level,tri,time,plot=False,lons=None, lats=None,instantanious=0.,interpolation=None):
+    def points(self,par,typ,level,tri,time,plot=False,lons=None, lats=None,instantanious=0.,interpolation=None):
 
         """
                 Reads a 2-D field and interpolates it to requested positions
@@ -165,7 +165,7 @@ class Grib(object):
 
         """
 
-        var_lons,var_lats,field=self.field(par,type,level,tri,plot)
+        var_lons,var_lats,field=self.field(par,typ,level,tri,plot)
 
         if lons is None or lats is None:
             error("You must set lons and lats when interpolation is set!")
@@ -178,10 +178,8 @@ class Grib(object):
                 if not self.nearest.interpolator_ok(field.shape[0],field.shape[1],var_lons,var_lats):
                     self.nearest = NearestNeighbour(lons, lats, var_lons,var_lats)
 
-            for i in range(0,len(lons)):
-                ind_x = self.nearest.index[i][0]
-                ind_y = self.nearest.index[i][1]
-                interpolated_field[i]=field[ind_x][ind_y]
+            ind_n = self.nearest.index[:,1]*field.shape[0] + self.nearest.index[:,0]
+            interpolated_field = field.flatten(order='F')[ind_n]
 
         elif interpolation == "linear":
             if not hasattr(self,"linear"):

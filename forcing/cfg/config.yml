@@ -268,7 +268,7 @@ WIND_DIR:
           type: sfc
           level: 10
           tri: 0
-        windspeed:
+        winddir:
           x:
             parameter: 33
             type: sfc
