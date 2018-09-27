@@ -67,16 +67,9 @@ class NearestNeighbour(Interpolation):
         points[:,0]=lons_vec
         points[:,1]=lats_vec
 
-        values_vec=np.empty([dim_x*dim_y])
-        x = []
-        y = []
-        ii = 0
-        for i in range(0, dim_x):
-            for j in range(0, dim_y):
-                values_vec[ii] = ii
-                x.append(i)
-                y.append(j)
-                ii = ii + 1
+        values_vec = np.arange(dim_x*dim_y)
+        x = np.floor_divide(values_vec,dim_y)
+        y = np.mod(values_vec,dim_y)
 
         info("Interpolating..." + str(len(interpolated_lons)) + " points")
         nn = NearestNDInterpolator(points, values_vec)

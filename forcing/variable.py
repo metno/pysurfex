@@ -189,22 +189,35 @@ class NetcdfVariable(Variable):
                 self.file_handler.nearest=cache.get_interpolator(int_type,"netcdf")
             elif int_type == "linear" and cache.get_interpolator(int_type,"netcdf"):
                 self.file_handler.linear=cache.get_interpolator(int_type,"netcdf")
-
             # Re-read field
             previousField = None
             if accumulated:
                 # Re-read field
-                previousField = self.get_previous_values(var_name,level,units,geo,int_type)
+                id_str = cache.generate_netcdf_id(var_name,self.previousfilename,self.previoustime)
+                if cache.is_saved(id_str):
+                    previousField = cache.saved_fields[id_str]
+           #         print("load " + id_str + " from cache")
+                else:
+                    previousField = self.get_previous_values(var_name,level,units,geo,int_type)
+                    cache.save_field(id_str, previousField)
 
-            field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
-            field=np.reshape(field4d[:,0,0,0],len(geo.lons))
-
+            tic = time.time()
+            id_str = cache.generate_netcdf_id(var_name,self.filename,validtime)
+          #  print(id_str)
+            if cache.is_saved(id_str):
+                field = cache.saved_fields[id_str]
+             #  print("load " + id_str + " from cache")
+            else:
+                field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
+                field=np.reshape(field4d[:,0,0,0],len(geo.lons))
+                cache.save_field(id_str, field)
             if accumulated:
                 instant = [(validtime - self.previoustime).total_seconds()]
                 if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
                 field = self.deaccumulate(field, previousField, float(instant[0]))
-
-
+#                cache.save_field(id_str, field)
+            toc = time.time()
+            print("read variable: " + str(toc-tic))
             # Find used interpolator
             interpolator=None
             if int_type == "nearest":
@@ -235,7 +248,7 @@ class GribVariable(Variable):
 
         super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
 
-    def get_previous_values(self,par,type,level,tri,geo,int_type):
+    def get_previous_values(self,par,typ,level,tri,geo,int_type):
 
         previousvalues = np.zeros(len(geo.lons))
         if hasattr(self, "previousvalues"):
@@ -245,7 +258,7 @@ class GribVariable(Variable):
                 fname = self.filename
                 if self.debug: print "Re-read ", self.previoustime, " from ", self.previousfilename
                 self.file_handler.fname = self.previousfilename
-                previousvalues = self.file_handler.points(par, type, level, tri, self.previoustime, lons=geo.lons,
+                previousvalues = self.file_handler.points(par, typ, level, tri, self.previoustime, lons=geo.lons,
                                                                lats=geo.lats, interpolation=int_type)
 
                 # Change filename back in handler. Ready to read this time step
@@ -293,8 +306,9 @@ class GribVariable(Variable):
                    previousField = cache.saved_fields[id_str]
                 else:
                    previousField=self.get_previous_values(par,typ,level,tri,geo,int_type)
+                   cache.save_field(id_str, previousField)
                 toc1 = time.time()
-                print("Read_previous field: " + str(toc1-tic1))
+              # print("Read_previous field: " + str(toc1-tic1))
 
             # Read field
             id_str = cache.generate_grib_id(level, tri, par,typ,self.filename,self.validtime)
@@ -302,20 +316,20 @@ class GribVariable(Variable):
                 field = cache.saved_fields[id_str]
             else:
                 field = self.file_handler.points(par,typ,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
-                if tri == 4:
-                    instant = [(validtime - self.previoustime).total_seconds()]
-                    if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
-                    field=self.deaccumulate(field,previousField,float(instant[0]))
-    
-                # Find used interpolator
-                interpolator=None
-                if int_type == "nearest":
-                    interpolator = self.file_handler.nearest
-                elif int_type == "linear":
-                    interpolator = self.file_handler.linear
-                # Update cache
-                cache.update_interpolator(int_type,"grib",interpolator)
                 cache.save_field(id_str, field)
+            if tri == 4:
+                instant = [(validtime - self.previoustime).total_seconds()]
+                if "instant" in self.var_dict: instant = [self.var_dict["instant"]]
+                field=self.deaccumulate(field,previousField,float(instant[0]))
+               
+            # Find used interpolator
+            interpolator=None
+            if int_type == "nearest":
+                interpolator = self.file_handler.nearest
+            elif int_type == "linear":
+                interpolator = self.file_handler.linear
+            # Update cache
+            cache.update_interpolator(int_type,"grib",interpolator)
         toc = time.time()
         print("file_handler.points (" + str(par) + ") " + str(toc-tic))
         self.previoustime = validtime

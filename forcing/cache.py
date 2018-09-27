@@ -90,4 +90,6 @@ class Cache:
     
     def generate_grib_id(self, level, tri, par, typ, filename, validtime):
         return  "%d%d%d%s%s%s" % (level, tri, par, typ, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
-
+    
+    def generate_netcdf_id(self, varname, filename,validtime):
+        return "%s%s%s" % ( varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))

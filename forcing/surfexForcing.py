@@ -281,15 +281,14 @@ class AsciiOutput(SurfexForcing):
     
 
 def write_formatted_array(file, array, columns, format):
-    nx = array.size
-    lines=nx/columns
-    if (np.mod(nx,columns) != 0): lines += 1
-    formatter={'float_kind': lambda x: format % x}
+    astr = np.empty(array.size - array.size%columns,dtype="float64")
+    astr = array[0:astr.size]
+    astr = astr.reshape((columns,astr.size/columns),order='F')
     mlw = (len(format % 0) )*(columns + 1)
-    k=0
-    while k < lines:
-        file.write(( np.array2string(array[k*columns:(k+1)*columns], 
-                         max_line_width=mlw, 
-                         separator='',
-                         formatter=formatter)[1:-1] ) + '\n')
-        k += 1
+    formatter={'float_kind': lambda x: format % x}
+    astrEnd =  np.array2string(array[astr.size:],
+               separator='',
+               max_line_width=mlw,
+               formatter=formatter)[1:-1]
+    np.savetxt(file, astr.T,fmt=format,newline='\n',delimiter='')
+    file.write(astrEnd+'\n')
