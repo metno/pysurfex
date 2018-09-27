@@ -77,7 +77,6 @@ class Cache:
             td = (this_time - field_time).total_seconds()
             if (td > self.max_age):
                 del_keys.append(key)
-                print("del " + key)
 
         for i in range(len(del_keys)):
             del self.saved_fields[del_keys[i]]

@@ -1,4 +1,3 @@
-import time
 import sys
 import os
 import copy
@@ -432,16 +431,14 @@ def runTimeLoop(options,var_objs,att_objs):
     t=0
     this_time=options['start']
     while this_time <= options['stop']:
-        tic = time.time()
+
         # Write for each time step
         print("Creating forcing for: "+this_time.strftime('%Y%m%d%H')+" time_step:"+str(output.time_step))
         output.write_forcing(var_objs,this_time,cache)
-#        cache.clean_fields(this_time)
         output.time_step = output.time_step + 1
         this_time=this_time+timedelta(seconds=options['timestep'])
         cache.clean_fields(this_time)
-        toc = time.time()
-        print("*** Loop iteration: " + str(toc-tic))
+
     # Finalize forcing
     output.finalize()
 
