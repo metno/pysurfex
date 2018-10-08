@@ -32,7 +32,7 @@ class Converter:
             self.p=self.create_variable(format,defs,conf[self.name]["p"],debug)
         elif name == "windspeed" or name == "winddir":
             self.x=self.create_variable(format,defs,conf[self.name]["x"],debug)
-            self.y=self.create_variable(format,defs,conf[self.name]["y"],debug)
+            self.y=self.create_variable(format,defs,conf[self.name]["y"],debug,need_alpha=True)
         elif name == "totalprec":
             self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],debug)
             self.snow = self.create_variable(format, defs, conf[self.name]["snow"],debug)
@@ -46,7 +46,7 @@ class Converter:
     def print_info(self):
         print self.name
 
-    def create_variable(self,format,defs,var_dict,debug):
+    def create_variable(self,format,defs,var_dict,debug,need_alpha=False):
 
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables
@@ -56,9 +56,9 @@ class Converter:
 
         var=None
         if format == "netcdf":
-            var=NetcdfVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug)
+            var = NetcdfVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug)
         elif format == "grib":
-            var = GribVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug)
+            var = GribVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug,need_alpha=need_alpha)
         elif format == "constant":
             error("Create variable for format " + format + " not implemented!")
         else:
@@ -78,7 +78,8 @@ class Converter:
             field=self.var.read_variable(geo,validtime,cache)
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x.read_variable(geo,validtime,cache)
-            field_y = self.y.read_variable(geo,validtime,cache)
+            alpha, field_y = self.y.read_variable(geo,validtime,cache)
+            #field_y = self.y.read_variable(geo,validtime,cache)
             if self.name == "windspeed":
                 field=np.sqrt(np.square(field_x)+np.square(field_y))
                 np.where(field<0.005,field,0)
@@ -86,7 +87,7 @@ class Converter:
                 windspeed=np.sqrt(np.square(field_x)+np.square(field_y))
 
                 # TODO: Check for correctness and rotation!
-
+            #    print(alpha.shape)
                 # Special cases
                 field[(field_x == 0)] = 180.
                 field[(field_y == 0) & (field_x > 0)] = 270.
@@ -98,10 +99,12 @@ class Converter:
                 # If we have y_wind and negative x_wind
                 field = np.where((field_x < 0.) & (field_y != 0),
                     np.divide(np.multiply(np.arccos(np.multiply(-1., np.divide(field_y, windspeed))), 90.),
-                    np.arccos(0.)), field)
+                    np.arccos(0.)), field) + alpha
                 # field[(field_x<0.) & (field_y != 0)]=np.divide(np.multiply(np.arccos(np.multiply(-1.,np.divide(field_y,windspeed))),90.),np.arccos(0.))
                 # Set 360. to 0.
                 field[(field == 360.)] = 0.
+                # TODO field = field + alpha ; alpha is grid rotation
+                
 
         elif self.name == "rh2q":
             field_rh = self.rh.read_variable(geo, validtime,cache) #

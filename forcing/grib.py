@@ -1,7 +1,7 @@
 import numpy as np
-
+import time
 from forcing.util import error
-from forcing.interpolation import NearestNeighbour,Linear
+from forcing.interpolation import NearestNeighbour,Linear,alpha_grid_rot
 from pyproj import Proj
 
 # Check matplotlib and cartopy
@@ -152,7 +152,7 @@ class Grib(object):
                     return lons,lats,field
                 codes_release(gid)
 
-    def points(self,par,typ,level,tri,time,plot=False,lons=None, lats=None,instantanious=0.,interpolation=None):
+    def points(self,par,typ,level,tri,time,plot=False,lons=None, lats=None,instantanious=0.,interpolation=None,alpha=False):
 
         """
                 Reads a 2-D field and interpolates it to requested positions
@@ -166,6 +166,10 @@ class Grib(object):
         """
 
         var_lons,var_lats,field=self.field(par,typ,level,tri,plot)
+
+        alpha_out = None
+        if alpha:
+            alpha_out = alpha_grid_rot(var_lons,var_lats)
 
         if lons is None or lats is None:
             error("You must set lons and lats when interpolation is set!")
@@ -181,6 +185,9 @@ class Grib(object):
             ind_n = self.nearest.index[:,1]*field.shape[0] + self.nearest.index[:,0]
             interpolated_field = field.flatten(order='F')[ind_n]
 
+            if alpha:
+                alpha_out = alpha_out.flatten(order='F')[ind_n]
+
         elif interpolation == "linear":
             if not hasattr(self,"linear"):
                 self.linear=Linear(lons,lats,var_lons,var_lats)
@@ -189,13 +196,11 @@ class Grib(object):
                     self.linear = Linear(lons, lats, var_lons,var_lats)
 
                 interpolated_field[:]=self.linear.interpolate(field)
+                alpha_out = self.linear.interpolate(alpha_out)
         elif interpolation == None:
             # TODO Make sure conversion from 2-D to 1-D is correct
             interpolated_field[:] = field
         else:
             error("Interpolation type "+interpolation+" not implemented!")
-
-        return interpolated_field
-
-
+        return alpha_out, interpolated_field
 

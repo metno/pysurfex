@@ -19,7 +19,7 @@ class Variable(object):
     The variable read it self
     """
 
-    def __init__(self,basetime,validtime,var_dict,intervall,debug):
+    def __init__(self,basetime,validtime,var_dict,intervall,debug,need_alpha=False):
         self.initialtime=validtime
         self.previoustime=validtime-timedelta(seconds=intervall)
         self.basetime=basetime
@@ -33,6 +33,7 @@ class Variable(object):
         self.reRead=False
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
         self.debug=debug
+        self.need_alpha = need_alpha
         if self.debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
 
 
@@ -237,13 +238,12 @@ class GribVariable(Variable):
     """
     Grib variable
     """
-    def __init__(self,var_dict,basetime,validtime,intervall,debug):
+    def __init__(self,var_dict,basetime,validtime,intervall,debug,need_alpha=False):
         mandatory = ["parameter", "type","level","tri","fcint", "offset", "file_inc", "filepattern"]
         for i in range(0, len(mandatory)):
             if mandatory[i] not in var_dict:
                 error("Grib variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
-
-        super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
+        super(GribVariable,self).__init__(basetime,validtime,var_dict,intervall,debug,need_alpha)
 
     def get_previous_values(self,par,typ,level,tri,geo,int_type):
 
@@ -305,11 +305,20 @@ class GribVariable(Variable):
 
             # Read field
             id_str = cache.generate_grib_id(level, tri, par,typ,self.filename,self.validtime)
+            if cache.is_saved("alpha9999122523"):
+                alpha = cache.saved_fields["alpha9999122523"]
+                need_alpha = False
+            else:
+                need_alpha = self.need_alpha
+
             if cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
-                field = self.file_handler.points(par,typ,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type)
+                alpha, field = self.file_handler.points(par,typ,level,tri,validtime,lons=geo.lons, lats=geo.lats,interpolation=int_type,alpha=need_alpha)
                 cache.save_field(id_str, field)
+                if alpha is not None:
+                    print("Save alpha")
+                    cache.save_field("alpha9999122523",alpha)
 
             # Deaccumulate
             if tri == 4:
@@ -327,7 +336,10 @@ class GribVariable(Variable):
             cache.update_interpolator(int_type,"grib",interpolator)
 
         self.previoustime = validtime
-        return field
+        if self.need_alpha:
+            return alpha, field
+        else:
+            return field
 
     def print_variable_info(self):
         print ":"+str(self.var_dict)+":"

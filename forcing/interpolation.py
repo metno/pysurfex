@@ -1,3 +1,4 @@
+import time
 from scipy.interpolate import griddata,NearestNDInterpolator
 from forcing.util import info,error
 import numpy as np
@@ -25,10 +26,37 @@ def distance(lon1, lat1, lon2, lat2):
     distance = 6.367e6 * c
     return distance
 
+def alpha_grid_rot(lon,lat):
+    nx = lon.shape[0]
+    ny = lon.shape[1]
+    tic = time.time()
+    alpha=np.zeros(lat.shape) #Target matrix
+    
+    for j in range(0,ny-1):
+        for i in range(0,nx-1):
+            # Prevent out of bounds
+            if j==ny-1:
+                j1=j-1; j2=j
+            else:
+                j1=j; j2=j+1
+            if i==nx-1:
+                i1=i-1; i2=i
+            else:
+                i1=i; i2=i+1
+                
+            dlatykm=distance(lon[i1,j1],lat[i1,j1],lon[i2,j1],lat[i1,j1])
+            dlonykm=distance(lon[i1,j1],lat[i1,j1],lon[i1,j1],lat[i2,j1])
+    
+            alpha[i,j]=np.arctan2(dlatykm,dlonykm)*180/np.pi - 90
+    toc = time.time()
+    print("alpha: " + str(toc-tic)) 
+    return alpha
+
+
 class Interpolation(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self,type,nx,ny,var_lons,var_lats):
+    def __init__(self,type,nx,ny,var_lons,var_lats,alpha=False):
         self.type=type
         self.nx=nx
         self.ny=ny
@@ -55,7 +83,7 @@ class NearestNeighbour(Interpolation):
             return False
 
     def create_index(self,interpolated_lons, interpolated_lats, var_lons,var_lats):
-
+        print("create_index")    
         dim_x = var_lons.shape[0]
         dim_y = var_lats.shape[1]
         npoints = len(interpolated_lons)
