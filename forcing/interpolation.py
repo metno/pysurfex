@@ -27,29 +27,19 @@ def distance(lon1, lat1, lon2, lat2):
     return distance
 
 def alpha_grid_rot(lon,lat):
-    nx = lon.shape[0]
-    ny = lon.shape[1]
-    tic = time.time()
-    alpha=np.zeros(lat.shape) #Target matrix
-    
-    for j in range(0,ny-1):
-        for i in range(0,nx-1):
-            # Prevent out of bounds
-            if j==ny-1:
-                j1=j-1; j2=j
-            else:
-                j1=j; j2=j+1
-            if i==nx-1:
-                i1=i-1; i2=i
-            else:
-                i1=i; i2=i+1
-                
-            dlatykm=distance(lon[i1,j1],lat[i1,j1],lon[i2,j1],lat[i1,j1])
-            dlonykm=distance(lon[i1,j1],lat[i1,j1],lon[i1,j1],lat[i2,j1])
-    
-            alpha[i,j]=np.arctan2(dlatykm,dlonykm)*180/np.pi - 90
-    toc = time.time()
-    print("alpha: " + str(toc-tic)) 
+    nx = lat.shape[0]
+    ny = lat.shape[1]
+    dlon = np.zeros(lat.shape)
+    dlat = np.zeros(lat.shape)
+    i1 = np.arange(nx-1)
+
+    dlon[0:-1,:] = distance(lon[i1,:],lat[i1,:],lon[i1+1,:],lat[i1,:])
+    dlat[0:-1,:] = distance(lon[i1,:],lat[i1,:],lon[i1,:],lat[i1+1,:])
+
+    dlon[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-1,:],lat[-2,:])
+    dlat[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-2,:],lat[-1,:])
+
+    alpha = np.arctan2(dlat,dlon)*180/np.pi - 90
     return alpha
 
 
@@ -83,7 +73,6 @@ class NearestNeighbour(Interpolation):
             return False
 
     def create_index(self,interpolated_lons, interpolated_lats, var_lons,var_lats):
-        print("create_index")    
         dim_x = var_lons.shape[0]
         dim_y = var_lats.shape[1]
         npoints = len(interpolated_lons)

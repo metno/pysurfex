@@ -295,7 +295,8 @@ def parseArgs(argv):
     area_file=args.area
     geo_out=None
     if area_file != "":
-        geo_out=parseAreaFile(area_file,args.mode,args.name,args.input_format)
+        print(args.input_format)
+        geo_out=parseAreaFile(area_file,args.mode,args.name,"grib") #args.input_format)
 
     if geo_out == None:
         error("Could not set up output geometry")

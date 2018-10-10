@@ -56,7 +56,7 @@ class Converter:
 
         var=None
         if format == "netcdf":
-            var = NetcdfVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug)
+            var = NetcdfVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug,need_alpha=need_alpha)
         elif format == "grib":
             var = GribVariable(merged_dict,self.basetime,self.validtime,self.intervall,debug,need_alpha=need_alpha)
         elif format == "constant":

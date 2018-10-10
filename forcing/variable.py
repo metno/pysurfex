@@ -5,7 +5,7 @@ import numpy as np
 from datetime import timedelta
 HAS_NETCDFPY=True
 try:
-    from netcdfpy.netcdf import Netcdf
+    from netcdf import Netcdf
 except:
     HAS_NETCDFPY=False
 
@@ -128,7 +128,7 @@ class NetcdfVariable(Variable):
     NetCDF variable
     """
 
-    def __init__(self,var_dict,basetime,validtime,intervall,debug):
+    def __init__(self,var_dict,basetime,validtime,intervall,debug,need_alpha=False):
 
         if not HAS_NETCDFPY: error("You nead netcdfpy in installed and in your path read NetCDF files")
         mandatory=["name","fcint","offset","file_inc","filepattern"]
@@ -136,7 +136,7 @@ class NetcdfVariable(Variable):
             if mandatory[i] not in var_dict:
                 error("NetCDF variable must have attribute "+mandatory[i]+" var_dict:"+str(var_dict))
 
-        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,debug)
+        super(NetcdfVariable,self).__init__(basetime,validtime,var_dict,intervall,debug,need_alpha)
 
     def get_previous_values(self,var_name,level,units,geo,int_type):
 
@@ -203,12 +203,20 @@ class NetcdfVariable(Variable):
 
             id_str = cache.generate_netcdf_id(var_name,self.filename,validtime)
 
+            if cache.is_saved("alpha9999122523"):
+                alpha = cache.saved_fields["alpha9999122523"]
+                need_alpha = False
+            else:
+                need_alpha = self.need_alpha
+
             if cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
-                field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units)
+                alpha, field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units,alpha=need_alpha)
                 field=np.reshape(field4d[:,0,0,0],len(geo.lons))
                 cache.save_field(id_str, field)
+                if need_alpha:
+                    cache.save_field("alpha9999122523",alpha)
 
             if accumulated:
                 instant = [(validtime - self.previoustime).total_seconds()]
@@ -227,7 +235,10 @@ class NetcdfVariable(Variable):
 
 
         self.previoustime = validtime
-        return field
+        if self.need_alpha:
+            return alpha, field
+        else:
+            return field        
 
     def print_variable_info(self):
         print ":"+str(self.var_dict)+":"
