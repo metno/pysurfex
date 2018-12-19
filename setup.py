@@ -87,7 +87,7 @@ setup(
     # have to be included in MANIFEST.in as well.
     package_dir={'forcing': 'forcing'},
     package_data={
-        'forcing': ['cfg/config.yaml','cfg/area.yml','cfg/user.yml'],
+        'forcing': ['cfg/config.yml','cfg/area.yml','cfg/user.yml'],
     },
     include_package_data=True,
 
