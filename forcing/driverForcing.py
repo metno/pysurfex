@@ -10,7 +10,7 @@ from forcing.surfexForcing import NetCDFOutput,AsciiOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
 from forcing.geo import Points,Domain
 from forcing.grib import Grib
-from netcdfpy.netcdf import Netcdf
+from forcing.netcdf import Netcdf
 from datetime import datetime,timedelta
 from forcing.cache import Cache
 import ConfigParser
