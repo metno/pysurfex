@@ -15,17 +15,19 @@ def distance(lon1, lat1, lon2, lat2):
     """
     # Convert from degrees to radians
     pi = 3.14159265
-    lon1 = lon1 * 2 * pi / 360
-    lat1 = lat1 * 2 * pi / 360
-    lon2 = lon2 * 2 * pi / 360
-    lat2 = lat2 * 2 * pi / 360
+    lon1 = lon1 * 2 * pi / 360.
+    lat1 = lat1 * 2 * pi / 360.
+    lon2 = lon2 * 2 * pi / 360.
+    lat2 = lat2 * 2 * pi / 360.
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    a = np.sin(dlat / 2.) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
     distance = 6.367e6 * c
     return distance
 
+
+   
 def alpha_grid_rot(lon,lat):
     nx = lat.shape[0]
     ny = lat.shape[1]
@@ -33,14 +35,15 @@ def alpha_grid_rot(lon,lat):
     dlat = np.zeros(lat.shape)
     i1 = np.arange(nx-1)
 
-    dlon[0:-1,:] = distance(lon[i1,:],lat[i1,:],lon[i1+1,:],lat[i1,:])
-    dlat[0:-1,:] = distance(lon[i1,:],lat[i1,:],lon[i1,:],lat[i1+1,:])
+    dlon[0:-1,:] = np.sign(lon[i1+1,:]-lon[i1,:])*distance(lon[i1,:],lat[i1,:],lon[i1+1,:],lat[i1,:])
+    dlat[0:-1,:] = -np.sign(lat[i1+1,:]-lat[i1,:])*distance(lon[i1,:],lat[i1,:],lon[i1,:],lat[i1+1,:])
 
-    dlon[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-1,:],lat[-2,:])
-    dlat[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-2,:],lat[-1,:])
+    dlon[-1,:] = np.sign(lon[-1,:]-lon[-2,:])*distance(lon[-2,:],lat[-2,:],lon[-1,:],lat[-2,:])
+    dlat[-1,:] = -np.sign(lat[-1,:]-lat[-2,:])*distance(lon[-2,:],lat[-2,:],lon[-2,:],lat[-1,:])
 
-    alpha = np.arctan2(dlat,dlon)*180/np.pi - 90
+    alpha = np.rad2deg(np.arctan2(dlon,dlat)) 
     return alpha
+
 
 
 class Interpolation(object):

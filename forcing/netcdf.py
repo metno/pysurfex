@@ -1,6 +1,5 @@
-from netcdfpy.interpolation import Interpolation
-from netcdfpy.util import error,info,log,warning,setup_custom_logger
-from netcdfpy.variable import Variable,Axis
+from forcing.util import error,info,warning
+from forcing.netcdfpy_variable import Variable,Axis
 from forcing.interpolation import NearestNeighbour,Linear
 from forcing.interpolation import alpha_grid_rot
 import netCDF4
@@ -9,7 +8,6 @@ import matplotlib.pyplot as plt
 import cfunits
 from datetime import datetime,date,tzinfo
 
-logger = setup_custom_logger('root')
 
 class Netcdf(object):
     def __init__(self, filename):
@@ -58,7 +56,7 @@ class Netcdf(object):
         if xcoords is not None or ycoords is not None:
             error("Subsetting of the input dimensions not implemented yet!")
 
-        log(1,"Reading variable "+var.var_name)
+        info("Reading variable "+var.var_name,level=1)
         times_to_read=[]
         prev_time_steps=[]
         if times == None:
@@ -71,7 +69,7 @@ class Netcdf(object):
         else:
             if not isinstance(times,(list,tuple)): error("Times must be a list!")
             if isinstance(times[0], date):
-                log(2, "Time provided in call as datetime objects")
+                info("Time provided in call as datetime objects",level=2)
                 times_in_var = var.datetimes
                 for i in range(0, len(times_in_var)):
                     #print times_in_var[i].strftime('%Y%m%d%H')
@@ -102,7 +100,7 @@ class Netcdf(object):
             for i in range(0, var.levels.shape[0]):
                 levels_to_read.append(i)
         else:
-            log(2, "Level provided in call. lev_from_ind="+str(lev_from_ind))
+            info("Level provided in call. lev_from_ind="+str(lev_from_ind),level=2)
             if not isinstance(levels,(list,tuple)): error("Levels must be a list!")
             levels_in_var=var.levels
             for i in range(0, levels_in_var.shape[0]):
@@ -122,7 +120,7 @@ class Netcdf(object):
                 members_to_read.append(i)
         else:
             if not isinstance(members,(list,tuple)): error("Members must be a list!")
-            log(2,"Ensemble members provided in call")
+            info("Ensemble members provided in call",level=2)
             members_in_var=var.members
             for i in range(0, members_in_var.shape[0]):
                 for j in range(0, len(members)):
@@ -141,12 +139,12 @@ class Netcdf(object):
         dim_levels = max(len(levels_to_read),1)
         dim_members = max(len(members_to_read),1)
 
-        log(3,"Dimensions in output")
-        log(3,str(dim_x) + " " + str(dim_y) + " " + str(dim_t) + " " + str(dim_levels) + " " + str(dim_members))
+        info("Dimensions in output",level=3)
+        info(str(dim_x) + " " + str(dim_y) + " " + str(dim_t) + " " + str(dim_levels) + " " + str(dim_members),level=3)
 
 
-        lon_ind=[(i) for i in range(0,dim_x)]
-        lat_ind = [(i) for i in range(0,dim_y)]
+        lon_ind=slice(0,dim_x,1)
+        lat_ind=slice(0,dim_y,1)
         dims=[]
         prev_dims=[]
         types=var.axis_types
@@ -175,8 +173,8 @@ class Netcdf(object):
             else:
                 error(str(types[i])+" is not defined!")
 
-        log(2,"Read "+var.var_name+" with dimensions: "+str(dims))
-        if deaccumulate: log(2,"Deaccumulate previous dimensions: "+str(prev_dims))
+        info("Read "+var.var_name+" with dimensions: "+str(dims),level=2)
+        if deaccumulate: info("Deaccumulate previous dimensions: "+str(prev_dims),level=2)
         field = self.file[var.var_name][dims]
         if units != None: field=cfunits.Units.conform(field,cfunits.Units(var.units),cfunits.Units(units))
 
@@ -196,7 +194,7 @@ class Netcdf(object):
         reverse_mapping=[]
         for d in range(0,5):
             if d not in mapping:
-                log(3,"Adding dimension " + str(d))
+                info("Adding dimension " + str(d),level=3)
                 field=np.expand_dims(field,len(dims)+i)
                 reverse_mapping.append(d)
                 i=i+1
@@ -204,7 +202,7 @@ class Netcdf(object):
                 reverse_mapping.append(mapping[d])
 
         # Transpose to 5D array
-        log(1,"Transpose to 5D array")
+        info("Transpose to 5D array",level=1)
         field=np.transpose(field,reverse_mapping)
 
         if ( plot):
@@ -215,7 +213,7 @@ class Netcdf(object):
                         plt.show()
 
 
-        log(2,"Shape of output: "+str(field.shape))
+        info("Shape of output: "+str(field.shape),level=2)
         return field
 
     def points(self, var_name, lons,lats, levels=None, members=None, times=None, xcoords=None, ycoords=None,
@@ -244,15 +242,16 @@ class Netcdf(object):
         interpolated_field = np.empty([len(lons), field.shape[2], field.shape[3], field.shape[4]])
         
         if interpolation == "nearest":
-            log(2,"Nearest neighbour")
+            info("Nearest neighbour",level=2)
             if not hasattr(self,"nearest"):
                 self.nearest=NearestNeighbour(lons,lats,var.lons,var.lats)
             else:
                 if not self.nearest.interpolator_ok(field.shape[0],field.shape[1],var.lons,var.lats):
                     self.nearest = NearestNeighbour(lons, lats, var.lons,var.lats)
+
             ind_n = self.nearest.index[:,1]*field.shape[0] + self.nearest.index[:,0]
 
-            field0 = field.reshape((len(lons),field.shape[2], field.shape[3], field.shape[4]),order='F')
+            field0 = field.reshape((field.shape[0]*field.shape[1],field.shape[2], field.shape[3], field.shape[4]),order='F')                       
             
             for t in range(0, field.shape[2]):
                 for z in range(0, field.shape[3]):
@@ -263,7 +262,7 @@ class Netcdf(object):
                 alpha_out = alpha_out.flatten(order='F')[ind_n]
 
         elif interpolation == "linear":
-            log(2, "Linear interpolation")
+            info("Linear interpolation",level=2)
             if not hasattr(self,"linear"):
                 self.linear=Linear(lons,lats,var.lons,var.lats)
             else:
@@ -278,5 +277,5 @@ class Netcdf(object):
 
         else:
             error("Interpolation type "+interpolation+" not implemented!")
-        log(3,str(interpolated_field.shape))
+        info(str(interpolated_field.shape),level=3)
         return alpha_out, interpolated_field

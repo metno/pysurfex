@@ -3,11 +3,7 @@ from forcing.util import error,parse_filepattern,warning
 import copy
 import numpy as np
 from datetime import timedelta
-HAS_NETCDFPY=True
-try:
-    from netcdf import Netcdf
-except:
-    HAS_NETCDFPY=False
+from forcing.netcdf import Netcdf
 
 from forcing.grib import Grib
 
@@ -130,7 +126,6 @@ class NetcdfVariable(Variable):
 
     def __init__(self,var_dict,basetime,validtime,intervall,debug,need_alpha=False):
 
-        if not HAS_NETCDFPY: error("You nead netcdfpy in installed and in your path read NetCDF files")
         mandatory=["name","fcint","offset","file_inc","filepattern"]
         for i in range(0,len(mandatory)):
             if mandatory[i] not in var_dict:
