@@ -36,12 +36,12 @@ def alpha_grid_rot(lon,lat):
     i1 = np.arange(nx-1)
 
     dlon[0:-1,:] = np.sign(lon[i1+1,:]-lon[i1,:])*distance(lon[i1,:],lat[i1,:],lon[i1+1,:],lat[i1,:])
-    dlat[0:-1,:] = distance(lon[i1,:],lat[i1,:],lon[i1,:],lat[i1+1,:])
+    dlat[0:-1,:] = -np.sign(lat[i1+1,:]-lat[i1,:])*distance(lon[i1,:],lat[i1,:],lon[i1,:],lat[i1+1,:])
 
-    dlon[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-1,:],lat[-2,:])
-    dlat[-1,:] = distance(lon[-2,:],lat[-2,:],lon[-2,:],lat[-1,:])
+    dlon[-1,:] = np.sign(lon[-1,:]-lon[-2,:])*distance(lon[-2,:],lat[-2,:],lon[-1,:],lat[-2,:])
+    dlat[-1,:] = -np.sign(lat[-1,:]-lat[-2,:])*distance(lon[-2,:],lat[-2,:],lon[-2,:],lat[-1,:])
 
-    alpha = np.rad2deg(np.arctan2(dlon,dat)) 
+    alpha = np.rad2deg(np.arctan2(dlon,dlat)) 
     return alpha
 
 

@@ -84,27 +84,7 @@ class Converter:
                 field=np.sqrt(np.square(field_x)+np.square(field_y))
                 np.where(field<0.005,field,0)
             elif self.name == "winddir":
-                windspeed=np.sqrt(np.square(field_x)+np.square(field_y))
-
-                # TODO: Check for correctness and rotation!
-            #    print(alpha.shape)
-                # Special cases
-                field[(field_x == 0)] = 180.
-                field[(field_y == 0) & (field_x > 0)] = 270.
-                field[(field_y == 0) & (field_x < 0)] = 90.
-
-                # If we have y_wind and positive x_wind
-                field = np.where((field_x > 0.) & (field_y != 0), np.add(180., np.divide(
-                np.multiply(np.arccos(np.divide(field_y, windspeed)), 90.), np.arccos(0.))), field)
-                # If we have y_wind and negative x_wind
-                field = np.where((field_x < 0.) & (field_y != 0),
-                    np.divide(np.multiply(np.arccos(np.multiply(-1., np.divide(field_y, windspeed))), 90.),
-                    np.arccos(0.)), field) + alpha
-                # field[(field_x<0.) & (field_y != 0)]=np.divide(np.multiply(np.arccos(np.multiply(-1.,np.divide(field_y,windspeed))),90.),np.arccos(0.))
-                # Set 360. to 0.
-                field[(field == 360.)] = 0.
-                # TODO field = field + alpha ; alpha is grid rotation
-                
+                field = np.mod(np.rad2deg(np.arctan2(field_x,field_y)) + 180 - alpha, 360)
 
         elif self.name == "rh2q":
             field_rh = self.rh.read_variable(geo, validtime,cache) #
