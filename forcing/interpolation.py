@@ -96,8 +96,9 @@ class NearestNeighbour(Interpolation):
         info("Interpolation finished")
 
         # Set max distance as sanity
+        distanceCheck=3.
         if len(lons_vec) > 1 and len(lats_vec) > 1:
-            max_distance=1.5*distance(lons_vec[0],lats_vec[0],lons_vec[1],lats_vec[1])
+            max_distance=distanceCheck*distance(lons_vec[0],lats_vec[0],lons_vec[1],lats_vec[1])
         else:
             error("You only have one point is your input field!")
 

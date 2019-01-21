@@ -4,7 +4,13 @@ from forcing.interpolation import NearestNeighbour,Linear
 from forcing.interpolation import alpha_grid_rot
 import netCDF4
 import numpy as np
-import matplotlib.pyplot as plt
+# Check matplotlib and cartopy
+CAN_PLOT=True
+try:
+    import matplotlib.pyplot as plt
+except:
+    CAN_PLOT=False
+
 import cfunits
 from datetime import datetime,date,tzinfo
 
@@ -206,12 +212,14 @@ class Netcdf(object):
         field=np.transpose(field,reverse_mapping)
 
         if ( plot):
-            for t in range(0,dim_t):
-                for z in range(0,dim_levels):
-                    for m in range(0,dim_members):
-                        plt.imshow(np.reshape(field[:,:,t,z,m],[dim_x,dim_y]),interpolation='nearest')
-                        plt.show()
-
+            if CAN_PLOT:
+                for t in range(0,dim_t):
+                    for z in range(0,dim_levels):
+                        for m in range(0,dim_members):
+                            plt.imshow(np.reshape(field[:,:,t,z,m],[dim_x,dim_y]),interpolation='nearest')
+                            plt.show()
+            else:
+                error("You must install matplotlib properly to be able to plot")            
 
         info("Shape of output: "+str(field.shape),level=2)
         return field

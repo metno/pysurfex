@@ -1,6 +1,10 @@
 import sys
 from datetime import datetime,timedelta
-import matplotlib.dates
+HAS_DATES=True
+try:
+    import matplotlib.dates
+except:
+    HAS_DATES=False
 
 def error(message):
     """ Write error message to console and abort """
@@ -9,7 +13,7 @@ def error(message):
 
 def info(message,level=0):
     """ Write a information message to console """
-    if level > 0:
+    if level < 1:
         print "\033[1;92mINFO: " + message + "\033[0m"
 
 def warning(message):
@@ -48,8 +52,15 @@ def unixtime_to_datenum(time):
    Returns:
       int: datenum value
    """
+   
    dt = datetime.datetime.utcfromtimestamp(time)
-   return matplotlib.dates.date2num(dt)
+   dt2=None
+   if HAS_DATES:
+      dt2=matplotlib.dates.date2num(dt)
+   else:
+      error("You need to have dates installed")
+
+   return dt2
 
 class YamlReaderError(Exception):
     pass

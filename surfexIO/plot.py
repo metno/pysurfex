@@ -1,11 +1,15 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from forcing.util import error,info
 from surfexIO.inputFromSurfex import one2two
 from surfexIO.timeSeries import MetObservations
 import os
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.colors as mcl
+CAN_PLOT=True
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
+    import matplotlib.colors as mcl
+except:
+    error("You need matplotlib to plot in this routine")
 
 def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True,slayers=1):
 
