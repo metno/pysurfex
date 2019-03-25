@@ -91,8 +91,15 @@ class NearestNeighbour(Interpolation):
         x = np.floor_divide(values_vec,dim_y)
         y = np.mod(values_vec,dim_y)
 
+        # extract subdomain for faster interpolation
+        llv = (np.min(interpolated_lons)-1,np.min(interpolated_lats) - 1)
+        urv = (np.max(interpolated_lons) + 1,np.max(interpolated_lats) + 1)
+        test1 = points > llv
+        test2 = points < urv
+        subdom = test1[:,0]*test1[:,1]*test2[:,0]*test2[:,1]
+        
         info("Interpolating..." + str(len(interpolated_lons)) + " points")
-        nn = NearestNDInterpolator(points, values_vec)
+        nn = NearestNDInterpolator(points[subdom,:], values_vec[subdom])
         info("Interpolation finished")
 
         # Set max distance as sanity
