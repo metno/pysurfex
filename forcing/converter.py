@@ -36,6 +36,14 @@ class Converter:
         elif name == "totalprec":
             self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],debug)
             self.snow = self.create_variable(format, defs, conf[self.name]["snow"],debug)
+        elif name == "calcsnow":
+            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],debug)
+            self.t = self.create_variable(format,defs,conf[self.name]["t"],debug)
+#            self.rh = self.create_variable(format,defs,conf[self.name]["t"],debug)
+#            self.p = self.create_variable(format,defs,conf[self.name]["p"],debug)
+        elif name == "calcrain":
+            self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],debug)
+            self.t = self.create_variable(format,defs,conf[self.name]["t"],debug)
         elif name == "phi2m":
             self.phi = self.create_variable(format, defs, conf[self.name]["phi"],debug)
         else:
@@ -101,9 +109,30 @@ class Converter:
             #ZRATIO = 0.622 * ZE / (ZPRES / 100.)
             #RH2Q = 1. / (1. / ZRATIO + 1.)
         elif self.name == "totalprec":
-            field_totalprec=self.totalprec.read_variable(geo, validtime,cache)
-            field_snow=self.snow.read_variable(geo, validtime,cache)
-            field=np.subtract(field_totalprec,field_snow)
+            field_totalprec = self.totalprec.read_variable(geo, validtime,cache)
+            field_snow = self.snow.read_variable(geo, validtime,cache)
+            field = np.subtract(field_totalprec,field_snow)
+        elif self.name == "calcrain":
+            field_totalprec = self.totalprec.read_variable(geo, validtime,cache)
+            field_t = self.t.read_variable(geo, validtime,cache)
+            field = field_totalprec
+            field[field_t < 1] = 0
+        elif self.name == "calcsnow":
+            field_totalprec = self.totalprec.read_variable(geo, validtime,cache)
+ #           field_rh = self.rh.read_variable(geo, validtime,cache) #
+            field_t = self.t.read_variable(geo, validtime,cache)   # In K
+#            field_p = self.p.read_variable(geo, validtime,cache)   # In Pa
+#            tc = field_t + 273.15
+#            e  = (field_rh)*0.611*exp((17.63*tc)/(tc+243.04));
+#            Td = (116.9 + 243.04*log(e))/(16.78-log(e));
+#            gamma = 0.00066 * field_p/1000;
+#            delta = (4098*e)/pow(Td+243.04,2);
+#            if(gamma + delta == 0):
+#              print 	"problem?"
+#            wetbulbTemperature = (gamma * tc + delta * Td)/(gamma + delta);
+           # wetbulbTemperatureK  = wetbulbTemperature + 273.15;
+            field = field_totalprec
+            field[field_t > 1] = 0
         elif self.name == "phi2m":
             field=self.phi.read_variable(geo, validtime,cache)
             field=np.divide(field,gravity)

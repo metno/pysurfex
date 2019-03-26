@@ -4,7 +4,7 @@ import copy
 import numpy as np
 from datetime import timedelta
 from forcing.netcdf import Netcdf
-
+import time
 from forcing.grib import Grib
 
 class Variable(object):
@@ -70,9 +70,9 @@ class Variable(object):
         # Basetime checks
         if offset >= 0:
             # Change basetime if offset is exceeded
-            if (validtime-basetime) > (timedelta(seconds=fcint)+timedelta(seconds=offset)):
-                if self.debug: print "Changing basetime to ",new_basetime
+            if (validtime-basetime) >= (timedelta(seconds=fcint)+timedelta(seconds=offset)):
                 new_basetime=basetime+timedelta(seconds=fcint)
+                if self.debug: print "Changing basetime to ",new_basetime
         else:
             error("Negative offset does not make sense here")
 
@@ -105,8 +105,7 @@ class Variable(object):
 
         # Set filename. New basetime is the same as previous or the updated one
         self.filename = parse_filepattern(filepattern, new_basetime, validtime)
-        self.previousfilename = parse_filepattern(filepattern, new_basetime,self.previoustime)
-
+        self.previousfilename = parse_filepattern(filepattern, basetime,self.previoustime)
         # Reread if the basetime has changed
         if new_basetime != basetime:
             new=True
@@ -174,7 +173,7 @@ class NetcdfVariable(Variable):
             units=None
             if "level" in self.var_dict: level=[self.var_dict["level"]]
             if "units" in self.var_dict: units = str([self.var_dict["units"]][0])
-            if "accumulated" in self.var_dict: accumulated = [self.var_dict["accumulated"]]
+            if "accumulated" in self.var_dict: accumulated = self.var_dict["accumulated"]
             int_type="nearest"
             if "interpolator" in self.var_dict: int_type=self.var_dict["interpolator"]
 

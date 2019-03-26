@@ -2,6 +2,7 @@ import abc
 import netCDF4
 import numpy as np
 from forcing.util import error
+import time
 
 class SurfexForcing(object):
     """
@@ -96,9 +97,12 @@ class NetCDFOutput(SurfexForcing):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
             print this_obj.var_name
-
+            tic = time.time()        
             field=this_obj.read_time_step(this_time,cache)
+            toc =  time.time()
+            print "# read_time_step: ", toc-tic
             self.forcing_file[self.translation[this_var]][self.time_step,:]=field
+           
 
         self.forcing_file['TIME'][self.time_step]=self.time_step
 

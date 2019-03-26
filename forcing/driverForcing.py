@@ -3,6 +3,7 @@ import os
 import copy
 from argparse import ArgumentParser,Action
 import numpy as np
+import netCDF4 as nc
 import forcing.version
 from forcing.util import error,data_merge,warning
 import forcing.converter
@@ -130,11 +131,28 @@ def parseAreaFile(area_file,mode,name,format="grib"):
             y=[grib.y0,grib.dy,grib.ny]
             geo_out = Domain(grib.projection,x,y,False)
         elif format.lower() == "netcdf":
-            warning("Domain definition hard-coded to test domain")
-            proj="+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs +R=6.371e+06"
-            x=[-422442.2,2500,101]
-            y=[-429321.8,2500,101]
+            warning("PGD.nc")
+            afh = nc.Dataset(area_file,'r')
+            lonc = afh["LONORI"][0]
+            latc = afh["LATORI"][0]
+            lon0 = afh["LON0"][0]
+            lat0 = afh["LAT0"][0]
+            x0 = afh["XX"][0,0]
+            y0 = afh["YY"][0,0]
+            dx = afh["DX"][0,0]
+            dy = afh["DY"][0,0]
+            imax = afh["IMAX"][0]
+            jmax = afh["JMAX"][0]
+            proj="+proj=lcc +lat_0=%f +lon_0=%f +lat_1=%f +lat_2=%f +no_defs +R=6.371e+06" % (lat0,lon0,lat0,lat0)
+            x00 = x0-dx*imax/2.
+            y00 = y0-dy*jmax/2.            
+
+            x=[x00,dx,imax]
+            y=[y00,dy,jmax]
+            print x
+            print y
             geo_out=Domain(proj,x,y,False)
+            afh.close()
         else:
             error("Set up domain from input format "+format+" is not defined!")
     else:
@@ -240,11 +258,11 @@ def parseArgs(argv):
 
     group_rain = parser.add_argument_group('RAIN',description="Rainfall rate")
     group_rain.add_argument("--rain", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
-    group_rain.add_argument("--rain_converter",type=str,help="Converter function to rainfall rate",default="totalprec",choices=["none","totalprec"])
+    group_rain.add_argument("--rain_converter",type=str,help="Converter function to rainfall rate",default="totalprec",choices=["none","totalprec","calcrain"])
 
     group_snow = parser.add_argument_group('SNOW', description="Snowfall rate")
     group_snow.add_argument("--snow", type=str, help="Input format", default="default",choices=["default", "netcdf", "grib"])
-    group_snow.add_argument("--snow_converter", type=str, help="Converter function to snowfall rate", default="none", choices=["none"])
+    group_snow.add_argument("--snow_converter", type=str, help="Converter function to snowfall rate", default="none", choices=["none","calcsnow"])
 
     group_wind = parser.add_argument_group('WIND', description="Wind speed")
     group_wind.add_argument("--wind", type=str, help="Input format", default="default",choices=["default","netcdf","grib"])
@@ -296,7 +314,7 @@ def parseArgs(argv):
     geo_out=None
     if area_file != "":
         print(args.input_format)
-        geo_out=parseAreaFile(area_file,args.mode,args.name,"grib") #args.input_format)
+        geo_out=parseAreaFile(area_file,args.mode,args.name,args.input_format)
 
     if geo_out == None:
         error("Could not set up output geometry")
