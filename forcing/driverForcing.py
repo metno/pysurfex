@@ -9,7 +9,7 @@ from forcing.util import error,data_merge,warning
 import forcing.converter
 from forcing.surfexForcing import NetCDFOutput,AsciiOutput
 from forcing.readInputForSurfex import ConstantValue,ConvertedInput
-from forcing.geo import Points,Domain
+from forcing.geo import Points,Domain,confProjDomain
 from forcing.grib import Grib
 from forcing.netcdf import Netcdf
 from datetime import datetime,timedelta
@@ -184,28 +184,63 @@ def parseAreaFile(area_file,mode,name,format="grib"):
             if ( len(lons) != len(lats)): error("Inconsistent number of points "+str(len(lons))+"/"+str(len(lats)))
             geo_out = Points(len(lons), lons, lats)
         elif mode == "domain":
-            file=None
-            format=None
 
-            if file == None or format == None:
-                proj=None
-                if "proj4" in area_dict:
-                    proj = str(area_dict["proj4"])
-                else:
-                    error("Projection (proj4) must be defined")
-                if "x" in area_dict:
-                    x = str.split(area_dict["x"], ",")
-                    x = [float(i) for i in x]
-                else:
-                    error("x must be defined")
-                if "y" in area_dict:
-                    y = str.split(area_dict["y"], ",")
-                    y = [float(i) for i in y]
-                else:
-                    error("y must be defined")
-                degrees=False
-                if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
-                geo_out = Domain(proj,x,y,degrees)
+            proj=None
+            if "proj4" in area_dict:
+                proj = str(area_dict["proj4"])
+            else:
+                error("Projection (proj4) must be defined")
+            if "x" in area_dict:
+                x = str.split(area_dict["x"], ",")
+                x = [float(i) for i in x]
+            else:
+                error("x must be defined")
+            if "y" in area_dict:
+                y = str.split(area_dict["y"], ",")
+                y = [float(i) for i in y]
+            else:
+                error("y must be defined")
+            degrees=False
+            if "degrees" in area_dict: degrees=bool(area_dict["degrees"])
+            geo_out = Domain(proj,x,y,degrees)
+
+        elif mode == "conf_proj_domain":
+            if "LONC" in area_dict:
+                lonc = float(area_dict["LONC"])
+            else:
+                error("LONC must be defined")
+            if "LATC" in area_dict:
+                latc = float(area_dict["LATC"])
+            else:
+                error("LATC must be defined")
+            if "LON0" in area_dict:
+                lon0 = float(area_dict["LON0"])
+            else:
+                error("LON0 must be defined")
+            if "LAT0" in area_dict:
+                lat0 = float(area_dict["LAT0"])
+            else:
+                error("LAT0 must be defined")
+            if "GSIZE" in area_dict:
+                gsize = float(area_dict["GSIZE"])
+            else:
+                error("GSIZE must be defined")
+            if "NLONS" in area_dict:
+                nlons = int(area_dict["NLONS"])
+            else:
+                error("NLONSmust be defined")
+            if "NLATS" in area_dict:
+                nlats = int(area_dict["NLATS"])
+            else:
+                error("NLATS must be defined")
+            if "EZONE" in area_dict:
+                ezone = int(area_dict["EZONE"])
+            else:
+                error("EZONE must be defined")
+
+            nx=nlons-ezone
+            ny=nlats-ezone
+            geo_out = confProjDomain(lonc,latc,lon0,lat0,gsize,nx,ny)
 
     return geo_out
 
