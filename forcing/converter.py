@@ -26,15 +26,13 @@ class Converter:
 
         if self.name == "none" :
             self.var=self.create_variable(format,defs,conf[self.name],debug)
-#       elif name == "scale":
-#           self.var = self.create_variable(format,defs,conf[self.name],debug)
         elif name == "rh2q":
-            self.rh = self.create_variable(format,defs,conf[self.name]["rh"],debug)
-            self.t = self.create_variable(format,defs,conf[self.name]["t"],debug)
-            self.p = self.create_variable(format,defs,conf[self.name]["p"],debug)
+            self.rh=self.create_variable(format,defs,conf[self.name]["rh"],debug)
+            self.t=self.create_variable(format,defs,conf[self.name]["t"],debug)
+            self.p=self.create_variable(format,defs,conf[self.name]["p"],debug)
         elif name == "windspeed" or name == "winddir":
-            self.x = self.create_variable(format,defs,conf[self.name]["x"],debug)
-            self.y = self.create_variable(format,defs,conf[self.name]["y"],debug,need_alpha=True)
+            self.x=self.create_variable(format,defs,conf[self.name]["x"],debug)
+            self.y=self.create_variable(format,defs,conf[self.name]["y"],debug,need_alpha=True)
         elif name == "totalprec":
             self.totalprec = self.create_variable(format, defs, conf[self.name]["totalprec"],debug)
             self.snow = self.create_variable(format, defs, conf[self.name]["snow"],debug)
@@ -86,8 +84,6 @@ class Converter:
         # Specific reading for each converter
         if self.name == "none":
             field=self.var.read_variable(geo,validtime,cache)
-#        elif self.name == "scale":
-#            field = self.var.read_variable(geo,validtime,cache)*self.var.var_dict["factor"]
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x.read_variable(geo,validtime,cache)
             alpha, field_y = self.y.read_variable(geo,validtime,cache)
@@ -99,16 +95,14 @@ class Converter:
                 field = np.mod(np.rad2deg(np.arctan2(field_x,field_y)) + 180 - alpha, 360)
 
         elif self.name == "rh2q":
-            field_rh = self.rh.read_variable(geo, validtime,cache) # %
+            field_rh = self.rh.read_variable(geo, validtime,cache) #
             field_t = self.t.read_variable(geo, validtime,cache)   # In K
             field_p = self.p.read_variable(geo, validtime,cache)   # In Pa
 
-            field_p_mb = np.divide(field_p,100.)
-            field_t_c = np.subtract(field_t, 273.15)
-
-            exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
+            field_p_mb=np.divide(field_p,100.)
+            exp = np.divide(np.multiply(17.67, field_t), np.add(field_t, 243.5))
             es = np.multiply(6.112, np.exp(exp))
-            field = np.divide(np.multiply(0.622, field_rh/100.)*es, field_p_mb)
+            field = np.divide(np.multiply(0.622, np.divide(field_rh, 100.), es), field_p)
 
             #ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
             #ZE = ZRH * ZES

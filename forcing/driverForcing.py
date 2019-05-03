@@ -260,7 +260,7 @@ def parseArgs(argv):
     parser.add_argument('-ci','--cache_interval', type=int, help="clear cached fields after..", default=3600,nargs="?")
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", choices=["netcdf","grib"])
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
-    parser.add_argument('-of', type=str, help="Output file name", default=None, nargs="?")
+    parser.add_argument('-of', type=str, help="Output file format", default=None, nargs="?")
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
     parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
@@ -281,7 +281,7 @@ def parseArgs(argv):
 
     group_dir_sw = parser.add_argument_group('DIR_SW', description="Direct shortwave radiation")
     group_dir_sw.add_argument('--dir_sw',type=str,help="Direct short wave radiation input format",default="default",choices=["default","netcdf","grib","constant"])
-    group_dir_sw.add_argument("--dir_sw_converter", type=str, help="Converter function to direct short wave radiation", default="none",choices=["none"]) #","scale"])
+    group_dir_sw.add_argument("--dir_sw_converter", type=str, help="Converter function to direct short wave radiation", default="none",choices=["none"])
 
     group_sca_sw = parser.add_argument_group('SCA_SW', description="Scattered short wave radiation flux")
     group_sca_sw.add_argument('--sca_sw',type=str,help="Scattered short wave radiation input format",default="default",choices=["netcdf","grib","constant"])

@@ -202,7 +202,7 @@ class Netcdf(object):
             if d not in mapping:
                 info("Adding dimension " + str(d),level=3)
                 field=np.expand_dims(field,len(dims)+i)
-                reverse_mapping.append(len(dims)+i)
+                reverse_mapping.append(d)
                 i=i+1
             else:
                 reverse_mapping.append(mapping[d])
