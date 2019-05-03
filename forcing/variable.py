@@ -142,8 +142,8 @@ class NetcdfVariable(Variable):
                 fname = self.filename
                 if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
                 self.file_handler.fname = self.previousfilename
-                field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
-                                                   times=[self.previoustime], interpolation=int_type, units=units)
+                 alpha_dummy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
+                                              times=[self.previoustime], interpolation=int_type, units=units)
                 previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
 
                 # Change filename back in handler. Ready to read this time step
@@ -206,8 +206,8 @@ class NetcdfVariable(Variable):
             if cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
-                alpha, field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units,alpha=need_alpha)
-                field=np.reshape(field4d[:,0,0,0],len(geo.lons))
+                alpha, field4d = self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units,alpha=need_alpha)
+                field = np.reshape(field4d[:,0,0,0],len(geo.lons))
                 cache.save_field(id_str, field)
                 if need_alpha:
                     cache.save_field("alpha9999122523",alpha)

@@ -260,7 +260,7 @@ def parseArgs(argv):
     parser.add_argument('-ci','--cache_interval', type=int, help="clear cached fields after..", default=3600,nargs="?")
     parser.add_argument('-i','--input_format', type=str, help="Default input file format", default="netcdf", choices=["netcdf","grib"])
     parser.add_argument('-o','--output_format', type=str,help="Output file format",default="netcdf",nargs="?")
-    parser.add_argument('-of', type=str, help="Output file format", default=None, nargs="?")
+    parser.add_argument('-of', type=str, help="Output file name", default=None, nargs="?")
     parser.add_argument('-p','--pattern', type=str,help="Filepattern",default=None,nargs="?")
     parser.add_argument('--zref',type=str,help="Temperature/humidity reference height",default="ml",choices=["ml","screen"])
     parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",choices=["ml","screen"])
