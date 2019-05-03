@@ -118,10 +118,10 @@ QA:
           t:
             name: air_temperature_2m
             level: 2
-            units: "celsius"
+            units: "K"
           p:
             name: surface_air_pressure
-            units: "hPa"
+            units: "Pa"
     grib:
       converter:
         none:
@@ -159,10 +159,10 @@ QA:
           t:
             name: air_temperature_ml
             level: 0.99851962924
-            units: "celsius"
+            units: "K"
           p:
             name: surface_air_pressure
-            units: "hPa"
+            units: "Pa"
     grib:
       converter:
         none:
@@ -371,7 +371,7 @@ SNOW:
           units: "celsius"
         p:
           name: surface_air_pressure
-          units: "hPa"
+          units: "Pa"
 
   grib:
     converter:

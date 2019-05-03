@@ -18,7 +18,10 @@ class Variable(object):
     def __init__(self,basetime,validtime,var_dict,intervall,debug,need_alpha=False):
         self.initialtime=validtime
         self.previoustime=validtime-timedelta(seconds=intervall)
-        self.basetime=basetime
+        if (var_dict["offset"] > 0):
+            self.basetime = basetime - timedelta(seconds=var_dict["file_inc"])
+        else:
+            self.basetime = basetime
         self.previousbasetime=basetime
         self.validtime=validtime
         self.var_dict = copy.deepcopy(var_dict)
@@ -80,6 +83,7 @@ class Variable(object):
         if self.validtime == self.initialtime:
             if self.debug: print "Same as initial time ",self.initialtime
             new = True
+            self.reRead=True
 
         # File increment checks
         if file_inc > 0:
@@ -135,19 +139,20 @@ class NetcdfVariable(Variable):
     def get_previous_values(self,var_name,level,units,geo,int_type):
 
         previousvalues = np.zeros(len(geo.lons))
-        if hasattr(self, "previousvalues"):
+        if  hasattr(self, "previousvalues"):
             previousvalues = self.previousvalues
-            if self.reRead:
-                # Modify filename in handler
-                fname = self.filename
-                if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
-                self.file_handler.fname = self.previousfilename
-                field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
-                                                   times=[self.previoustime], interpolation=int_type, units=units)
-                previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
-
-                # Change filename back in handler. Ready to read this time step
-                self.file_handler.fname = fname
+        if self.reRead:
+            # Modify filename in handler
+            fname = self.filename
+            if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
+            self.file_handler.fname = self.previousfilename
+            print self.file_handler.file.filepath()
+              
+            alpha_dummmy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
+                                              times=[self.previoustime], interpolation=int_type, units=units)
+            previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
+            # Change filename back in handler. Ready to read this time step
+            self.file_handler.fname = fname
 
         return previousvalues
 
@@ -188,7 +193,7 @@ class NetcdfVariable(Variable):
             previousField = None
             if accumulated:
                 # Re-read field
-                id_str = cache.generate_netcdf_id(var_name,self.previousfilename,self.previoustime)
+                id_str = cache.generate_netcdf_id(var_name,self.filename,self.previoustime)
                 if cache.is_saved(id_str):
                     previousField = cache.saved_fields[id_str]
                 else:
@@ -206,8 +211,8 @@ class NetcdfVariable(Variable):
             if cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
-                alpha, field4d=self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units,alpha=need_alpha)
-                field=np.reshape(field4d[:,0,0,0],len(geo.lons))
+                alpha, field4d = self.file_handler.points(var_name,lons=geo.lons,lats=geo.lats,levels=level,times=[validtime],interpolation=int_type,units=units,alpha=need_alpha)
+                field = np.reshape(field4d[:,0,0,0],len(geo.lons))
                 cache.save_field(id_str, field)
                 if need_alpha:
                     cache.save_field("alpha9999122523",alpha)
