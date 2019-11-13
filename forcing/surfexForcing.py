@@ -32,7 +32,7 @@ class SurfexForcing(object):
         raise NotImplementedError('users must define writeForcing to use this base class')
 
     def __init__(self,format,base_time,geo,ntimes,var_objs,debug):
-        print "Constructed forcing object "+format
+        print("Constructed forcing object "+format)
         self.time_step_intervall = 3600
         self.valid_time = None
         self.base_time=base_time
@@ -84,7 +84,7 @@ class NetCDFOutput(SurfexForcing):
  
     def __init__(self,base_time,geo,fname,ntimes,var_objs,att_objs,att_time,cache):
         super(NetCDFOutput,self).__init__("netCDF",base_time,geo,ntimes,var_objs,cache.debug)
-        print "Forcing type is netCDF"
+        print("Forcing type is netCDF")
         self.forcing_file={}
         if fname == None: fname="FORCING.nc"
         self.file_handler= netCDF4.Dataset(fname, 'w',format=self.output_format)
@@ -96,11 +96,11 @@ class NetCDFOutput(SurfexForcing):
         for i in range (0,len(self.var_objs)):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
-            print this_obj.var_name
+            print(this_obj.var_name)
             tic = time.time()        
             field=this_obj.read_time_step(this_time,cache)
             toc =  time.time()
-            print "# read_time_step: ", toc-tic
+            print("# read_time_step: ", toc-tic)
             self.forcing_file[self.translation[this_var]][self.time_step,:]=field
            
 
@@ -108,12 +108,12 @@ class NetCDFOutput(SurfexForcing):
 
 
     def _define_forcing(self,geo,att_objs,att_time,cache):
-        print "Define netcdf forcing" 
+        print("Define netcdf forcing") 
 
         for i in range (0,len(att_objs)):
             this_obj=att_objs[i]
             this_var=this_obj.var_name
-            print this_obj.var_name
+            print(this_obj.var_name)
             if this_var == "ZS":
                 zs=this_obj.read_time_step(att_time,cache)
             elif this_var == "ZREF":
@@ -203,7 +203,7 @@ class NetCDFOutput(SurfexForcing):
 
    
     def finalize(self):
-        print "Close file"
+        print("Close file")
         self.file_handler.close()
 
     
@@ -228,7 +228,7 @@ class AsciiOutput(SurfexForcing):
         for i in range (0,len(self.var_objs)):
             this_obj=self.var_objs[i]
             this_var=this_obj.var_name
-            print this_obj.var_name
+            print(this_obj.var_name)
             field=this_obj.read_time_step(this_time,cache)
             fmt = "%20.8f"
             cols= 50
@@ -242,7 +242,7 @@ class AsciiOutput(SurfexForcing):
         for i in range (0,len(att_objs)):
             this_obj=att_objs[i]
             this_var=this_obj.var_name
-            print this_obj.var_name
+            print(this_obj.var_name)
             if this_var == "ZS":
                 zs=this_obj.read_time_step(att_time,cache)
             elif this_var == "ZREF":
@@ -279,7 +279,7 @@ class AsciiOutput(SurfexForcing):
 
 
     def finalize(self):
-        print "Close file"
+        print("Close file")
         for key in self.parameters:
           self.file_handler[key].close()
     

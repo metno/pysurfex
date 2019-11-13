@@ -30,7 +30,7 @@ class Variable(object):
         self.filename = parse_filepattern(self.filepattern, self.basetime,self.validtime)
         self.debug=debug
         self.need_alpha = need_alpha
-        if self.debug: print "Constructed " + self.__class__.__name__ + " for " + str(self.var_dict)
+        if self.debug: print("Constructed " + self.__class__.__name__ + " for " + str(self.var_dict))
 
 
     @abc.abstractmethod
@@ -70,15 +70,15 @@ class Variable(object):
         # Basetime checks
         if offset >= 0:
             # Change basetime if offset is exceeded
-            if (validtime-basetime) >= (timedelta(seconds=fcint)+timedelta(seconds=offset)):
+            if (validtime-basetime) > (timedelta(seconds=fcint)+timedelta(seconds=offset)):
                 new_basetime=basetime+timedelta(seconds=fcint)
-                if self.debug: print "Changing basetime to ",new_basetime
+                if self.debug: print("Changing basetime to ",new_basetime)
         else:
             error("Negative offset does not make sense here")
 
         # Always open the file for the first step
         if self.validtime == self.initialtime:
-            if self.debug: print "Same as initial time ",self.initialtime
+            if self.debug: print("Same as initial time ",self.initialtime)
             new = True
 
         # File increment checks
@@ -86,18 +86,18 @@ class Variable(object):
             if file_inc > offset:
                 if offset == 0:
                     if (self.timeElapsed) == timedelta(seconds=file_inc):
-                        if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset)
+                        if self.debug: print("Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset))
                         self.timeElapsed=timedelta(seconds=0)
                         new=True
                 else:
                     if (self.timeElapsed) > (timedelta(seconds=file_inc)+timedelta(seconds=offset)):
-                        if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset)
+                        if self.debug: print("Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)+timedelta(seconds=offset))
                         self.timeElapsed=timedelta(seconds=0)
                         new=True
 
             else:
                 if (self.timeElapsed) >= timedelta(seconds=file_inc):
-                    if self.debug: print "Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc)
+                    if self.debug: print("Test for file_inc: ",self.timeElapsed,timedelta(seconds=file_inc))
                     self.timeElapsed=timedelta(seconds=0)
                     new=True
         else:
@@ -113,7 +113,7 @@ class Variable(object):
 
         self.timeElapsed = self.timeElapsed + (validtime - self.previoustime)
         self.basetime=new_basetime
-        if new and self.debug: print "Open new file ", self.filename,self.validtime,self.basetime,self.reRead
+        if new and self.debug: print("Open new file ", self.filename,self.validtime,self.basetime,self.reRead)
 
         return new
 
@@ -140,9 +140,9 @@ class NetcdfVariable(Variable):
             if self.reRead:
                 # Modify filename in handler
                 fname = self.filename
-                if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
+                if self.debug: print("Re-read ",self.previoustime," from ",self.previousfilename)
                 self.file_handler.fname = self.previousfilename
-                 alpha_dummy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
+                alpha_dummy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
                                               times=[self.previoustime], interpolation=int_type, units=units)
                 previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
 
@@ -235,7 +235,7 @@ class NetcdfVariable(Variable):
             return field        
 
     def print_variable_info(self):
-        print ":"+str(self.var_dict)+":"
+        print(":"+str(self.var_dict)+":")
 
 
 class GribVariable(Variable):
@@ -258,7 +258,7 @@ class GribVariable(Variable):
             if self.reRead:
                 # Modify filename in handler
                 fname = self.filename
-                if self.debug: print "Re-read ", self.previoustime, " from ", self.previousfilename
+                if self.debug: print("Re-read ", self.previoustime, " from ", self.previousfilename)
                 self.file_handler.fname = self.previousfilename
                 previousvalues = self.file_handler.points(par, typ, level, tri, self.previoustime, lons=geo.lons,
                                                                lats=geo.lats, interpolation=int_type)
@@ -347,4 +347,4 @@ class GribVariable(Variable):
             return field
 
     def print_variable_info(self):
-        print ":"+str(self.var_dict)+":"
+        print(":"+str(self.var_dict)+":")

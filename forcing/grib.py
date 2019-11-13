@@ -17,7 +17,7 @@ HAS_ECCODES=True
 try:
     from eccodes import *
 except:
-    print "Warning: eccodes not found. Needed for reading grib files"
+    print("Warning: eccodes not found. Needed for reading grib files")
     HAS_ECCODES=False
 
 class Grib(object):
@@ -61,11 +61,11 @@ class Grib(object):
             gid = codes_grib_new_from_file(fh)
 
             if gid is None:
-                print "Could not find:"
-                print " Parameter:"+str(w_par)
-                print "      Type:"+str(w_typ)
-                print "     Level:"+str(w_lev)
-                print "       Tri:"+str(w_tri)
+                print("Could not find:")
+                print(" Parameter:"+str(w_par))
+                print("      Type:"+str(w_typ))
+                print("     Level:"+str(w_lev))
+                print("       Tri:"+str(w_tri))
                 fh.close()
                 return None
             else:

@@ -52,7 +52,7 @@ class Converter:
         #print "Constructed the converter " + self.name
 
     def print_info(self):
-        print self.name
+        print(self.name)
 
     def create_variable(self,format,defs,var_dict,debug,need_alpha=False):
 

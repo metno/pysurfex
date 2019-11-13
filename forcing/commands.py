@@ -9,5 +9,5 @@ def plot_snowogram(station_list,patches,layers,start,end,geo,file_path,format):
   #for iloop in range (0,1):
 
     name = unicode(str(stations['NAME'][iloop]), "utf-8")
-    print stations['STNR'][iloop],iloop-1,patches,layers,start,end,file_path,format
+    print(stations['STNR'][iloop],iloop-1,patches,layers,start,end,file_path,format)
     snowogram(str(stations['STNR'][iloop]),name,iloop-1,patches,layers,start,end,geo,file_path,format).show()

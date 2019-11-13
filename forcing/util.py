@@ -8,17 +8,17 @@ except:
 
 def error(message):
     """ Write error message to console and abort """
-    print "\033[1;31mError: " + message + "\033[0m"
+    print("\033[1;31mError: " + message + "\033[0m")
     sys.exit(1)
 
 def info(message,level=0):
     """ Write a information message to console """
     if level < 1:
-        print "\033[1;92mINFO: " + message + "\033[0m"
+        print("\033[1;92mINFO: " + message + "\033[0m")
 
 def warning(message):
     """ Write a warning message to console """
-    print "\033[1;33mWarning: " + message + "\033[0m"
+    print("\033[1;33mWarning: " + message + "\033[0m")
 
 def parse_filepattern(file_pattern,basetime,validtime):
     #print(file_pattern)
@@ -73,7 +73,7 @@ def data_merge(a, b):
     # ## debug output
     # sys.stderr.write("DEBUG: %s to %s\n" %(b,a))
     try:
-        if a is None or isinstance(a, str) or isinstance(a, unicode) or isinstance(a, int) or isinstance(a, long) or isinstance(a, float):
+        if a is None or isinstance(a, str) or isinstance(a, int)  or isinstance(a, float):
             # border case for first run or if a is a primitive
             a = b
         elif isinstance(a, list):
@@ -96,7 +96,7 @@ def data_merge(a, b):
                 raise YamlReaderError('Cannot merge non-dict "%s" into dict "%s"' % (b, a))
         else:
             raise YamlReaderError('NOT IMPLEMENTED "%s" into "%s"' % (b, a))
-    except TypeError, e:
+    except TypeError as e:
         raise YamlReaderError('TypeError "%s" in key "%s" when merging "%s" into "%s"' % (e, key, b, a))
     return a
 

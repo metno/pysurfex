@@ -3,18 +3,16 @@ import datetime
 class Cache:
 
     def __init__(self,debug,max_age):
-        self.files=[]
-        self.debug=debug
+        self._files = []
+        self.debug = debug
         self.max_age = max_age
-        self.file_handler=[]
-        self.interpolators={}
-        self.saved_fields={}
-        #print "Constructed cache"
+        self.file_handler = []
+        self.interpolators = {}
+        self.saved_fields = {}
 
     @property
     def files(self):
-        return self.files
-
+        return self._files
 
     def set_file_handler(self,filename,file_handler):
         self.files.append(filename)

@@ -127,7 +127,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
         for gtype in gtypes:
             pdf = PdfPages("plots/forcing_" + gtype + "_from_grib.pdf")
             of="data/"+str(gtype)+"/nc/FORCING_from_grib.nc"
-            print "Testing gtype " + gtype
+            print("Testing gtype " + gtype)
             mode="points"
             if gtype == "LONLAT_REG" or gtype == "CONF_PROJ":
                 mode="domain"
@@ -151,7 +151,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
                     "CO2air"]
             times = [datetime.strptime("2018011100", '%Y%m%d%H'),datetime.strptime("2018011106", '%Y%m%d%H'),datetime.strptime("2018011109", '%Y%m%d%H')]
             for var in vars:
-                print "Testing: ",var
+                print("Testing: ",var)
                 field = forc.read_field(var, times=times)
                 field_bm=forc_bm.read_field(var,times=times)
                 np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg=str(var)+" for " + str(gtype))
@@ -184,7 +184,7 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
         for gtype in gtypes:
             pdf = PdfPages("plots/forcing_" + gtype + "_from_netcdf.pdf")
             of = "data/"+str(gtype)+"/nc/FORCING_from_netcdf.nc"
-            print "Testing gtype "+gtype
+            print("Testing gtype "+gtype)
             mode="points"
             if gtype == "LONLAT_REG" or gtype == "CONF_PROJ":
                 mode="domain"
@@ -206,7 +206,7 @@ class ForcingFromNetCDFtoNetCDF(unittest.TestCase):
             times = [datetime.strptime("2018011100", '%Y%m%d%H'), datetime.strptime("2018011106", '%Y%m%d%H'),
                      datetime.strptime("2018011109", '%Y%m%d%H')]
             for var in vars:
-                print "Testing: ", var
+                print("Testing: ", var)
                 field = forc.read_field(var, times=times)
                 field_bm = forc_bm.read_field(var, times=times)
                 np.testing.assert_almost_equal(field, field_bm, decimal=2, err_msg=str(var)+" for " + str(gtype))
@@ -243,7 +243,7 @@ class ReadTimeSeries(unittest.TestCase):
         printValues=False
         if printValues:
             for gp in range(0,tseries.shape[0]):
-                print str(gtypes[gp])
+                print(str(gtypes[gp]))
                 for t in range(0,tseries.shape[2]):
                     line = str(t)
                     hdr="  "
@@ -252,8 +252,8 @@ class ReadTimeSeries(unittest.TestCase):
                             hdr=hdr+formats[e]+" "
                             line=line+" "+str(tseries[gp,e,t,p])
 
-                    if t == 0: print hdr
-                    print line
+                    if t == 0: print(hdr)
+                    print(line)
 
         # Do tests
         for gp in range(0,tseries.shape[0]):

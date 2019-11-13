@@ -14,7 +14,7 @@ from forcing.grib import Grib
 from forcing.netcdf import Netcdf
 from datetime import datetime,timedelta
 from forcing.cache import Cache
-import ConfigParser
+#import ConfigParser
 import yaml
 
 
@@ -149,8 +149,8 @@ def parseAreaFile(area_file,mode,name,format="grib"):
 
             x=[x00,dx,imax]
             y=[y00,dy,jmax]
-            print x
-            print y
+            print(x)
+            print(y)
             geo_out=Domain(proj,x,y,False)
             afh.close()
         else:
@@ -334,7 +334,7 @@ def parseArgs(argv):
     # Time information
     args = parser.parse_args(argv)
     debug = args.debug
-    if ( args.dtg_start or args.dtg_stop) < 1000010100:
+    if ( int(args.dtg_start) or int(args.dtg_stop)) < 1000010100:
         error("Invalid start and stop times! "+str(args.dtg_start)+" "+str(args.dtg_stop))
 
     start=datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')

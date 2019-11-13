@@ -99,7 +99,7 @@ def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True
                 else:
                     color="blue"
 
-                print l,p,alpha,color,linestyle,format
+                print(l,p,alpha,color,linestyle,format)
 
                 vars="WSN_VEG","RSN_VEG"
                 diag_times=[]
@@ -114,7 +114,7 @@ def snowogram(pgdfile,surfexfile,station_list,start,end,plot=False,save_pdf=True
                     diag_times.append(diag_t)
                     diag_values.append(diag_v)
 
-                print diag_values[0].shape,diag_values[1].shape
+                print(diag_values[0].shape,diag_values[1].shape)
                 dsn_veg=np.true_divide(diag_values[0],diag_values[1]).reshape(diag_values[0].shape[0])
                 ax1.plot(diag_times[0], dsn_veg, label="DSN P=" + str(p) + " L=" + str(l), linestyle=linestyle,
                          color=color, alpha=alpha)
@@ -157,7 +157,7 @@ def plot_field(geo,field,title=None,intervals=20,bd=5000,zero=True,cmap_name=Non
     #print nx,ny
     if len(np.shape(field)) == 1: field=one2two(geo,field)
     if isinstance(field,list) and geo.domain:
-        print "Converting list to 2D numpy array"
+        print("Converting list to 2D numpy array")
         error("Not posible longer")
 
 

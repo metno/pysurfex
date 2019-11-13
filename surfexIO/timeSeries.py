@@ -176,7 +176,7 @@ class MetObservations(TimeSeries):
                 self.values = np.append(self.values,val)
                 self.times = np.append(self.times,time)
         except:
-            print "No data found"
+            print("No data found")
 
 
 class MetObservationsNew(TimeSeries):
@@ -191,7 +191,7 @@ class MetObservationsNew(TimeSeries):
 
         client_id = os.environ['CLIENTID']
 
-        print client_id
+        print(client_id)
 
         # issue an HTTP GET request
         r = requests.get(
@@ -244,7 +244,7 @@ class ObservationFromASCIIFile():
                 for i in range(0,len(my_obs)):
                     if ( my_obs['STNR'][i] == stnr ):
                         val=my_obs[var][i]
-                    print my_obs['TIME'][i],val
+                    print(my_obs['TIME'][i],val)
 
                 self.times=np.append(my_obs['TIME'][i])
                 self.values.append(val)

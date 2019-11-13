@@ -29,11 +29,11 @@ ax.set_global()
 ax.coastlines(resolution="10m")
 ax.set_extent([lons.min(),lons.max(),lats.min(),lats.max()],ccrs.PlateCarree())
 
-print lons.shape
-print lats.shape
-print swe.shape
+print(lons.shape)
+print(lats.shape)
+print(swe.shape)
 
-print swe
+print(swe)
 #plt.imshow(swe, origin="lower",transform=proj, interpolation="bilinear", cmap="Accent")
 plt.contourf(lons,lats,swe,transform=ccrs.PlateCarree(), levels=[-500,-50,-20,-10,-5,0,5,10,20,50,500],cmap="Accent")  #,extent=(lons.min(),lons.max(),lats.min(),lats.max()))
 plt.colorbar()

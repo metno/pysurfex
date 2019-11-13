@@ -6,15 +6,15 @@ from forcing.grib import Grib
 
 def main2():
     INPUT = "/home/trygveasp/tmp/build/fc2018010318+003grib_fp_mbr000"
-    print INPUT
+    print(INPUT)
     fh=Grib(INPUT)
     w_par = 6
     w_lev = 0
     w_typ = "sfc"
     w_tri = 0
     field=fh.field(w_par,w_typ,w_lev,w_tri,plot=False)
-    print field.shape
-    print field[200:210,300]
+    print(field.shape)
+    print(field[200:210,300])
 
 def main():
     INPUT = "/home/trygveasp/tmp/build/fc2018010318+003grib_fp_mbr000"
@@ -23,7 +23,7 @@ def main():
     try:
         from eccodes import codes_grib_new_from_file,codes_get,codes_get_size,codes_write,codes_release,codes_get_values,CodesInternalError
     except:
-        print "Missing eccodes"
+        print("Missing eccodes")
         sys.exit(1)
 
     fin = open(INPUT)
@@ -64,7 +64,7 @@ def main():
     while 1:
         gid = codes_grib_new_from_file(fin)
         if gid is None:
-            print "Not found"
+            print("Not found")
             break
         else:
             w_par=6
@@ -76,7 +76,7 @@ def main():
             typ=codes_get(gid,"indicatorOfTypeOfLevel")
             tri=codes_get(gid,"timeRangeIndicator")
             if w_par == par and w_lev == lev and w_typ == typ and w_tri == tri:
-                print "Found:",par,lev,typ,tri
+                print("Found:",par,lev,typ,tri)
 
                 geo={}
                 for key in geography:
@@ -111,7 +111,7 @@ def main():
                 lonCenter=geo["LoVInDegrees"]
                 latCenter=geo["LaDInDegrees"]
                 latRef=geo["Latin2InDegrees"]
-                print lonCenter,latCenter,latRef
+                print(lonCenter,latCenter,latRef)
 
                 lon0=geo["longitudeOfFirstGridPointInDegrees"]
                 lat0=geo["latitudeOfFirstGridPointInDegrees"]
@@ -123,12 +123,12 @@ def main():
                 x0,y0=proj.transform_point(lon0,lat0,g0)
                 X=np.arange(x0,x0+(nx*dx),dx)
                 Y=np.arange(y0,y0+(ny*dy),dy)
-                print values.shape,field.shape,x0,y0,X.shape,Y.shape
+                print(values.shape,field.shape,x0,y0,X.shape,Y.shape)
 
-                print X[0]+1022485
-                print "-1022485"
-                print Y[0]+1129331
-                print "-1129331"
+                print(X[0]+1022485)
+                print("-1022485")
+                print(Y[0]+1129331)
+                print("-1129331")
                 Z=np.transpose(field)/9.81
                 N=[10,50,100,250,500,750,1250,2000]
                 ax = plt.axes(projection=proj)

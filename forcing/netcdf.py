@@ -18,7 +18,7 @@ from datetime import datetime,date,tzinfo
 class Netcdf(object):
     def __init__(self, filename):
         self.filename = filename
-        print filename
+        print(filename)
         self.file = netCDF4.Dataset(filename, "r")
 
     def num_height(self, field):

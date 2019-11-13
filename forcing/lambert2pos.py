@@ -15,9 +15,9 @@ for p in range(0,len(XX)):
     x=XX[p]
     y=XY[p]
     lon,lat=proj(x,y,inverse=True)
-    print x,y,lon,lat
+    print(x,y,lon,lat)
     lons.append(lon)
     lats.append(lat)
 
-print "  lons: ",[round(lons[i],4) for i in range(0,len(lons)) ]
-print "  lats: ",[round(lats[i],4) for i in range(0,len(lats)) ]
+print("  lons: ",[round(lons[i],4) for i in range(0,len(lons)) ])
+print("  lats: ",[round(lats[i],4) for i in range(0,len(lats)) ])

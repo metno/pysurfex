@@ -34,7 +34,7 @@ class ConvertedInput(ReadInputForSurfex):
         self.converter = converter
 
     def print_info(self):
-        print self.var_name
+        print(self.var_name)
         self.converter.print_info()
 
 class ConstantValue(ReadInputForSurfex):
@@ -56,4 +56,4 @@ class ConstantValue(ReadInputForSurfex):
             forcing.util.error("Constant value must have a value!")
 
     def print_info(self):
-        print self.var_name
+        print(self.var_name)

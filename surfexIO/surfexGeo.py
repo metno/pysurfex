@@ -116,7 +116,7 @@ class IGN(SurfexGeo):
                                          false_northing=1129321.75, standard_parallels=[63.])
             self.display_proj=self.proj
         else:
-            print "Lambert not defined:",lambert
+            print("Lambert not defined:",lambert)
             sys.exit(1)
 
         self.ign=True
@@ -203,7 +203,7 @@ class IGN(SurfexGeo):
         f = open(cache, "w")
         for i in range(0, len(pout)):
             f.write(str(pout[i]) + "\n")
-        print "Cached coordinates for : ",coord
+        print("Cached coordinates for : ",coord)
         f.close()
 
         return pout
@@ -219,10 +219,10 @@ class IGN(SurfexGeo):
             for i in range(0,len(cached_mask)):
                 mask.append(int(cached_mask[i]))
 
-            if len(mask) != len(xx) or len(mask) != len(yy): print "Cached mask mismatch! ",len(mask),len(xx),len(yy); exit(1)
+            if len(mask) != len(xx) or len(mask) != len(yy): print("Cached mask mismatch! ",len(mask),len(xx),len(yy)); exit(1)
             return mask
 
-        print "Creating mask. This takes time:"
+        print("Creating mask. This takes time:")
         l=-1
 
         for i in range(0, len(pxall)):
@@ -235,7 +235,7 @@ class IGN(SurfexGeo):
                         mask.append(l)
                         break
 
-            print i,"/",len(pxall)
+            print(i,"/",len(pxall))
 
         # Cache mask for later use
         #if len(mask) != len(xx) or len(mask) != len(yy): print "Mask mismatch! ", len(mask), len(xx), len(yy); exit(1)
@@ -244,7 +244,7 @@ class IGN(SurfexGeo):
             f.write(str(mask[i])+"\n")
 
         #f.write("mask="+str(mask)+"\n")
-        print "Created mask: ",mask
+        print("Created mask: ",mask)
         f.close()
         return mask
 
