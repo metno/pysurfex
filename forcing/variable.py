@@ -142,7 +142,7 @@ class NetcdfVariable(Variable):
                 fname = self.filename
                 if self.debug: print "Re-read ",self.previoustime," from ",self.previousfilename
                 self.file_handler.fname = self.previousfilename
-                 alpha_dummy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
+                alpha_dummy, field4d = self.file_handler.points(var_name, lons=geo.lons, lats=geo.lats, levels=level,
                                               times=[self.previoustime], interpolation=int_type, units=units)
                 previousvalues = np.reshape(field4d[:, 0, 0, 0], len(geo.lons))
 
