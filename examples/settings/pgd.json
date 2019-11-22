@@ -1,0 +1,63 @@
+{
+    "nam_io_offline": {
+        "csurf_filetype": "FA",
+        "cpgdfile": "PGD",
+        "cprepfile": "PREP",
+        "csurffile": "SURFOUT",
+        "lfagmap": true,
+        "lrestart": true,
+        "lrestart_2m": true,
+        "xtstep_surf": 60,
+        "xtstep_output": 3600.0,
+        "nhalo": 0
+    },
+    "nam_cover": {
+        "ycover": "ECOCLIMAP_II_EUROP",
+        "ycoverfiletype": "DIRECT"
+    },
+    "nam_zs": {
+        "yzs": "gmted2010",
+        "yzsfiletype": "DIRECT"
+    },
+    "nam_seabathy": {
+        "xunif_seabathy": 0.0
+    },
+    "nam_pgd_schemes": {
+        "cnature": "ISBA ",
+        "csea": "SEAFLX",
+        "cwater": "FLAKE",
+        "ctown": "TEB "
+    },
+    "nam_flaken": {
+        "lsediments": false
+    },
+    "nam_data_flake": {
+        "ywater_depth": "GlobalLakeDepth",
+        "ywater_depthfiletype": "DIRECT",
+        "ywater_depth_status": "GlobalLakeStatus"
+    },
+    "nam_write_surf_atm": {
+        "lsplit_patch": false
+    },
+    "nam_isba":{
+       "cisba": "3-L",
+       "nground_layer": "3",
+       "npatch": "2",
+       "yclay": "",
+       "yclayfiletype": "DIRECT",
+       "ysand": "",
+       "ysandfiletype": "DIRECT"
+    },
+    "nam_treedrag": {
+      "xz0_limit": "1.6",
+      "xscale_h_tree": "1.0"
+    },
+    "nam_data_isba": {
+      "cfnam_h_tree(4)": "",
+      "cftyp_h_tree(4)": "ASCLLV",
+      "cfnam_h_tree(5)": "",
+      "cftyp_h_tree(5)": "ASCLLV",
+      "cfnam_h_tree(6)": "",
+      "cftyp_h_tree(6)": "ASCLLV"
+    }
+}

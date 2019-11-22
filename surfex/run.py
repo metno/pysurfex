@@ -22,12 +22,13 @@ class BatchJob(object):
 
 
 class SURFEXBinary(object):
-    def __init__(self, binary, batch, iofile, settings, surfout=None, assim=None, input=None, archive=None,
+    def __init__(self, binary, batch, iofile, settings, ecoclimap, surfout=None, assim=None, input=None, archive=None,
                  print_namelist=False, pgdfile=None):
         self.binary = binary
         self.batch = batch
         self.iofile = iofile
         self.settings = settings
+        self.ecoclimap = ecoclimap
         self.surfout = surfout
         self.assim = assim
         self.input = input
@@ -36,9 +37,10 @@ class SURFEXBinary(object):
         self.pgdfile = pgdfile
 
         # Set input
+        self.ecoclimap.prepare_input()
+
         if self.input is not None:
-            for inp in self.input:
-                inp.prepare_input()
+            self.input.prepare_input()
 
         if os.path.exists('OPTIONS.nam'):
             os.remove('OPTIONS.nam')
@@ -93,17 +95,17 @@ class SURFEXBinary(object):
 
 
 class PerturbedOffline(SURFEXBinary):
-    def __init__(self, binary, batch, io, pert_number, settings, surfout=None, input=None, archive=None, pgdfile=None,
+    def __init__(self, binary, batch, io, pert_number, settings, ecoclimap, surfout=None, input=None, archive=None, pgdfile=None,
                  print_namelist=False):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
         settings['nam_var']['nivar'] = pert_number
-        SURFEXBinary.__init__(self, binary, batch, io, settings, surfout=surfout, input=input, archive=archive,
+        SURFEXBinary.__init__(self, binary, batch, io, settings, ecoclimap, surfout=surfout, input=input, archive=archive,
                               pgdfile=pgdfile, print_namelist=print_namelist)
 
 
 class Canari(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, assim, binary=None, input=None, archive=None, print_namelist=True,):
+    def __init__(self, settings, batch, pgdfile, prepfile, surfout, assim, ecoclimap, binary=None, input=None, archive=None, print_namelist=True,):
         self.settings = settings
         self.binary = binary
         self.prepfile = prepfile
@@ -117,8 +119,7 @@ class Canari(object):
 
         # Set input
         if self.input is not None:
-            for inp in self.input:
-                inp.prepare_input()
+            self.prepare_input()
 
         # Prepare namelist
         if os.path.exists('OPTIONS.nam'):

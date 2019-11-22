@@ -1,6 +1,18 @@
 import os
 import json
+import yaml
 import shutil
+import f90nml
+import subprocess
+from abc import ABC, abstractmethod
+import surfex
+import toml
+import jsonmerge
+
+try:
+    from StringIO import StringIO   # Python 2.x
+except ImportError:
+    from io import StringIO         # Python 3.x
 
 
 def remove_existing_file(f_in, f_out):
@@ -22,6 +34,35 @@ def remove_existing_file(f_in, f_out):
             os.unlink(f_out)
 
 
+def ascii2nml(input_data):
+    #input_data = json.loads(input_data)
+    print(input_data)
+    output_data = f90nml.Namelist(input_data)
+    return output_data
+
+
+def asciiFile2nml(input_fname, input_fmt="json"):
+    if input_fmt == 'json':
+        with open(input_fname) as input_file:
+            output_data = json.load(input_file)
+    elif input_fmt == 'yaml':
+        with open(input_fname) as input_file:
+            output_data = yaml.safe_load(input_file)
+    output_data = f90nml.Namelist(output_data)
+    return output_data
+
+
+def nml2ascii(input_data, output_file, output_fmt="json"):
+    if output_fmt == 'json':
+        input_data = input_data.todict(complex_tuple=True)
+        json.dump(input_data, output_file,
+                  indent=4, separators=(',', ': '))
+        output_file.write('\n')
+    elif output_fmt == 'yaml':
+        input_data = input_data.todict(complex_tuple=True)
+        yaml.dump(input_data, output_file, default_flow_style=False)
+
+
 def create_working_dir(workdir):
     # Create work directory
     if workdir is not None:
@@ -36,40 +77,125 @@ def clean_working_dir(workdir):
     shutil.rmtree(workdir)
 
 
-class ArchiveData(object):
-    def __init__(self, files, archive_dir, move=True):
-        self.files = files
-        self.archive_dir = archive_dir
-        self.move = move
+class InputData(ABC):
+
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def prepare_input(self):
+        return NotImplementedError
+
+
+class OutputData(ABC):
+
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def archive_files(self):
+        return NotImplementedError
+
+
+class JsonOutputData(OutputData):
+    def __init__(self, data):
+        OutputData.__init__(self)
+        self.data = data
 
     def archive_files(self):
-        for f in self.files:
-            print("Archive " + f + " to " + self.archive_dir)
+        for input_file, target in self.data.items():
+
+            print(input_file, target)
+            command = "mv"
+            if type(self.data[input_file]) is dict:
+                for target in self.data[input_file]:
+                    command = self.data[input_file][target]
+
+            cmd = command + " " + target + " " + target
             try:
-                if not os.path.exists(f):
-                    raise FileNotFoundError("File " + f + " does not exist!")
-                dirname = os.path.abspath(self.archive_dir)
-                os.makedirs(dirname, exist_ok=True)
-                if self.move:
-                    shutil.move(f, dirname + "/" + f)
+                if type(target) is str:
+                    print(cmd)
+                    subprocess.check_call(cmd, shell=True)
                 else:
-                    shutil.copy2(f, dirname + "/" + f)
+                    print("Target file not a string! "+target)
             except IOError:
-                print("Could not archive file " + f)
+                print(cmd + " failed")
                 raise
 
 
-class InputData(object):
-    def __init__(self, files, symlink=True):
-        self.files = files
-        self.symlink = symlink
+class JsonOutputDataFromFile(JsonOutputData):
+    def __init__(self, file):
+        JsonOutputData.__init__(self, json.load(open(file, "r")))
+
+    def archive_files(self):
+        JsonOutputData.archive_files(self)
+
+
+class JsonInputData(InputData):
+    def __init__(self, data):
+        InputData.__init__(self)
+        self.data = data
 
     def prepare_input(self):
-        for target in self.files:
-            input_file = self.files[target]
-            output = os.getcwd() + "/" + os.path.basename(target)
-            remove_existing_file(input_file, output)
-            if self.symlink:
-                os.symlink(input_file, output)
+        for target, input_file in self.data.items():
+
+            print(target, input_file)
+            command = "ln -sf"
+            if type(self.data[target]) is dict:
+                for input_file in self.data[target]:
+                    command = self.data[target][input_file]
+
+            cmd = command + " " + input_file + " " + target
+            try:
+                if type(input_file) is str:
+                    print(cmd)
+                    subprocess.check_call(cmd, shell=True)
+                else:
+                    print("Input file not a string! "+input_file)
+            except IOError:
+                print(cmd + " failed")
+                raise
+
+
+class JsonInputDataFromFile(JsonInputData):
+    def __init__(self, file):
+        JsonInputData.__init__(self, json.load(open(file, "r")))
+
+    def prepare_input(self):
+        JsonInputData.prepare_input(self)
+
+
+class Toml2Json(object):
+    def __init__(self, toml_string):
+        print(toml_string)
+        self.toml = toml_string
+
+        list_of_settings = []
+        for setting in self.toml:
+            list_of_settings.append(surfex.set_namelist(setting, self.toml[setting]))
+
+        settings = None
+        for setting in list_of_settings:
+            if settings is None:
+                settings = json.loads(setting)
             else:
-                shutil.copy2(input_file, output)
+                settings = jsonmerge.merge(settings, setting)
+
+        print(settings)
+        self.json_settings = str(json.dumps(settings))
+        print(type(self.json_settings))
+        print(self.json_settings)
+
+
+
+class TomlFile2Json(Toml2Json):
+    def __init__(self, file):
+        if os.path.exists(file):
+            toml_string = toml.load(file)
+        else:
+            raise FileNotFoundError
+        Toml2Json.__init__(self, toml_string)
+
+    def parse(self):
+        Toml2Json.parse(self)
+

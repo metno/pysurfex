@@ -1,0 +1,149 @@
+{
+    "nam_io_offline": {
+        "csurf_filetype": "FA",
+        "cpgdfile": "Const.Clim",
+        "cprepfile": "ICMSHINIT",
+        "csurffile": "ICMSHHARM+0003",
+        "lfagmap": true,
+        "lrestart": true,
+        "lrestart_2m": true,
+        "xtstep_surf": 60,
+        "xtstep_output": 3600.0,
+        "nhalo": 0,
+        "lset_forc_zs": true
+    },
+    "nam_assim": {
+        "lassim": true,
+        "cassim_isba": "OI",
+        "cfile_format_sst": "FA",
+        "cfile_format_lsm": "FA",
+        "cfile_format_clim": "FA",
+        "cfile_format_fg": "FA",
+        "lextrap_water": false
+    },
+    "nam_io_varassim": {
+        "lprt": false,
+        "lsim": false,
+        "lbev": false,
+        "lbfixed": false
+    },
+    "nam_var": {
+        "nivar": 0,
+        "nvar": 2,
+        "cvar_m": [
+            "WG2",
+            "WG1",
+            "TG2",
+            "TG1"
+        ],
+        "xsigma_m": [
+            0.15,
+            0.1,
+            2.0,
+            2.0
+        ],
+        "xtprt_m": [
+            0.0001,
+            0.0001,
+            1e-05,
+            1e-05
+        ],
+        "nncv": [
+            1,
+            0,
+            1,
+            0
+        ],
+        "xscale_q": 0.125
+    },
+    "nam_obs": {
+        "nnco": [
+            1,
+            1,
+            0,
+            0,
+            0
+        ],
+        "cfile_format_obs": "ASCII"
+    },
+    "nam_prep_surf_atm": {
+        "nyear": 2019,
+        "nmonth": 11,
+        "nday": 19,
+        "xtime": 10800,
+        "cfile": "",
+        "cfiletype": "",
+        "cfilepgd": "",
+        "cfilepgdtype": ""
+    },
+    "nam_prep_isba": {
+        "xhug_surf": 0.2,
+        "xhug_root": 0.2,
+        "xhug_deep": 0.2,
+        "xtg_surf": 285.0,
+        "xtg_root": 288.0,
+        "xtg_deep": 292.0
+    },
+    "nam_prep_teb": {
+        "xti_road": 285.0,
+        "xti_bld": 285.0,
+        "xts_road": 285.0,
+        "xts_roof": 285.0,
+        "xts_wall": 285.0,
+        "xws_road": 0.0,
+        "xws_roof": 0.0
+    },
+    "nam_prep_seaflux": {
+        "xsst_unif": 285.0
+    },
+    "nam_prep_watflux": {
+        "xts_water_unif": 285.0
+    },
+    "nam_pgd_grid": {
+        "cgrid": "CONF PROJ"
+    },
+    "nam_conf_proj": {
+        "xlat0": 56.3,
+        "xlon0": 0.0,
+        "xrpk": 0.831954122,
+        "xbeta": 0.0
+    },
+    "nam_conf_proj_grid": {
+        "ilone": 11,
+        "ilate": 11,
+        "xlatcen": 56.3,
+        "xloncen": 9.9,
+        "nimax": 648,
+        "njmax": 648,
+        "xdx": 2500.0,
+        "xdy": 2500.0
+    },
+    "nam_cover": {
+        "ycover": "ECOCLIMAP_II_EUROP",
+        "ycoverfiletype": "DIRECT"
+    },
+    "nam_zs": {
+        "yzs": "gtopo30",
+        "yzsfiletype": "DIRECT"
+    },
+    "nam_seabathy": {
+        "xunif_seabathy": 0.0
+    },
+    "nam_pgd_schemes": {
+        "cnature": "ISBA ",
+        "csea": "SEAFLX",
+        "cwater": "WATFLX",
+        "ctown": "TEB "
+    },
+    "nam_flaken": {
+        "lsediments": false
+    },
+    "nam_data_flake": {
+        "ywater_depth": "GlobalLakeDepth",
+        "ywater_depthfiletype": "DIRECT",
+        "ywater_depth_status": "GlobalLakeStatus"
+    },
+    "nam_write_surf_atm": {
+        "lsplit_patch": false
+    }
+}

@@ -1,0 +1,94 @@
+{
+  "NAM_SEAICE_SICE": {
+    "LICE_MASS_BALANCE": ".TRUE.",
+    "LICE_HAS_SNOW": ".FALSE.",
+    "XOCEAN_HEAT_FLUX": "2."
+  },
+  "NAM_PREP_SEAICE_SICE": {
+    "XICE_THICKNESS": ".75",
+    "NUM_LAYERS": "4"
+  },
+  "NAM_PREP_SEAFLUX": {
+    "LSEA_SBL": ".FALSE."
+  },
+  "NAM_NACVEG": {
+    "NECHGU": "3",
+    "XRCLIMCA": "0.",
+    "XRCLISST": "0.05",
+    "XSIGH2MO": "0.10",
+    "XSIGT2MO": "1.0",
+    "LOBS2M": ".TRUE.",
+    "LOBSWG": ".FALSE."
+  },
+  "NAM_IO_OFFLINE": {
+     "LRESTART_2M": ".TRUE.",
+     "CFORCING_FILETYPE": "NETCDF",
+     "LRESTART": ".TRUE.",
+     "XTSTEP_SURF": "60",
+     "XTSTEP_OUTPUT": "3600.",
+     "LFAGMAP": ".TRUE."
+  },
+  "NAM_ASSIM": {
+     "LASSIM": ".TRUE.",
+     "CASSIM_SEA": "INPUT",
+     "CASSIM_WATER": "INPUT",
+     "CASSIM_TEB": "ROADT",
+     "LEXTRAP_WATER": ".TRUE.",
+     "LWATERTG2": ".TRUE.",
+     "LAESNM": ".FALSE.",
+     "LSWEPSINI": ".FALSE.",
+     "XSWEPSINI": "500",
+     "LSWEPSMIN": ".FALSE.",
+     "XSWEPSMIN": "200",
+     "LEXTRAP_SEA": ".FALSE.",
+     "LEXTRAP_NATURE": ".FALSE.",
+     "LREAD_SST_FROM_FILE": ".TRUE.",
+     "LECSST": ".TRUE.",
+     "LAROME": ".TRUE.",
+     "NPRINTLEV": "1",
+     "LRELCLIMSNOW": ".FALSE.",
+     "CFILE_FORMAT_FG": "FA",
+     "CFILE_FORMAT_LSM": "FA",
+     "CFILE_FORMAT_CLIM": "FA",
+     "CFILE_FORMAT_SST": "FA"
+  },
+  "NAM_DIAG_SURFn": {
+     "N2M": "2"
+  },
+  "NAM_DIAG_SURF_ATMn": {
+     "LT2MMW": ".TRUE."
+  },
+  "NAM_DIAG_ISBAn": {
+     "LPATCH_BUDGET": ".TRUE.",
+     "LPGD": ".TRUE.",
+     "LSURF_MISC_BUDGET": ".TRUE."
+  },
+  "NAM_WRITE_SURF_ATM": {
+    "LSPLIT_PATCH": ".FALSE."
+  },
+  "NAM_OBS": {
+     "CFILE_FORMAT_OBS": "ASCII",
+     "LSWE": ".TRUE.",
+     "NOBSTYPE": "3",
+     "COBS_M(1)": "T2M",
+     "COBS_M(2)": "HU2M",
+     "COBS_M(3)": "SWE",
+     "NNCO": "1,1,0,0,1"
+  },
+  "NAM_IO_VARASSIM": {
+     "LPRT": ".FALSE.",
+     "LSIM": ".FALSE.",
+     "LBEV": ".FALSE.",
+     "LBFIXED": ".TRUE."
+  },
+  "NAM_VAR": {
+     "NIVAR", "-1",
+     "NVAR", "4",
+     "CVAR_M", '"WG2","WG1","TG2","TG1"',
+     "XSIGMA_M", "0.15,0.1,2.0,2.0",
+     "XTPRT_M", "0.0001,0.0001,0.00001,0.00001",
+     "NNCV", "1,1,1,1",
+     "XSCALE_Q", "0.125"
+  }
+}
+

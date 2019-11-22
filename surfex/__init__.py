@@ -6,3 +6,5 @@ from .geo import *
 from .io import *
 from .obs import *
 from .run import *
+from .namelist import *
+from .__version__ import *
