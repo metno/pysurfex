@@ -36,7 +36,8 @@ def remove_existing_file(f_in, f_out):
 
 def ascii2nml(input_data):
     #input_data = json.loads(input_data)
-    print(input_data)
+    print(type(input_data))
+    print("Input data:", input_data)
     output_data = f90nml.Namelist(input_data)
     return output_data
 
@@ -166,36 +167,27 @@ class JsonInputDataFromFile(JsonInputData):
 
 
 class Toml2Json(object):
-    def __init__(self, toml_string):
+    def __init__(self, toml_string, json_settings):
         print(toml_string)
         self.toml = toml_string
 
-        list_of_settings = []
         for setting in self.toml:
-            list_of_settings.append(surfex.set_namelist(setting, self.toml[setting]))
+            self.json_settings = surfex.set_namelist(setting, self.toml[setting], json_settings)
 
-        settings = None
-        for setting in list_of_settings:
-            if settings is None:
-                settings = json.loads(setting)
-            else:
-                settings = jsonmerge.merge(settings, setting)
 
-        print(settings)
-        self.json_settings = str(json.dumps(settings))
+
+        #print(settings)
+        self.json_settings = str(json.dumps(self.json_settings))
         print(type(self.json_settings))
         print(self.json_settings)
 
 
-
 class TomlFile2Json(Toml2Json):
-    def __init__(self, file):
+    def __init__(self, file, json_settings):
         if os.path.exists(file):
             toml_string = toml.load(file)
         else:
             raise FileNotFoundError
-        Toml2Json.__init__(self, toml_string)
+        Toml2Json.__init__(self, toml_string, json_settings)
 
-    def parse(self):
-        Toml2Json.parse(self)
 

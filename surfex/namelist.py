@@ -1,35 +1,43 @@
 import jsonmerge
+import json
 
-def set_namelist(setting, value):
+def set_namelist(setting, value, json_settings):
     print("set_namelist: ", setting, ":", value)
     if type(value) is str:
         print("set ", value)
-        return set_namelist_setting(setting, value)
+        json_string =  set_namelist_setting(setting, value)
+        json_settings = jsonmerge.merge(json_settings, json.loads(json_string))
+        print(json_string)
+        print(json_settings)
     elif type(value) is dict:
         print("Group: ", setting)
-        settings = ""
         for setting in value:
             print(value[setting])
             if type(value[setting]) is str:
-                settings = settings + (set_namelist_setting(setting, value[setting]))
+                json_string = set_namelist_setting(setting, value[setting])
+                json_settings = jsonmerge.merge(json_settings, json.loads(json_string))
             else:
                 print("Second argument is not a string skipping it", value)
-        return settings
+    return json_settings
 
 
-def set_namelist_setting(setting, value, group=None):
-    json_string = ""
+def set_namelist_setting(setting, value):
+    print(setting, value)
     if setting.upper() == "ANASURF":
         if value.upper() == "OI":
             json_string = ('{"nam_assim": { "cassim_isba": "OI"}}')
             return json_string
         else:
             raise Exception
+    elif setting.upper() == "NPATCH":
+        print("set npatch")
+        json_string = ('{"nam_isba": { "npatch": "'+str(value)+'"}}')
+        return json_string
     elif setting.upper() == "CISBA":
         if value.upper() == "3-L":
-           json_string = ('{"nam_isba": { "cisba": "3-L", "nlayers": "3" }}')
+           json_string = ('{"nam_isba": { "cisba": "3-L", "nground_layer": 3 }}')
         elif value.upper() == "DIF":
-           json_string = ('{"nam_isba": { "cisba": "DIF", "nlayers": "14", '+
+           json_string = ('{"nam_isba": { "cisba": "DIF", "nground_layer": 14, '+
                           '"lmeb": ".TRUE.", "ysoc_top": "soc_top", '+
                           '"ysoc_sub": "soc_sub", "ysocfiletype": "DIRECT", '+
                           '"xunif_runoffb": "0.2", "cpedo_function": "CO84", '+

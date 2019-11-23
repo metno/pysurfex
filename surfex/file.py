@@ -39,16 +39,17 @@ class SurfexIO(object):
             dirname = os.path.dirname(os.path.abspath(self.archive_file))
             os.makedirs(dirname, exist_ok=True)
             f_in = os.getcwd() + "/" + self.filename
-            print("Move " + f_in + " to " + self.archive_file)
-            if os.path.islink(self.archive_file):
-                #print("is link")
-                os.unlink(self.archive_file)
-            if os.path.isfile(self.archive_file):
-                #print("is file")
-                os.remove(self.archive_file)
-            if os.path.isdir(self.archive_file):
-                shutil.rmtree(self.archive_file)
-            shutil.move(f_in, self.archive_file)
+            if os.path.abspath(self.archive_file) != f_in:
+                print("Move " + f_in + " to " + self.archive_file)
+                if os.path.islink(self.archive_file):
+                    #print("is link")
+                    os.unlink(self.archive_file)
+                if os.path.isfile(self.archive_file):
+                    #print("is file")
+                    os.remove(self.archive_file)
+                if os.path.isdir(self.archive_file):
+                    shutil.rmtree(self.archive_file)
+                shutil.move(f_in, self.archive_file)
 
 
 class PGDFile(SurfexIO):

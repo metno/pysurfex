@@ -32,8 +32,8 @@ class ConfProj(SurfexGeo):
         nml["nam_conf_proj_grid"]["ilate"] = self.ezone
         nml["nam_conf_proj_grid"]["xlatcen"] = self.latc
         nml["nam_conf_proj_grid"]["xloncen"] = self.lonc
-        nml["nam_conf_proj_grid"]["nimax"] = self.nx - self.ezone
-        nml["nam_conf_proj_grid"]["njmax"] = self.ny - self.ezone
+        nml["nam_conf_proj_grid"]["nimax"] = self.nx
+        nml["nam_conf_proj_grid"]["njmax"] = self.ny
         nml["nam_conf_proj_grid"]["xdx"] = self.gsize
         nml["nam_conf_proj_grid"]["xdy"] = self.gsize
         return nml
