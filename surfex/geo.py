@@ -39,21 +39,36 @@ class ConfProj(SurfexGeo):
         return nml
 
 
-def json2geo(settings, domain):
+def json2geo(settings):
     #settings = json.loads(settings)
-    print(domain)
-    settings = settings[domain]
-    print("\n")
     print(settings)
-    print(settings["nam_pgd_grid"])
-    if settings["nam_pgd_grid"]["cgrid"] == "CONF PROJ":
-        nx = settings["nam_conf_proj_grid"]["nimax"]
-        ny = settings["nam_conf_proj_grid"]["njmax"]
-        lonc = settings["nam_conf_proj_grid"]["xloncen"]
-        latc = settings["nam_conf_proj_grid"]["xlatcen"]
-        lon0 = settings["nam_conf_proj"]["xlon0"]
-        lat0 = settings["nam_conf_proj"]["xlat0"]
-        gsize = settings["nam_conf_proj_grid"]["xdx"]
-        ezone = settings["nam_conf_proj_grid"]["ilone"]
-        return ConfProj(nx, ny, lonc, latc, lon0, lat0, gsize, ezone)
-    return None
+    if type(settings) is dict:
+        print(settings["nam_pgd_grid"])
+        if settings["nam_pgd_grid"]["cgrid"] == "CONF PROJ":
+            nx = settings["nam_conf_proj_grid"]["nimax"]
+            ny = settings["nam_conf_proj_grid"]["njmax"]
+            lonc = settings["nam_conf_proj_grid"]["xloncen"]
+            latc = settings["nam_conf_proj_grid"]["xlatcen"]
+            lon0 = settings["nam_conf_proj"]["xlon0"]
+            lat0 = settings["nam_conf_proj"]["xlat0"]
+            gsize = settings["nam_conf_proj_grid"]["xdx"]
+            ezone = settings["nam_conf_proj_grid"]["ilone"]
+            return ConfProj(nx, ny, lonc, latc, lon0, lat0, gsize, ezone)
+        return None
+    else:
+        print("Settings should be a dict")
+        return Exception
+
+def set_domain(settings, domain):
+    #settings = json.loads(settings)
+    print(type(settings))
+    print(domain)
+    if type(settings) is dict:
+        if domain in settings:
+            return settings[domain]
+        else:
+            print("Domain not found: "+domain)
+            return None
+    else:
+        print("Settings should be a dict")
+        return None

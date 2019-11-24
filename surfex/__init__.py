@@ -1,3 +1,5 @@
+__version__ = '0.0.1-dev'
+
 from .format import *
 from .assim import *
 from .cli import *
@@ -7,4 +9,3 @@ from .io import *
 from .obs import *
 from .run import *
 from .namelist import *
-from .__version__ import *

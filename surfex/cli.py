@@ -47,12 +47,11 @@ class PGDClient(Client):
 
         parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
         parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
-        parser.add_argument('--json', '-j', type=str, nargs="+", required=True, help="A JSON file with run options")
+        parser.add_argument('--json', '-j', type=str, nargs="?", required=True, help="A JSON file with run options")
         parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
         parser.add_argument('--rte', '-r', required=True, nargs='?')
         parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
-        parser.add_argument('--domain', '-d', required=True, type=str, help="Name of domain")
-        parser.add_argument('--domains', required=True, type=str, help="Domain definitions")
+        parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
         parser.add_argument('--output', '-o', required=True, nargs='?')
         parser.add_argument('--input', '-i', required=False, default=None, nargs='?')
         parser.add_argument('binary', type=str, nargs='?')
@@ -79,39 +78,16 @@ class PGDClient(Client):
             raise FileNotFoundError
 
         if self.json is not None:
-            if self.domain is None:
-                print("Domain is needed from JSON")
-                raise Exception
+            if os.path.exists(self.json):
+                json_settings = json.load(open(self.json, "r"))
+            else:
+                raise FileNotFoundError
 
-            files = []
-            for f in self.json:
+        if os.path.exists(self.domain):
+            my_geo = surfex.json2geo(open(self.domain, "r"))
+        else:
+            raise FileNotFoundError
 
-                print(f)
-                if os.path.exists(f):
-                    files.append(f)
-                else:
-                    raise FileNotFoundError
-
-            json_settings = None
-            for f in files:
-                if json_settings is None:
-                    json_settings = json.load(open(f, "r"))
-                else:
-                    json_settings = merge(json_settings, json.load(open(f, "r")))
-
-        if self.toml is not None:
-            if self.json is None:
-                print("Json file is needed!")
-                raise Exception
-
-            json_settings = json.loads(surfex.TomlFile2Json(self.toml, json_settings).json_settings)
-            print(type(json_settings))
-            print(json_settings)
-
-        print("json_setings: ", json_settings)
-        print("domain settings", self.domains)
-        my_geo = surfex.json2geo(self.domains, self.domain)
-        #settings = surfex.ascii2nml(json.dumps(json_settings))
         settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(settings)
         ecoclimap = surfex.JsonInputDataFromFile(self.ecoclimap)
@@ -153,6 +129,7 @@ class MergeSettings(Client):
 
         return args.json, args.toml, args.output
 
+
     def merge(self, json_file, toml_file):
 
         files = []
@@ -177,5 +154,7 @@ class MergeSettings(Client):
 
         print("json_setings after toml: ", json_settings)
         return json_settings
+
+
 
 

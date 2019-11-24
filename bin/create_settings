@@ -3,8 +3,9 @@
 import json
 import surfex
 
-json_file, toml_file, output_file = surfex.MergeSettings().parse()
-json_settings = surfex.MergeSettings().merge(json_file, toml_file)
-fh = open(output_file,"w")
-json.dump(json_settings, fh, indent=2)
-fh.close()
+if __name__ == "__main__":
+    json_file, toml_file, output_file = surfex.MergeSettings().parse()
+    json_settings = surfex.MergeSettings().merge(json_file, toml_file)
+    fh = open(output_file,"w")
+    json.dump(json_settings, fh, indent=2)
+    fh.close()
