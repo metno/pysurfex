@@ -2,6 +2,7 @@ from netCDF4 import Dataset
 import os
 import shutil
 
+
 class GriddedObservations(object):
     def __init__(self, filename):
         self.filename = filename
@@ -119,6 +120,72 @@ def gridpp2soda(dtg, an_list):
     out.close()
 
 
-class CanariAndSoda(GriddedObservations):
-    def __init__(self, filename):
-        GriddedObservations.__init__(self, filename)
+def create_gridpp_parameters(files, keep, providers, lonrange, latrange, override_ci, default_ci):
+
+    if latrange is not None:
+        latrange = [float(x) for x in latrange.split(',')]
+    else:
+        latrange = [-180, 180]
+    if lonrange is not None:
+        lonrange = [float(x) for x in lonrange.split(',')]
+    else:
+        lonrange = [-180, 180]
+
+    lats = list()
+    lons = list()
+    elevs = list()
+    values = list()
+    cis = list()
+    for file in files:
+        ifile = open(file, 'r')
+        header = ifile.readline().strip().split(';')
+        Ilat = header.index("lat")
+        Ilon = header.index("lon")
+        Ielev = header.index("elev")
+        Ici = None
+        if "rep" in header:
+            Ici = header.index("rep")
+        Ivalue = header.index("value")
+
+        if keep is not None:
+            keep = [int(q) for q in keep.split(',')]
+            if "dqc" not in header:
+                print("File '%s' missing 'dqc' column. Cannot select based on dqc." % file)
+                continue
+            Idqc = header.index("dqc")
+
+        if providers is not None:
+            providers = [int(q) for q in providers.split(',')]
+            if "prid" not in header:
+                print("File '%s' missing 'prid' column. Cannot select based on provider." % file)
+                continue
+            Iprovider = header.index("prid")
+
+        for line in ifile:
+            words = line.strip().split(";")
+            lat = float(words[Ilat])
+            lon = float(words[Ilon])
+            if lat > latrange[0] and lat < latrange[1] and lon > lonrange[0] and lon < lonrange[1]:
+                if keep is not None:
+                    dqc = int(words[Idqc])
+                    if dqc not in keep:
+                        continue
+                if providers is not None:
+                    provider = int(words[Iprovider])
+                    if provider not in providers:
+                        continue
+                lats += [lat]
+                lons += [lon]
+                elevs += [float(words[Ielev])]
+                values += [float(words[Ivalue])]
+                ci_value = default_ci
+                if override_ci is not None:
+                    ci_value = override_ci
+                elif Ici is not None:
+                    try:
+                        ci_value = float(words[Ici])
+                    except Exception as e:
+                        ci_value = default_ci
+                cis += [ci_value]
+
+    return lons, lats, elevs, values, cis

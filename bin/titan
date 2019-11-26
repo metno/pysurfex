@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+
+import surfex
+import sys
+import argparse
+import os
+import json
+
+
+def parse():
+    """Parse the command line input arguments."""
+    parser = argparse.ArgumentParser(desc="Run TITAN")
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
+    parser.add_argument('--rte', '-r', required=True, nargs='?', help="Run time environment")
+    parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
+    parser.add_argument('binary', type=str, nargs='?')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args()
+    return args.binary, args.rte, args.wrapper, args.force, args.output
+
+
+if __name__ == "__main__":
+
+    binary, rte, wrapper, force, output = parse()
+
+    if os.path.exists(rte):
+        my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
+    else:
+        raise FileNotFoundError
+
+    if not os.path.exists(output) or force:
+
+        print(os.getcwd())
+
+    else:
+        print(output + " already exists!")

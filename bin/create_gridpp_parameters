@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+import os
+import sys
+import numpy as np
+import argparse
+import netCDF4
+import surfex
+
+
+def parse():
+    parser = argparse.ArgumentParser(description=
+                                     'Create parameter file for calibration methods (currently OI and override) in gridpp.i The program reads TITAN output and puts observed and CI values into the parameter file. If CI (rep column) is missing in the input, then a default value is used.')
+    parser.add_argument('files', help='ASCII output file(s) from e.g. TITAN', nargs="*")
+    parser.add_argument('-o', help='Output file', dest="ofilename", required=True)
+    parser.add_argument('-k', metavar="FLAGS", default=None,
+                        help='Only keep rows with these DQC flags. Comma-separated list accepted.', dest="keep")
+    parser.add_argument('-m', default="oi", help='Write parameters for this method (default oi).', dest="method",
+                        choices=["oi", "override"])
+    parser.add_argument('-p', metavar="PROVIDERS", default=None,
+                        help='Only keep rows with these providers.  Comma-separated list accepted.', dest="providers")
+    parser.add_argument('-latrange', help='Only keep stations within these latitudes (min,max)', dest="latrange")
+    parser.add_argument('-lonrange', help='Only keep stations within these longitudes (min,max)', dest="lonrange")
+    parser.add_argument('--add', type=float, default=0, help='Add this value to the values (e.g. to change units)',
+                        dest="add")
+    parser.add_argument('--multiply', type=float, default=1,
+                        help='Multiply this value to the values (e.g. to change units)', dest="multiply")
+    parser.add_argument('--override_ci', type=float, help='Override CI values with this value (if -m oi)',
+                        dest="override_ci")
+    parser.add_argument('--default_ci', default=1, type=float,
+                        help='Use this value if CI is missing (if -m oi; default 1)', dest="default_ci")
+    parser.add_argument('--debug', help='Show debug information', action="store_true")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    return args.files, args.ofilename, args.keep, args.method, args.providers, args.lonrange, args.latrange, \
+           args.add, args.multiply, args.override_ci, args.default_ci, args.debug
+
+
+if __name__ == "__main__":
+    files, ofilename, keep, method, providers, lonrange, latrange, add, multiply, override_ci, default_ci, debug = \
+        parse()
+    lons, lats, elevs, values, cis = surfex.create_gridpp_parameters(files, keep, providers, lonrange,
+                                                                     latrange, override_ci, default_ci)
+
+    S = len(lats)
+    file = netCDF4.Dataset(ofilename, 'w')
+    file.createDimension("time")
+    file.createDimension("y", S)
+    file.createDimension("x", 1)
+    Nc = 1
+    if method == "oi":
+        Nc = 2
+    file.createDimension("coefficient", Nc)
+
+    vTime = file.createVariable("time", "f8", "time")
+    vLat = file.createVariable("latitude", "f8", ("y", "x"))
+    vLon = file.createVariable("longitude", "f8", ("y", "x"))
+    vElev = file.createVariable("altitude", "f8", ("y", "x"))
+    vCoeff = file.createVariable("coefficients", "f8", ("time", "y", "x", "coefficient"))
+
+    if S > 0:
+        vLat[:] = lats
+        vLon[:] = lons
+        vElev[:] = elevs
+        print("Writing %d stations" % S)
+        if method == "oi":
+            vCoeff[0, :, 0, 0] = (np.array(values) + add) * multiply
+            vCoeff[0, :, 0, 1] = np.array(cis)
+        elif method == "override":
+            vCoeff[0, :, 0, 0] = (np.array(values) + add) * multiply
+        else:
+            raise NotImplementedError
+    else:
+        print("No stations written to file")
+
+    file.close()

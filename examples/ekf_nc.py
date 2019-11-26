@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
     my_format = str(my_settings["nam_io_offline"]["csurf_filetype"]).lower()
     pgd = test_dir + "/archive/ekf_" + my_format + "/PGD." + my_format
+
     print(pgd)
     if not os.path.exists(pgd):
         workdir = test_dir + "/pgd_" + my_format
