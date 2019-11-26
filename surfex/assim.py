@@ -1,142 +1,270 @@
 import os
+import surfex
+import jsonmerge
 
 
 class Assimilation(object):
-    def __init__(self, dtg, settings, sea=None, water=None, nature=None, town=None, obs=None):
-        self.dtg = dtg
-        self.settings = settings
-        self.sea = sea
-        self.water = water
-        self.nature = nature
-        self.town = town
-        self.obs = obs
-        self.yy = self.dtg.strftime("%y")
-        self.mm = self.dtg.strftime("%m")
-        self.dd = self.dtg.strftime("%d")
-        self.hh = self.dtg.strftime("%H")
-
-    def setup(self):
-        if self.sea is not None:
-            self.sea.setup()
-        if self.water is not None:
-            self.water.setup()
-        if self.nature is not None:
-            self.nature.setup()
-        if self.town is not None:
-            self.town.setup()
-        if self.obs is not None:
-            if self.settings["NAM_OBS"]["CFILE_FORMAT_OBS"] == "ASCII":
-                out = open("OBSERVATIONS_" + self.yy + self.mm + self.dd + "H" + self.hh + ".DAT", "w")
-                print("Symlink ", self.obs.filename, out)
-            elif self.settings["NAM_OBS"]["CFILE_FORMAT_OBS"] == "FA":
-                print("Symlink ", self.obs.filename, " -> CANARI")
-                os.symlink(self.obs.filename, "CANARI")
+    def __init__(self, ass_input=None, ass_output=None):
+        self.ass_input = ass_input
+        self.ass_output = ass_output
 
 
-class SeaAssimilation(object):
-    def __init__(self, settings, sstfile=None):
-        self.settings = settings
-        self.sstfile = sstfile
+def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, perturbed_runs=None, lsmfile=None, obsfile=None,
+                 check_existence=False, oi_coeffs=None, climfile=None, sfx_first_guess=None):
 
-    def setup(self):
-        cfile_format_sst = self.settings["nam_assim"]['cfile_format_sst']
-        if self.sstfile is not None:
-            if cfile_format_sst.upper() == "ASCII":
-                print(self.sstfile, " -> SST_SIC.DAT")
-            elif cfile_format_sst.upper() == "FA":
-                print(self.sstfile, " -> SST_SIC")
-
-    def archive(self):
-        pass
-
-
-class NatureAssimilation(object):
-    def __init__(self, settings, soil_assimilation):
-        self.settings = settings
-        self.soil_assimilation = soil_assimilation
-
-    def setup(self):
-        self.soil_assimilation.setup()
-
-
-class VerticalOI(object):
-    def __init__(self, settings, first_guess, oi_coeffs, climfile=None, lsmfile=None):
-        self.settings = settings
-        self.first_guess = first_guess
-        self.oi_coeffs = oi_coeffs
-        self.climfile = climfile
-        self.lsmfile = lsmfile
-        if self.settings["NAM_ASSIM"]['CASSIM_ISBA'] != "OI":
-            print("CASSIM_ISBA must be OI to run VerticalOI but is ", self.settings["NAM_ASSIM"]['CASSIM_ISBA'])
-            raise
-
-    def setup(self):
-        # Climate
-        if self.climfile is not None:
-            cfile_format_clim = self.settings["nam_assim"]['cfile_format_clim']
-            if cfile_format_clim.upper() == "ASCII":
-                print(self.climfile, " -> CLIMATE.DAT")
-            elif cfile_format_clim.upper() == "FA":
-                print(self.climfile, " -> clim_isba")
-            else:
-                print("Climfile is provided but cfile_format_clim is not defined! ", self.climfile)
-
-        # First guess for SURFEX
-        cfile_format_fg = self.settings["nam_assim"]['cfile_format_fg']
-        if cfile_format_fg.upper() == "ASCII":
-            print(self.first_guess, " ln -sf $WRK/FIRST_GUESS_$yy$mm${dd}H${hh}.DAT")
+    data = None
+    if settings["NAM_ASSIM"]['CASSIM_SEA'] == "INPUT":
+        sea_data = set_input_sea_assimilation(settings, sstfile)
+        print(sea_data)
+        print(data)
+        if data is not None:
+            data = jsonmerge.merge(data, sea_data)
         else:
-            print(self.first_guess, "ln -sf $WRK/first_guess          FG_OI_MAIN")
+            data = sea_data
 
-        # OI coefficients
-        print(self.oi_coeffs, " -> fort.61")
+    if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "OI":
+        oi_data = set_input_vertical_soil_oi(dtg, settings, ua_first_guess, oi_coeffs, climfile=climfile,
+                                                      lsmfile=lsmfile, check_existence=check_existence)
+        if data is not None:
+            print(oi_data)
+            data = jsonmerge.merge(data, oi_data)
+            print(data)
+        else:
+            data = oi_data
 
-        # LSM
-        if self.lsmfile is not None:
-            cfile_format_lsm = self.settings["nam_assim"]['cfile_format_clim']
-            if cfile_format_lsm.upper() == "ASCII":
-                print(self.lsmfile, " -> LSM.DAT")
-            elif cfile_format_lsm.upper() == "FA":
-                print(self.lsmfile, " -> FG_OI_MAIN")
+    if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "EKF":
+        ekf_data = set_input_vertical_soil_ekf(dtg, settings, sfx_first_guess, perturbed_runs, lsmfile=lsmfile,
+                                                        check_existence=check_existence)
+        if data is not None:
+            data = jsonmerge.merge(data, ekf_data)
+        else:
+            data = ekf_data
+
+    obs_data = set_input_observations(dtg, settings, obsfile, check_existence=check_existence)
+    if data is not None:
+        data = jsonmerge.merge(data, obs_data)
+    else:
+        data = obs_data
+
+    return data
+
+
+def set_input_observations(dtg, settings, obsfile, check_existence=False):
+    yy = dtg.strftime("%y")
+    mm = dtg.strftime("%m")
+    dd = dtg.strftime("%d")
+    hh = dtg.strftime("%H")
+
+    obssettings = {}
+    cfile_format_obs = settings["NAM_OBS"]['CFILE_FORMAT_OBS']
+    if cfile_format_obs == "ASCII":
+        target = "OBSERVATIONS_" + yy + mm + dd + "H" + hh + ".DAT"
+    elif cfile_format_obs == "FA":
+        target = "CANARI"
+    else:
+        print(cfile_format_obs)
+        raise NotImplementedError
+
+    if obsfile is not None:
+        if os.path.exists(obsfile):
+            obssettings.update({target: obsfile})
+        else:
+            if check_existence:
+                print(cfile_format_obs)
+                raise NotImplementedError
+
+    return obssettings
+
+
+def set_input_sea_assimilation(settings, sstfile, check_existence=False):
+
+    if sstfile is None:
+        print("You must set sstfile")
+        raise Exception
+
+    sea_settings = {}
+    cfile_format_sst = settings["NAM_ASSIM"]['CFILE_FORMAT_SST']
+    if cfile_format_sst.upper() == "ASCII":
+        target = "SST_SIC.DAT"
+    elif cfile_format_sst.upper() == "FA":
+        target = "SST_SIC"
+    else:
+        print(cfile_format_sst)
+        raise NotImplementedError
+    sea_settings.update({target: sstfile})
+    if not os.path.exists(sstfile) and check_existence:
+        print("Needed file missing: " + sstfile)
+        raise FileNotFoundError
+
+    return sea_settings
+
+
+def set_input_vertical_soil_oi(dtg, settings, first_guess, oi_coeffs, climfile=None, lsmfile=None,
+                                   check_existence=False):
+
+    if first_guess is None or oi_coeffs is None:
+        print("You must set input files for OI")
+        raise Exception
+
+    yy = dtg.strftime("%y")
+    mm = dtg.strftime("%m")
+    dd = dtg.strftime("%d")
+    hh = dtg.strftime("%H")
+    oi_settings = {}
+
+    # Climate
+    cfile_format_clim = settings["NAM_ASSIM"]['CFILE_FORMAT_CLIM']
+    if cfile_format_clim.upper() == "ASCII":
+        target = "CLIMATE.DAT"
+    elif cfile_format_clim.upper() == "FA":
+        target = "clim_isba"
+    else:
+        print(cfile_format_clim)
+        raise NotImplementedError
+    if climfile is not None:
+        if os.path.exists(climfile):
+            oi_settings.update({target: climfile})
+        else:
+            if check_existence:
+                print("Needed file missing: " + climfile)
+                raise FileNotFoundError
+    else:
+        print("OI needs a climate file")
+        raise FileNotFoundError
+
+    # First guess for SURFEX
+    cfile_format_fg = settings["NAM_ASSIM"]['CFILE_FORMAT_FG']
+    if cfile_format_fg.upper() == "ASCII":
+        target = "FIRST_GUESS_" + yy + mm + dd + "H" + hh + ".DAT"
+    elif cfile_format_fg.upper() == "FA":
+        target = "FG_OI_MAIN"
+    else:
+        print(cfile_format_fg)
+        raise NotImplementedError
+    if first_guess is not None:
+        if os.path.exists(first_guess):
+            oi_settings.update({target: first_guess})
+        else:
+            if check_existence:
+                print("Needed file missing: " + first_guess)
+                raise FileNotFoundError
+
+    # OI coefficients
+    if os.path.exists(oi_coeffs):
+        oi_settings.update({"fort.61": oi_coeffs})
+    else:
+        print("Needed file missing for OI coefficients: " + oi_coeffs)
+        raise FileNotFoundError
+
+    # LSM
+    cfile_format_lsm = settings["NAM_ASSIM"]['CFILE_FORMAT_CLIM']
+    if cfile_format_lsm.upper() == "ASCII":
+        target = "LSM.DAT"
+    elif cfile_format_lsm.upper() == "FA":
+        target = "FG_OI_MAIN"
+    else:
+        print(cfile_format_lsm)
+        raise NotImplementedError
+    if lsmfile is not None:
+        if os.path.exists(lsmfile):
+            oi_settings.update({target: lsmfile})
+        else:
+            if check_existence:
+                print("Needed file missing: " + lsmfile)
+                raise FileNotFoundError
+    else:
+        print("OI needs a LSM file")
+        raise FileNotFoundError
+
+    return oi_settings
+
+def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmfile=None,
+                                    check_existence=False):
+
+    if first_guess is None or perturbed_runs is None:
+        print("You must set input files")
+        raise Exception
+
+    yy = dtg.strftime("%y")
+    mm = dtg.strftime("%m")
+    dd = dtg.strftime("%d")
+    hh = dtg.strftime("%H")
+    ekf_settings = {}
+
+    # First guess for SURFEX
+    cfile_format_fg = settings["NAM_ASSIM"]['CFILE_FORMAT_FG']
+    extension = settings["nam_assim"]['csurf_filetype'].lower()
+    if extension == "ascii":
+        extension = ".txt"
+    if cfile_format_fg.upper() == "ASCII":
+        target = "FIRST_GUESS_" + yy + mm + dd + "H" + hh + ".DAT"
+    elif cfile_format_fg.upper() == "FA":
+        target = "FG_OI_MAIN"
+    else:
+        print(cfile_format_fg)
+        raise NotImplementedError
+    if first_guess is not None:
+        if os.path.exists(first_guess):
+            ekf_settings.update({target: first_guess})
+            ekf_settings.update({"PREP_INIT." + extension: first_guess})
+            ekf_settings.update({"PREP_." + yy + mm + dd + "H" + hh + "." + extension:
+                                         first_guess})
+        else:
+            if check_existence:
+                print("Needed file missing: " + first_guess)
+                raise FileNotFoundError
+
+    for p in range(0, len(perturbed_runs)):
+        target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_PERT" + str(p) + "." + extension
+        ekf_settings.update({target: perturbed_runs[p]})
+        if check_existence and not os.path.exists(perturbed_runs[p]):
+            print("Needed file missing: " + perturbed_runs[p])
+            raise FileNotFoundError
+
+    # LSM
+    # Fetch first_guess needed for LSM for extrapolations
+    if settings["NAM_ASSIM"]['LEXTRAP_SEA'] or settings["NAM_ASSIM"]['LEXTRAP_WATER'] or \
+            settings["NAM_ASSIM"]['LEXTRAP_NATURE'] or settings["NAM_ASSIM"]['LEXTRAP_SNOW'] or \
+            settings["NAM_ASIM"]['LEXTRAP_TOWN']:
+
+        cfile_format_lsm = settings["NAM_ASSIM"]['CFILE_FORMAT_CLIM']
+        if cfile_format_lsm.upper() == "ASCII":
+            target = "LSM.DAT"
+        elif cfile_format_lsm.upper() == "FA":
+            target = "FG_OI_MAIN"
+        else:
+            print(cfile_format_lsm)
+            raise NotImplementedError
+        if lsmfile is not None:
+            if os.path.exists(lsmfile):
+                ekf_settings.update({target: lsmfile})
             else:
-                print("LSMfile is provided but cfile_format_lsm is not defined! ", self.lsmfile)
+                if check_existence:
+                    print("Needed file missing: " + lsmfile)
+                    raise FileNotFoundError
+        else:
+            print("EKF needs a LSM file to extrapolate values")
+            raise FileNotFoundError
+    return ekf_settings
 
 
-class VerticalEKF(object):
-    def __init__(self, dtg, extension, settings, incvars, perturbed_runs, first_guess):
-        self.dtg = dtg
-        self.extension = extension
-        self.settings = settings
-        self.incvars = incvars
-        self.perturbed_runs = perturbed_runs
-        self.first_guess = first_guess
-        self.yy = self.dtg.strftime("%y")
-        self.mm = self.dtg.strftime("%m")
-        self.dd = self.dtg.strftime("%d")
-        self.hh = self.dtg.strftime("%H")
-        if self.settings["NAM_ASSIM"]['CASSIM_ISBA'] != "EKF":
-            print("CASSIM_ISBA must be EKF to run VerticalEKF but is ", self.settings["NAM_ASSIM"]['CASSIM_ISBA'])
-            raise
+def set_assimilation_output(dtg, settings):
 
-    def setup(self):
-        print("Setup EKF")
+    data = None
+    if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "EKF":
+        ekf_data = set_output_vertical_soil_ekf(settings)
+        if data is not None:
+            data = jsonmerge.merge(data, ekf_data)
+        else:
+            data = ekf_data
 
-        # Fetch first_guess needed for LSM for extrapolations
-        if self.settings["nam_assim"]['LEXTRAP_WATER']:
-            cfile_format_fg = self.settings["nam_assim"]['cfile_format_fg']
-            if cfile_format_fg.upper() == "ASCII":
-                out = "FIRST_GUESS_"+self.yy+self.mm+self.dd+"H"+self.hh+".DAT"
-                print("Symlink  "+ self.first_guess + " -> "+out)
-                os.symlink(self.first_guess, "FIRST_GUESS_"+self.yy+self.mm+self.dd+"H"+self.hh+".DAT")
-            else:
-                print("Symlink " + self.first_guess, " -> FG_OI_MAIN")
-                os.symlink(self.first_guess, "FG_OI_MAIN")
+    if data is None:
+        data = "{}"
+    return data
 
-        for p in range(0, len(self.perturbed_runs)):
-            out = "PREP_"+self.yy+self.mm+self.dd+"H"+self.hh+"_EKF_PERT" + str(p) + "." + self.extension
-            print("ln -sf ", self.perturbed_runs[p], " -> ", out)
-            os.symlink(self.perturbed_runs[p], out)
-
-        print("ln -sf ", self.first_guess, " -> PREP_INIT."+self.extension)
-        os.symlink(self.first_guess, "PREP_INIT."+self.extension)
-        os.symlink(self.first_guess, "PREP_"+self.yy+self.mm+self.dd+"H"+self.hh+"." + self.extension)
+def set_output_vertical_soil_ekf(settings):
+        data = "{}"
+        if settings["NAM_ASSIM"]['LBEV']:
+            # TODO fill with wanted values
+            data = "{}"
+        return data

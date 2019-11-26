@@ -1,0 +1,63 @@
+{
+  "NAM_PGD_SCHEMES": {
+    "CTOWN": "TEB ",
+    "CSEA": "SEAFLX",
+    "CWATER": "FLAKE",
+    "CNATURE": "ISBA "
+  },
+  "NAM_ISBA": {
+    "CISBA": "3-L",
+    "YSANDFILETYPE": "DIRECT",
+    "NGROUND_LAYER": "3",
+    "NPATCH": "2",
+    "YCLAY": "YCLAY",
+    "YSAND": "YSAND",
+    "YCLAYFILETYPE": "DIRECT"
+  },
+  "NAM_IO_OFFLINE": {
+    "CPGDFILE": "PGD",
+    "LRESTART_2M": true,
+    "XTSTEP_SURF": 60,
+    "LFAGMAP": true,
+    "CSURF_FILETYPE": "FA",
+    "CPREPFILE": "PREP",
+    "XTSTEP_OUTPUT": 3600.0,
+    "CSURFFILE": "SURFOUT",
+    "LRESTART": true,
+    "NHALO": 0
+  },
+  "NAM_SEABATHY": {
+    "XUNIF_SEABATHY": 0.0
+  },
+  "NAM_DATA_ISBA": {
+    "CFTYP_H_TREE(5)": "ASCLLV",
+    "CFNAM_H_TREE(5)": "",
+    "CFTYP_H_TREE(4)": "ASCLLV",
+    "CFNAM_H_TREE(6)": "",
+    "CFTYP_H_TREE(6)": "ASCLLV",
+    "CFNAM_H_TREE(4)": ""
+  },
+  "NAM_FLAKEN": {
+    "LSEDIMENTS": false
+  },
+  "NAM_ZS": {
+    "YZS": "YZS",
+    "YZSFILETYPE": "DIRECT"
+  },
+  "NAM_COVER": {
+    "YCOVER": "YCOVER",
+    "YCOVERFILETYPE": "DIRECT"
+  },
+  "NAM_TREEDRAG": {
+    "XSCALE_H_TREE": "1.0",
+    "XZ0_LIMIT": "1.6"
+  },
+  "NAM_DATA_FLAKE": {
+    "YWATER_DEPTHFILETYPE": "DIRECT",
+    "YWATER_DEPTH": "GlobalLakeDepth",
+    "YWATER_DEPTH_STATUS": "GlobalLakeStatus"
+  },
+  "NAM_WRITE_SURF_ATM": {
+    "LSPLIT_PATCH": false
+  }
+}

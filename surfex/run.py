@@ -80,7 +80,7 @@ class SURFEXBinary(object):
                     raise
 
         if self.assim is not None:
-            self.assim.setup()
+            self.assim.prepare_input()
 
         cmd = self.binary
         self.batch.run(cmd)
@@ -104,8 +104,8 @@ class PerturbedOffline(SURFEXBinary):
                               pgdfile=pgdfile, print_namelist=print_namelist)
 
 
-class Canari(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, assim, ecoclimap, binary=None, input=None, archive=None, print_namelist=True,):
+class Masterodb(object):
+    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input=None, archive=None, print_namelist=True,):
         self.settings = settings
         self.binary = binary
         self.prepfile = prepfile
@@ -113,13 +113,16 @@ class Canari(object):
         self.batch = batch
         self.pgdfile = pgdfile
         self.assim = assim
+        self.ecoclimap = ecoclimap
         self.input = input
         self.archive = archive
         self.print_namelist = print_namelist
 
         # Set input
+        self.ecoclimap.prepare_input()
+
         if self.input is not None:
-            self.prepare_input()
+            self.input.prepare_input()
 
         # Prepare namelist
         if os.path.exists('OPTIONS.nam'):
@@ -132,12 +135,14 @@ class Canari(object):
         if self.print_namelist:
             print(content)
 
-        print("PREP file for CANARI", self.prepfile.filename)
-        self.prepfile.symlink_input()
+        print("PREP file for MASTERODB", self.prepfile.filename)
 
         # Set up assimilation
-        self.assim.setup()
+        if self.assim is not None:
+            if self.assim.ass_input is not None:
+                self.assim.ass_input.prepare_input()
 
+        # Archive if we have run the binary
         if self.binary is not None:
             print("canari with settings OPTIONS.nam")
             self.batch.run(self.binary)
@@ -148,3 +153,7 @@ class Canari(object):
         self.surfout.archive_output_file()
         if self.archive is not None:
             self.archive.archive_files()
+
+        if self.assim is not None:
+            if self.assim.ass_input is not None:
+                self.assim.ass_input.archive_files()

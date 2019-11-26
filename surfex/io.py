@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 import surfex
 import toml
 import jsonmerge
+from jsonmerge import merge
+import collections
 
 try:
     from StringIO import StringIO   # Python 2.x
@@ -174,8 +176,6 @@ class Toml2Json(object):
         for setting in self.toml:
             self.json_settings = surfex.set_namelist(setting, self.toml[setting], json_settings)
 
-
-
         #print(settings)
         self.json_settings = str(json.dumps(self.json_settings))
         print(type(self.json_settings))
@@ -189,5 +189,31 @@ class TomlFile2Json(Toml2Json):
         else:
             raise FileNotFoundError
         Toml2Json.__init__(self, toml_string, json_settings)
+
+
+def create_json_from_toml(json_files, toml_file):
+
+    files = []
+    for f in json_files:
+
+        if os.path.exists(f):
+                files.append(f)
+        else:
+            raise FileNotFoundError
+
+    json_settings = None
+    for f in files:
+        if json_settings is None:
+            json_settings = json.load(open(f, "r"))
+        else:
+            json_settings = merge(json_settings, json.load(open(f, "r")))
+        print("merging json_setings: ", json_settings)
+
+    print("json_setings before toml: ", json_settings)
+    if os.path.exists(toml_file):
+        json_settings = json.loads(surfex.TomlFile2Json(toml_file, json_settings).json_settings)
+
+    print("json_setings after toml: ", json_settings)
+    return json_settings
 
 

@@ -10,7 +10,7 @@ import jsonmerge
 
 def parse():
     """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser(desc="Merge a list of JSON files to one JSON file")
+    parser = argparse.ArgumentParser()
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--json', '-j', type=str, nargs="+", required=True, help="A JSON file with run options")
@@ -38,11 +38,21 @@ if __name__ == "__main__":
             raise FileNotFoundError
 
     json_settings = None
+    upper_case_dict = {}
     for f in files:
+        print(f)
+        values = json.load(open(f, "r"))
+        for key in values:
+            upper_case_dict2 = {}
+            for key2 in values[key]:
+                upper_case_dict2.update({key2.upper():values[key][key2]})
+            upper_case_dict.update({key.upper(): upper_case_dict2})
         if json_settings is None:
-            json_settings = json.load(open(f, "r"))
+            json_settings = json.dumps(upper_case_dict)
+            json.dump(json_settings, open("fil11", "w"))
         else:
-            json_settings = jsonmerge.merge(json_settings, json.load(open(f, "r")))
+            new_settings = json.dumps(upper_case_dict)
+            json_settings = jsonmerge.merge(json_settings, new_settings)
         print("merging json_setings: ", json_settings)
+    json_settings = json.loads(json_settings)
     json.dump(json_settings, open(my_output, "w"), indent=my_indent)
-

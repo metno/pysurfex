@@ -1,0 +1,48 @@
+{
+  "NAM_DIAG_ISBAN": {
+    "LPATCH_BUDGET": ".TRUE."
+  },
+  "NAM_PREP_ISBA": {
+    "LEXTRAP_WGI": ".TRUE.",
+    "LEXTRAP_WG": ".TRUE.",
+    "LEXTRAP_SN": ".TRUE.",
+    "LISBA_CANOPY": ".FALSE.",
+    "LEXTRAP_TG": ".TRUE."
+  },
+  "NAM_PREP_FLAKE": {
+    "LCLIM_LAKE": ".TRUE."
+  },
+  "NAM_SURF_CSTS": {
+    "XZ0SN": "0.003",
+    "XZ0HSN": "0.0003"
+  },
+  "NAM_PREP_SEAICE_SICE": {
+    "NUM_LAYERS": "4",
+    "XICE_THICKNESS": "0.75"
+  },
+  "NAM_PREP_SEAFLUX": {
+    "LSEA_SBL": ".FALSE."
+  },
+  "NAM_PREP_SURF_ATM": {
+    "CFILE": "INFILE",
+    "NYEAR": "",
+    "CFILETYPE": "grib",
+    "NMONTH": "",
+    "XTIME": "",
+    "NDAY": "",
+    "CFILEPGDTYPE": "FA",
+    "CFILEPGD": "PGD_host"
+  },
+  "NAM_WRITE_SURF_ATM": {
+    "LSPLIT_PATCH": ".FALSE."
+  },
+  "NAM_SEAICE_SICE": {
+    "XOCEAN_HEAT_FLUX": "2.",
+    "LICE_MASS_BALANCE": ".TRUE.",
+    "LICE_HAS_SNOW": ".FALSE."
+  },
+  "NAM_PREP_ISBA_SNOW": {
+    "CSNOW": "D95",
+    "LSWEMAX": ".TRUE."
+  }
+}

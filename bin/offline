@@ -9,11 +9,21 @@ import json
 
 def parse():
     """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser(desc="Create physiography for SURFEX (PGD)")
+    soda = False
+    if str(__file__).endswith("offline"):
+        desc="Run Offline SURFEX" 
+    elif str(__file__).endswith("soda"):
+        desc="Run SURFEX data assimilation (SODA)"
+        soda = True
+    else:
+        desc="Undefined program description"
+    parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
     parser.add_argument('--json', '-j', type=str, nargs="?", required=True, help="A JSON file with run options")
+    parser.add_argument('--pgd', type=str, nargs="?", required=True, help="Name of the PGD file")
+    parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
     parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
@@ -22,6 +32,12 @@ def parse():
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
+    if soda:
+        parser.add_argument('--assim_input', required=False, default=None, nargs='?', help="JSON file with assimilation input")
+        parser.add_argument('--assim_output', required=False, default=None, nargs='?', help="JSON file with assimilation output")
+    else:
+        assim_input = None
+        assim_output = None
     parser.add_argument('binary', type=str, nargs='?')
 
     if len(sys.argv) == 1:
@@ -29,12 +45,17 @@ def parse():
         sys.exit()
 
     args = parser.parse_args()
-    return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, args.domain, args.archive
+    if soda:
+        assim_input = args.assim_input
+        assim_output = args.assim_output
+    return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, \
+        args.domain, args.archive, args.pgd, args.prep, assim_input, assim_output
 
 
 if __name__ == "__main__":
 
-    binary, rte, wrapper, json_file, force, output, input_arg, ecoclimap, domain, archive = parse()
+    binary, rte, wrapper, json_file, force, output, input_arg, ecoclimap, domain, archive, pgd_file_path, \
+        prep_file_path, assim_input, assim_output = parse()
 
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
@@ -71,6 +92,21 @@ if __name__ == "__main__":
     else:
         raise FileNotFoundError
 
+    if assim_input is not None:
+        if os.path.exists(assim_input):
+            assim_input = surfex.JsonInputDataFromFile(assim_input)
+        else:
+            raise FileNotFoundError
+
+    if assim_output is not None:
+        if os.path.exists(assim_output):
+            assim_output = surfex.JsonInputDataFromFile(assim_output)
+        else:
+            raise FileNotFoundError
+
+    if assim_input is not None or assim_output is not None:
+        assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
+
     if not os.path.exists(output) or force:
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
@@ -83,8 +119,15 @@ if __name__ == "__main__":
 
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
+        my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
+        my_surffile = my_settings["nam_io_offline"]["csurffile"]
         print(my_settings)
-        pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, archive_file=output)
-        surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input=my_input, archive=my_archive)
+
+        my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
+        my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path)
+        surffile = surfex.PREPFile(format, my_surffile, my_geo, archive_file=output)
+        surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
+                            surfout=surffile, input=my_input, archive=my_archive)
+
     else:
         print(output + " already exists!")

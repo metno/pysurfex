@@ -5,28 +5,31 @@ import sys
 import json
 import os
 
+
+def parse():
+    """Parse the command line input arguments."""
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--domain', '-d', required=True, type=str, help="Name of domain")
+    parser.add_argument('--domains', required=True, type=str, help="Domain definitions")
+    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args()
+
+    return args.domain, args.domains, args.output, args.indent
+
+
+def set_domain(domains, domain):
+    return surfex.set_domain(domains, domain)
+
+
 if __name__ == "__main__":
-
-    def parse():
-        """Parse the command line input arguments."""
-        parser = argparse.ArgumentParser()
-
-        parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-        parser.add_argument('--domain', '-d', required=True, type=str, help="Name of domain")
-        parser.add_argument('--domains', required=True, type=str, help="Domain definitions")
-        parser.add_argument('--indent', required=False, default=2, type= int, help="Indented output")
-        parser.add_argument('--output', '-o', required=True, nargs='?')
-
-        if len(sys.argv) == 1:
-            parser.print_help()
-            sys.exit()
-
-        args = parser.parse_args()
-
-        return args.domain, args.domains, args.output, args.indent
-
-    def set_domain(domains, domain):
-        return surfex.set_domain(domains, domain)
 
     try:
         my_domain, my_domains, my_output, my_indent = parse()

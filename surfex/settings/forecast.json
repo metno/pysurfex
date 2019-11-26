@@ -1,0 +1,54 @@
+{
+  "NAM_DIAG_ISBAN": {
+    "LPATCH_BUDGET": ".TRUE."
+  },
+  "NAM_SSON": {
+    "XVOROT": "8.",
+    "XSOROT": "2500.",
+    "XCOROT": "500.",
+    "XFRACZ0": "15.",
+    "CROUGH": "NONE"
+  },
+  "NAM_DIAG_SURF_ATMN": {
+    "LT2MMW": ".TRUE."
+  },
+  "NAM_SURF_CSTS": {
+    "XZ0HSN": "0.0003",
+    "XZ0SN": "0.003"
+  },
+  "NAM_SEAFLUXN": {
+    "LPERTFLUX": ".FALSE.",
+    "LPWEBB": ".FALSE.",
+    "LPWG": ".FALSE.",
+    "LPRECIP": ".FALSE."
+  },
+  "NAM_SURF_ATM": {
+    "XRIMAX": "0."
+  },
+  "NAM_WRITE_SURF_ATM": {
+    "LSPLIT_PATCH": ".FALSE."
+  },
+  "NAM_DIAG_SURFN": {
+    "LSURF_BUDGETC": ".TRUE.",
+    "LRESET_BUDGETC": ".TRUE.",
+    "LSURF_BUDGET": ".TRUE.",
+    "LCOEF": ".TRUE.",
+    "LSURF_VARS": ".TRUE.",
+    "N2M": "2"
+  },
+  "NAM_IO_OFFLINE": {
+    "LFAGMAP": ".TRUE.",
+    "CPGDFILE": "PGD",
+    "CPREPFILE": "PREP",
+    "XTSTEP_SURF": "60",
+    "XTSTEP_OUTPUT": "3600.,",
+    "CFORCING_FILETYPE": "FA",
+    "LRESTART": ".TRUE.,",
+    "LRESTART_2M": ".TRUE.,"
+  },
+  "NAM_ISBAN": {
+    "LPERTSURF": ".FALSE.",
+    "LCANOPY_DRAG": ".TRUE.",
+    "XCDRAG": "0.01,"
+  }
+}

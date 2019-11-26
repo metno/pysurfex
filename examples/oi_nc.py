@@ -20,14 +20,8 @@ if __name__ == "__main__":
     my_settings = my_geo.update_namelist(my_settings)
     my_batch = surfex.BatchJob(my_rte, wrapper="mpiexec -np 8")
 
-    my_ecoclimap_files = {
-        "ecoclimapI_covers_param.bin": "/home/asmundb/git/Harmonie/util/offline/MY_RUN/ECOCLIMAP/ecoclimapI_covers_param.bin",
-        "ecoclimapII_af_covers_param.bin": "/home/asmundb/git/Harmonie/util/offline/MY_RUN/ECOCLIMAP/ecoclimapII_af_covers_param.bin",
-        "ecoclimapII_eu_covers_param.bin": "/home/asmundb/git/Harmonie/util/offline/MY_RUN/ECOCLIMAP/ecoclimapII_eu_covers_param.bin"
-    }
-
-    my_ecoclimap_input = surfex.InputData(files=my_ecoclimap_files)
-    format = str(my_settings["nam_io_offline"]["csurf_filetype"]).lower()
+    my_ecoclimap = surfex.JsonInputDataFromFile(root_dir + "/settings/ecoclimap.json")
+    my_format = str(my_settings["nam_io_offline"]["csurf_filetype"]).lower()
 
     # PGD
     my_input_files = {"gtopo30.dir": "/lustre/storeB/project/nwp/surfex/PGD/gtopo30.dir",
@@ -40,80 +34,82 @@ if __name__ == "__main__":
                       "GlobalLakeStatus.hdr": "/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeStatus.hdr"
                       }
 
-    my_input = [my_ecoclimap_input]
-    my_input.append(surfex.InputData(files=my_input_files))
-    pgd = test_dir + "/archive/oi_"+format+"/PGD."+format
+    my_input = surfex.JsonInputData(json.loads(my_input_files))
+    pgd = test_dir + "/archive/oi_" + my_format + "/PGD." + my_format
     if not os.path.exists(pgd):
-        workdir = test_dir + "/pgd_"+format
+        workdir = test_dir + "/pgd_" + my_format
         surfex.create_working_dir(workdir)
-        my_pgdfile = surfex.file.PGDFile(format,my_settings["nam_io_offline"]["cpgdfile"], my_geo, archive_file=pgd)
-        surfex.SURFEXBinary(test_dir + "/bin/PGD.exe", my_batch, my_pgdfile, my_settings, input=my_input)
+        my_pgdfile = surfex.file.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, archive_file=pgd)
+        surfex.SURFEXBinary(test_dir + "/bin/PGD.exe", my_batch, my_pgdfile, my_ecoclimap, my_settings, input=my_input)
         # surfex.clean_working_dir(workdir)
 
     # PREP
-    prep = test_dir + "/archive/oi_"+format+"/PREP."+format
+    prep = test_dir + "/archive/oi_" + my_format + "/PREP." + my_format
     if not os.path.exists(prep):
-        workdir = test_dir + "/prep_"+format
+        workdir = test_dir + "/prep_" + my_format
         surfex.create_working_dir(workdir)
-        my_pgdfile = surfex.file.PGDFile(format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
+        my_pgdfile = surfex.file.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
 
-        my_input = [my_ecoclimap_input]
-        my_prepfile = surfex.PREPFile(format, my_settings["nam_io_offline"]["cprepfile"], my_geo, archive_file=prep)
-        surfex.SURFEXBinary(test_dir + "/bin/PREP.exe", my_batch, my_prepfile, my_settings, input=my_input,
+        my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, archive_file=prep)
+        surfex.SURFEXBinary(test_dir + "/bin/PREP.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
                             pgdfile=my_pgdfile)
         # surfex.clean_working_dir(workdir)
-
-    my_input = [my_ecoclimap_input]
 
     # Forcing
 
     # Offline
-    my_input = [my_ecoclimap_input]
-    my_input.append(surfex.InputData({"FORCING.nc": test_dir+"/forcing/FORCING.nc"}))
+    my_input = surfex.JsonInputData(json.loads({'"FORCING.nc": "' + test_dir + '/forcing/FORCING.nc"'}))
 
-    first_guess = test_dir+"/archive/oi_"+format+"/OI_FG."+format
+    first_guess = test_dir + "/archive/oi_" + my_format + "/OI_FG." + my_format
     if not os.path.exists(first_guess):
-        workdir = test_dir + "/offline_"+format
+        workdir = test_dir + "/offline_" + my_format
         surfex.create_working_dir(workdir)
-        my_pgdfile = surfex.PGDFile(format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
-        my_prepfile = surfex.PREPFile(format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
-        my_surffile = surfex.SURFFile(format, my_settings["nam_io_offline"]["csurffile"], my_geo, archive_file=first_guess)
-        my_archive = surfex.ArchiveData(files=["SURFOUT.20191119_04h00."+format, "SURFOUT.20191119_05h00."+format,
-                                       "SURFOUT.20191119_06h00."+format],
-                                archive_dir=test_dir + "/archive/oi_"+format)
-        surfex.SURFEXBinary(test_dir + "/bin/OFFLINE.exe", my_batch, my_prepfile, my_settings,
-                                  surfout=my_surffile, input=my_input, pgdfile=my_pgdfile, archive=my_archive)
+        my_pgdfile = surfex.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
+        my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
+        my_surffile = surfex.SURFFile(my_format, my_settings["nam_io_offline"]["csurffile"], my_geo,
+                                      archive_file=first_guess)
+
+        archive_dir = test_dir + "/archive/oi_" + my_format
+        my_archive = surfex.JsonOutputData(json.loads('{"SURFOUT.20191119_04h00.' + my_format + '": "' +
+                                                      archive_dir + '/SURFOUT.20191119_04h00.' + my_format + '", ' +
+                                                      '"SURFOUT.20191119_05h00.' + my_format + '": "' +
+                                                      archive_dir + '/SURFOUT.20191119_05h00.' + my_format + '", ' +
+                                                      '"SURFOUT.20191119_06h00.' + my_format + '": "' +
+                                                      archive_dir + '/SURFOUT.20191119_06h00.' + my_format + '"}'))
+
+        surfex.SURFEXBinary(test_dir + "/bin/OFFLINE.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
+                            surfout=my_surffile, input=my_input, pgdfile=my_pgdfile, archive=my_archive)
         # surfex.clean_working_dir(workdir)
 
-    # Set up assimilation
-    my_dtg = datetime(2019, 11, 19, 6)
-    gridpp_t2m = surfex.GridPP(test_dir + "/bin/gridpp", "filename_t2m", my_dtg, my_batch, ["air_temperature_2m"])
-    gridpp_rh2m = surfex.GridPP(test_dir + "/bin/gridpp", "filename_rh2m", my_dtg, my_batch, ["relative_humidity_2m"])
-    gridpp_sd = surfex.GridPP(test_dir + "/bin/gridpp", "filename_snow", my_dtg, my_batch, ["surface_snow_thickness"])
-
-    my_sstfile = "SST_SIC"
-    assim_sea = surfex.SeaAssimilation(my_settings, my_sstfile)
-    my_first_guess = "PREPFILE"
-    my_oi_coeffs = "polym"
-    my_climfile = "climinput"
-    my_lsmfile = "landseamask"
-    oi = surfex.VerticalOI(my_settings, my_first_guess, my_oi_coeffs, climfile=my_climfile, lsmfile=my_lsmfile)
-    assim_nature = surfex.NatureAssimilation(my_settings, oi)
-
-    # assim = Assimilation(my_dtg, my_settings, sea=assim_sea, nature=assim_nature,
-    #                     obs=[gridpp_t2m, gridpp_rh2m, gridpp_sd])
-    assim = surfex.Assimilation(my_dtg, my_settings, sea=assim_sea, nature=assim_nature)
-
-    soda = test_dir + "/archive/oi_" + format + "/SODA."+format
+    soda = test_dir + "/archive/oi_" + my_format + "/SODA." + my_format
     if not os.path.exists(soda):
-        my_input = [my_ecoclimap_input]
+
+        # Set up assimilation
+        my_dtg = datetime(2019, 11, 19, 6)
+        gridpp_t2m = surfex.GridPP(test_dir + "/bin/gridpp", "filename_t2m", my_dtg, my_batch, ["air_temperature_2m"])
+        gridpp_rh2m = surfex.GridPP(test_dir + "/bin/gridpp", "filename_rh2m", my_dtg, my_batch,
+                                    ["relative_humidity_2m"])
+        gridpp_sd = surfex.GridPP(test_dir + "/bin/gridpp", "filename_snow", my_dtg, my_batch,
+                                  ["surface_snow_thickness"])
+
+        my_obsfile = "my_new_obsfile"
+        my_sstfile = "SST_SIC"
+        my_first_guess = "PREPFILE"
+        my_ua_first_guess = "ICMSHHARM+0003"
+        my_oi_coeffs = "polym"
+        my_climfile = "climinput"
+        my_lsmfile = "landseamask"
+
+        assim_input_json = surfex.set_assimilation_input(my_dtg, my_settings, sstfile=my_sstfile,
+                                                         ua_first_guess=my_ua_first_guess, climfile=my_climfile,
+                                                         lsmfile=my_lsmfile, oi_coeffs=my_oi_coeffs, obsfile=my_obsfile)
+        assim = surfex.Assimilation(ass_input=assim_input_json)
+
         workdir = root_dir + "/soda_oi_nc"
         surfex.create_working_dir(workdir)
-        my_pgdfile = surfex.PGDFile(format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
-        my_prepfile = surfex.PREPFile(format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
-        my_sodafile = surfex.SURFFile(format, my_settings["nam_io_offline"]["csurffile"], my_geo, archive_file=soda)
-        surfex.SURFEXBinary(test_dir + "/bin/SODA.exe", my_batch, my_prepfile, my_settings, surfout=my_sodafile,
-                        input=my_input, pgdfile=my_pgdfile)
+        my_pgdfile = surfex.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
+        my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
+        my_sodafile = surfex.SURFFile(my_format, my_settings["nam_io_offline"]["csurffile"], my_geo, archive_file=soda)
+        surfex.SURFEXBinary(test_dir + "/bin/SODA.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
+                            surfout=my_sodafile, pgdfile=my_pgdfile)
         # surfex.clean_working_dir(workdir)
-
-
