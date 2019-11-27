@@ -24,6 +24,7 @@ class ConfProj(SurfexGeo):
         self.ezone = ezone
 
     def update_namelist(self, nml):
+        print(nml)
         nml["nam_conf_proj"]["xlon0"] = self.lon0
         nml["nam_conf_proj"]["xlat0"] = self.lat0
         nml["nam_conf_proj"]["xrpk"] = math.sin(math.radians(self.lat0))

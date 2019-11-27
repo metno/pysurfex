@@ -32,6 +32,7 @@
      "LASSIM": ".TRUE.",
      "CASSIM_SEA": "INPUT",
      "CASSIM_WATER": "INPUT",
+     "CASSIM_ISBA": "OI",
      "CASSIM_TEB": "ROADT",
      "LEXTRAP_WATER": ".TRUE.",
      "LWATERTG2": ".TRUE.",

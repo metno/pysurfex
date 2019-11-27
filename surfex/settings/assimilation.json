@@ -76,12 +76,18 @@
     "LPGD": ".TRUE."
   },
   "NAM_IO_OFFLINE": {
-    "LRESTART_2M": ".TRUE.",
-    "LFAGMAP": ".TRUE.",
-    "XTSTEP_SURF": "60",
+    "CPGDFILE": "PGD",
+    "CPREPFILE": "PREP",
+    "CSURFFILE": "SURFOUT",
+    "CSURF_FILETYPE": "FA",
+    "LFAGMAP": true,
     "CFORCING_FILETYPE": "NETCDF",
-    "XTSTEP_OUTPUT": "3600.",
-    "LRESTART": ".TRUE."
+    "LRESTART": ".TRUE.",
+    "LRESTART_2M": true,
+    "XTSTEP_SURF": 60,
+    "XTSTEP_OUTPUT": 3600.0,
+    "XTSTEP_SURF": "60",
+    "NHALO": 0
   },
   "NAM_WRITE_SURF_ATM": {
     "LSPLIT_PATCH": ".FALSE."

@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     if not os.path.exists(output) or force:
         my_settings = surfex.ascii2nml(json_settings)
-        my_geo.update_namelist(my_settings)
+        my_geo().update_namelist(my_settings)
 
         print(os.getcwd())
 
