@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+import json
+import surfex
+import argparse
+import sys
+import os
+import toml
+
+def parse():
+    """Parse the command line input arguments."""
+    parser = argparse.ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--input', '-i', type=str, nargs="?", required=False, help="Input TOML file if wanted")
+    parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
+    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+    parser.add_argument('program', help="For which program you should create the JSON file",
+                        choices=["pgd", "prep", "offline", "soda"])
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args()
+
+    return args.program, args.input, args.path, args.output, args.indent
+
+
+if __name__ == "__main__":
+
+    program, input_file, input_path, output_file, indent = parse()
+
+    env = {}
+    if input_file is not None:
+        if os.path.exists(input_file):
+            env = os.environ.copy()
+            env.update(toml.load(open(input_file, "r")))
+        else:
+            print("Input file does not exist: " + input_file)
+            raise FileNotFoundError
+    else:
+        print("Use environment settings")
+        env = os.environ
+
+    print("Creating JSON namelist input for program: " + program)
+
+    print(env["USER"])
+    print(env["CSURF_FILETYPE"])
+
+    # isba_$CISBAL isba_pgd pgd ${PHYSICS}_pgd $PGD_EXTENSION_ZONE filetype $SFX_TREE_DRAG_OPTIONS"
+    input_list = []
+    input_list.append({"file": input_path + "/assimilation.json"})
+    input_list.append({"json": json.loads('{"NAM_IO_OFFLINE": { "CSURF_FILETYPE": "' + env["CSURF_FILETYPE"] + '"}}')})
+
+    json_settings = []
+    for inp in input_list:
+        if "file" in inp:
+            if not os.path.exists(inp["file"]):
+                print("Needed namelist input does not exist: " + inp["file"])
+                raise FileNotFoundError
+            else:
+                print("Read from file " + inp["file"])
+                json_settings.append(surfex.merge_json_namelist_files([inp["file"]]))
+        elif "json" in inp:
+            print("JSON String", inp["json"])
+            json_settings.append(surfex.merge_json_namelist_settings(inp["json"]))
+        else:
+            print("Can not handle input type "+str(inp))
+            raise Exception
+
+    merged_json_settings = surfex.merge_json_namelist_settings(json_settings)
+    json.dump(merged_json_settings, open(output_file, "w"), indent=indent)
+

@@ -9,7 +9,7 @@ import json
 
 def parse():
     """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser(desc="Create physiography for SURFEX (PGD)")
+    parser = argparse.ArgumentParser("Create physiography for SURFEX (PGD)")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")

@@ -145,8 +145,7 @@ class JsonInputData(InputData):
             print(target, input_file)
             command = "ln -sf"
             if type(self.data[target]) is dict:
-                for input_file in self.data[target]:
-                    command = self.data[target][input_file]
+                command = self.data[target][input_file]
 
             cmd = command + " " + input_file + " " + target
             try:
@@ -195,9 +194,8 @@ def create_json_from_toml(json_files, toml_file):
 
     files = []
     for f in json_files:
-
         if os.path.exists(f):
-                files.append(f)
+            files.append(f)
         else:
             raise FileNotFoundError
 
@@ -217,3 +215,41 @@ def create_json_from_toml(json_files, toml_file):
     return json_settings
 
 
+def merge_json_namelist_settings(json_settings_list):
+
+    json_settings = None
+    upper_case_dict = {}
+    print("Settings: ", json_settings_list)
+    for values in json_settings_list:
+        print("Values: ", values)
+        print(type(values))
+        for key in values:
+            upper_case_dict2 = {}
+            print("key", key)
+            print("values: ", values[key], " key: ", key)
+            for key2 in values[key]:
+                upper_case_dict2.update({key2.upper():values[key][key2]})
+            upper_case_dict.update({key.upper(): upper_case_dict2})
+        if json_settings is None:
+            json_settings = json.dumps(upper_case_dict)
+        else:
+            new_settings = json.dumps(upper_case_dict)
+            json_settings = jsonmerge.merge(json_settings, new_settings)
+        print("merging json_setings: ", json_settings)
+    return json.loads(json_settings)
+
+
+def merge_json_namelist_files(my_files):
+    files = []
+    for f in my_files:
+
+        if os.path.exists(f):
+            files.append(f)
+        else:
+            raise FileNotFoundError
+
+    json_settings_list = []
+    for f in files:
+        json_settings_list.append(json.load(open(f, "r")))
+
+    return merge_json_namelist_settings(json_settings_list)
