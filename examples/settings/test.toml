@@ -1,9 +1,21 @@
-ANASURF = "OI"
+# IO settings
+[io]
+CSURF_FILETYPE = "NC"
+
+[pgd]
 CISBA = "3-L"
 NPATCH = "3"
 
-CSURF_FILETYPE = "NC"
+[prep]
 
-[NAM_IO_OFFLINE]
-CSURF_FILETYPE = "NC"
+[offline]
 
+[soda]
+[assimilation]
+LASSIM = false
+CASSIM_SEA = "INPUT"
+CASSIM_ISBA = "EKF"
+
+[observations]
+SPATIALIZATION_TOOL = "gridpp"
+CFILE_FORMAT_OBS = "ASCII"

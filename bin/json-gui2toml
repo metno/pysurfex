@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+import json
+import argparse
+import surfex
+import sys
+import os
+import toml
+
+def parse():
+    """Parse the command line input arguments."""
+    parser = argparse.ArgumentParser("Creating the TOML settings file to run SURFEX from JSON files from GUI")
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--input', '-i', type=str, nargs="?", required=True, help="Input TOML file if wanted")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args()
+
+    return args.input, args.output
+
+
+def recursive_items(dictionary):
+    for my_key, my_value in dictionary.items():
+        if type(my_value) is dict:
+            yield from recursive_items(my_value)
+        else:
+            yield (my_key, my_value)
+
+
+if __name__ == "__main__":
+
+    input_file, output_file  = parse()
+
+    print("Writing settings to " + output_file)
+    fh = open(output_file, "w")
+    if os.path.exists(input_file):
+        print("Read toml settings from " + input_file)
+        for key, value in recursive_items(json.load(open(input_file, "r"))):
+            val = value
+            if type(value) is bool:
+               if val:
+                  val = ".TRUE."
+               else:
+                  val = ".FALSE."
+            print(key, '=', val+'')
+            fh.write(key + '=' + val+'\n')
+    else:
+       print("Input file does not exist: " + input_file)
+       raise FileNotFoundError
+    fh.close()

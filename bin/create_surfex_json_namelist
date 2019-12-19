@@ -28,6 +28,14 @@ def parse():
     return args.program, args.input, args.path, args.output, args.indent
 
 
+def recursive_items(dictionary):
+    for key, value in dictionary.items():
+        if type(value) is dict:
+            yield from recursive_items(value)
+        else:
+            yield (key, value)
+
+
 if __name__ == "__main__":
 
     program, input_file, input_path, output_file, indent = parse()
@@ -36,7 +44,12 @@ if __name__ == "__main__":
     if input_file is not None:
         if os.path.exists(input_file):
             env = os.environ.copy()
-            env.update(toml.load(open(input_file, "r")))
+            print("Read toml settings from " + input_file)
+            for key, value in recursive_items(toml.load(open(input_file, "r"))):
+                print("key:", key, "value=", value)
+                env.update({key: value})
+
+            print(env)
         else:
             print("Input file does not exist: " + input_file)
             raise FileNotFoundError
@@ -64,7 +77,7 @@ if __name__ == "__main__":
                 print("Read from file " + inp["file"])
                 json_settings.append(surfex.merge_json_namelist_files([inp["file"]]))
         elif "json" in inp:
-            print("JSON String", inp["json"])
+            print("JSON String", inp["json"], type(inp["json"]))
             json_settings.append(surfex.merge_json_namelist_settings(inp["json"]))
         else:
             print("Can not handle input type "+str(inp))
