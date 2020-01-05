@@ -13,11 +13,12 @@ def parse():
     parser = argparse.ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--input', '-i', type=str, nargs="?", required=False, help="Input TOML file if wanted")
+    parser.add_argument('--config', '-c', type=str, nargs="?", required=False, help="Input TOML file if wanted")
     parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
+    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?')
     parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?')
-    parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="input_files.json",
+    parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
                         help="Input json file for SURFEX binaries")
     parser.add_argument('--ecoclimap', '-e', type=str, nargs="?", required=False, default="ecoclimap.json",
                         help="Input ecoclimap json file for SURFEX binaries")
@@ -30,7 +31,7 @@ def parse():
 
     args = parser.parse_args()
 
-    return args.program, args.input, args.path, args.indent, args.namelist, args.files, args.ecoclimap
+    return args.program, args.config, args.path, args.indent, args.system, args.namelist, args.files, args.ecoclimap
 
 
 def recursive_items(dictionary):
@@ -38,21 +39,23 @@ def recursive_items(dictionary):
         if type(lvalue) is dict:
             yield from recursive_items(lvalue)
         else:
-            yield (lkey, lvalue)
+            yield lkey, lvalue
 
 
 if __name__ == "__main__":
 
-    program, settings_file, input_path, indent, namelist, input_files, ecoclimap = parse()
+    program, settings_file, input_path, indent, system_settings, name_of_namelist, name_of_input_files, \
+        name_of_ecoclimap = parse()
 
     env = {}
     if os.path.exists(settings_file):
-        env = os.environ.copy()
+        #env = os.environ.copy()
         print("Read toml settings from " + settings_file)
-        for key, value in recursive_items(toml.load(open(settings_file, "r"))):
-            print("key:", key, "value=", value)
-            env.update({key: value})
+        #for key, value in recursive_items(toml.load(open(settings_file, "r"))):
+        #    print("key:", key, "value=", value)
+        #    env.update({key: value})
 
+        env = toml.load(open(settings_file, "r"))
         print(env)
     else:
         print("Input file does not exist: " + settings_file)
@@ -60,20 +63,80 @@ if __name__ == "__main__":
 
     print("Creating JSON namelist input for program: " + program)
 
-    print(env["CSURF_FILETYPE"])
+    #print(env["CSURF_FILETYPE"])
 
     # isba_$CISBAL isba_pgd pgd ${PHYSICS}_pgd $PGD_EXTENSION_ZONE filetype $SFX_TREE_DRAG_OPTIONS"
     input_list = []
 
-    # Genaral settings
+    # General settings
+    # IO
+    input_list.append({"json": json.loads('{"NAM_IO_OFFLINE": { "CSURF_FILETYPE": "' + env["SURFEX_IO"]["CSURF_FILETYPE"] +
+                                          '"}}')})
 
-    input_list.append({"json": json.loads('{"NAM_IO_OFFLINE": { "CSURF_FILETYPE": "' + env["CSURF_FILETYPE"] + '"}}')})
+    print(system_settings)
+    if os.path.exists(system_settings):
+        system_files = json.load(open(system_settings, "r"))
+    else:
+        raise FileNotFoundError
 
     # Ecoclimap settings
+    ecoclimap_json = {}
+    #ecoclimapI_covers_param.bin
+    #ecoclimapII_af_covers_param.bin
+    #ecoclimapII_eu_covers_param.bin
+
+    # Input files for surfex
+    input_for_surfex_json = {}
 
     # Program specific settings
     if program == "pgd":
-        input_list.append({"file": input_path + "/assimilation.json"})
+        input_list.append({"file": input_path + "/pgd.json"})
+
+        # Set direct input files
+        ntypes = ["ZS", "COVER"]
+        if env["SURFEX_TILES"]["NATURE"] == "ISBA":
+            ntypes.append("ISBA")
+        if env["SURFEX_TILES"]["INLAND_WATER"] == "FLAKE":
+            ntypes.append("FLAKE")
+
+        for ntype in ntypes:
+            for dtype in env["DIRECT_INPUT_DATA_" + ntype]:
+                dname = env["DIRECT_INPUT_DATA_" + ntype][dtype]
+                print(dname)
+                input_list.append(
+                    {"json": json.loads('{"NAM_' + ntype + '": { "' + dtype + '": "' + dname + '", ' +
+                                        '"' + dtype + 'FILETYPE": "DIRECT"}}')})
+                suffixes = ["hdr", "dir"]
+                for suffix in suffixes:
+                    lfname_settings = dname + "." + suffix
+                    print(lfname_settings)
+                    print("dette er:",system_files)
+                    if lfname_settings in system_files:
+                        lfname = system_files[lfname_settings]
+                        input_for_surfex_json.update({lfname_settings: lfname})
+                    else:
+                        raise NotImplementedError
+
+        # Set LLV input data
+
+        # Set ISBA properties
+        input_list.append({"file": input_path + "/" + env["ISBA"]["SCHEME"].lower() + ".json"})
+        input_list.append({"json": json.loads('{"NAM_ISBA": { "NPATCH": "' + str(env["ISBA"]["NPATCH"]) + '"}}')})
+
+    elif program == "prep":
+
+        input_list.append({"file": input_path + "/prep.json"})
+
+        # Set NetCDF input for FLAKE
+
+        input_list.append({"json": json.loads('{"NAM_PREP_ISBA": { "LISBA_CANOPY": "' + env["ISBA"]["CANOPY"] + '"}}')})
+    elif program == "offline":
+        input_list.append({"file": input_path + "/offline.json"})
+
+    elif program == "soda":
+        input_list.append({"file": input_path + "/soda.json"})
+        # Set OI polynoms
+
     else:
         raise NotImplementedError
 
@@ -88,16 +151,18 @@ if __name__ == "__main__":
                 json_settings.append(surfex.merge_json_namelist_files([inp["file"]]))
         elif "json" in inp:
             print("JSON String", inp["json"], type(inp["json"]))
-            json_settings.append(surfex.merge_json_namelist_settings(inp["json"]))
+            json_settings.append(surfex.merge_json_namelist_settings([inp["json"]]))
         else:
             print("Can not handle input type "+str(inp))
             raise Exception
 
     # Namelist settings
     merged_json_settings = surfex.merge_json_namelist_settings(json_settings)
-    json.dump(merged_json_settings, open(namelist, "w"), indent=indent)
+    json.dump(merged_json_settings, open(name_of_namelist, "w"), indent=indent)
 
-    # Input files
+    # Input files for SURFEX binary
+    json.dump(input_for_surfex_json, open(name_of_input_files, "w"), indent=indent)
 
     # Ecoclimap
+    json.dump(ecoclimap_json, open(name_of_ecoclimap, "w"), indent=indent)
 
