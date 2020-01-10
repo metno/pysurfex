@@ -1,12 +1,9 @@
 {
   "NAM_ASSIM": {
-    "LAESNM": ".FALSE.",
-    "LSWEPSINI": false,
-    "XSWEPSINI": 500.0,
-    "LSWEPSMIN": false,
-    "XSWEPSMIN": 200.0,
     "LECSST": true,
     "NPRINTLEV": 1,
     "LRELCLIMSNOW": false,
+    "LEXTRAP_NATURE": false,
+    "LEXTRAP_SNOW": false
   }
 }

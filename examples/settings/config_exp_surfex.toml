@@ -16,8 +16,8 @@ TIME_STEP = 60
 CSURF_FILETYPE = "FA"               # IO settings NC/FA/ASCII. Inline runs use FA
 CTIMESERIES_FILETYPE = "FA"         # Fileformat for timseries. Inline runs use FA
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
-XTSTEP = 60                         # Surfex time step (Only used in the binary OFFLINE)
-XTSTEP_OUTPUT = 3600.0              # Output interval from the binary OFFLINE
+XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
+XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
 LSPLIT_PATCH = true                 # Split patches into separate variables in output files
 
 [COVER]                             # Land cover information
@@ -144,8 +144,6 @@ UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assim
 [ASSIM_ISBA_OI]
 CFILE_FORMAT_CLIM = "FA"            # File format for file containing climatological fields
 CFILE_FORMAT_FG = "FA"              # File format of upper air first guess
-
-[ASSIM_ISBA_OI_INPUT]
 ANASURF_OI_COEFF="POLYNOMES_ISBA"    # Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
                                      # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
 

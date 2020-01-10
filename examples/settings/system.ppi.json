@@ -1,5 +1,6 @@
 {
   "scratch": "/home/$USER/surfex-tests",
+  "oi_coeff_dir": "/home/$USER/surfex-tests/oi_coeff",
   "climdir": "/lustre/storeB/project/nwp/surfex/PGD/",
   "sand_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
   "clay_dir": "/lustre/storeB/project/nwp/surfex/PGD/",

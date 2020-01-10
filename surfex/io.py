@@ -5,9 +5,6 @@ import shutil
 import f90nml
 import subprocess
 from abc import ABC, abstractmethod
-import surfex
-import toml
-from jsonmerge import merge
 
 try:
     from StringIO import StringIO   # Python 2.x
@@ -50,12 +47,10 @@ def ascii_file2nml(input_fname, input_fmt="json"):
     return output_data
 
 
-def nml2ascii(input_data, output_file, output_fmt="json"):
+def nml2ascii(input_data, output_file, output_fmt="json", indent=2):
     if output_fmt == 'json':
         input_data = input_data.todict(complex_tuple=True)
-        json.dump(input_data, output_file,
-                  indent=4, separators=(',', ': '))
-        output_file.write('\n')
+        json.dump(input_data, open(output_file, "w"), indent=indent, separators=(',', ': '))
     elif output_fmt == 'yaml':
         input_data = input_data.todict(complex_tuple=True)
         yaml.dump(input_data, output_file, default_flow_style=False)

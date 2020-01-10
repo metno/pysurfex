@@ -7,10 +7,20 @@ import json
 
 if __name__ == "__main__":
 
-    my_geo = surfex.ConfProj(100, 100, 10, 60, 15, 50, 2500, ezone=11)
-
     root_dir = os.getcwd()
-    my_settings = f90nml.read(root_dir + '/settings/oi_nc.nml')
+
+    domain_name = "NORWAY-SOUTH"
+    domain_json = surfex.set_domain(json.load(open(root_dir + "/settings/domains.json", "r")), domain_name)
+    print(domain_json)
+    my_geo = surfex.ConfProj(domain_json)
+
+    toml_files = [root_dir + "/settings/config_exp_surfex.toml", root_dir + "/settings/oi_nc.toml"]
+    merged_toml_env = surfex.merge_toml_env_from_files(toml_files)
+    my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("pgd", merged_toml_env,
+                                                                                 root_dir + "/settings/",
+                                                                                 root_dir + "/settings/system.ppi.json")
+    print(my_settings)
+
     test_dir = os.environ["HOME"]+"/surfex-tests"
     os.makedirs(test_dir, exist_ok=True)
 
@@ -19,22 +29,11 @@ if __name__ == "__main__":
 
     my_settings = my_geo.update_namelist(my_settings)
     my_batch = surfex.BatchJob(my_rte, wrapper="mpiexec -np 8")
+    my_batch = surfex.BatchJob(my_rte, wrapper="")
 
-    my_ecoclimap = surfex.JsonInputDataFromFile(root_dir + "/settings/ecoclimap.json")
     my_format = str(my_settings["nam_io_offline"]["csurf_filetype"]).lower()
 
     # PGD
-    my_input_files = {"gtopo30.dir": "/lustre/storeB/project/nwp/surfex/PGD/gtopo30.dir",
-                      "gtopo30.hdr": "/lustre/storeB/project/nwp/surfex/PGD/gtopo30.hdr",
-                      "ECOCLIMAP_II_EUROP.dir": "/lustre/storeB/project/nwp/surfex/PGD/ECOCLIMAP_II_EUROP_V2.2.dir",
-                      "ECOCLIMAP_II_EUROP.hdr": "/lustre/storeB/project/nwp/surfex/PGD/ECOCLIMAP_II_EUROP_V2.2.hdr",
-                      "GlobalLakeDepth.dir": "/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeDepth.dir",
-                      "GlobalLakeDepth.hdr": "/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeDepth.hdr",
-                      "GlobalLakeStatus.dir": "/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeStatus.dir",
-                      "GlobalLakeStatus.hdr": "/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeStatus.hdr"
-                      }
-
-    my_input = surfex.JsonInputData(json.loads(my_input_files))
     pgd = test_dir + "/archive/oi_" + my_format + "/PGD." + my_format
     if not os.path.exists(pgd):
         workdir = test_dir + "/pgd_" + my_format
@@ -44,26 +43,41 @@ if __name__ == "__main__":
         # surfex.clean_working_dir(workdir)
 
     # PREP
+    my_dtg_fg = datetime(2019, 11, 19, 3)
     prep = test_dir + "/archive/oi_" + my_format + "/PREP." + my_format
     if not os.path.exists(prep):
         workdir = test_dir + "/prep_" + my_format
         surfex.create_working_dir(workdir)
+
+        my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("prep", merged_toml_env,
+                                                                                     root_dir + "/settings/",
+                                                                                     root_dir + "/settings/system.ppi.json",
+                                                                                     prep_file=root_dir + "/settings/prep_from_namelist_values.json",
+                                                                                     prep_filetype="json",
+                                                                                     dtg=my_dtg_fg.strftime("%Y%m%d%H"))
+
         my_pgdfile = surfex.file.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
 
         my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, archive_file=prep)
-        surfex.SURFEXBinary(test_dir + "/bin/PREP.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
+        surfex.SURFEXBinary(test_dir + "/bin/PREP.exe", my_batch, my_prepfile, my_settings, my_ecoclimap, input=my_input,
                             pgdfile=my_pgdfile)
         # surfex.clean_working_dir(workdir)
 
     # Forcing
 
     # Offline
-    my_input = surfex.JsonInputData(json.loads({'"FORCING.nc": "' + test_dir + '/forcing/FORCING.nc"'}))
+    my_forcing_input = surfex.JsonInputData(json.loads('{"FORCING.nc": "' + test_dir + '/forcing/FORCING.nc"}'))
 
     first_guess = test_dir + "/archive/oi_" + my_format + "/OI_FG." + my_format
     if not os.path.exists(first_guess):
         workdir = test_dir + "/offline_" + my_format
         surfex.create_working_dir(workdir)
+
+        my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("offline", merged_toml_env,
+                                                                                     root_dir + "/settings/",
+                                                                                     root_dir + "/settings/system.ppi.json",
+                                                                                     forc_zs=True)
+
         my_pgdfile = surfex.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
         my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
         my_surffile = surfex.SURFFile(my_format, my_settings["nam_io_offline"]["csurffile"], my_geo,
@@ -78,7 +92,7 @@ if __name__ == "__main__":
                                                       archive_dir + '/SURFOUT.20191119_06h00.' + my_format + '"}'))
 
         surfex.SURFEXBinary(test_dir + "/bin/OFFLINE.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
-                            surfout=my_surffile, input=my_input, pgdfile=my_pgdfile, archive=my_archive)
+                            surfout=my_surffile, input=my_forcing_input, pgdfile=my_pgdfile, archive=my_archive)
         # surfex.clean_working_dir(workdir)
 
     soda = test_dir + "/archive/oi_" + my_format + "/SODA." + my_format
@@ -92,24 +106,31 @@ if __name__ == "__main__":
         gridpp_sd = surfex.GridPP(test_dir + "/bin/gridpp", "filename_snow", my_dtg, my_batch,
                                   ["surface_snow_thickness"])
 
-        my_obsfile = "my_new_obsfile"
-        my_sstfile = "SST_SIC"
-        my_first_guess = "PREPFILE"
-        my_ua_first_guess = "ICMSHHARM+0003"
-        my_oi_coeffs = "polym"
-        my_climfile = "climinput"
-        my_lsmfile = "landseamask"
+        my_obsfile = test_dir + "/obs/OBSERVATIONS_191119H06.DAT"
 
-        assim_input_json = surfex.set_assimilation_input(my_dtg, my_settings, sstfile=my_sstfile,
-                                                         ua_first_guess=my_ua_first_guess, climfile=my_climfile,
-                                                         lsmfile=my_lsmfile, oi_coeffs=my_oi_coeffs, obsfile=my_obsfile)
-        assim = surfex.Assimilation(ass_input=assim_input_json)
-
-        workdir = root_dir + "/soda_oi_nc"
+        workdir = test_dir + "/soda_oi_nc"
         surfex.create_working_dir(workdir)
+
+        my_sstfile = test_dir + "/dummies/SST_SIC.DAT"
+        my_ua_first_guess = test_dir + "/dummies/FIRST_GUESS_191119H06.DAT"
+        my_climfile = test_dir + "/dummies/CLIMATE.DAT"
+        my_lsmfile = test_dir + "/dummies/LSM.DAT"
+        my_ascat_file = test_dir + "/dummies/ASCAT_SM.DAT"
+
+        my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("soda", merged_toml_env,
+                                                                                     root_dir + "/settings/",
+                                                                                     root_dir + "/settings/system.ppi.json")
+
+        print(my_settings)
+        assim_input = surfex.set_assimilation_input(my_dtg, my_settings, sstfile=my_sstfile,
+                                                         ua_first_guess=my_ua_first_guess, climfile=my_climfile,
+                                                         lsmfile=my_lsmfile, obsfile=my_obsfile, ascatfile=my_ascat_file)
+
+        assim = surfex.Assimilation(ass_input=assim_input)
+
         my_pgdfile = surfex.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, input_file=pgd)
-        my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=prep)
+        my_prepfile = surfex.PREPFile(my_format, my_settings["nam_io_offline"]["cprepfile"], my_geo, input_file=first_guess)
         my_sodafile = surfex.SURFFile(my_format, my_settings["nam_io_offline"]["csurffile"], my_geo, archive_file=soda)
         surfex.SURFEXBinary(test_dir + "/bin/SODA.exe", my_batch, my_prepfile, my_settings, my_ecoclimap,
-                            surfout=my_sodafile, pgdfile=my_pgdfile)
+                            surfout=my_sodafile, pgdfile=my_pgdfile, assim=assim, input=my_input)
         # surfex.clean_working_dir(workdir)

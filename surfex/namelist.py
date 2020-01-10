@@ -2,6 +2,7 @@ import os
 import json
 import toml
 from datetime import datetime
+import surfex
 
 
 def capitalize_namelist_dict(dict_in):
@@ -86,17 +87,18 @@ def merge_toml_env(old_env, mods):
     print(merged_env)
     for new_key in mods:
         if new_key in merged_env:
-            print("\n key exists", new_key, merged_env[new_key])
-            print("New key: ", mods[new_key])
+            #print("\n key exists", new_key, merged_env[new_key])
+            #print("New key: ", mods[new_key])
             new_env = merged_env[new_key]
             for new_key2 in mods[new_key]:
+                print("Update to: ", new_key, new_key2, mods[new_key][new_key2])
                 new_env.update({new_key2: mods[new_key][new_key2]})
 
             merged_env.update({new_key: new_env})
-            print("\n key exists, merged", new_key, merged_env[new_key])
+            #print("\n key exists, merged", new_key, merged_env[new_key])
         # New namelist block
         else:
-            print("New key", new_key, mods[new_key])
+            #print("New key", new_key, mods[new_key])
             merged_env.update({new_key: mods[new_key]})
     return merged_env
 
@@ -112,7 +114,7 @@ def merge_toml_env_from_files(toml_files):
     return merged_env
 
 
-def set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs, prep_file=None,
+def set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs=False, prep_file=None,
                                     prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None, dtg=None):
 
     if program == "prep":
@@ -130,6 +132,8 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
     input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURF_FILETYPE": env["SURFEX_IO"]["CSURF_FILETYPE"]}}})
     input_list.append({"json": {"NAM_IO_OFFLINE": {"CTIMESERIES_FILETYPE": env["SURFEX_IO"]["CTIMESERIES_FILETYPE"]}}})
     input_list.append({"json": {"NAM_IO_OFFLINE": {"CFORCING_FILETYPE": env["SURFEX_IO"]["CFORCING_FILETYPE"]}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF": env["SURFEX_IO"]["XTSTEP"]}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_OUTPUT": env["SURFEX_IO"]["XTSTEP_OUTPUT"]}}})
     input_list.append({"json": {"NAM_WRITE_SURF_ATM": {"LSPLIT_PATCH": env["SURFEX_IO"]["LSPLIT_PATCH"]}}})
 
     if forc_zs:
@@ -278,7 +282,20 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
         # SSO
         input_list.append({"json": {"NAM_SSON": {"CROUGH": env["SSO"]["SCHEME"]}}})
 
+        # Perturbed offline settings
+        input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
+        input_list.append({"json": {"NAM_IO_VARASSIM": {"LPRT": False}}})
+
+        #TODO the need for this must be removed!
+        nobstype = 0
+        for ob in range(0, len(env["ASSIM_OBS"]["NNCO"])):
+            input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": env["ASSIM_OBS"]["NNCO"][ob]}}})
+            if env["ASSIM_OBS"]["NNCO"][ob] == 1:
+                nobstype += 1
+        input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
+
     elif program == "soda":
+        input_list.append({"file": input_path + "/soda.json"})
 
         input_list.append({"json": {"NAM_ASSIM": {"LASSIM": True}}})
 
@@ -309,7 +326,10 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
 
         # Set OI polynoms
         if env["ASSIM_SCHEMES"]["ISBA"] == "OI":
-            print("OI")
+            input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_CLIM": env["ASSIM_ISBA_OI"]["CFILE_FORMAT_CLIM"]}}})
+            input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_FG": env["ASSIM_ISBA_OI"]["CFILE_FORMAT_FG"]}}})
+            input_for_surfex_json.update({"fort.61": set_input_file_name("oi_coeff_dir",
+                                                                         env["ASSIM_ISBA_OI"]["ANASURF_OI_COEFF"], system_files)})
 
         if env["ASSIM_SCHEMES"]["ISBA"] == "EKF":
             nvar = 0
@@ -370,4 +390,4 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             print("Can not handle input type "+str(inp))
             raise Exception
 
-    return merged_json_settings, ecoclimap_json, input_for_surfex_json
+    return surfex.ascii2nml(merged_json_settings), surfex.JsonInputData(ecoclimap_json), surfex.JsonInputData(input_for_surfex_json)

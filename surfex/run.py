@@ -82,7 +82,7 @@ class SURFEXBinary(object):
                     raise
 
         if self.assim is not None:
-            self.assim.prepare_input()
+            self.assim.ass_input.prepare_input()
 
         cmd = self.binary
         self.batch.run(cmd)

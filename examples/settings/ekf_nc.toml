@@ -12,8 +12,8 @@
 CSURF_FILETYPE = "NC"               # IO settings NC/FA/ASCII. Inline runs use FA
 CTIMESERIES_FILETYPE = "NC"         # Fileformat for timseries. Inline runs use FA
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
-XTSTEP = 60                         # Surfex time step (Only used in the binary OFFLINE)
-XTSTEP_OUTPUT = 3600.0              # Output interval from the binary OFFLINE
+XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
+XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
 LSPLIT_PATCH = true                 # Split patches into separate variables in output files
 
 
@@ -50,7 +50,7 @@ TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|
 LOBSHEADER = false                          # ASCII observation file has header
 CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when using SODA: "ASCII"|"FA"
 LOBSNAT = false                             # Observation ASCII file only contains nature points
-NNCO = [0, 0, 0, 0, 0]                      # Active observation types
+NNCO = [1, 1, 0, 1, 1]                      # Active observation types
                                             # (Element 1=T2m, element 2=RH2m and element 3=Soil moisture, element 5=SWE)
 XERROBS_M = [1.0, 0.1, 0.1, 0.1, 0.1, 20.0] # Observation error (used in EKF)
 LSWE = false                                # Assimilate SWE, if false assimilate snow depth
@@ -61,7 +61,7 @@ UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assim
 
 # EKF settings
 [ASSIM_ISBA_EKF]
-NNCV = [0,0,0,0]                        # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
+NNCV = [0,1,0,1]                        # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
 XSIGMA_M = [2.0, 2.0, 0.1 , 0.15]       # Background error
 CVAR_M = ["TG1", "TG2", "WG1" , "WG2"]  # Control variables
 XPRT_M = [0.0001, 0.0001, 1e-05, 1e-05] # Perturbation magnitude

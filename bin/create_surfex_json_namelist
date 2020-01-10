@@ -69,13 +69,15 @@ if __name__ == "__main__":
     print("\nNamelist: ")
     for key in merged_json_settings:
         print(key, ":", merged_json_settings[key])
-    json.dump(merged_json_settings, open(name_of_namelist, "w"), indent=indent)
+
+    # Dump namelist as json
+    merged_json_settings = surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
 
     # Input files for SURFEX binary
-    print("\nInput files: ", input_for_surfex_json)
-    json.dump(input_for_surfex_json, open(name_of_input_files, "w"), indent=indent)
+    print("\nInput files: ", input_for_surfex_json.data)
+    json.dump(input_for_surfex_json.data, open(name_of_input_files, "w"), indent=indent)
 
     # Ecoclimap
-    print("\nEcoclimap: ", ecoclimap_json)
-    json.dump(ecoclimap_json, open(name_of_ecoclimap, "w"), indent=indent)
+    print("\nEcoclimap: ", ecoclimap_json.data)
+    json.dump(ecoclimap_json.data, open(name_of_ecoclimap, "w"), indent=indent)
 

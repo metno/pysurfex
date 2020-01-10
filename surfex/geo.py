@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import math
 import json
 
+
 class SurfexGeo(ABC):
     def __init__(self):
         pass
@@ -12,86 +13,59 @@ class SurfexGeo(ABC):
 
 
 class ConfProj(SurfexGeo):
-    def __init__(self, nx, ny, lonc, latc, lon0, lat0, gsize, ezone=0):
+    def __init__(self, from_json):
         SurfexGeo.__init__(self)
-        self.nx = nx
-        self.ny = ny
-        self.lonc = lonc
-        self.latc = latc
-        self.lon0 = lon0
-        self.lat0 = lat0
-        self.gsize = gsize
-        self.ezone = ezone
+        self.cgrid = "CONF PROJ"
+        domain_dict = {}
+        for key in from_json:
+            lower_case_dict = {}
+            for key2 in from_json[key]:
+                lower_case_dict.update({key2.lower(): from_json[key][key2]})
+            domain_dict.update({key.lower(): lower_case_dict})
+
+        self.nimax = domain_dict["nam_conf_proj_grid"]["nimax"]
+        self.njmax = domain_dict["nam_conf_proj_grid"]["njmax"]
+        self.xloncen = domain_dict["nam_conf_proj_grid"]["xloncen"]
+        self.xlatcen = domain_dict["nam_conf_proj_grid"]["xlatcen"]
+        self.xlon0 = domain_dict["nam_conf_proj"]["xlon0"]
+        self.xlat0 = domain_dict["nam_conf_proj"]["xlat0"]
+        self.xdx = domain_dict["nam_conf_proj_grid"]["xdx"]
+        self.xdy = domain_dict["nam_conf_proj_grid"]["xdy"]
+        self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
+        self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
 
     def update_namelist(self, nml):
         print(nml)
         nml.update({
             "nam_pgd_grid": {
-              "cgrid": "CONF PROJ"
+                "cgrid": self.cgrid
             },
             "nam_conf_proj": {
-              "xlon0": self.lon0,
-              "xlat0": self.lat0,
-              "xrpk": math.sin(math.radians(self.lat0)),
-              "xbeta": 0},
+                "xlon0": self.xlon0,
+                "xlat0": self.xlat0,
+                "xrpk": math.sin(math.radians(self.xlat0)),
+                "xbeta": 0},
             "nam_conf_proj_grid":{
-               "ilone": self.ezone,
-                "ilate": self.ezone,
-                "xlatcen": self.latc,
-                "xloncen": self.lonc,
-                "nimax": self.nx,
-                "njmax": self.ny,
-                "xdx": self.gsize,
-                "xdy": self.gsize
+                "ilone": self.ilone,
+                "ilate": self.ilate,
+                "xlatcen": self.xlatcen,
+                "xloncen": self.xloncen,
+                "nimax": self.nimax,
+                "njmax": self.njmax,
+                "xdx": self.xdx,
+                "xdy": self.xdy
             }
         })
-
-
-        #nml["nam_conf_proj"]["xlon0"] = self.lon0
-        #nml["nam_conf_proj"]["xlat0"] = self.lat0
-        #nml["nam_conf_proj"]["xrpk"] = math.sin(math.radians(self.lat0))
-        #nml["nam_conf_proj"]["xbeta"] = 0
-        #nml["nam_conf_proj_grid"]["ilone"] = self.ezone
-        #nml["nam_conf_proj_grid"]["ilate"] = self.ezone
-        #nml["nam_conf_proj_grid"]["xlatcen"] = self.latc
-        #nml["nam_conf_proj_grid"]["xloncen"] = self.lonc
-        #nml["nam_conf_proj_grid"]["nimax"] = self.nx
-        #nml["nam_conf_proj_grid"]["njmax"] = self.ny
-        #nml["nam_conf_proj_grid"]["xdx"] = self.gsize
-        #nml["nam_conf_proj_grid"]["xdy"] = self.gsize
         return nml
 
 
-def json2geo(settings):
-    #settings = json.loads(settings)
-    print(settings)
-    if type(settings) is dict:
-        print(settings["nam_pgd_grid"])
-        if settings["nam_pgd_grid"]["cgrid"] == "CONF PROJ":
-            nx = settings["nam_conf_proj_grid"]["nimax"]
-            ny = settings["nam_conf_proj_grid"]["njmax"]
-            lonc = settings["nam_conf_proj_grid"]["xloncen"]
-            latc = settings["nam_conf_proj_grid"]["xlatcen"]
-            lon0 = settings["nam_conf_proj"]["xlon0"]
-            lat0 = settings["nam_conf_proj"]["xlat0"]
-            gsize = settings["nam_conf_proj_grid"]["xdx"]
-            ezone = settings["nam_conf_proj_grid"]["ilone"]
-            return ConfProj(nx, ny, lonc, latc, lon0, lat0, gsize, ezone)
-        return None
-    else:
-        print("Settings should be a dict")
-        return Exception
-
 def set_domain(settings, domain):
-    #settings = json.loads(settings)
-    print(type(settings))
-    print(domain)
     if type(settings) is dict:
         if domain in settings:
             return settings[domain]
         else:
-            print("Domain not found: "+domain)
-            return None
+            print("Domain not found: " + domain)
+            raise Exception
     else:
         print("Settings should be a dict")
-        return None
+        raise Exception
