@@ -5,12 +5,12 @@ import surfex
 import argparse
 import sys
 import os
-import jsonmerge
+from jsonmerge import merge
 
 
 def parse():
     """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser(desc="Merge a list of JSON files to one JSON file")
+    parser = argparse.ArgumentParser("Merge a list of JSON files to one JSON file")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--json', '-j', type=str, nargs="+", required=True, help="A JSON file with run options")
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         if json_settings is None:
             json_settings = json.load(open(f, "r"))
         else:
-            json_settings = jsonmerge.merge(json_settings, json.load(open(f, "r")))
+            json_settings = merge(json_settings, json.load(open(f, "r")))
         print("merging json_setings: ", json_settings)
     json.dump(json_settings, open(my_output, "w"), indent=my_indent)
 

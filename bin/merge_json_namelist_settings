@@ -29,13 +29,11 @@ if __name__ == "__main__":
 
     my_files, my_output, my_indent = parse()
 
-    files = []
+    json_settings = {}
     for f in my_files:
-
         if os.path.exists(f):
-            files.append(f)
+            json_settings = surfex.merge_json_namelist_file(json_settings, f)
         else:
             raise FileNotFoundError
 
-    json_settings = surfex.merge_json_namelist_files(files)
     json.dump(json_settings, open(my_output, "w"), indent=my_indent)

@@ -4,10 +4,9 @@ import shutil
 
 
 class SurfexIO(object):
-    def __init__(self, filename, format, geo, input_file=None, symlink=True, archive_file=None):
-        self.format = format
+    def __init__(self, filename, file_format, geo, input_file=None, symlink=True, archive_file=None):
+        self.format = file_format
         self.filename = filename + self.format.extension
-        self.format = format
         self.geo = geo
         self.input_file = input_file
         self.symlink = symlink
@@ -59,13 +58,13 @@ class PGDFile(SurfexIO):
         self.cpgdfile = cpgdfile
         self.need_pgd = False
         if self.csurf_filetype.upper() == "NC":
-            format = surfex.NC()
+            file_format = surfex.NC()
         elif self.csurf_filetype.upper() == "FA":
-            format = surfex.FA(lfagmap=lfagmap)
+            file_format = surfex.FA(lfagmap=lfagmap)
         elif self.csurf_filetype.upper() == "ASCII":
-            format = surfex.ASCII()
+            file_format = surfex.ASCII()
 
-        SurfexIO.__init__(self, self.cpgdfile, format, geo, input_file=input_file,
+        SurfexIO.__init__(self, self.cpgdfile, file_format, geo, input_file=input_file,
                           archive_file=archive_file, symlink=symlink)
 
 
@@ -74,14 +73,15 @@ class PREPFile(SurfexIO):
         self.csurf_filetype = csurf_filetype
         self.cprepfile = cprepfile
         self.need_pgd = True
+        print(self.csurf_filetype)
         if self.csurf_filetype.upper() == "NC":
-            format = surfex.NC()
+            file_format = surfex.NC()
         elif self.csurf_filetype.upper() == "FA":
-            format = surfex.FA(lfagmap=lfagmap)
+            file_format = surfex.FA(lfagmap=lfagmap)
         elif self.csurf_filetype.upper() == "ASCII":
-            format = surfex.ASCII()
+            file_format = surfex.ASCII()
 
-        SurfexIO.__init__(self, self.cprepfile, format, geo, input_file=input_file,
+        SurfexIO.__init__(self, self.cprepfile, file_format, geo, input_file=input_file,
                           archive_file=archive_file, symlink=symlink)
 
 

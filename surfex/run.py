@@ -4,14 +4,16 @@ import subprocess
 
 
 class BatchJob(object):
-    def __init__(self, rte, wrapper=None):
+    def __init__(self, rte, wrapper=""):
         self.rte = rte
         self.wrapper = wrapper
 
     def run(self, cmd):
         print("set up subprocess")
-        if self.wrapper is not None:
-            cmd = self.wrapper + " " + cmd
+        if cmd is None:
+            print("No command provided!")
+            raise
+        cmd = self.wrapper + " " + cmd
         try:
             print("BATCH: ", self.rte["OMP_NUM_THREADS"])
             print("Batch running " + cmd)

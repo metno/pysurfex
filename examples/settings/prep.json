@@ -1,52 +1,14 @@
 {
-  "nam_prep_seaflux": {
-    "cseaice_scheme": "SICE"
-  },
-  "nam_seaice_sice": {
-    "lice_mass_balance": ".TRUE.",
-    "lice_has_snow": ".FALSE.",
-    "xocean_heat_flux": "2."
-  },
-  "nam_prep_seaice_sice": {
-    "xice_thickness": "0.75",
-    "num_layers": "4"
-  },
   "nam_prep_isba": {
-    "lisba_canopy": ".FALSE.",
-    "lextrap_tg": ".TRUE.",
-    "lextrap_wg": ".TRUE.",
-    "lextrap_wgi": ".TRUE.",
-    "lextrap_sn": ".TRUE."
-  },
-  "nam_prep_isba_snow": {
-     "csnow": "D95",
-     "lswemax": ".TRUE."
+    "lextrap_tg": true,
+    "lextrap_wg": true,
+    "lextrap_wgi": true,
+    "lextrap_sn": true
   },
   "nam_diag_isban": {
-     "lpatch_budget": ".TRUE."
+     "lpatch_budget": true
   },
-  "nam_write_surf_atm": {
-     "lsplit_patch": ".FALSE."
-  },
-  "nam_prep_surf_atm": {
-     "cfilepgd": "PGD_host",
-     "cfilepgdtype": "FA",
-     "cfile": "INFILE",
-     "cfiletype": "grib",
-     "nyear": "",
-     "nmonth": "",
-     "nday": "",
-     "xtime": ""
-  },
-  "nam_prep_flake": {
-    "lclim_lake": ".TRUE."
-  },
-  "nam_prep_seaflux": {
-    "lsea_sbl": ".FALSE."
-  },
-  "nam_surf_csts": {
-    "xz0sn": "0.003",
-    "xz0hsn": "0.0003"
+  "NAM_PREP_SEAFLUX": {
+    "LSEA_SBL": false
   }
 }
-

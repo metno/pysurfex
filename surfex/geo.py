@@ -25,18 +25,40 @@ class ConfProj(SurfexGeo):
 
     def update_namelist(self, nml):
         print(nml)
-        nml["nam_conf_proj"]["xlon0"] = self.lon0
-        nml["nam_conf_proj"]["xlat0"] = self.lat0
-        nml["nam_conf_proj"]["xrpk"] = math.sin(math.radians(self.lat0))
-        nml["nam_conf_proj"]["xbeta"] = 0
-        nml["nam_conf_proj_grid"]["ilone"] = self.ezone
-        nml["nam_conf_proj_grid"]["ilate"] = self.ezone
-        nml["nam_conf_proj_grid"]["xlatcen"] = self.latc
-        nml["nam_conf_proj_grid"]["xloncen"] = self.lonc
-        nml["nam_conf_proj_grid"]["nimax"] = self.nx
-        nml["nam_conf_proj_grid"]["njmax"] = self.ny
-        nml["nam_conf_proj_grid"]["xdx"] = self.gsize
-        nml["nam_conf_proj_grid"]["xdy"] = self.gsize
+        nml.update({
+            "nam_pgd_grid": {
+              "cgrid": "CONF PROJ"
+            },
+            "nam_conf_proj": {
+              "xlon0": self.lon0,
+              "xlat0": self.lat0,
+              "xrpk": math.sin(math.radians(self.lat0)),
+              "xbeta": 0},
+            "nam_conf_proj_grid":{
+               "ilone": self.ezone,
+                "ilate": self.ezone,
+                "xlatcen": self.latc,
+                "xloncen": self.lonc,
+                "nimax": self.nx,
+                "njmax": self.ny,
+                "xdx": self.gsize,
+                "xdy": self.gsize
+            }
+        })
+
+
+        #nml["nam_conf_proj"]["xlon0"] = self.lon0
+        #nml["nam_conf_proj"]["xlat0"] = self.lat0
+        #nml["nam_conf_proj"]["xrpk"] = math.sin(math.radians(self.lat0))
+        #nml["nam_conf_proj"]["xbeta"] = 0
+        #nml["nam_conf_proj_grid"]["ilone"] = self.ezone
+        #nml["nam_conf_proj_grid"]["ilate"] = self.ezone
+        #nml["nam_conf_proj_grid"]["xlatcen"] = self.latc
+        #nml["nam_conf_proj_grid"]["xloncen"] = self.lonc
+        #nml["nam_conf_proj_grid"]["nimax"] = self.nx
+        #nml["nam_conf_proj_grid"]["njmax"] = self.ny
+        #nml["nam_conf_proj_grid"]["xdx"] = self.gsize
+        #nml["nam_conf_proj_grid"]["xdy"] = self.gsize
         return nml
 
 

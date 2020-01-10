@@ -16,10 +16,22 @@ def parse():
     parser.add_argument('--config', '-c', type=str, nargs="?", required=False, help="Input TOML file if wanted")
     parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?')
-    parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?')
+    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
+    parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?', help="")
     parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
                         help="Input json file for SURFEX binaries")
+    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
+                        help="Input file for PREP")
+    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
+                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
+    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
+                        help="Input PGD file for PREP input file")
+    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False, default=None,
+                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
+    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
+                        help="DTG (YYYYMMDDHH)")
+    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
+
     parser.add_argument('--ecoclimap', '-e', type=str, nargs="?", required=False, default="ecoclimap.json",
                         help="Input ecoclimap json file for SURFEX binaries")
     parser.add_argument('program', help="For which program you should create the JSON file",
@@ -31,138 +43,39 @@ def parse():
 
     args = parser.parse_args()
 
-    return args.program, args.config, args.path, args.indent, args.system, args.namelist, args.files, args.ecoclimap
-
-
-def recursive_items(dictionary):
-    for lkey, lvalue in dictionary.items():
-        if type(lvalue) is dict:
-            yield from recursive_items(lvalue)
-        else:
-            yield lkey, lvalue
+    return args.program, args.config, args.path, args.indent, args.system, args.namelist, args.files, args.ecoclimap, \
+           args.forc_zs, args.prep_file, args.prep_filetype, args.prep_pgdfile, args.prep_pgdfiletype, args.dtg
 
 
 if __name__ == "__main__":
 
     program, settings_file, input_path, indent, system_settings, name_of_namelist, name_of_input_files, \
-        name_of_ecoclimap = parse()
+        name_of_ecoclimap, forc_zs, prep_file, prep_filetype, prep_pgdfile, prep_pgdfiletype, dtg = parse()
 
     env = {}
     if os.path.exists(settings_file):
-        #env = os.environ.copy()
         print("Read toml settings from " + settings_file)
-        #for key, value in recursive_items(toml.load(open(settings_file, "r"))):
-        #    print("key:", key, "value=", value)
-        #    env.update({key: value})
-
         env = toml.load(open(settings_file, "r"))
         print(env)
     else:
         print("Input file does not exist: " + settings_file)
         raise FileNotFoundError
 
-    print("Creating JSON namelist input for program: " + program)
-
-    #print(env["CSURF_FILETYPE"])
-
-    # isba_$CISBAL isba_pgd pgd ${PHYSICS}_pgd $PGD_EXTENSION_ZONE filetype $SFX_TREE_DRAG_OPTIONS"
-    input_list = []
-
-    # General settings
-    # IO
-    input_list.append({"json": json.loads('{"NAM_IO_OFFLINE": { "CSURF_FILETYPE": "' + env["SURFEX_IO"]["CSURF_FILETYPE"] +
-                                          '"}}')})
-
-    print(system_settings)
-    if os.path.exists(system_settings):
-        system_files = json.load(open(system_settings, "r"))
-    else:
-        raise FileNotFoundError
-
-    # Ecoclimap settings
-    ecoclimap_json = {}
-    #ecoclimapI_covers_param.bin
-    #ecoclimapII_af_covers_param.bin
-    #ecoclimapII_eu_covers_param.bin
-
-    # Input files for surfex
-    input_for_surfex_json = {}
-
-    # Program specific settings
-    if program == "pgd":
-        input_list.append({"file": input_path + "/pgd.json"})
-
-        # Set direct input files
-        ntypes = ["ZS", "COVER"]
-        if env["SURFEX_TILES"]["NATURE"] == "ISBA":
-            ntypes.append("ISBA")
-        if env["SURFEX_TILES"]["INLAND_WATER"] == "FLAKE":
-            ntypes.append("FLAKE")
-
-        for ntype in ntypes:
-            for dtype in env["DIRECT_INPUT_DATA_" + ntype]:
-                dname = env["DIRECT_INPUT_DATA_" + ntype][dtype]
-                print(dname)
-                input_list.append(
-                    {"json": json.loads('{"NAM_' + ntype + '": { "' + dtype + '": "' + dname + '", ' +
-                                        '"' + dtype + 'FILETYPE": "DIRECT"}}')})
-                suffixes = ["hdr", "dir"]
-                for suffix in suffixes:
-                    lfname_settings = dname + "." + suffix
-                    print(lfname_settings)
-                    print("dette er:",system_files)
-                    if lfname_settings in system_files:
-                        lfname = system_files[lfname_settings]
-                        input_for_surfex_json.update({lfname_settings: lfname})
-                    else:
-                        raise NotImplementedError
-
-        # Set LLV input data
-
-        # Set ISBA properties
-        input_list.append({"file": input_path + "/" + env["ISBA"]["SCHEME"].lower() + ".json"})
-        input_list.append({"json": json.loads('{"NAM_ISBA": { "NPATCH": "' + str(env["ISBA"]["NPATCH"]) + '"}}')})
-
-    elif program == "prep":
-
-        input_list.append({"file": input_path + "/prep.json"})
-
-        # Set NetCDF input for FLAKE
-
-        input_list.append({"json": json.loads('{"NAM_PREP_ISBA": { "LISBA_CANOPY": "' + env["ISBA"]["CANOPY"] + '"}}')})
-    elif program == "offline":
-        input_list.append({"file": input_path + "/offline.json"})
-
-    elif program == "soda":
-        input_list.append({"file": input_path + "/soda.json"})
-        # Set OI polynoms
-
-    else:
-        raise NotImplementedError
-
-    json_settings = []
-    for inp in input_list:
-        if "file" in inp:
-            if not os.path.exists(inp["file"]):
-                print("Needed namelist input does not exist: " + inp["file"])
-                raise FileNotFoundError
-            else:
-                print("Read from file " + inp["file"])
-                json_settings.append(surfex.merge_json_namelist_files([inp["file"]]))
-        elif "json" in inp:
-            print("JSON String", inp["json"], type(inp["json"]))
-            json_settings.append(surfex.merge_json_namelist_settings([inp["json"]]))
-        else:
-            print("Can not handle input type "+str(inp))
-            raise Exception
+    merged_json_settings, ecoclimap_json, input_for_surfex_json = \
+        surfex.set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs, prep_file,
+                                               prep_filetype, prep_pgdfile, prep_pgdfiletype, dtg)
 
     # Namelist settings
-    merged_json_settings = surfex.merge_json_namelist_settings(json_settings)
+    print("\nNamelist: ")
+    for key in merged_json_settings:
+        print(key, ":", merged_json_settings[key])
     json.dump(merged_json_settings, open(name_of_namelist, "w"), indent=indent)
 
     # Input files for SURFEX binary
+    print("\nInput files: ", input_for_surfex_json)
     json.dump(input_for_surfex_json, open(name_of_input_files, "w"), indent=indent)
 
     # Ecoclimap
+    print("\nEcoclimap: ", ecoclimap_json)
     json.dump(ecoclimap_json, open(name_of_ecoclimap, "w"), indent=indent)
 

@@ -43,18 +43,13 @@ if __name__ == "__main__":
     else:
         raise FileNotFoundError
 
-    if os.path.exists(domain):
-        my_domain = json.load(open(domain, "r"))
-    else:
-        raise FileNotFoundError
-
-    if os.path.exists(json):
+    if os.path.exists(json_file):
         json_settings = json.load(open(json_file, "r"))
     else:
         raise FileNotFoundError
 
     if os.path.exists(domain):
-        my_geo = surfex.json2geo(open(domain, "r"))
+        my_geo = surfex.json2geo(json.load(open(domain, "r")))
     else:
         raise FileNotFoundError
 
@@ -63,32 +58,34 @@ if __name__ == "__main__":
     else:
         raise FileNotFoundError
 
-    if os.path.exists(input_arg):
-        input_file = input_arg
-    else:
-        raise FileNotFoundError
+    my_input = None
+    if input_arg is not None:
+        if os.path.exists(input_arg):
+            input_file = input_arg
+            my_input = surfex.JsonInputDataFromFile(input_file)
+        else:
+            raise FileNotFoundError
 
-    if os.path.exists(archive):
-        my_archive = surfex.JsonOutputDataFromFile(archive)
-    else:
-        raise FileNotFoundError
+    my_archive = None
+    if archive is not None:
+        if os.path.exists(archive):
+            my_archive = surfex.JsonOutputDataFromFile(archive)
+        else:
+            raise FileNotFoundError
 
     if not os.path.exists(output) or force:
         my_settings = surfex.ascii2nml(json_settings)
-        my_geo.update_namelist(my_settings)
-
-        print(os.getcwd())
 
         # Create input
         my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)
-        my_input = surfex.JsonInputDataFromFile(input_file)
 
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
         print(my_settings)
+        print(my_format)
         my_pgdfile = surfex.file.SURFFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
-        prepfile = surfex.PREPFile(format, my_prepfile, my_geo, archive_file=output)
-        surfex.SURFEXBinary(binary, my_batch, prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile)
+        prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output)
+        surfex.SURFEXBinary(binary, my_batch, prepfile, my_settings, my_ecoclimap, input=my_input, pgdfile=my_pgdfile)
     else:
         print(output + " already exists!")

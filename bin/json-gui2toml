@@ -7,6 +7,7 @@ import sys
 import os
 import toml
 
+
 def parse():
     """Parse the command line input arguments."""
     parser = argparse.ArgumentParser("Creating the TOML settings file to run SURFEX from JSON files from GUI")

@@ -1,9 +1,0 @@
-conf_proj_domain:
-  NLONS: 100
-  NLATS: 100
-  LONC: 10
-  LATC: 60
-  LON0: 15 
-  LAT0: 50
-  GSIZE: 2500
-  EZONE: 11

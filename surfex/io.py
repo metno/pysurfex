@@ -7,9 +7,7 @@ import subprocess
 from abc import ABC, abstractmethod
 import surfex
 import toml
-import jsonmerge
 from jsonmerge import merge
-import collections
 
 try:
     from StringIO import StringIO   # Python 2.x
@@ -37,14 +35,11 @@ def remove_existing_file(f_in, f_out):
 
 
 def ascii2nml(input_data):
-    #input_data = json.loads(input_data)
-    print(type(input_data))
-    print("Input data:", input_data)
     output_data = f90nml.Namelist(input_data)
     return output_data
 
 
-def asciiFile2nml(input_fname, input_fmt="json"):
+def ascii_file2nml(input_fname, input_fmt="json"):
     if input_fmt == 'json':
         with open(input_fname) as input_file:
             output_data = json.load(input_file)
@@ -165,91 +160,3 @@ class JsonInputDataFromFile(JsonInputData):
 
     def prepare_input(self):
         JsonInputData.prepare_input(self)
-
-
-class Toml2Json(object):
-    def __init__(self, toml_string, json_settings):
-        print(toml_string)
-        self.toml = toml_string
-
-        for setting in self.toml:
-            self.json_settings = surfex.set_namelist(setting, self.toml[setting], json_settings)
-
-        #print(settings)
-        self.json_settings = str(json.dumps(self.json_settings))
-        print(type(self.json_settings))
-        print(self.json_settings)
-
-
-class TomlFile2Json(Toml2Json):
-    def __init__(self, file, json_settings):
-        if os.path.exists(file):
-            toml_string = toml.load(file)
-        else:
-            raise FileNotFoundError
-        Toml2Json.__init__(self, toml_string, json_settings)
-
-
-def create_json_from_toml(json_files, toml_file):
-
-    files = []
-    for f in json_files:
-        if os.path.exists(f):
-            files.append(f)
-        else:
-            raise FileNotFoundError
-
-    json_settings = None
-    for f in files:
-        if json_settings is None:
-            json_settings = json.load(open(f, "r"))
-        else:
-            json_settings = merge(json_settings, json.load(open(f, "r")))
-        print("merging json_setings: ", json_settings)
-
-    print("json_setings before toml: ", json_settings)
-    if os.path.exists(toml_file):
-        json_settings = json.loads(surfex.TomlFile2Json(toml_file, json_settings).json_settings)
-
-    print("json_setings after toml: ", json_settings)
-    return json_settings
-
-
-def merge_json_namelist_settings(json_settings_list):
-
-    json_settings = None
-    upper_case_dict = {}
-    print("Settings: ", json_settings_list)
-    for values in json_settings_list:
-        print("Values: ", values)
-        print(type(values))
-        for key in values:
-            upper_case_dict2 = {}
-            print("key", key)
-            print("values: ", values[key], " key: ", key)
-            for key2 in values[key]:
-                upper_case_dict2.update({key2.upper():values[key][key2]})
-            upper_case_dict.update({key.upper(): upper_case_dict2})
-        if json_settings is None:
-            json_settings = json.dumps(upper_case_dict)
-        else:
-            new_settings = json.dumps(upper_case_dict)
-            json_settings = jsonmerge.merge(json_settings, new_settings)
-        print("merging json_setings: ", json_settings)
-    return json.loads(json_settings)
-
-
-def merge_json_namelist_files(my_files):
-    files = []
-    for f in my_files:
-
-        if os.path.exists(f):
-            files.append(f)
-        else:
-            raise FileNotFoundError
-
-    json_settings_list = []
-    for f in files:
-        json_settings_list.append(json.load(open(f, "r")))
-
-    return merge_json_namelist_settings(json_settings_list)

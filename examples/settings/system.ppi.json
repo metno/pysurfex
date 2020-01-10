@@ -1,18 +1,12 @@
 {
-  "FAO_SAND.hdr":"/lustre/storeB/project/nwp/surfex/PGD/sand_fao.hdr",
-  "FAO_SAND.dir":"/lustre/storeB/project/nwp/surfex/PGD/sand_fao.dir",
-  "FAO_CLAY.hdr":"/lustre/storeB/project/nwp/surfex/PGD/clay_fao.hdr",
-  "FAO_CLAY.dir":"/lustre/storeB/project/nwp/surfex/PGD/clay_fao.dir",
-  "gmted2010.hdr":"/lustre/storeB/project/nwp/surfex/PGD/gmted2010.hdr",
-  "gmted2010.dir":"/lustre/storeB/project/nwp/surfex/PGD/gmted2010.dir",
-  "SOC_TOP.hdr":"/lustre/storeB/project/nwp/surfex/PGD/soc_top.hdr",
-  "SOC_TOP.dir":"/lustre/storeB/project/nwp/surfex/PGD/soc_top.dir",
-  "SOC_SUB.hdr":"/lustre/storeB/project/nwp/surfex/PGD/soc_sub.hdr",
-  "SOC_SUB.dir":"/lustre/storeB/project/nwp/surfex/PGD/soc_sub.dir",
-  "GlobalLakeDepth.hdr":"/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeDepth.hdr",
-  "GlobalLakeDepth.dir":"/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeDepth.dir",
-  "GlobalLakeStatus.hdr":"/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeStatus.hdr",
-  "GlobalLakeStatus.dir":"/lustre/storeB/project/nwp/surfex/PGD/GlobalLakeStatus.dir",
-  "ecoclimap_2_5_plus.hdr":"/lustre/storeB/project/nwp/surfex/PGD/ECOCLIMAP_II_EUROP_V2.2.hdr",
-  "ecoclimap_2_5_plus.dir":"/lustre/storeB/project/nwp/surfex/PGD/ECOCLIMAP_II_EUROP_V2.2.dir"
+  "scratch": "/home/$USER/surfex-tests",
+  "climdir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "sand_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "clay_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "oro_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "soc_top_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "soc_sub_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "flake_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "ecoclimap_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "ecoclimap_bin_dir": "/home/asmundb/git/Harmonie/util/offline/MY_RUN/ECOCLIMAP/"
 }
