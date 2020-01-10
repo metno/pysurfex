@@ -1,0 +1,195 @@
+#!/usr/bin/env python3.5
+
+import netCDF4 as nc
+import numpy as np
+import sys
+import os
+from argparse import ArgumentParser
+from datetime import datetime,timedelta
+import calendar
+from forcing.conf_proj import conf_proj_geo 
+
+
+def calc_sd(fh_sd, layers, npatch):
+    for patch in range(0, npatch):
+        swe1 = fh_sd["WSN_VEG1"][patch, :]
+        rho1 = fh_sd["RSN_VEG1"][patch, :]
+        print("WSN_VEG1")
+        field_tmp = np.ma.divide(swe1, rho1)
+        field_tmp[swe1 == 0] = 0
+        for l in range(2, layers+1):
+            swe = fh_sd["WSN_VEG"+str(l)][patch, :]
+            rho = fh_sd["RSN_VEG"+str(l)][patch, :]
+            print("WSN_VEG"+str(l))
+            new_field = np.ma.divide(swe, rho)
+            new_field[swe == 0] = 0
+            field_tmp = np.ma.add(field_tmp, new_field)
+        print(patch)
+        print(field_tmp.shape)
+        if patch == 0:
+            field = field_tmp
+        else:
+            for i in range(0, field.shape[0]):
+                for j in range(0, field.shape[1]):
+                    if np.ma.is_masked(field[i][j]) and not np.ma.is_masked(field_tmp[i][j]):
+                        print(i, j, field[i][j], field_tmp[i][j])
+                        field[i][j] = field_tmp[i][j]
+
+        field = np.ma.masked_invalid(field)
+        print(field.shape)
+    return field
+
+
+def create_template(vars, nx, ny, fname="raw.nc"):
+
+    fg = nc.Dataset(fname, "w")
+    fg.createDimension("y", ny)
+    fg.createDimension("x", nx)
+    fg.createDimension("time", 1)
+    fg.createVariable("time", "f8", ("time"))
+    fg.variables["time"].long_name = "time"
+    fg.variables["time"].standard_name = "time"
+    fg.variables["time"].units = "seconds since 1970-01-01 00:00:00 +00:00"
+    fg.createVariable("longitude", "f8", ("y", "x"))
+    fg.variables["longitude"].units = "degree_east"
+    fg.variables["longitude"].long_name = "longitude"
+    fg.variables["longitude"].standard_name = "longitude"
+    fg.createVariable("latitude", "f8", ("y", "x"))
+    fg.variables["latitude"].units = "degree_north"
+    fg.variables["latitude"].long_name = "latitude"
+    fg.variables["latitude"].standard_name = "latitude"
+    fg.createVariable("x", "f4", ("x"))
+    fg.variables["x"].long_name = "x-coordinate in Cartesian system"
+    fg.variables["x"].standard_name = "projection_x_coordinate"
+    fg.variables["x"].units = "m"
+    fg.createVariable("y", "f4", ("y"))
+    fg.variables["y"].long_name = "y-coordinate in Cartesian system"
+    fg.variables["y"].standard_name = "projection_y_coordinate"
+    fg.variables["y"].units = "m"
+
+    standard_name = {"air_temperature_2m": "air_temperature", 
+                     "relative_humidity_2m": "relative_humidity",
+                     "altitude": "altitude", 
+                     "surface_snow_thickness": "surface_snow_thickness",
+                     "land_area_fraction": "land_area_fraction"}
+    long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
+                 "relative_humidity_2m": "Screen level relative humidity (RH2M)",
+                 "altitude": "Altitude",
+                 "surface_snow_thickness": "Surface snow thickness",
+                 "land_area_fraction": "Land Area Fraction"}
+    units = {"air_temperature_2m": "K", 
+             "relative_humidity_2m": "1", 
+             "altitude": "m",
+             "surface_snow_thickness": "m",
+             "land_area_fraction": "1"}
+    fillvalue = {"air_temperature_2m": "9.96921e+36", 
+                 "relative_humidity_2m": "9.96921e+36",
+                 "altitude": "9.96921e+36", 
+                 "surface_snow_thickness": "9.96921e+36",
+                 "land_area_fraction": "9.96921e+36"}
+
+    for var in vars:
+        if var == "altitude" or var == "land_area_fraction":
+            fg.createVariable(var, "f4", ("y", "x"), fill_value=fillvalue[var])
+        else:
+            fg.createVariable(var, "f4", ("time", "y", "x"), fill_value=fillvalue[var])
+        fg.variables[var].long_name = long_name[var]
+        fg.variables[var].standard_name = standard_name[var]
+        fg.variables[var].units = units[var]
+
+    return fg
+
+
+parser = ArgumentParser(description="Create first guess file for gridpp from grib")
+parser.add_argument('ncfile', type=str, help="Surfex nc file")
+parser.add_argument('--sd_file', type=str, help="Surfex nc file for snow depth", default=None)
+parser.add_argument('--sd_layers', type=int, help="Surfex snow layers", default=1)
+parser.add_argument('--zs_file', type=str, help="Surfex nc file for ZS")
+parser.add_argument('--laf_file', type=str, help="Surfex nc file for land area fraction")
+parser.add_argument('--npatch', type=int, help="Surfex patches", default=2)
+parser.add_argument('-o', dest="output", type=str, help="output file", default="raw.nc")
+args = parser.parse_args(sys.argv[1:])
+
+
+vars = ["air_temperature_2m", "relative_humidity_2m", "surface_snow_thickness", "altitude", "land_area_fraction"]
+
+
+fname = args.ncfile
+fh = nc.Dataset(fname, "r")
+X = fh["XX"][:]
+Y = fh["YY"][:]
+yy = fh["DTCUR-YEAR"][:]
+mm = fh["DTCUR-MONTH"][:]
+dd = fh["DTCUR-DAY"][:]
+time = fh["DTCUR-TIME"][:]
+
+#lonc=fh["LONORI"][:]
+#latc=fh["LATORI"][:]
+lon0 = fh["LON0"][:]
+lat0 = fh["LAT0"][:]
+gsize = float(fh["DX"][0][0])
+nx = int(fh["IMAX"][0])
+ny = int(fh["JMAX"][0])
+
+lonc = float(os.environ['LONC'])
+latc = float(os.environ['LATC'])
+
+dt = datetime(yy, mm, dd)
+dt = dt+timedelta(seconds=int(time))
+fname_sd = fname
+
+if args.sd_file is not None:
+    fname_sd = args.sd_file
+fh_sd = nc.Dataset(fname_sd, "r")
+fname_zs = fname
+
+if args.zs_file is not None:
+    fname_zs = args.zs_file
+fh_zs = nc.Dataset(fname_zs, "r")
+fname_laf = fname
+
+if args.laf_file is not None:
+    fname_laf = args.laf_file
+fh_laf = nc.Dataset(fname_laf, "r")
+
+print(lonc, latc, lon0, lat0, gsize, nx, ny)
+lons, lats = conf_proj_geo(lonc, latc, lon0, lat0, gsize, nx, ny)
+
+print(yy, mm, dd, time)
+print(X.shape)
+print(Y.shape)
+
+first = True
+for var in vars:
+
+    if var == "air_temperature_2m":
+        field = fh["T2M"][:]
+    elif var == "relative_humidity_2m":
+        field = fh["HU2M"][:]
+    elif var == "surface_snow_thickness":
+        field = calc_sd(fh_sd, args.sd_layers, args.npatch)
+    elif var == "altitude":
+        field = fh_zs["ZS"][:]
+    elif var == "land_area_fraction":
+        field = fh_laf["FRAC_NATURE"][:]
+
+    field = np.transpose(field)
+    # Create file
+    if first:
+        fg = create_template(vars, X.shape[1], Y.shape[0], args.output)
+    if var == "altitude":
+        field[field < 0] = 0
+
+    print(var)
+    print(field.shape)
+    fg.variables[var][:] = np.transpose(field)
+    if first:
+        epoch = calendar.timegm(dt.timetuple())
+        fg.variables["time"][:] = epoch
+        fg.variables["longitude"][:] = np.transpose(lons)
+        fg.variables["latitude"][:] = np.transpose(lats)
+        fg.variables["x"][:] = X[0:]
+        fg.variables["y"][:] = Y[:, 0]
+
+    first = False
+fg.close()

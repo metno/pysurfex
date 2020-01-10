@@ -324,6 +324,21 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
         # Nature
         input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": env["ASSIM_SCHEMES"]["ISBA"]}}})
 
+        # Snow
+        laesnm = False
+        if type(env["ASSIM_ISBA"]["UPDATE_SNOW_CYCLES"]) is list:
+            if len(env["ASSIM_ISBA"]["UPDATE_SNOW_CYCLES"]) > 0:
+                if dtg is not None:
+                    for cycle in env["ASSIM_ISBA"]["UPDATE_SNOW_CYCLES"]:
+                        print(int(datetime.strptime(dtg, "%Y%m%d%H").strftime("%H")))
+                        print(int(cycle))
+                        if int(datetime.strptime(dtg, "%Y%m%d%H").strftime("%H")) == int(cycle):
+                            print("true")
+                            laesnm = True
+                else:
+                    raise Exception("You must provide a DTG when using a list for snow assimilation cycles")
+        input_list.append({"json": {"NAM_ASSIM": {"LAESNM": laesnm}}})
+
         # Set OI polynoms
         if env["ASSIM_SCHEMES"]["ISBA"] == "OI":
             input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_CLIM": env["ASSIM_ISBA_OI"]["CFILE_FORMAT_CLIM"]}}})

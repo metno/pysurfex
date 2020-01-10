@@ -119,7 +119,8 @@ if __name__ == "__main__":
 
         my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("soda", merged_toml_env,
                                                                                      root_dir + "/settings/",
-                                                                                     root_dir + "/settings/system.ppi.json")
+                                                                                     root_dir + "/settings/system.ppi.json",
+                                                                                     dtg=my_dtg.strftime("%Y%m%d%H"))
 
         print(my_settings)
         assim_input = surfex.set_assimilation_input(my_dtg, my_settings, sstfile=my_sstfile,
