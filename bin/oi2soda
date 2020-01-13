@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+import surfex
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Create ASCII input for SODA from gridPP files")
+    parser.add_argument('--input_file', type=str, help="Input NetCDF file with all variables", required=False,
+                        default=None)
+    parser.add_argument('--t2m_file', type=str, help="NetCDF file for T2M", required=False, default=None)
+    parser.add_argument('--t2m_var', type=str, help="NetCDF variable name for T2M", required=False,
+                        default="air_temperature_2m")
+    parser.add_argument('--rh2m_file', type=str, help="NetCDF file for RH2M", required=False, default=None)
+    parser.add_argument('--rh2m_var', type=str, help="NetCDF variable name for RH2M", required=False,
+                        default="relative_humidity_2m")
+    parser.add_argument('--sd_file', type=str, help="NetCDF file for SD", required=False, default=None)
+    parser.add_argument('--sd_var', type=str, help="NetCDF variable name for SD", required=False,
+                        default="surface_snow_thickness")
+    parser.add_argument('dtg', type=str, help="DTG", default=None)
+
+    if len(sys.argv) < 3:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(sys.argv[1:])
+    t2m_file = args.t2m_file
+    if t2m_file is None and args.input_file is not None:
+        t2m_file = args.input_file
+    rh2m_file = args.rh2m_file
+    if rh2m_file is None and args.input_file is not None:
+        rh2m_file = args.input_file
+    sd_file = args.sd_file
+    if sd_file is None and args.input_file is not None:
+        sd_file = args.input_file
+    t2m = {"file": t2m_file, "var": args.t2m_var}
+    rh2m = {"file": rh2m_file, "var": args.rh2m_var}
+    sd = {"file": sd_file, "var": args.sd_var}
+    yy = args.dtg[2:4]
+    mm = args.dtg[4:6]
+    dd = args.dtg[6:8]
+    hh = args.dtg[8:10]
+    surfex.var2ascii(t2m, rh2m, sd, yy, mm, dd, hh)

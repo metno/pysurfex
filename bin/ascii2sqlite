@@ -1,0 +1,45 @@
+from argparse import ArgumentParser
+import sys
+import surfex
+
+#  python ascii2sqlite.py 2018100106 snow
+#  --titan /nobackup/forsk/sm_tryas/offline/D95_DA/work/cristian/obs_sd_2018100106.txt
+#  --gridpp /home/sm_tryas/git/gridpp/build/diag.txt
+if __name__ == "__main__":
+    parser = ArgumentParser("Create SQLite data base for obsmon")
+    parser.add_argument('DTG', type=str, help="YYYYMMDDHH")
+    parser.add_argument('varname', type=str, help="Variable name")
+    parser.add_argument('--titan', type=str, help="TITAN output file", default=None)
+    parser.add_argument('--gridpp', type=str, help="gridpp diagnostic file", default=None)
+    parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
+    args = parser.parse_args(sys.argv[1:])
+
+    modes = ["total", "land", "sea"]
+    stat_cols = ["nobs", "fg_bias", "fg_abs_bias", "fg_rms", "fg_dep", "fg_uncorr", "bc", "an_bias", "an_abs_bias",
+                 "an_rms", "an_dep"]
+
+    if args.titan is None and args.gridpp is None:
+        print("You must provide at least one file")
+        sys.exit(1)
+
+    obs_titan = None
+    if args.titan is not None:
+        obs_titan = surfex.read_ascii_file_with_header(args.titan, offset=100)
+    obs_gridpp = None
+    if args.gridpp is not None:
+        obs_gridpp = surfex.read_ascii_file_with_header(args.gridpp, offset=200)
+
+    varname = args.varname
+    DTG = args.DTG
+    dbname = args.output
+
+    conn = surfex.open_db(dbname)
+    surfex.create_db(conn, modes, stat_cols)
+    if args.titan is not None:
+        surfex.populate_usage_db(conn, DTG, varname, obs_titan)
+
+    if args.gridpp is not None:
+        surfex.populate_usage_db(conn, DTG, varname, obs_gridpp)
+        surfex.populate_obsmon_db(conn, DTG, surfex.calculate_statistics(obs_gridpp, modes, stat_cols), modes, stat_cols)
+
+    surfex.close_db(conn)

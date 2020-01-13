@@ -1,0 +1,102 @@
+#!/usr/bin/env python2.7
+
+from __future__ import print_function
+import traceback
+import argparse
+from datetime import datetime,timedelta
+
+import surfex
+
+CAN_PLOT = True
+try:
+    from cartopy import crs as ccrs
+    import matplotlib.pyplot as plt
+except:
+    CAN_PLOT = False
+import sys
+from eccodes import CodesInternalError
+
+
+def two_floats(value):
+    lvalues = value.split(",")
+    # print(values)
+    if len(values) != 2:
+        raise argparse.ArgumentError
+
+    lvalues = map(float, lvalues)
+    return lvalues
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser("Parse airTemperature,relativeHumidity or totalSnowDepth from bufr file")
+    parser.add_argument('-f', dest="input", help='Inputfile file', required=True)
+    parser.add_argument('-o', dest="output", help='Output file', required=True)
+    parser.add_argument('-v', dest="var", help='variabel', required=True)
+    parser.add_argument('--plot', dest="plot", default=False, action='store_true')
+    parser.add_argument('--latrange', help='Only keep stations within these latitudes (min,max)', dest="latrange",
+                        action='store', type=two_floats, default=[-90, 90])
+    parser.add_argument('--lonrange', help='Only keep stations within these longitudes (min,max)', dest="lonrange",
+                        action='store', type=two_floats, default=[-180, 180])
+    parser.add_argument('-d', '--validDTG', help='Valid date (YYYYMMDDHH)', dest="valid_dtg", type=str, default=None)
+    parser.add_argument('-r', '--validRange', help='Valid time range in minutes centered around validDTG',
+                        dest="valid_range", type=int, default=60)
+    parser.add_argument('--debug', dest="debug", help='Debug', action='store')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    valid_dtg = None
+    if args.valid_dtg is not None:
+        valid_dtg = datetime.strptime(args.valid_dtg, "%Y%m%d%H")
+
+    try:
+        observations = surfex.read_bufr_file(args.input, args.var, args.lonrange, args.latrange, valid_dtg,
+                                             timedelta(minutes=args.valid_range / 2))
+    except CodesInternalError as err:
+        if args.debug:
+            traceback.print_exc(file=sys.stderr)
+        else:
+            sys.stderr.write(err.msg + '\n')
+        sys.exit(1)
+
+    surfex.write_obs_to_ascii_file(args.output, observations)
+
+    if args.plot:
+        if not CAN_PLOT:
+            print("Did not find required plot dependencies")
+        else:
+            lons = list()
+            lats = list()
+            values = list()
+            elevs = list()
+            for obs in observations:
+                lats.append(obs.lat)
+                lons.append(obs.lon)
+                values.append(obs.value)
+                elevs.append(obs.elevation)
+
+            proj = ccrs.LambertConformal(central_longitude=15., central_latitude=63., standard_parallels=[63.])
+            # Accent, Accent_r, Blues, Blues_r, BrBG, BrBG_r, BuGn, BuGn_r, BuPu, BuPu_r, CMRmap, CMRmap_r, Dark2, Dark2_r,
+            # GnBu, GnBu_r, Greens, Greens_r, Greys, Greys_r, OrRd, OrRd_r, Oranges, Oranges_r, PRGn, PRGn_r, Paired, Paired_r,
+            # Pastel1, Pastel1_r, Pastel2, Pastel2_r, PiYG, PiYG_r, PuBu, PuBuGn, PuBuGn_r, PuBu_r, PuOr, PuOr_r, PuRd, PuRd_r,
+            # Purples, Purples_r, RdBu, RdBu_r, RdGy, RdGy_r, RdPu, RdPu_r, RdYlBu, RdYlBu_r, RdYlGn, RdYlGn_r, Reds, Reds_r,
+            # Set1, Set1_r, Set2, Set2_r, Set3, Set3_r, Spectral, Spectral_r, Wistia, Wistia_r, YlGn, YlGnBu, YlGnBu_r, YlGn_r,
+            # YlOrBr, YlOrBr_r, YlOrRd, YlOrRd_r, afmhot, afmhot_r, autumn, autumn_r, binary, binary_r, bone, bone_r, brg,
+            # brg_r, bwr, bwr_r, cool, cool_r, coolwarm, coolwarm_r, copper, copper_r, cubehelix, cubehelix_r, flag, flag_r,
+            # gist_earth, gist_earth_r, gist_gray, gist_gray_r, gist_heat, gist_heat_r, gist_ncar, gist_ncar_r, gist_rainbow,
+            # gist_rainbow_r, gist_stern, gist_stern_r, gist_yarg, gist_yarg_r, gnuplot, gnuplot2, gnuplot2_r, gnuplot_r, gray,
+            # gray_r, hot, hot_r, hsv, hsv_r, inferno, inferno_r, jet, jet_r, magma, magma_r, nipy_spectral, nipy_spectral_r,
+            # ocean, ocean_r, pink, pink_r, plasma, plasma_r, prism, prism_r, rainbow, rainbow_r, seismic, seismic_r, spectral,
+            # spectral_r, spring, spring_r, summer, summer_r, terrain, terrain_r, viridis, viridis_r, winter, winter_r
+            plt.close()
+            ax = plt.axes(projection=proj)
+            ax.coastlines(resolution="10m")
+            plt.scatter(lons, lats, c=values, transform=ccrs.PlateCarree(), cmap="coolwarm")
+            plt.title(args.var)
+            plt.colorbar()
+            plt.show()
+            plt.close()
