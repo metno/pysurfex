@@ -115,7 +115,7 @@ def set_input_object(sfx_var,merged_conf,geo,format,selected_converter,ref_heigh
     return obj
 
 
-def parseAreaFile(area_file,mode,name,format="grib"):
+def parseAreaFile(area_file, mode, name,format="grib"):
 
 
     geo_out=None
@@ -417,7 +417,8 @@ def parseArgs(argv):
             selected_converter = args.qa_converter
             ref_height = args.zref
         elif sfx_var == "PS":
-            if args.ps != "default": cformat = args.ps
+            if args.ps != "default":
+                cformat = args.ps
             selected_converter = args.ps_converter
         elif sfx_var == "DIR_SW":
             if args.dir_sw != "default": cformat = args.dir_sw
@@ -448,17 +449,18 @@ def parseArgs(argv):
         var_objs.append(set_input_object(sfx_var,merged_conf,geo_out,cformat,selected_converter,ref_height,start,firstBaseTime,args.timestep,debug))
 
     # Save options
-    options=dict()
-    options['output_format']=args.output_format
-    options['output_file']=args.of
-    options['start']=start
+    options = dict()
+    options['output_format'] = args.output_format
+    options['output_file'] = args.of
+    options['start'] = start
     options['stop'] = stop
-    options['timestep']=args.timestep
-    options['geo_out']=geo_out
-    options['debug']=args.debug
+    options['timestep'] = args.timestep
+    options['geo_out'] = geo_out
+    options['debug'] = args.debug
     options['cache_interval'] = args.cache_interval
 
     return options,var_objs,att_objs
+
 
 def runTimeLoop(options,var_objs,att_objs):
 
@@ -495,6 +497,7 @@ def runTimeLoop(options,var_objs,att_objs):
 
     # Finalize forcing
     output.finalize()
+
 
 if __name__ == '__main__':
    options,var_objs,att_objs=parseArgs(sys.argv[1:])

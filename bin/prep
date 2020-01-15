@@ -82,8 +82,7 @@ if __name__ == "__main__":
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
-        print(my_settings)
-        print(my_format)
+
         my_pgdfile = surfex.file.SURFFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
         prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output)
         surfex.SURFEXBinary(binary, my_batch, prepfile, my_settings, my_ecoclimap, input=my_input, pgdfile=my_pgdfile)

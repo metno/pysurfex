@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.5
 
 from __future__ import print_function
 import traceback
@@ -19,12 +19,14 @@ from eccodes import CodesInternalError
 
 def two_floats(value):
     lvalues = value.split(",")
-    # print(values)
-    if len(values) != 2:
+    print(lvalues)
+    if len(lvalues) != 2:
         raise argparse.ArgumentError
 
-    lvalues = map(float, lvalues)
-    return lvalues
+    rvalues = []
+    for val in lvalues:
+        rvalues.append(float(val))
+    return rvalues
 
 
 if __name__ == "__main__":
@@ -54,6 +56,7 @@ if __name__ == "__main__":
         valid_dtg = datetime.strptime(args.valid_dtg, "%Y%m%d%H")
 
     try:
+        print(args.latrange, args.lonrange)
         observations = surfex.read_bufr_file(args.input, args.var, args.lonrange, args.latrange, valid_dtg,
                                              timedelta(minutes=args.valid_range / 2))
     except CodesInternalError as err:

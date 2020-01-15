@@ -21,7 +21,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version=__version__,
 
-    description='A program to create meteograms from ensemble files',
+    description='A program to run SURFEX',
     long_description=long_description,
 
     # The project's main homepage.
@@ -55,6 +55,7 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
     ],
 
     # What does your project relate to?

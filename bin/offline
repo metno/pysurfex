@@ -10,7 +10,9 @@ import json
 def parse():
     """Parse the command line input arguments."""
     soda = False
-    if str(__file__).endswith("offline"):
+    if str(__file__).endswith("perturbed_offline"):
+        desc="Run perturbed Offline SURFEX"
+    elif str(__file__).endswith("offline"):
         desc="Run Offline SURFEX" 
     elif str(__file__).endswith("soda"):
         desc="Run SURFEX data assimilation (SODA)"
@@ -29,6 +31,7 @@ def parse():
     parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
     parser.add_argument('--output', '-o', required=True, nargs='?')
+    parser.add_argument('--pert', '-p', type=int, required=False, default=None)
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
@@ -49,13 +52,13 @@ def parse():
         assim_input = args.assim_input
         assim_output = args.assim_output
     return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, \
-        args.domain, args.archive, args.pgd, args.prep, assim_input, assim_output
+        args.domain, args.archive, args.pgd, args.prep, assim_input, assim_output, args.pert
 
 
 if __name__ == "__main__":
 
     binary, rte, wrapper, json_file, force, output, input_arg, ecoclimap, domain, archive, pgd_file_path, \
-        prep_file_path, assim_input, assim_output = parse()
+        prep_file_path, assim_input, assim_output, pert = parse()
 
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
@@ -104,6 +107,7 @@ if __name__ == "__main__":
         else:
             raise FileNotFoundError
 
+    assim = None
     if assim_input is not None or assim_output is not None:
         assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
 
@@ -118,13 +122,16 @@ if __name__ == "__main__":
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
         my_surffile = my_settings["nam_io_offline"]["csurffile"]
-        print(my_settings)
 
         my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
         my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path)
         surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
-        surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
-                            surfout=surffile, input=my_input, archive=my_archive)
+        if pert is None:
+            surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
+                            assim=assim, surfout=surffile, input=my_input, archive=my_archive)
+        else:
+            surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, my_ecoclimap,
+                                pgdfile=my_pgdfile, surfout=surffile, input=my_input, archive=my_archive, print_namelist=True)
 
     else:
         print(output + " already exists!")

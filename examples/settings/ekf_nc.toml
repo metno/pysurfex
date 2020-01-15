@@ -14,7 +14,7 @@ CTIMESERIES_FILETYPE = "NC"         # Fileformat for timseries. Inline runs use 
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
 XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
 XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
-LSPLIT_PATCH = true                 # Split patches into separate variables in output files
+LSPLIT_PATCH = false                # Split patches into separate variables in output files
 
 
 ##########
@@ -50,13 +50,13 @@ TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|
 LOBSHEADER = false                          # ASCII observation file has header
 CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when using SODA: "ASCII"|"FA"
 LOBSNAT = false                             # Observation ASCII file only contains nature points
-NNCO = [1, 1, 0, 1, 1]                      # Active observation types
+NNCO = [1, 1, 0, 0, 1]                      # Active observation types
                                             # (Element 1=T2m, element 2=RH2m and element 3=Soil moisture, element 5=SWE)
 XERROBS_M = [1.0, 0.1, 0.1, 0.1, 0.1, 20.0] # Observation error (used in EKF)
 LSWE = false                                # Assimilate SWE, if false assimilate snow depth
 
 [ASSIM_ISBA]
-UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assimilation.
+UPDATE_SNOW_CYCLES = ["09"]          # Cycles to update snow depths/SWE in assimilation.
                                      # Empty list or not valid values means no update
 
 # EKF settings

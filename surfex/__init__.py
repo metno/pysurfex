@@ -8,3 +8,4 @@ from .obs import *
 from .run import *
 from .namelist import *
 from .assim import *
+from .obs import *

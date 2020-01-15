@@ -52,7 +52,7 @@ class SURFEXBinary(object):
         fh.close()
         if self.print_namelist:
             print(content)
-        print(self.iofile.need_pgd)
+
         if self.iofile.need_pgd and self.pgdfile is not None:
             print(self.pgdfile.filename)
             try:
@@ -107,7 +107,7 @@ class PerturbedOffline(SURFEXBinary):
 
 
 class Masterodb(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input=None, archive=None, print_namelist=True,):
+    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input=None, archive=None, print_namelist=True):
         self.settings = settings
         self.binary = binary
         self.prepfile = prepfile

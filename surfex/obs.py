@@ -134,6 +134,7 @@ def gridpp2soda(dtg, an_list):
     out.close()
 '''
 
+
 def check_input_to_soda_dimensions(nx, ny, nx1, ny1):
 
     if nx < 0:
@@ -155,21 +156,27 @@ def var2ascii(t2m, rh2m, sd, yy, mm, dd, hh):
     nx = -1
     ny = -1
     i = 0
+    t2m_var = None
     if t2m["file"] is not None:
         t2m_fh = Dataset(t2m["file"], "r")
         print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
+        t2m_var = t2m_fh.variables[t2m["var"]]
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, t2m_fh.variables[t2m["var"]].shape[2],
                                                 t2m_fh.variables[t2m["var"]].shape[1])
+    rh2m_var = None
     if rh2m["file"] is not None:
         rh2m_fh = Dataset(rh2m["file"], "r")
         print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
+        rh2m_var = rh2m_fh.variables[rh2m["var"]]
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[2],
                                                 rh2m_fh.variables[rh2m["var"]].shape[1])
+    sd_var = None
     if sd["file"] is not None:
         sd_fh = Dataset(sd["file"], "r")
         print(sd["var"], sd_fh.variables[sd["var"]].shape)
+        sd_var = sd_fh.variables[sd["var"]]
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, sd_fh.variables[sd["var"]].shape[2],
                                                 sd_fh.variables[sd["var"]].shape[1])
@@ -183,16 +190,25 @@ def var2ascii(t2m, rh2m, sd, yy, mm, dd, hh):
         for i in range(0, nx):
             # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
             undef = "999"
-            if t2m["file"] is not None:
-                t2m_val = str(t2m_fh[0, j, i])
+            if t2m_var is not None:
+                if np.ma.is_masked(t2m_var[0, j, i]):
+                    t2m_val = undef
+                else:
+                    t2m_val = str(t2m_var[0, j, i])
             else:
                 t2m_val = undef
-            if rh2m["file"] is not None:
-                rh2m_val = str(rh2m_fh[0, j, i])
+            if rh2m_var is not None:
+                if np.ma.is_masked(rh2m_var[0, j, i]):
+                    rh2m_val = undef
+                else:
+                    rh2m_val = str(rh2m_var[0, j, i])
             else:
                 rh2m_val = undef
-            if sd["file"] is not None:
-                sd_val = str(sd_fh[0, j, i])
+            if sd_var is not None:
+                if np.ma.is_masked(sd_var[0, j, i]):
+                    sd_val = undef
+                else:
+                    sd_val = str(sd_var[0, j, i])
             else:
                 sd_val = undef
             out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")
@@ -650,7 +666,7 @@ def read_bufr_file(bufrFile, var, lonrange, latrange, validDTG, validRange):
                         t2m = val
                     if key == "dewpointTemperatureAt2M":
                         td2m = val
-                    if key == "totalSnowDepthAt2M":
+                    if key == "totalSnowDepth":
                         sd = val
 
                 except CodesInternalError as err:
@@ -692,7 +708,7 @@ def read_bufr_file(bufrFile, var, lonrange, latrange, validDTG, validRange):
             if not all_found:
                 nerror += 1
 
-            # print(lon,lonrange[0],lonrange[1],lat,latrange[0],latrange[1])
+            #print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
             if lat > latrange[0] and lat < latrange[1] and lon > lonrange[0] and lon < lonrange[1]:
                 obsDTG = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
                 # print(value)

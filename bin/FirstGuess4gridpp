@@ -247,11 +247,15 @@ class subDomain():
     def __init__(self, file):
         self.file = file
         sdf = nc.Dataset(self.file, "r")
-        proj = ''.join(sdf.variables["GRID_TYPE"][:])
-        proj = proj.rstrip()
+        print(sdf.variables["GRID_TYPE"][:])
+        print(nc.chartostring(sdf.variables["GRID_TYPE"][:]))
+        proj = str(nc.chartostring(sdf.variables["GRID_TYPE"][:]))
+        print(type(proj))
+        proj = proj.replace(" ", "")
+        print(proj)
         self.interpolated = False
         self.grid_points = None
-        if proj == "CONF PROJ":
+        if proj == "b'CONFPROJ'":
             xx = sdf.variables["XX"][:, :]
             yy = sdf.variables["YY"][:, :]
             lat0 = sdf.variables["LAT0"][:]

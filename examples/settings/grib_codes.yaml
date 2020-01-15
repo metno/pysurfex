@@ -1,0 +1,67 @@
+air_temperature_2m:
+  converter:
+    none:
+      ftype: sfx
+      par: 11
+      typ: sfc
+      lev: 2
+      tri: 0
+relative_humidity_2m:
+  converter:
+    none:
+      ftype: sfx
+      par: 52
+      typ: sfc
+      lev: 2
+      tri: 0
+surface_snow_thickness:
+  converter:
+    none:
+      ftype: sfx
+      par: 66
+      typ: sfc
+      lev: 0
+      tri: 0
+    sweclim:
+      par: 65
+      typ: sfc
+      lev: 0
+      tri: 0
+    swe2sd:
+      swe:
+        ftype: sfx
+        par: 13
+        typ: sfc
+        lev: 800
+        tri: 0
+      rho:
+        ftype: sfx
+        par: 191
+        typ: sfc
+        lev: 800
+        tri: 0
+altitude:
+  converter:
+    none:
+      par: -1
+      typ: sfc
+      lev: 0
+      tri: 0
+    phi2m:
+      par: 6
+      typ: sfc
+      lev: 0
+      tri: 0
+land_area_fraction:
+  converter:
+    none:
+      par: -1
+      typ: sfc
+      lev: 0
+      tri: 0
+    sea2land:
+      ftype: laf
+      par: 1
+      typ: pt
+      lev: 0
+      tri: 0

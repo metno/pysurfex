@@ -12,30 +12,32 @@ def parse():
     parser = argparse.ArgumentParser("Create physiography for SURFEX (PGD)")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
-    parser.add_argument('--json', '-j', type=str, nargs="?", required=True, help="A JSON file with run options")
+    parser.add_argument('--wrapper', '-w', type=str, default="", required=False, help="Execution wrapper command")
+    parser.add_argument('--json', '-j', type=str, required=True, help="A JSON file with run options")
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
-    parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
+    parser.add_argument('--rte', '-r', type=str, required=True)
+    parser.add_argument('--ecoclimap', '-e', type=str, required=True)
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
-    parser.add_argument('--output', '-o', required=True, nargs='?')
-    parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
-    parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
+    parser.add_argument('--output', '-o', required=True, type=str, nargs='?')
+    parser.add_argument('--input', '-i', required=False, type=str, default=None, help="JSON file with input")
+    parser.add_argument('--archive', '-a', required=False, type=str, default=None, nargs=1,
                         help="JSON file with archive output")
-    parser.add_argument('binary', type=str)
+    parser.add_argument('binary', type=str, help="Command to run")
 
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit()
 
     args = parser.parse_args()
-    return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, args.domain, args.archive
+    return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, \
+           args.domain, args.archive
 
 
 if __name__ == "__main__":
 
     binary, rte, wrapper, json_file, force, output, input_arg, ecoclimap, domain, archive = parse()
 
+    print(rte)
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
     else:
@@ -75,14 +77,12 @@ if __name__ == "__main__":
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
 
-        print(os.getcwd())
-
         # Create input
         my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)
 
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
-        print(my_settings)
+
         pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, archive_file=output)
         surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input=my_input, archive=my_archive)
     else:

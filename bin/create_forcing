@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+import sys
+import forcing
+
+if __name__ == '__main__':
+   options, var_objs, att_objs = forcing.driverForcing.parseArgs(sys.argv[1:])
+   forcing.driverForcing.runTimeLoop(options, var_objs, att_objs)

@@ -87,18 +87,14 @@ def merge_toml_env(old_env, mods):
     print(merged_env)
     for new_key in mods:
         if new_key in merged_env:
-            #print("\n key exists", new_key, merged_env[new_key])
-            #print("New key: ", mods[new_key])
             new_env = merged_env[new_key]
             for new_key2 in mods[new_key]:
                 print("Update to: ", new_key, new_key2, mods[new_key][new_key2])
                 new_env.update({new_key2: mods[new_key][new_key2]})
 
             merged_env.update({new_key: new_env})
-            #print("\n key exists, merged", new_key, merged_env[new_key])
         # New namelist block
         else:
-            #print("New key", new_key, mods[new_key])
             merged_env.update({new_key: mods[new_key]})
     return merged_env
 
@@ -161,6 +157,18 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
     # Program specific settings
     if program == "pgd":
 
+        # PGS schemes
+        input_list.append({"json": {"NAM_PGD_SCHEMES":
+                                        {"CSEA": env["SURFEX_TILES"]["SEA"],
+                                         "CWATER": env["SURFEX_TILES"]["INLAND_WATER"],
+                                         "CNATURE": env["SURFEX_TILES"]["NATURE"],
+                                         "CTOWN": env["SURFEX_TILES"]["TOWN"]
+                                         }}})
+
+        # Ecoclimap SG
+        if env["COVER"]["SG"]:
+            input_list.append({"file": input_path + "/eco_sg.json"})
+
         # Set direct input files
         if env["SURFEX_TILES"]["INLAND_WATER"] == "FLAKE":
             input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_files))
@@ -180,7 +188,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                 input_list.append(set_direct_data_namelist("NAM_" + namelist_section, ftype, fname, input_path))
 
         # Set ISBA properties
-        isba_prep = ""
         if env["ISBA"]["SCHEME"] == "DIF":
             input_list.append({"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}})
         elif env["ISBA"]["SCHEME"] == "3-L":
@@ -193,9 +200,16 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
 
         # Set MEB
         input_list.append({"json": {"NAM_ISBA": {"LMEB": env["ISBA"]["MEB"]}}})
-
         if env["ISBA"]["MEB"]:
             input_list.append({"file": input_path + "/meb_settings.json"})
+
+        # RSMIN
+        if env["COVER"]["SG"]:
+            input_list.append({"file": input_path + "/rsmin.json"})
+            input_list.append({"file": input_path + "/rsmin_mod.json"})
+        else:
+            input_list.append({"file": input_path + "/rsmin_sg.json"})
+            input_list.append({"file": input_path + "/rsmin_sg_mod.json"})
 
         # Treedrag
         if env["TREEDRAG"]["TREEDATA_FILE"] != "":
@@ -209,12 +223,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                                          "CFNAM_H_TREE(6)": treeheight,
                                          "CFTYP_H_TREE(6)": "ASCLLV"}}})
 
-        input_list.append({"json": {"NAM_PGD_SCHEMES":
-                                        {"CSEA": env["SURFEX_TILES"]["SEA"],
-                                         "CWATER": env["SURFEX_TILES"]["INLAND_WATER"],
-                                         "CNATURE": env["SURFEX_TILES"]["NATURE"],
-                                         "CTOWN": env["SURFEX_TILES"]["TOWN"]
-                                         }}})
         if env["TOWN"]["LTOWN_TO_ROCK"]:
             if env["SURFEX_TILES"]["TOWN"] != "NONE":
                 print("WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. Setting it to NONE!")
@@ -224,7 +232,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
     elif program == "prep":
 
         input_list.append({"file": input_path + "/prep.json"})
-
         if prep_file is not None:
             if prep_file.endswith(".json"):
                 input_list.append({"file": prep_file})
@@ -242,7 +249,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                     input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILEPGDTYPE": prep_pgdfiletype}}})
         if dtg is not None:
             prep_time = datetime.strptime(dtg, "%Y%m%d%H")
-            print(prep_time)
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NYEAR": int(prep_time.strftime("%Y"))}}})
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NMONTH": int(prep_time.strftime("%m"))}}})
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NDAY": int(prep_time.strftime("%d"))}}})
@@ -285,6 +291,16 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
         # Perturbed offline settings
         input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
         input_list.append({"json": {"NAM_IO_VARASSIM": {"LPRT": False}}})
+        if env["ASSIM_SCHEMES"]["ISBA"] == "EKF":
+            input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": env["ASSIM_SCHEMES"]["ISBA"]}}})
+            nvar = 0
+            for ob in range(0, len(env["ASSIM_ISBA_EKF"]["CVAR_M"])):
+                input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["CVAR_M"][ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["NNCV"][ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["XPRT_M"][ob]}}})
+                if env["ASSIM_ISBA_EKF"]["NNCV"][ob] == 1:
+                    nvar += 1
+            input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
         #TODO the need for this must be removed!
         nobstype = 0
@@ -330,8 +346,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             if len(env["ASSIM_ISBA"]["UPDATE_SNOW_CYCLES"]) > 0:
                 if dtg is not None:
                     for cycle in env["ASSIM_ISBA"]["UPDATE_SNOW_CYCLES"]:
-                        print(int(datetime.strptime(dtg, "%Y%m%d%H").strftime("%H")))
-                        print(int(cycle))
                         if int(datetime.strptime(dtg, "%Y%m%d%H").strftime("%H")) == int(cycle):
                             print("true")
                             laesnm = True

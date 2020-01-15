@@ -69,3 +69,19 @@ def set_domain(settings, domain):
     else:
         print("Settings should be a dict")
         raise Exception
+
+
+def json2geo(json_domain):
+    my_geo = None
+    for key in json_domain:
+        found = False
+        if key.lower() == "nam_pgd_grid":
+            for key2 in json_domain[key]:
+                if json_domain[key][key2].upper() == "CONF PROJ":
+                    my_geo = ConfProj(json_domain)
+
+    if my_geo is None:
+        print("Did not find a nam_pgd_grid section in the json file")
+        raise Exception
+    else:
+        return my_geo

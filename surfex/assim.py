@@ -12,6 +12,7 @@ class Assimilation(object):
 def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, perturbed_runs=None, lsmfile=None, obsfile=None,
                  check_existence=False, oi_coeffs=None, climfile=None, sfx_first_guess=None, ascatfile=None):
 
+    settings = surfex.capitalize_namelist_dict(settings)
     data = None
     if settings["NAM_ASSIM"]['CASSIM_SEA'] == "INPUT":
         sea_data = set_input_sea_assimilation(settings, sstfile)
@@ -82,6 +83,7 @@ def set_input_sea_assimilation(settings, sstfile, check_existence=False):
         print("You must set sstfile")
         raise Exception
 
+    settings = surfex.capitalize_namelist_dict(settings)
     sea_settings = {}
     cfile_format_sst = settings["NAM_ASSIM"]['CFILE_FORMAT_SST']
     if cfile_format_sst.upper() == "ASCII":
@@ -102,6 +104,7 @@ def set_input_sea_assimilation(settings, sstfile, check_existence=False):
 def set_input_vertical_soil_oi(dtg, settings, first_guess, oi_coeffs=None, climfile=None, lsmfile=None, ascatfile=None,
                                    check_existence=False):
 
+    settings = surfex.capitalize_namelist_dict(settings)
     if first_guess is None:
         print("You must set first guess for OI")
         raise Exception
@@ -190,6 +193,7 @@ def set_input_vertical_soil_oi(dtg, settings, first_guess, oi_coeffs=None, climf
 
 def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmfile=None, check_existence=False):
 
+    settings = surfex.capitalize_namelist_dict(settings)
     if first_guess is None or perturbed_runs is None:
         print("You must set input files")
         raise Exception
@@ -202,14 +206,13 @@ def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmf
 
     # First guess for SURFEX
 
-    extension = settings["nam_io_offline"]['csurf_filetype'].lower()
+    extension = settings["NAM_IO_OFFLINE"]['CSURF_FILETYPE'].lower()
     if extension == "ascii":
         extension = ".txt"
     if first_guess is not None:
         if os.path.exists(first_guess):
             ekf_settings.update({"PREP_INIT." + extension: first_guess})
-            ekf_settings.update({"PREP_." + yy + mm + dd + "H" + hh + "." + extension:
-                                         first_guess})
+            ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
         else:
             if check_existence:
                 print("Needed file missing: " + first_guess)
@@ -250,6 +253,7 @@ def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmf
 
 def set_assimilation_output(dtg, settings):
 
+    settings = surfex.capitalize_namelist_dict(settings)
     data = None
     if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "EKF":
         ekf_data = set_output_vertical_soil_ekf(settings)
@@ -264,8 +268,10 @@ def set_assimilation_output(dtg, settings):
 
 
 def set_output_vertical_soil_ekf(settings):
+
+    settings = surfex.capitalize_namelist_dict(settings)
+    data = "{}"
+    if settings["NAM_ASSIM"]['LBEV']:
+        # TODO fill with wanted values
         data = "{}"
-        if settings["NAM_ASSIM"]['LBEV']:
-            # TODO fill with wanted values
-            data = "{}"
-        return data
+    return data
