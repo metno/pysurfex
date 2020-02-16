@@ -138,4 +138,4 @@ def parse_args(argv):
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     options, var_objs, att_objs = surfex.forcing.set_forcing_config(args)
-    surfex.forcing.runTimeLoop(options, var_objs, att_objs)
+    surfex.forcing.run_time_loop(options, var_objs, att_objs)

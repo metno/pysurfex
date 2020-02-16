@@ -31,7 +31,7 @@ class PGDTest(unittest.TestCase):
             }
         }
         #binary =
-        my_geo = surfex.geo.json2geo(domain)
+        my_geo = surfex.geo.get_geo_object(domain)
         print(my_geo.cgrid)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
         my_input = surfex.iostuff.JsonInputData({})
