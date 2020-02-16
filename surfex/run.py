@@ -15,7 +15,8 @@ class BatchJob(object):
             raise
         cmd = self.wrapper + " " + cmd
         try:
-            print("BATCH: ", self.rte["OMP_NUM_THREADS"])
+            if "OMP_NUM_THREADS" in self.rte:
+                print("BATCH: ", self.rte["OMP_NUM_THREADS"])
             print("Batch running " + cmd)
             subprocess.check_call(cmd, shell=True, env=self.rte)
         except RuntimeError:

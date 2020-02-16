@@ -1,20 +1,372 @@
-from netCDF4 import Dataset
-import os
-import shutil
-import sqlite3
-import csv
-import numpy as np
-import sys
-from math import exp
-from datetime import datetime
-from eccodes import codes_set,codes_bufr_new_from_file,CodesInternalError,codes_release,codes_get,CODES_MISSING_DOUBLE,CODES_MISSING_LONG
+try:
+    import os
+    import sys
+    import shutil
+    import abc
+    import numpy as np
+#    import titanlib as tit
+except ModuleNotFoundError:
+    print("Could not load system modules")
 
-class Observation():
-    def __init__(self, lon, lat, value, elevation):
-        self.lon = lon
-        self.lat = lat
-        self.value = value
-        self.elevation = elevation
+
+class DataSet(object):
+    def __init__(self, var, settings, tests, test_flags, debug=False):
+        datasources = []
+        self.tests = tests
+        self.test_flags = test_flags
+        self.debug = debug
+        lons = []
+        lats = []
+        stids = []
+        elevs = []
+        values = []
+        for obs_set in settings:
+            print(var, obs_set)
+            if "filetype" in settings[obs_set]:
+                filetype = settings[obs_set]["filetype"]
+                if "filepattern" in settings[obs_set]:
+                    filepattern = settings[obs_set]["filepattern"]
+                    # TODO
+                    filename = filepattern
+                    test_json = {}
+                    provider = "-1"
+                    if "provider" in settings[obs_set]:
+                        provider = settings[obs_set]["provider"]
+                    if "tests" in settings[obs_set]:
+                        test_json = settings[obs_set]["tests"]
+                    print(filetype, filename, test_json)
+                    if filetype.lower() == "ascii":
+                        datasources.append(AsciiObservationSet(filename, provider, test_json))
+                    elif filetype.lower() == "bufr":
+                        datasources.append(BufrObservationSet(filename, provider, test_json))
+                else:
+                    print("No file pattern provided for var  " + var + " and filetype " + filetype)
+            else:
+                print("No file type provided")
+
+        self.datasources = datasources
+        # Get global data
+        for obs_set in self.datasources:
+            llons, llats, lstids, lelevs, lvalues = obs_set.get_obs()
+            lons = lons + llons
+            lats = lats + llats
+            stids = stids + lstids
+            elevs = elevs + lelevs
+            values = values + lvalues
+
+        flags = []
+        for i in range(0, len(lons)):
+            flags.append(0)
+        self.flags = flags
+        self.stids = stids
+        self.dataset = tit.Dataset(lats, lons, elevs, values)
+
+    def perform_tests(self):
+        for t in self.tests:
+            t = t.lower()
+            print("Test: ", t)
+
+            minvals = []
+            maxvals = []
+            t2pos = []
+            t2neg = []
+            eps2 = []
+            mask = []
+            findex = 0
+            for obs_set in self.datasources:
+                size = obs_set.size
+                if t in obs_set.tests:
+                    do_test = True
+                    if "do_test" in obs_set.tests[t]:
+                        do_test = obs_set.tests[t]["do_test"]
+
+                    if do_test:
+                        lmask = np.where(np.asarray(self.flags[findex:findex+size]) == 0)[0].tolist()
+                        for i in range(0, len(lmask)):
+                            lmask[i] = lmask[i] + findex
+                        mask = mask + lmask
+
+                        # Tests done for each data source
+                        if t == "plausibility":
+                            if "min" in obs_set.tests[t]:
+                                minval = obs_set.tests[t]["min"]
+                            else:
+                                raise
+                            if "max" in obs_set.tests[t]:
+                                maxval = obs_set.tests[t]["max"]
+                            else:
+                                raise
+
+                            for o in range(0, size):
+                                minvals.append(minval)
+                                maxvals.append(maxval)
+
+                        elif t == "firstguess":
+                            if "negdiff" in obs_set.tests[t]:
+                                negdiff = obs_set.tests[t]["negdiff"]
+                            else:
+                                raise
+                            if "posdiff" in obs_set.tests[t]:
+                                posdiff = obs_set.tests[t]["posdiff"]
+                            else:
+                                raise
+
+                            for o in range(0, size):
+                                minvals.append(-abs(negdiff))
+                                maxvals.append(posdiff)
+
+                        elif t == "sct":
+                            for o in range(0, size):
+                                t2pos.append(obs_set.tests[t]["t2pos"])
+                                t2neg.append(obs_set.tests[t]["t2neg"])
+                                eps2.append(obs_set.tests[t]["eps2"])
+                    else:
+                        print("Test " + t + " is de-ativated for this data source")
+                else:
+                    print("Test " + t + " is not active for this data source")
+
+                findex = findex + size
+
+            # Tests on active observations
+            if len(mask) > 0:
+                if t == "plausibility":
+                    code = 1
+                    if t in self.test_flags:
+                        code = self.test_flags[t]
+
+                    # print(mask)
+                    # for i in range(0, len(minvals)):
+                    #     print(i, minvals[i], maxvals[i], self.dataset.values[i], self.dataset.flags[i], self.flags[i])
+
+                    status = self.dataset.range_check(minvals, maxvals, mask)
+                    for i in range(0, len(self.dataset.flags)):
+                        if i in mask:
+                            if self.flags[i] == 0 and self.dataset.flags[i] == 1:
+                                self.flags[i] = code
+
+                    print(mask)
+                    for i in range(0, len(self.flags)):
+                        print(t, i, self.dataset.values[i], self.dataset.flags[i], self.flags[i])
+
+                elif t == "firstguess":
+                    code = 1
+                    if t in self.test_flags:
+                        code = self.test_flags[t]
+
+                    fgdiff = []
+                    if self.debug:
+                        print(mask)
+                        print(len(minvals))
+                        print(len(maxvals))
+                    for i in range(0, len(mask)):
+
+                        mean = np.mean(self.dataset.values)
+                        print(mean)
+                        fgdiff.append(self.dataset.values[mask[i]] - float(mean))
+                        print(t, i, fgdiff[i], minvals[i], maxvals[i])
+
+                    if self.debug:
+                        print(len(fgdiff))
+
+                    status, flags = tit.range_check(fgdiff, minvals, maxvals)
+                    if not status:
+                        print("First guess check failed")
+                        raise
+
+                    for i in range(0, len(mask)):
+                        if self.flags[mask[i]] == 0 and flags[i] == 1:
+                            self.flags[mask[i]] = code
+
+                    if self.debug:
+                        print(mask)
+                        for i in range(0, len(mask)):
+                            print(t, i, mask[i], self.dataset.values[mask[i]], fgdiff[i], flags[i], self.flags[mask[i]])
+
+                elif t == "sct":
+                    code = 1
+                    if t in self.test_flags:
+                        code = self.test_flags[t]
+
+                    nmin = 100
+                    nmax = 300
+                    nminprof = 5
+                    dzmin = 30.
+                    dhmin = 10000.
+                    dz = 20.
+
+                    import pyproj
+                    proj = pyproj.Proj("+proj=lcc +lat_0=63 +lon_0=15 +lat_1=63 +lat_2=63 +no_defs +R=6.371e+06")
+                    x_proj = []
+                    y_proj = []
+                    elevs = []
+                    values = []
+                    for i in range(0, len(mask)):
+                        x_p, y_p = proj(self.dataset.lons[mask[i]], self.dataset.lats[mask[i]])
+                        x_proj.append(x_p)
+                        y_proj.append(y_p)
+                        elevs.append(self.dataset.elevs[mask[i]])
+                        values.append(self.dataset.values[mask[i]] - 273.15)
+
+                    if self.debug:
+                        print(len(x_proj), x_proj)
+                        print(len(y_proj), y_proj)
+                        print(len(elevs), elevs)
+                        print(len(values), values)
+                        print("t2pos", len(t2pos), t2pos)
+                        print("t2neg", len(t2neg), t2neg)
+                        print("eps2", len(eps2), eps2)
+
+                    status, sct, flags = tit.sct(x_proj, y_proj, elevs, values, nmin, nmax, nminprof, dzmin,
+                                                  dhmin, dz, t2pos, t2neg, eps2)
+                    for i in range(0, len(flags)):
+                        if self.flags[mask[i]] == 0 and flags[i] == 1:
+                            self.flags[mask[i]] = code
+
+                    if self.debug:
+                        print(mask)
+                        for i in range(0, len(mask)):
+                            print(t, i, mask[i], self.dataset.values[mask[i]], sct[i], flags[i], self.flags[mask[i]])
+
+                elif t == "buddy":
+                    # buddy_check(const fvec distance_lim, const ivec priorities, const ivec buddies_min, const fvec thresholds, float diff_elev_max, bool adjust_for_elev_diff, const ivec obs_to_check, const ivec indices)
+
+                    code = 1
+                    if t in self.test_flags:
+                        code = self.test_flags[t]
+
+                    #mask = [4, 245]
+
+                    diff_elev_max = 200000.
+                    adjust_for_elev_diff = True
+                    distance_lim = []
+                    priorities = []
+                    buddies_min = []
+                    thresholds = []
+                    obs_to_check = []
+                    lmask = []
+                    for i in range(0, len(mask)):
+                        if not np.isnan(self.dataset.elevs[mask[i]]):
+                            distance_lim.append(1000000.)
+                            priorities.append(1)
+                            buddies_min.append(1)
+                            thresholds.append(1)
+                            obs_to_check.append(1)
+                            lmask.append(mask[i])
+
+                    lons = []
+                    lats = []
+                    elevs = []
+                    values = []
+                    for i in range(0, len(lmask)):
+                            lons.append(self.dataset.lons[mask[i]])
+                            lats.append(self.dataset.lats[mask[i]])
+                            elevs.append(self.dataset.elevs[mask[i]])
+                            values.append(self.dataset.values[mask[i]] - 273.15)
+
+                    #status = self.dataset.buddy_check(distance_lim, priorities, buddies_min, thresholds,
+                    #                                  diff_elev_max, adjust_for_elev_diff, obs_to_check, lmask)
+                    status, flags = tit.buddy_check(lats, lons, elevs, values, distance_lim, priorities, buddies_min,
+                                                    thresholds, diff_elev_max, adjust_for_elev_diff, obs_to_check)
+                    if not status:
+                        print("Buddy check failed!")
+                        raise Exception
+                    for i in range(0, len(flags)):
+                        if self.flags[lmask[i]] == 0 and flags[i] == 1:
+                            self.flags[i] = code
+
+                    print(lmask)
+                    for i in range(0, len(self.flags)):
+                        print(t, i, self.dataset.values[i], self.dataset.flags[i], self.flags[i])
+
+                elif t == "climatology":
+                    code = 1
+                    if t in self.test_flags:
+                        code = self.test_flags[t]
+
+                    # range_check_climatology(int unixtime, const fvec plus, const fvec minus, const ivec indices) {
+                    unixtime = 1581691780
+                    plus = []
+                    minus = []
+                    for i in range(0, len(mask)):
+                        plus.append(280)
+                        minus.append(270)
+
+                    status = self.dataset.range_check_climatology(unixtime, plus, minus, mask)
+                    if not status:
+                        print("Climatology check failed!")
+                        raise Exception
+                    for i in range(0, len(self.dataset.flags)):
+                        if i in mask:
+                            if self.flags[i] == 0 and self.dataset.flags[i] == 1:
+                                self.flags[i] = code
+
+                    print(mask)
+                    for i in range(0, len(mask)):
+                        print(t, i, mask[i], self.dataset.values[mask[i]], self.dataset.flags[mask[i]], self.flags[mask[i]])
+
+    def write_output(self, filename):
+        fh = open(filename, "w")
+        for i in range(0, len(self.dataset.lons)):
+            fh.write(str(i) + ";" + str(self.dataset.lons[i]) + ";" + str(self.dataset.lons[i]) + ";" +
+                     str(self.dataset.elevs[i]) +
+                     ";" + str(self.dataset.values[i]) + ";" + str(self.flags[i]) + "\n")
+        fh.close()
+
+
+class ObservationSet(object):
+    def __init__(self, provider, test_json, size):
+        self.provider = provider
+        try:
+            import numpy as np
+            from datetime import datetime
+        except ModuleNotFoundError:
+            print("Could not import needed modules")
+            raise
+
+        self.tests = test_json
+        self.size = size
+
+    @abc.abstractmethod
+    def get_obs(self):
+        print("This method is not implemented for this class!")
+        raise NotImplementedError
+
+
+class AsciiObservationSet(ObservationSet):
+    def __init__(self, filename, provider, test_json):
+        try:
+            import numpy as np
+        except ModuleNotFoundError:
+            print("Could not import needed modules")
+            raise
+
+        self.filename = filename
+        obs = np.genfromtxt(self.filename, delimiter=';', dtype=None, names=True, encoding="ascii")
+        self.lons = list(obs["lon"])
+        self.lats = list(obs["lat"])
+        self.elevs = list(obs["elev"])
+        self.values = list(obs["value"])
+        stids = []
+        if "stid" in obs.dtype.names:
+            stids = list(obs["stid"])
+        else:
+            for i in range(0, len(self.lons)):
+                stids.append("-1")
+
+        self.stids = stids
+        ObservationSet.__init__(self, provider, test_json, len(self.lons))
+
+    def get_obs(self):
+        return self.lons, self.lats, self.stids, self.elevs, self.values
+
+
+class BufrObservationSet(ObservationSet):
+    def __init__(self, filename, provider, test_json):
+        self.filename = filename
+        ObservationSet.__init__(self, provider, test_json)
+
+    def get_obs(self):
+        pass
 
 
 class GriddedObservations(object):
@@ -23,6 +375,7 @@ class GriddedObservations(object):
 
 
 class TITAN(object):
+
     def __init__(self, command, batch, workdir=None, clean_workdir=False):
         self.command = command
         self.batch = batch
@@ -64,76 +417,6 @@ class GridPP(GriddedObservations):
         if self.clean_workdir is not None:
             shutil.rmtree(self.workdir)
 
-'''
-def gridpp2soda(dtg, an_list):
-    var_names = ["air_temperature_2m", "relative_humidity_2m", "surface_snow_thickness"]
-    yy = dtg.strftime("%y")
-    mm = dtg.strftime("%M")
-    dd = dtg.strftime("%d")
-    hh = dtg.strftime("%H")
-    nx = 0
-    ny = 0
-    t2m_file = None
-    rh2m_file = None
-    sd_file = None
-    for f in an_list:
-        for vv in f.var_list:
-            for v in var_names:
-                if vv == v:
-                    if v == "air_temperature_2m":
-                        t2m_file = f.filename
-                    if v == "relative_humidity_2m":
-                        rh2m_file = f.filename
-                    if v == "surface_snow_thickness":
-                        sd_file = f.filename
-    i = 0
-
-    if t2m_file is not None:
-        nc = Dataset(t2m_file, "r")
-        var_name = var_names[0]
-        nx = nc[var_name].shape[2]
-        ny = nc[var_name].shape[1]
-        t2m = nc.variables[var_name][:]
-        i = i + 1
-    if rh2m_file is not None:
-        nc = Dataset(rh2m_file, "r")
-        var_name = var_names[1]
-        nx = nc[var_name].shape[2]
-        ny = nc[var_name].shape[1]
-        rh2m = nc.variables[var_name][:]
-        i = i + 1
-    if sd_file is not None:
-        nc = Dataset(sd_file, "r")
-        var_name = var_names[2]
-        nx = nc[var_name].shape[2]
-        ny = nc[var_name].shape[1]
-        sd = nc.variables[var_name][:]
-        i = i + 1
-
-    if i == 0:
-        print("WARNING: No input files provided!")
-
-    out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + hh + ".DAT", "w")
-    for j in range(0, ny):
-        for i in range(0, nx):
-            # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
-            undef = "999"
-            if t2m_file is not None:
-                t2m_val = str(t2m[0, j, i])
-            else:
-                t2m_val = undef
-            if rh2m_file is not None:
-                rh2m_val = str(rh2m[0, j, i])
-            else:
-                rh2m_val = undef
-            if sd_file is not None:
-                sd_val = str(sd[0, j, i])
-            else:
-                sd_val = undef
-            out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")
-    out.close()
-'''
-
 
 def check_input_to_soda_dimensions(nx, ny, nx1, ny1):
 
@@ -152,6 +435,11 @@ def check_input_to_soda_dimensions(nx, ny, nx1, ny1):
 
 
 def var2ascii(t2m, rh2m, sd, yy, mm, dd, hh):
+    try:
+        from netCDF4 import Dataset
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
 
     nx = -1
     ny = -1
@@ -215,6 +503,10 @@ def var2ascii(t2m, rh2m, sd, yy, mm, dd, hh):
 
 
 def create_gridpp_parameters(files, keep, providers, lonrange, latrange, override_ci, default_ci):
+    try:
+        import csv
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
 
     if latrange is not None:
         latrange = [float(x) for x in latrange.split(',')]
@@ -286,6 +578,12 @@ def create_gridpp_parameters(files, keep, providers, lonrange, latrange, overrid
 
 
 def read_ascii_file_with_header(filename, offset=1):
+    try:
+        import numpy as np
+        import csv
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     observations = []
     with open(filename, 'r') as csvfile:
         diagreader = csv.reader(csvfile, delimiter=';', quotechar='|')
@@ -347,6 +645,11 @@ def read_ascii_file_with_header(filename, offset=1):
 
 
 def open_db(dbname):
+    try:
+        import sqlite3
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     conn = sqlite3.connect(dbname)
     return conn
 
@@ -422,6 +725,11 @@ def populate_usage_db(conn, dtg, varname, observations):
 
 
 def rmse(predictions, targets):
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     if len(predictions) > 0:
         return np.sqrt(np.nanmin(((predictions - targets) ** 2)))
     else:
@@ -429,6 +737,10 @@ def rmse(predictions, targets):
 
 
 def bias(predictions):
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
     if len(predictions) > 0:
         return np.nanmean(np.subtract(predictions, np.nanmin(predictions)))
     else:
@@ -436,6 +748,10 @@ def bias(predictions):
 
 
 def absbias(predictions):
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
     if len(predictions) > 0:
         return np.nanmean(np.subtract(abs(predictions), np.nanmin(predictions)))
     else:
@@ -443,6 +759,11 @@ def absbias(predictions):
 
 
 def mean(predictions):
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     if len(predictions) > 0:
         return np.nanmin(predictions)
     else:
@@ -450,6 +771,11 @@ def mean(predictions):
 
 
 def calculate_statistics(observations, modes, stat_cols):
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     statistics = {}
     for mode in modes:
         fg = []
@@ -504,6 +830,11 @@ def calculate_statistics(observations, modes, stat_cols):
 
 
 def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
+    try:
+        import  sqlite3
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     obnumber = "1"
     obname = "synop"
     satname = "undef"
@@ -559,6 +890,14 @@ def inside_window(obs_dtg, valid_dtg, valid_range):
 
 
 def read_bufr_file(bufrFile, var, lonrange, latrange, validDTG, validRange):
+    try:
+        from datetime import datetime
+        import numpy as np
+        from eccodes import codes_set, codes_bufr_new_from_file, CodesInternalError, codes_release, codes_get, \
+            CODES_MISSING_DOUBLE, CODES_MISSING_LONG
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     # open bufr file
     f = open(bufrFile)
 
@@ -744,6 +1083,12 @@ def read_bufr_file(bufrFile, var, lonrange, latrange, validDTG, validRange):
 
 
 def td2rh(td, t):
+    try:
+        from math import exp
+        import numpy as np
+    except ModuleNotFoundError:
+        print("Could not import needed modules")
+
     rh = 100 * (exp((17.625 * td) / (243.04 + td)) / exp((17.625 * t) / (243.04 + t)))
     if rh > 110 or rh < 1:
         print("\nWARNING: Calculated rh to " + str(rh) + " from " + str(td) + " and " + str(t) + ". Set it to missing")
@@ -761,3 +1106,51 @@ def write_obs_to_ascii_file(fname, observations):
         for obs in observations:
             fh.write(str(obs.lon) + ";" + str(obs.lat) + ";" + str(obs.elevation) + ";" + str(obs.value) + "\n")
         fh.close()
+
+
+'''
+class Observation(object):
+    def __init__(self, lon, lat, stid, elev, value, flag=0):
+        self.lon = lon
+        self.lat = lat
+        self.stid = stid
+        self.elev = elev
+        self.value = value
+        self.flag = flag
+        self.id = -1
+
+    def set_id(self, id):
+        self.id = id
+
+    def print_obs(self):
+        print("observation: ", self.lon, self.lat, self.stid, self.elev, self.value, self.flag)
+
+
+def vectors2obs(lon, lat, stid, elev, value, flag=0, only_good=True):
+    ok = False
+    if only_good:
+        print("vector2obs: ", lon, lat, stid, elev, value, flag)
+        #if flag == 0:
+        ok = True
+    else:
+        ok = True
+    if ok:
+        return Observation(lon, lat, stid, elev, value, flag)
+
+
+def obs2vectors(my_obs, only_good=True):
+    ok = False
+    if only_good:
+        #print("obs2vectors:",
+        my_obs.print_obs()
+        #if my_obs.flag == 0:
+        ok = True
+        #else:
+        #    print("Rejected!")
+    else:
+        ok = True
+    if ok:
+        return my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value, my_obs.flag
+
+'''
+#def set_ids(obs, id)

@@ -1,46 +1,62 @@
 #!/bin/bash
 
 set -x
-export ECCODES_DIR=/modules/xenial/user-apps/eccodes/2.14.1_gnu_5.4.0/
-export PYTHONPATH=$HOME/offline-surfex-forcing:$HOME/.local/lib/python3.5/site-packages/
-cd $HOME/surfex-tests/mc || exit 1
+#export ECCODES_DIR=/modules/xenial/user-apps/eccodes/2.14.1_gnu_5.4.0/
+#export PYTHONPATH=$HOME/offline-surfex-forcing:$HOME/.local/lib/python3.5/site-packages/
+#export PATH=$HOME/offline-surfex-forcing/bin:$PATH
+#export SURFEX_SETTINGS_DIR=$HOME/offline-surfex-forcing/examples/settings
+#export SURFEX_SETTINGS_DIR=/modules/centos7/user-apps/suv/surfex-api/0.0.1-dev/examples/settings
+#export SURFEX_BIN_DIR=/modules/centos7/user-apps/suv/surfex/cy43-dev/bin/
+
+mkdir -p $HOME/surfex-tests/mc_ekf
+cd $HOME/surfex-tests/mc_ekf || exit 1
+
 
 domain_name="NORWAY-SOUTH"
-domains_json="$HOME/offline-surfex-forcing/examples/settings/domains.json"
+domains_json="$SURFEX_SETTINGS_DIR/domains.json"
 
 # Set domain
-$HOME/offline-surfex-forcing/bin/set_domain -d $domain_name --domains $domains_json -o domain.json || exit 1
+set_domain -d $domain_name --domains $domains_json -o domain.json || exit 1
 
 # Merge TOML settings
-settings="$HOME/offline-surfex-forcing/examples/settings/config_exp_surfex.toml $HOME/offline-surfex-forcing/examples/settings/ekf_nc.toml"
-$HOME/offline-surfex-forcing/bin/merge_toml_files -t $settings -o config.toml || exit 1
+settings="$SURFEX_SETTINGS_DIR/config_exp_surfex.toml $SURFEX_SETTINGS_DIR/ekf_nc.toml"
+merge_toml_files -t $settings -o config.toml || exit 1
 
-settings_dir=$HOME/offline-surfex-forcing/examples/settings/
-system=$HOME/offline-surfex-forcing/examples/settings/system.ppi.json
-rte=$HOME/offline-surfex-forcing/examples/settings/rte.ppi.json
+settings_dir=$SURFEX_SETTINGS_DIR
+system=$SURFEX_SETTINGS_DIR/system.ppi.json
+
+nproc=8
+rte=rte.json
+cat > $rte << EOF
+{
+  "OMP_NUM_THREADS": "1",
+  "PATH":"$PATH",
+  "PYTHONPATH":"$PYTHONPATH",
+  "LD_LIBRARY_PATH":"$LD_LIBRARY_PATH"
+}
+EOF
 
 pgd_file=PGD.nc
 if [ ! -f $pgd_file ]; then
   # Create json namelist
-  $HOME/offline-surfex-forcing/bin/create_surfex_json_namelist -c config.toml -s $system -p $settings_dir pgd || exit 1
-
-  $HOME/offline-surfex-forcing/bin/pgd -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -o $pgd_file "$HOME/surfex-tests/bin/PGD.exe"  || exit 1
+  create_surfex_json_namelist -c config.toml -s $system -p $settings_dir pgd || exit 1
+  pgd -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -w "mpiexec -np $nproc" -o $pgd_file pgd.exe  || exit 1
 fi
 
 FG_DTG=2020011303
 prep_file=PREP_ORIG.nc
 if [ ! -f $prep_file ]; then
   # Create json namelist
-  $HOME/offline-surfex-forcing/bin/create_surfex_json_namelist -c config.toml -s $system -p $settings_dir \
-    --prep.file $HOME/offline-surfex-forcing/examples/settings/prep_from_namelist_values.json \
+  create_surfex_json_namelist -c config.toml -s $system -p $settings_dir \
+    --prep.file $SURFEX_SETTINGS_DIR/prep_from_namelist_values.json \
     --prep.filetype json \
     --dtg $FG_DTG prep || exit 1
 #  --prep.file /lustre/storeA/users/trygveasp/surfex_test_data/sfx/2020/01/13/00/ICMSHHARM+0003.sfx \
 #  --prep.filetype FA \
 #  --prep.pgdfile /lustre/storeA/users/trygveasp/surfex_test_data/sfx/pgd/Const.Clim.sfx \
 #  --prep.pgdfiletype FA \
-
-  $HOME/offline-surfex-forcing/bin/prep -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte --pgd $pgd_file -o $prep_file $HOME/surfex-tests/bin/PREP.exe  || exit 1
+ 
+  prep -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -w "mpiexec -np $nproc" --pgd $pgd_file -o $prep_file prep.exe  || exit 1
 fi
 
 cat > domain.yml << EOF
@@ -57,22 +73,22 @@ EOF
 
 DTG=2020011306
 if [ ! -f FORCING.nc ]; then
-  $HOME/offline-surfex-forcing/bin/create_forcing $FG_DTG $DTG domain.yml -m conf_proj_domain -p /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+@LLL@grib_fp --co2 constant --sca_sw constant -i grib --zsoro_converter phi2m --zref ml --uref ml --zval constant --uval constant
+  create_forcing $FG_DTG $DTG domain.yml -m conf_proj_domain -p /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+@LLL@grib_fp --co2 constant --sca_sw constant -i grib --zsoro_converter phi2m --zref ml --uref ml --zval constant --uval constant || exit 1
 fi
 
 forecast=FG_SODA.nc
 if [ ! -f $forecast ]; then
   # Create json namelist
-  $HOME/offline-surfex-forcing/bin/create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --forc_zs offline || exit 1
+  create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --forc_zs offline || exit 1
 
-  $HOME/offline-surfex-forcing/bin/offline -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte --pgd $pgd_file --prep $prep_file -o $forecast $HOME/surfex-tests/bin/OFFLINE.exe  || exit 1
+  offline -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -w "mpiexec -np $nproc" --pgd $pgd_file --prep $prep_file -o $forecast offline.exe  || exit 1
 fi
 
 # Bufr Obs
 vars="airTemperatureAt2M relativeHumidityAt2M totalSnowDepth"
 for var in $vars; do
   if [ ! -f $var.txt ]; then
-    $HOME/offline-surfex-forcing/bin/bufr2titan -f /lustre/storeA/users/trygveasp/surfex_test_data/obs/bufr/ob2020011306 --lonrange 5,15 --latrange 55,65 -v $var -o $var.txt || exit 1
+    bufr2titan -f /lustre/storeA/users/trygveasp/surfex_test_data/obs/bufr/ob2020011306 --lonrange 5,15 --latrange 55,65 -v $var -o $var.txt || exit 1
   fi
 done
 
@@ -86,13 +102,13 @@ for var in $vars; do
     Rscript $HOME/TITAN/titan.R $var.txt obs_$var.txt --prid 5 --dr.isol 15000 --n.isol 5  --doit.isol 0 --doit.sct 0 --doit.buddy 0 $cmd  || exit 1
   fi
   if [ ! -f obs_$var.nc ]; then
-    $HOME/offline-surfex-forcing/bin/create_gridpp_parameters obs_$var.txt -k 0 -o obs_$var.nc || exit 1 
+    create_gridpp_parameters obs_$var.txt -k 0 -o obs_$var.nc || exit 1 
   fi
 done
 
 # First guess
 if [ ! -f fg.nc ]; then
-    $HOME/offline-surfex-forcing/bin/FirstGuess4gridpp /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+003grib_fp -sfx /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+003grib_sfx --altitude_converter phi2m -c $HOME/offline-surfex-forcing/examples/settings/grib_codes.yaml  --sdf PGD.nc -o fg.nc || exit 1
+    FirstGuess4gridpp /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+003grib_fp -sfx /lustre/storeA/users/trygveasp/surfex_test_data/grib1/2020/01/13/03/fc2020011303+003grib_sfx --altitude_converter phi2m -c $HOME/offline-surfex-forcing/examples/settings/grib_codes.yaml  --sdf PGD.nc -o fg.nc || exit 1
   fi
 
 for var in $vars; do
@@ -116,7 +132,7 @@ done
 
 # oi2soda
 if [ ! -f OBSERVATIONS_200113H06.DAT ]; then
-  $HOME/offline-surfex-forcing/bin/oi2soda --t2m_file an_airTemperatureAt2M.nc --rh2m_file an_relativeHumidityAt2M.nc --sd_file an_totalSnowDepth.nc $DTG || exit 1
+  oi2soda --t2m_file an_airTemperatureAt2M.nc --rh2m_file an_relativeHumidityAt2M.nc --sd_file an_totalSnowDepth.nc $DTG || exit 1
 fi
 
 # Perturbed runs
@@ -126,9 +142,9 @@ for pert in 0 1 2; do
   perturbed_runs="$perturbed_runs $pert_forecast"
   if [ ! -f $pert_forecast ]; then
     # Create json namelist
-    $HOME/offline-surfex-forcing/bin/create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --forc_zs offline || exit 1
+    create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --forc_zs offline || exit 1
 
-    $HOME/offline-surfex-forcing/bin/perturbed_offline -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte --pert $pert --pgd $pgd_file --prep $prep_file -o $pert_forecast $HOME/surfex-tests/bin/OFFLINE.exe  || exit 1
+    perturbed_offline -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -w "mpiexec -np $nproc" --pert $pert --pgd $pgd_file --prep $prep_file -o $pert_forecast offline.exe  || exit 1
   fi
 done
 
@@ -136,10 +152,10 @@ done
 soda=SODA.nc
 if [ ! -f $soda ]; then
   # Create json namelist
-  $HOME/offline-surfex-forcing/bin/create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --dtg $DTG soda || exit 1
+  create_surfex_json_namelist -c config.toml -s $system -p $settings_dir --dtg $DTG soda || exit 1
 
   assim_input="assim_input.json"
-  $HOME/offline-surfex-forcing/bin/set_assimilation_input -o $assim_input --perts $perturbed_runs --sfx_fg $forecast $DTG options.json || exit 1
-  $HOME/offline-surfex-forcing/bin/soda -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte --pgd $pgd_file --prep $forecast --assim_input $assim_input -o $soda $HOME/surfex-tests/bin/SODA.exe  || exit 1
+  set_assimilation_input -o $assim_input --perts $perturbed_runs --sfx_fg $forecast $DTG options.json || exit 1
+  soda -d domain.json -j options.json -e ecoclimap.json -i surfex_input_files.json -r $rte -w "mpiexec -np $nproc" --pgd $pgd_file --prep $forecast --assim_input $assim_input -o $soda soda.exe  || exit 1
 fi
 

@@ -106,6 +106,7 @@ class ForcingFromGribToNetCDF(unittest.TestCase):
     format = "grib"
     file = "data/input/grib/2018/01/11/00/fc2018011100+000grib_fp_mbr000"
     pattern = "data/input/grib/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@+@LLL@grib_fp_mbr000"
+
     def test_file(self):
         pdf = PdfPages("plots/forcing_file_from_grib.pdf")
         of = "data/CONF_PROJ/nc/FORCING_file_from_grib.nc"

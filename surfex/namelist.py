@@ -3,6 +3,8 @@ import json
 import toml
 from datetime import datetime
 import surfex
+import yaml
+import f90nml
 
 
 def capitalize_namelist_dict(dict_in):
@@ -33,6 +35,31 @@ def merge_namelist_dicts(old_dict, new_dict):
             merged_dict.update({new_key: new_dict[new_key]})
 
     return merged_dict
+
+
+def ascii2nml(input_data):
+    output_data = f90nml.Namelist(input_data)
+    return output_data
+
+
+def ascii_file2nml(input_fname, input_fmt="json"):
+    if input_fmt == 'json':
+        with open(input_fname) as input_file:
+            output_data = json.load(input_file)
+    elif input_fmt == 'yaml':
+        with open(input_fname) as input_file:
+            output_data = yaml.safe_load(input_file)
+    output_data = f90nml.Namelist(output_data)
+    return output_data
+
+
+def nml2ascii(input_data, output_file, output_fmt="json", indent=2):
+    if output_fmt == 'json':
+        input_data = input_data.todict(complex_tuple=True)
+        json.dump(input_data, open(output_file, "w"), indent=indent, separators=(',', ': '))
+    elif output_fmt == 'yaml':
+        input_data = input_data.todict(complex_tuple=True)
+        yaml.dump(input_data, output_file, default_flow_style=False)
 
 
 def merge_json_namelist_file(old_dict, my_file):

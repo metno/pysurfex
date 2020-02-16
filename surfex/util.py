@@ -1,69 +1,76 @@
 import sys
-from datetime import datetime,timedelta
-HAS_DATES=True
+from datetime import datetime
+HAS_DATES = True
 try:
     import matplotlib.dates
 except:
-    HAS_DATES=False
+    HAS_DATES = False
+
 
 def error(message):
     """ Write error message to console and abort """
     print("\033[1;31mError: " + message + "\033[0m")
     sys.exit(1)
 
-def info(message,level=0):
+
+def info(message, level=0):
     """ Write a information message to console """
     if level < 1:
         print("\033[1;92mINFO: " + message + "\033[0m")
+
 
 def warning(message):
     """ Write a warning message to console """
     print("\033[1;33mWarning: " + message + "\033[0m")
 
-def parse_filepattern(file_pattern,basetime,validtime):
-    #print(file_pattern)
-    file_name=str(file_pattern)
-    year=basetime.strftime('%Y')
-    year2=basetime.strftime('%y')
-    month=basetime.strftime('%m')
-    day=basetime.strftime('%d')
-    hour=basetime.strftime('%H')
-    dt=validtime-basetime
+
+def parse_filepattern(file_pattern, basetime, validtime):
+    # print(file_pattern)
+    file_name = str(file_pattern)
+    year = basetime.strftime('%Y')
+    year2 = basetime.strftime('%y')
+    month = basetime.strftime('%m')
+    day = basetime.strftime('%d')
+    hour = basetime.strftime('%H')
+    dt = validtime-basetime
     ll = "%02d" % (dt.seconds / 3600)
     lll = "%03d" % (dt.seconds / 3600)
     llll = "%04d" % (dt.seconds / 3600)
-    file_name=file_name.replace('@YYYY@',year)
+    file_name = file_name.replace('@YYYY@', year)
     file_name = file_name.replace('@YY@', year2)
     file_name = file_name.replace('@MM@', month)
     file_name = file_name.replace('@DD@', day)
     file_name = file_name.replace('@HH@', hour)
     file_name = file_name.replace('@LL@', ll)
-    file_name = file_name.replace('@LLL@',lll)
-    file_name = file_name.replace('@LLLL@',llll)
+    file_name = file_name.replace('@LLL@', lll)
+    file_name = file_name.replace('@LLLL@', llll)
     return file_name
+
 
 def unixtime_to_datenum(time):
 
-   """ Converts unixtime into datenum
+    """ Converts unixtime into datenum
 
-   Arguments:
+    Arguments:
       time (int): unixtime in seconds since 1970
 
-   Returns:
+    Returns:
       int: datenum value
-   """
+    """
    
-   dt = datetime.datetime.utcfromtimestamp(time)
-   dt2=None
-   if HAS_DATES:
-      dt2=matplotlib.dates.date2num(dt)
-   else:
-      error("You need to have dates installed")
+    dt = datetime.utcfromtimestamp(time)
+    dt2 = None
+    if HAS_DATES:
+        dt2 = matplotlib.dates.date2num(dt)
+    else:
+        error("You need to have dates installed")
 
-   return dt2
+    return dt2
+
 
 class YamlReaderError(Exception):
     pass
+
 
 def data_merge(a, b):
     """merges b into a and return merged result
@@ -73,7 +80,7 @@ def data_merge(a, b):
     # ## debug output
     # sys.stderr.write("DEBUG: %s to %s\n" %(b,a))
     try:
-        if a is None or isinstance(a, str) or isinstance(a, int)  or isinstance(a, float):
+        if a is None or isinstance(a, str) or isinstance(a, int) or isinstance(a, float):
             # border case for first run or if a is a primitive
             a = b
         elif isinstance(a, list):
@@ -99,5 +106,3 @@ def data_merge(a, b):
     except TypeError as e:
         raise YamlReaderError('TypeError "%s" in key "%s" when merging "%s" into "%s"' % (e, key, b, a))
     return a
-
-
