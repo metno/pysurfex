@@ -4,16 +4,18 @@ try:
     import shutil
     import abc
     import numpy as np
-#    import titanlib as tit
+    import surfex
 except ModuleNotFoundError:
     print("Could not load system modules")
 
 
 class DataSet(object):
-    def __init__(self, var, settings, tests, test_flags, debug=False):
+    def __init__(self, var, settings, tests, test_flags, obs_time, debug=False):
+        import titanlib as tit
         datasources = []
         self.tests = tests
         self.test_flags = test_flags
+        self.obs_time = obs_time
         self.debug = debug
         lons = []
         lats = []
@@ -26,8 +28,8 @@ class DataSet(object):
                 filetype = settings[obs_set]["filetype"]
                 if "filepattern" in settings[obs_set]:
                     filepattern = settings[obs_set]["filepattern"]
-                    # TODO
-                    filename = filepattern
+                    validtime = self.obs_time
+                    filename = surfex.util.parse_filepattern(filepattern, self.obs_time, validtime)
                     test_json = {}
                     provider = "-1"
                     if "provider" in settings[obs_set]:
@@ -62,6 +64,7 @@ class DataSet(object):
         self.dataset = tit.Dataset(lats, lons, elevs, values)
 
     def perform_tests(self):
+        import titanlib as tit
         for t in self.tests:
             t = t.lower()
             print("Test: ", t)

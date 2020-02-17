@@ -1,14 +1,14 @@
 import abc
 import netCDF4
 import numpy as np
-import surfex
 import time
 import copy
 import os
 import sys
 import surfex
-from surfex.util import error
+import yaml
 from datetime import datetime, timedelta
+
 
 class SurfexForcing(object):
     """
@@ -16,6 +16,31 @@ class SurfexForcing(object):
     """
 
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, base_time, geo, ntimes, var_objs, debug):
+        self.time_step_intervall = 3600
+        self.valid_time = None
+        self.base_time = base_time
+        self.geo = geo
+        self.debug = debug
+        self.ntimes = ntimes
+        self.time_step = 0
+        self.var_objs = var_objs
+        self._check_sanity()
+
+    def _check_sanity(self):
+        if len(self.var_objs) != self.nparameters:
+            print("Inconsistent number of parameter. " + str(len(self.var_objs)) + " != " + str(self.nparameters))
+            raise Exception
+
+        # Check if all parameters are present
+        for i in range(0, len(self.var_objs)):
+            self.parameters[self.var_objs[i].var_name] = 1
+
+        for key in self.parameters:
+            if self.parameters[key] == 0:
+                print("Required parameter " + str(key) + " is missing!")
+                raise Exception
 
     # Time dependent parameter
     nparameters = 11
@@ -36,29 +61,6 @@ class SurfexForcing(object):
     @abc.abstractmethod
     def write_forcing(self, var_objs, this_time, cache):
         raise NotImplementedError('users must define writeForcing to use this base class')
-
-    def __init__(self, base_time, geo, ntimes, var_objs, debug):
-        self.time_step_intervall = 3600
-        self.valid_time = None
-        self.base_time = base_time
-        self.geo = geo
-        self.debug = debug
-        self.ntimes = ntimes
-        self.time_step = 0
-        self.var_objs = var_objs
-        self._check_sanity()
-
-    def _check_sanity(self):
-        if len(self.var_objs) != self.nparameters:
-            error("Inconsistent number of parameter. " + str(len(self.var_objs)) + " != " + str(self.nparameters))
-
-        # Check if all parameters are present
-        for i in range(0, len(self.var_objs)):
-            self.parameters[self.var_objs[i].var_name] = 1
-
-        for key in self.parameters:
-            if self.parameters[key] == 0:
-                error("Required parameter " + str(key) + " is missing!")
 
 
 class NetCDFOutput(SurfexForcing):
@@ -112,6 +114,9 @@ class NetCDFOutput(SurfexForcing):
     def _define_forcing(self, geo, att_objs, att_time, cache):
         print("Define netcdf forcing")
 
+        zs = None
+        zref = None
+        uref = None
         for i in range(0, len(att_objs)):
             this_obj = att_objs[i]
             this_var = this_obj.var_name
@@ -212,7 +217,8 @@ class NetCDFOutput(SurfexForcing):
                 self.forcing_file['CO2air'].longname = "Near_Surface_CO2_Concentration"
                 self.forcing_file['CO2air'].units = "kg/m3"
             else:
-                error("This should never happen! " + this_var + " is not defined!")
+                print("This should never happen! " + this_var + " is not defined!")
+                raise NotImplementedError
 
     def finalize(self):
         print("Close file")
@@ -249,11 +255,12 @@ class AsciiOutput(SurfexForcing):
             write_formatted_array(self.file_handler[this_var], field, cols, fmt)
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
-        # print("Writing Params_config.txt")
+        zs = None
+        zref = None
+        uref = None
         for i in range(0, len(att_objs)):
             this_obj = att_objs[i]
             this_var = this_obj.var_name
-            print(this_obj.var_name)
             if this_var == "ZS":
                 zs = this_obj.read_time_step(att_time, cache)
             elif this_var == "ZREF":
@@ -323,15 +330,16 @@ def run_time_loop(options, var_objs, att_objs):
     if str.lower(options['output_format']) == "netcdf":
         # Set att_time the same as start
         att_time = options['start']
-        output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs,
-                              att_objs, att_time, cache)
+        output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
+                                             var_objs, att_objs, att_time, cache)
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
         # base_time, geo, ntimes, var_objs, att_objs, att_time, cache
-        output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes, var_objs,
-                             att_objs, att_time, cache)
+        output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
+                                            var_objs, att_objs, att_time, cache)
     else:
-        error("Invalid output format "+options['output_format'])
+        print("Invalid output format "+options['output_format'])
+        raise NotImplementedError
 
     # Loop output time steps
     this_time = options['start']
@@ -381,30 +389,36 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
         defs = copy.deepcopy(conf[forcingformat])
 
     # All objects with converters, find converter dict entry
+    conf_dict = {}
     if forcingformat != "constant":
 
         # Non-height dependent variables
-        conf_dict = {}
         if ref_height is None:
             if "converter" in conf[sfx_var][forcingformat]:
                 conf_dict = copy.deepcopy(conf[sfx_var][forcingformat]["converter"])
             else:
-                error("No converter defined for " + sfx_var)
+                print("No converter defined for " + sfx_var)
+                raise KeyError
+
         # Variables with height dependency
         else:
             if ref_height in conf[sfx_var]:
                 # print sfx_var,ref_height,format
                 if forcingformat not in conf[sfx_var][ref_height]:
-                    error(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var + " and format: " +
+                    print(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var + " and format: " +
                           forcingformat)
+                    raise KeyError
                 if conf[sfx_var][ref_height][forcingformat] is None:
-                    error(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var)
+                    print(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var)
+                    raise KeyError
                 if "converter" in conf[sfx_var][ref_height][forcingformat]:
                     conf_dict = copy.deepcopy(conf[sfx_var][ref_height][forcingformat]["converter"])
                 else:
-                    error("No converter defined for " + sfx_var)
+                    print("No converter defined for " + sfx_var)
+                    raise KeyError
             else:
-                error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                print("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                raise KeyError
 
     ##############################################################
     ##############################################################
@@ -415,22 +429,26 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
             if "constant" in conf[sfx_var]:
                 const_dict = copy.deepcopy(conf[sfx_var]["constant"])
             else:
-                error("No constant defined for " + sfx_var)
+                print("No constant defined for " + sfx_var)
+                raise KeyError
         else:
             if ref_height in conf[sfx_var]:
                 if "constant" in conf[sfx_var][ref_height]:
                     const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
                 else:
-                    error("No constant defined for " + sfx_var)
+                    print("No constant defined for " + sfx_var)
+                    raise KeyError
             else:
-                error("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                print("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                raise KeyError
+
         obj = surfex.iostuff.ConstantValue(geo, sfx_var, const_dict)
     else:
 
         # Construct the converter
         # print sfx_var
-        converter = surfex.converter.Converter(selected_converter, start, defs, conf_dict, forcingformat,
-                                                first_base_time, timestep, debug)
+        converter = surfex.iostuff.Converter(selected_converter, start, defs, conf_dict, forcingformat,
+                                             first_base_time, timestep, debug)
 
         # Construct the input object
         obj = surfex.iostuff.ConvertedInput(geo, sfx_var, converter)
@@ -442,7 +460,8 @@ def set_forcing_config(args):
 
     debug = args.debug
     if (int(args.dtg_start) or int(args.dtg_stop)) < 1000010100:
-        error("Invalid start and stop times! " + str(args.dtg_start) + " " + str(args.dtg_stop))
+        print("Invalid start and stop times! " + str(args.dtg_start) + " " + str(args.dtg_stop))
+        raise Exception
 
     start = datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')
     stop = datetime.strptime(str.strip(str(args.dtg_stop)), '%Y%m%d%H')
@@ -473,7 +492,7 @@ def set_forcing_config(args):
         user_settings = yaml.load(open(args.config)) or {}
 
     # Merge all settings with user all settings
-    merged_conf = data_merge(default_conf, user_settings)
+    merged_conf = surfex.util.data_merge(default_conf, user_settings)
 
     # Replace global settings from
     fileformat = args.input_format
@@ -507,6 +526,9 @@ def set_forcing_config(args):
             ref_height = args.uref
             if ref_height == "screen":
                 cformat = "constant"
+        else:
+            raise NotImplementedError
+
         att_objs.append(set_input_object(atts[i], merged_conf, geo_out, cformat, selected_converter, ref_height,
                                          start, first_base_time, args.timestep, debug))
 
@@ -567,6 +589,8 @@ def set_forcing_config(args):
             if args.co2 != "default":
                 cformat = args.co2
             selected_converter = args.co2_converter
+        else:
+            raise NotImplementedError
         var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter, ref_height,
                                          start, first_base_time, args.timestep, debug))
 

@@ -14,3 +14,4 @@ from .grib import *
 from .bufr import *
 from .variable import *
 from .util import *
+from .cache import *

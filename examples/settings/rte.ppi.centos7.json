@@ -1,0 +1,6 @@
+{
+  "OMP_NUM_THREADS": "1",
+  "PATH":"/modules/xenial/OPENMPI/3.0.0/bin:/opt/netcdf4.3.0/bin/:/home/trygveasp/bin:/home/trygveasp/scripts:/home/trygveasp/progs/scilab-4.1.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:",
+  "PYTHONPATH":"/home/trygveasp/offline-surfex-forcing/",
+  "LD_LIBRARY_PATH":"/modules/xenial/OPENMPI/3.0.0/lib:/opt/gcc-4.4.0/lib/:/home/trygveasp/lib/:"
+}

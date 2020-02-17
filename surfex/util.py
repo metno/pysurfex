@@ -1,10 +1,5 @@
 import sys
 from datetime import datetime
-HAS_DATES = True
-try:
-    import matplotlib.dates
-except:
-    HAS_DATES = False
 
 
 def error(message):
@@ -59,13 +54,12 @@ def unixtime_to_datenum(time):
     """
    
     dt = datetime.utcfromtimestamp(time)
-    dt2 = None
-    if HAS_DATES:
-        dt2 = matplotlib.dates.date2num(dt)
-    else:
-        error("You need to have dates installed")
-
-    return dt2
+    try:
+        from matplotlib import dates
+        dt2 = dates.date2num(dt)
+        return dt2
+    except ImportError:
+        raise Exception("You need to have dates installed")
 
 
 class YamlReaderError(Exception):

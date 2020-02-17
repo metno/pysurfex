@@ -46,6 +46,7 @@ class PGDTest(unittest.TestCase):
         my_batch = surfex.run.BatchJob(rte=rte)
         binary = "time"
         surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input=my_input)
+        os.remove("OPTIONS.nam")
 
     def test_input_json_from_file(self):
 

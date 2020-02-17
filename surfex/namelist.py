@@ -17,6 +17,16 @@ def capitalize_namelist_dict(dict_in):
     return new_dict
 
 
+def lower_case_namelist_dict(dict_in):
+    new_dict = {}
+    for key in dict_in:
+        lower_case_dict = {}
+        for key2 in dict_in[key]:
+            lower_case_dict.update({key2.lower(): dict_in[key][key2]})
+        new_dict.update({key.lower(): lower_case_dict})
+    return new_dict
+
+
 def merge_namelist_dicts(old_dict, new_dict):
     old_dict = capitalize_namelist_dict(old_dict)
     new_dict = capitalize_namelist_dict(new_dict)

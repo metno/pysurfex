@@ -1,7 +1,7 @@
 import os
 import json
 import surfex
-from surfex.util import error, data_merge
+from surfex.util import data_merge
 import copy
 import shutil
 import subprocess
@@ -47,7 +47,6 @@ class ConvertedInput(InputFieldData):
         return field
 
     def print_info(self):
-        print(self.var_name)
         self.converter.print_info()
 
 
@@ -75,12 +74,10 @@ class ConstantValue(InputFieldData):
 
 
 def remove_existing_file(f_in, f_out):
-    print(f_in, f_out)
     if f_in is None:
         raise FileNotFoundError("Input file not set")
     # If files are not the same file
     if os.path.abspath(f_in) != os.path.abspath(f_out):
-        # print("trygve", f_out)
         if os.path.isdir(f_out):
             raise IsADirectoryError(f_out + " is a directory! Please remove it if desired")
         if os.path.islink(f_out):
@@ -107,7 +104,11 @@ def clean_working_dir(workdir):
     shutil.rmtree(workdir)
 
 
-class InputData(ABC):
+#######################################################
+#######################################################
+
+
+class InputDataToSurfexBinaries(ABC):
 
     def __init__(self):
         pass
@@ -117,7 +118,7 @@ class InputData(ABC):
         return NotImplementedError
 
 
-class OutputData(ABC):
+class OutputDataFromSurfexBinaries(ABC):
 
     def __init__(self):
         pass
@@ -127,9 +128,9 @@ class OutputData(ABC):
         return NotImplementedError
 
 
-class JsonOutputData(OutputData):
+class JsonOutputData(OutputDataFromSurfexBinaries):
     def __init__(self, data):
-        OutputData.__init__(self)
+        OutputDataFromSurfexBinaries.__init__(self)
         self.data = data
 
     def archive_files(self):
@@ -160,9 +161,9 @@ class JsonOutputDataFromFile(JsonOutputData):
         JsonOutputData.archive_files(self)
 
 
-class JsonInputData(InputData):
+class JsonInputData(InputDataToSurfexBinaries):
     def __init__(self, data):
-        InputData.__init__(self)
+        InputDataToSurfexBinaries.__init__(self)
         self.data = data
 
     def prepare_input(self):
@@ -236,7 +237,8 @@ class Converter:
         elif name == "phi2m":
             self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"], debug)
         else:
-            error("Converter " + self.name + " not implemented")
+            print("Converter " + self.name + " not implemented")
+            raise NotImplementedError
 
         # print "Constructed the converter " + self.name
 
@@ -251,7 +253,6 @@ class Converter:
         var_dict = copy.deepcopy(var_dict)
         merged_dict = data_merge(defs, var_dict)
 
-        var = None
         if fileformat == "netcdf":
             var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime, self.intervall, debug,
                                                  need_alpha=need_alpha)
@@ -259,9 +260,9 @@ class Converter:
             var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime, self.intervall, debug,
                                                need_alpha=need_alpha)
         elif fileformat == "constant":
-            error("Create variable for format " + fileformat + " not implemented!")
+            raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
         else:
-            error("Create variable for format " + fileformat + " not implemented!")
+            raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
 
         # TODO: Put this under verbose flag and format printing
         # var.print_variable_info()
@@ -331,5 +332,6 @@ class Converter:
             field = np.divide(field, gravity)
             field[(field < 0)] = 0.
         else:
-            error("Converter " + self.name + " not implemented")
+            print("Converter " + self.name + " not implemented")
+            raise NotImplementedError
         return field

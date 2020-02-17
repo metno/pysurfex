@@ -1,5 +1,8 @@
+.. image:: https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target: https://coveralls.io/github/metno/offline-surfex-forcing?branch=master
+
+
 Offline SURFEX Forcing and Visualization of SURFEX data
-========================================
+=======================================================
 
 Tool to create offline SURFEX forcing and plotting and verification of results
 

@@ -1,4 +1,4 @@
-
+from datetime import datetime
 from surfex import obs
 import numpy as np
 import json
@@ -83,6 +83,7 @@ if __name__ == "__main__":
     test_flags = {"plausibility": 99, "firstguess": 4, "sct": 25, "climatology": 55, "buddy": 66}
     tests = ["climatology"]
     #tests = ["plausibility", "climatology", "buddy", "firstguess", "sct"],
-    data_set = obs.DataSet("t2m", settings["t2m"], tests, test_flags)
+    obs_time = datetime.strptime("2020021600", "%Y%m%d%H")
+    data_set = obs.DataSet("t2m", settings["t2m"], tests, test_flags, obs_time)
     data_set.perform_tests()
     data_set.write_output("obs.txt")
