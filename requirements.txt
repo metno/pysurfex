@@ -1,4 +1,7 @@
 toml
+json
+yaml
+
 scipy
 numpy>=1.11
 matplotlib<2

@@ -19,27 +19,7 @@ def warning(message):
     print("\033[1;33mWarning: " + message + "\033[0m")
 
 
-def parse_filepattern(file_pattern, basetime, validtime):
-    # print(file_pattern)
-    file_name = str(file_pattern)
-    year = basetime.strftime('%Y')
-    year2 = basetime.strftime('%y')
-    month = basetime.strftime('%m')
-    day = basetime.strftime('%d')
-    hour = basetime.strftime('%H')
-    dt = validtime-basetime
-    ll = "%02d" % (dt.seconds / 3600)
-    lll = "%03d" % (dt.seconds / 3600)
-    llll = "%04d" % (dt.seconds / 3600)
-    file_name = file_name.replace('@YYYY@', year)
-    file_name = file_name.replace('@YY@', year2)
-    file_name = file_name.replace('@MM@', month)
-    file_name = file_name.replace('@DD@', day)
-    file_name = file_name.replace('@HH@', hour)
-    file_name = file_name.replace('@LL@', ll)
-    file_name = file_name.replace('@LLL@', lll)
-    file_name = file_name.replace('@LLLL@', llll)
-    return file_name
+
 
 
 def unixtime_to_datenum(time):

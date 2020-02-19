@@ -1,6 +1,9 @@
 import surfex
 import os
 import subprocess
+from abc import ABC, abstractmethod
+import json
+import shutil
 
 
 class BatchJob(object):
@@ -25,8 +28,8 @@ class BatchJob(object):
 
 
 class SURFEXBinary(object):
-    def __init__(self, binary, batch, iofile, settings, ecoclimap, surfout=None, assim=None, input=None, archive=None,
-                 print_namelist=False, pgdfile=None):
+    def __init__(self, binary, batch, iofile, settings, ecoclimap, surfout=None, assim=None, input_data=None,
+                 archive_data=None, print_namelist=False, pgdfile=None):
         self.binary = binary
         self.batch = batch
         self.iofile = iofile
@@ -34,8 +37,8 @@ class SURFEXBinary(object):
         self.ecoclimap = ecoclimap
         self.surfout = surfout
         self.assim = assim
-        self.input = input
-        self.archive = archive
+        self.input = input_data
+        self.archive = archive_data
         self.print_namelist = print_namelist
         self.pgdfile = pgdfile
 
@@ -98,17 +101,18 @@ class SURFEXBinary(object):
 
 
 class PerturbedOffline(SURFEXBinary):
-    def __init__(self, binary, batch, io, pert_number, settings, ecoclimap, surfout=None, input=None, archive=None, pgdfile=None,
-                 print_namelist=False):
+    def __init__(self, binary, batch, io, pert_number, settings, ecoclimap, surfout=None, input_data=None,
+                 archive_data=None, pgdfile=None, print_namelist=False):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
         settings['nam_var']['nivar'] = pert_number
-        SURFEXBinary.__init__(self, binary, batch, io, settings, ecoclimap, surfout=surfout, input=input, archive=archive,
-                              pgdfile=pgdfile, print_namelist=print_namelist)
+        SURFEXBinary.__init__(self, binary, batch, io, settings, ecoclimap, surfout=surfout, input_data=input_data,
+                              archive_data=archive_data, pgdfile=pgdfile, print_namelist=print_namelist)
 
 
 class Masterodb(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input=None, archive=None, print_namelist=True):
+    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input_data=None,
+                 archive_data=None, print_namelist=True):
         self.settings = settings
         self.binary = binary
         self.prepfile = prepfile
@@ -117,8 +121,8 @@ class Masterodb(object):
         self.pgdfile = pgdfile
         self.assim = assim
         self.ecoclimap = ecoclimap
-        self.input = input
-        self.archive = archive
+        self.input = input_data
+        self.archive = archive_data
         self.print_namelist = print_namelist
 
         # Set input
@@ -160,3 +164,103 @@ class Masterodb(object):
         if self.assim is not None:
             if self.assim.ass_input is not None:
                 self.assim.ass_input.archive_files()
+
+
+class InputDataToSurfexBinaries(ABC):
+
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def prepare_input(self):
+        return NotImplementedError
+
+
+class OutputDataFromSurfexBinaries(ABC):
+
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def archive_files(self):
+        return NotImplementedError
+
+
+class JsonOutputData(OutputDataFromSurfexBinaries):
+    def __init__(self, data):
+        OutputDataFromSurfexBinaries.__init__(self)
+        self.data = data
+
+    def archive_files(self):
+        for output_file, target in self.data.items():
+
+            print(output_file, target)
+            command = "mv"
+            if type(target) is dict:
+                for key in target:
+                    print(output_file, key, target[key])
+                    command = target[key]
+                    target = key
+
+            cmd = command + " " + output_file + " " + target
+            try:
+                print(cmd)
+                subprocess.check_call(cmd, shell=True)
+            except IOError:
+                print(cmd + " failed")
+                raise
+
+
+class JsonOutputDataFromFile(JsonOutputData):
+    def __init__(self, file):
+        JsonOutputData.__init__(self, json.load(open(file, "r")))
+
+    def archive_files(self):
+        JsonOutputData.archive_files(self)
+
+
+class JsonInputData(InputDataToSurfexBinaries):
+    def __init__(self, data):
+        InputDataToSurfexBinaries.__init__(self)
+        self.data = data
+
+    def prepare_input(self):
+        for target, input_file in self.data.items():
+
+            print(target, input_file)
+            command = "ln -sf"
+            if type(input_file) is dict:
+                for key in input_file:
+                    print(key, input_file[key])
+                    command = str(input_file[key])
+                    input_file = str(key)
+
+            cmd = command + " " + input_file + " " + target
+            try:
+                print(cmd)
+                subprocess.check_call(cmd, shell=True)
+            except IOError:
+                print(cmd + " failed")
+                raise
+
+
+class JsonInputDataFromFile(JsonInputData):
+    def __init__(self, file):
+        JsonInputData.__init__(self, json.load(open(file, "r")))
+
+    def prepare_input(self):
+        JsonInputData.prepare_input(self)
+
+
+def create_working_dir(workdir):
+    # Create work directory
+    if workdir is not None:
+        if os.path.isdir(workdir):
+            shutil.rmtree(workdir)
+        os.makedirs(workdir, exist_ok=True)
+        os.chdir(workdir)
+
+
+def clean_working_dir(workdir):
+    # Clean up
+    shutil.rmtree(workdir)

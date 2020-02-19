@@ -3,6 +3,7 @@ import math
 from pyproj import Proj
 import numpy as np
 import surfex
+import os
 
 
 class SurfexGeo(ABC):
@@ -13,6 +14,8 @@ class SurfexGeo(ABC):
         self.nlats = nlats
         self.lons = np.array(lons)
         self.lats = np.array(lats)
+        self.mask = None
+        print(self.npoints)
 
     @abstractmethod
     def update_namelist(self, nml):
@@ -47,11 +50,9 @@ class ConfProj(SurfexGeo):
                 self.xlon0 = domain_dict["nam_conf_proj"]["xlon0"]
                 self.xlat0 = domain_dict["nam_conf_proj"]["xlat0"]
             else:
-                print("Missing keys")
-                raise KeyError
+                raise KeyError("Missing keys")
         else:
-            print("Missing key")
-            raise KeyError
+            raise KeyError("Missing key")
 
         earth = 6.37122e+6
         proj4 = "+proj=lcc +lat_0=" + str(self.xlat0) + " +lon_0=" + str(self.xlon0) + " +lat_1=" + \
@@ -61,10 +62,13 @@ class ConfProj(SurfexGeo):
 
         lons = []
         lats = []
+        x0 = self.xloncen - 0.5 * (self.nimax - 1) * self.xdx
+        y0 = self.xlatcen - 0.5 * (self.njmax - 1) * self.xdy
         for j in range(0, self.njmax):
             for i in range(0, self.nimax):
                 # lon, lat = xy2pos(i * self.xdx, j * self.xdy)
-                lon, lat = proj(float(i) * self.xdx, float(j) * self.xdy, inverse=True)
+                lon, lat = proj(x0 + (float(i) * self.xdx), y0 + (float(j) * self.xdy), inverse=True)
+                # print(x0, y0, lon, lat)
                 lons.append(lon)
                 lats.append(lat)
         SurfexGeo.__init__(self, proj, self.nimax * self.njmax, len(lons), len(lats), lons, lats)
@@ -198,8 +202,9 @@ class LonLatReg(SurfexGeo):
         if self.nlon == 0 or self.nlat == 0:
             raise ZeroDivisionError
 
-        dlon = (self.xlonmax - self.xlonmin) / self.nlon - 1
-        dlat = (self.xlatmax - self.xlatmin) / self.nlat - 1
+        dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
+        dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
+        print(dlon, dlat)
         for i in range(0, self.nlon):
             lons.append(self.xlonmin + i * dlon)
             lats.append(self.xlatmin + i * dlat)
@@ -224,7 +229,7 @@ class LonLatReg(SurfexGeo):
 
 
 class IGN(SurfexGeo):
-    def __init__(self, from_json):
+    def __init__(self, from_json, recreate=False):
         self.cgrid = "IGN"
         domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
 
@@ -252,12 +257,141 @@ class IGN(SurfexGeo):
 
         if self.clambert == 7:
             proj4 = "+proj=lcc +lat_0=63.5 +lon_0=15.0 +lat_1=63.5 +lat_2=63.5 +no_defs +R=6.37122e+6"
+            self.xloncen = 17
+            self.xlatcen = 63.
+            self.xlon0 = 15
+            self.xlat0 = 63.5
         else:
             raise NotImplementedError
 
         proj = Proj(proj4)
+
+        pxall = self.get_coord(self.xx, self.xdx, "x", recreate)
+        pyall = self.get_coord(self.xy, self.xdy, "y", recreate)
+        self.mask = self.ign_mask(pxall, pyall, self.xx, self.xy, recreate)
+
         # proj, npoints, nlons, nlats, lons, lats
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, self.xx, self.xy)
+        lons = []
+        lats = []
+        for i in range(0, npoints):
+            # lon, lat = xy2pos(i * self.xdx, j * self.xdy)
+            lon, lat = proj(self.xx[i], self.xy[i], inverse=True)
+            print(self.xx[i], self.xy[i], lon, lat)
+            lons.append(lon)
+            lats.append(lat)
+
+        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, lons, lats)
+
+    @staticmethod
+    def get_coord(pin, pdin, coord, recreate=False):
+
+        pout = []
+        cache = "/tmp/." + coord + "_cached"
+        if os.path.isfile(cache) and not recreate:
+            f = open(cache)
+            cached_coord = f.read().splitlines()
+            f.close()
+            for i in range(0, len(cached_coord)):
+                pout.append(float(cached_coord[i]))
+            return pout
+
+        zdout = []
+        ksize = 0
+        if len(pin) > 0:
+            zdout.append(float(pdin[0]) / 2.)
+            pout.append(pin[0])
+            ksize = 1
+            if len(pin) > 1:
+                ksize = 2
+                pout.append(pin[0] - pdin[0])
+                zdout.append(0.)
+            if len(pin) > 2:
+                ksize = 3
+                pout.append(pin[0] + pdin[0])
+                zdout.append(0.)
+
+        # print ksize
+        for i in range(0, len(pin)):
+            for j in range(0, ksize):
+                # print i,j,len(pin),ksize,pout[j],pin[i]
+                if pout[j] == pin[i]:
+                    break
+                if j == ksize - 1:
+                    ksize = ksize + 1
+                    pout.append(pin[i])
+                    zdout.append(float(pdin[i]) / 2.)
+
+            # Mesh constrains
+            for j in range(0, ksize):
+                # print i, j, len(pin), ksize, pout[j], pin[i]
+                if pout[j] < pin[i] and (pout[j] + zdout[j]) >= (pin[i] - pdin[i]):
+                    break
+                if j == ksize - 1:
+                    ksize = ksize + 1
+                    pout.append(pin[i] - pdin[i])
+                    zdout.append(0.)
+
+            for j in range(0, ksize):
+                if pout[j] > pin[i] and (pout[j] - zdout[j]) <= (pin[i] + pdin[i]):
+                    break
+                if j == ksize - 1:
+                    ksize = ksize + 1
+                    pout.append(pin[i] + pdin[i])
+                    zdout.append(0.)
+
+        # Sort pout
+        pout = sorted(pout)
+
+        f = open(cache, "w")
+        for i in range(0, len(pout)):
+            f.write(str(pout[i]) + "\n")
+        print("Cached coordinates for : ", coord)
+        f.close()
+
+        return pout
+
+    @staticmethod
+    def ign_mask(pxall, pyall, xx, yy, recreate):
+        mask = []
+
+        cache = "/tmp/.mask"
+        if os.path.isfile(cache) and not recreate:
+            f = open(cache)
+            cached_mask = f.read().splitlines()
+            f.close()
+            for i in range(0, len(cached_mask)):
+                mask.append(int(cached_mask[i]))
+
+            if len(mask) != len(xx) or len(mask) != len(yy):
+                raise Exception("Cached mask mismatch! ", len(mask), len(xx), len(yy))
+
+            return mask
+
+        print("Creating mask. This takes time:")
+        count = -1
+
+        for i in range(0, len(pxall)):
+            for j in range(0, len(pyall)):
+
+                count = count + 1
+                for k in range(0, len(xx)):
+                    if xx[k] == pxall[i] and yy[k] == pyall[j]:
+                        # print i,j,k,l,xx[k],pxall[i],yy[k],pyall[j]
+                        mask.append(count)
+                        break
+
+            print(i, "/", len(pxall))
+
+        # Cache mask for later use
+        # if len(mask) != len(xx) or len(mask) != len(yy): print "Mask mismatch! ", len(mask), len(xx), len(yy); exit(1)
+        f = open(cache, "w")
+        for i in range(0, len(mask)):
+            f.write(str(mask[i])+"\n")
+
+        # f.write("mask="+str(mask)+"\n")
+        print("Created mask: ", mask)
+        f.close()
+        return mask
 
     def update_namelist(self, nml):
         nml.update({

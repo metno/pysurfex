@@ -1,4 +1,4 @@
-from surfex.util import info
+import surfex
 import numpy as np
 import abc
 
@@ -82,9 +82,9 @@ class NearestNeighbour(Interpolation):
         test2 = points < urv
         subdom = test1[:, 0] * test1[:, 1] * test2[:, 0] * test2[:, 1]
 
-        info("Interpolating..." + str(len(interpolated_lons)) + " points")
+        surfex.util.info("Interpolating..." + str(len(interpolated_lons)) + " points")
         nn = NearestNDInterpolator(points[subdom, :], values_vec[subdom])
-        info("Interpolation finished")
+        surfex.util.info("Interpolation finished")
 
         # Set max distance as sanity
         distance_check = 3.
@@ -108,7 +108,7 @@ class NearestNeighbour(Interpolation):
     def interpolator_ok(self, nx, ny, var_lons, var_lats):
         if self.nx == nx and self.ny == ny and var_lons[0, 0] == var_lons[0, 0] and \
                 self.var_lats[0, 0] == var_lats[0, 0]:
-            info("Assume interpolator is ok because dimensions and the first points are the same")
+            surfex.util.info("Assume interpolator is ok because dimensions and the first points are the same")
             return True
         else:
             return False
@@ -131,7 +131,7 @@ class Linear(Interpolation):
     def interpolator_ok(self, nx, ny, var_lons, var_lats):
         if self.nx == nx and self.ny == ny and var_lons[0, 0] == var_lons[0, 0] and \
                 self.var_lats[0, 0] == var_lats[0, 0]:
-            info("Assume interpolator is ok because dimensions and the first points are the same")
+            surfex.util.info("Assume interpolator is ok because dimensions and the first points are the same")
             return True
         else:
             return False

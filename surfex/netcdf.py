@@ -1,6 +1,4 @@
-from surfex.util import error, info, warning
-from surfex.interpolation import NearestNeighbour, Linear
-from surfex.interpolation import alpha_grid_rot
+import surfex
 import netCDF4
 import numpy as np
 import cfunits
@@ -8,17 +6,12 @@ import re
 from datetime import datetime, date
 from enum import Enum
 
-# Check matplotlib and cartopy
-CAN_PLOT = True
-try:
-    import matplotlib.pyplot as plt
-except:
-    CAN_PLOT = False
-
 
 class Netcdf(object):
     def __init__(self, filename):
         self.filename = filename
+        self.nearest = None
+        self.linear = None
         print(filename)
         self.file = netCDF4.Dataset(filename, "r")
 
@@ -33,7 +26,7 @@ class Netcdf(object):
         pass
 
     def slice(self, var_name, levels=None, members=None, times=None, xcoords=None, ycoords=None,
-              deaccumulate=False, plot=False, var=None, instantanious=0., units=None, lev_from_ind=False):
+              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False):
         """
         Assembles a 5D field in order lon,lat,time,height,ensemble
 
@@ -41,30 +34,23 @@ class Netcdf(object):
             var_name (str): Name of field to retrieve
             levels (list): Height index. If None, return all.
             members (list): Ensemble index. If None, return all.
-            time (list): Time index. If None, return all.
+            times (list): Time index. If None, return all.
             xcoords: X-axis coordinates to subset
-            ycords: Y-axis coordinates to subset
+            ycoords: Y-axis coordinates to subset
             deaccumulate (bool): Deaccumulate field
-            plot (bool): plot 2-D result for all times/levels/members
             instantanious (float): Scaling factor to make an accumulated value as instantanius
             units (str): CF unit for the variable to be read
-            var(object): Call slice with an existing var object
             lev_from_ind (bool): level list are indices and not values
 
         Returns:
          np.array: 5D array with values
         """
 
-        if var is None:
-            var = Variable(self.file, var_name)
-        else:
-            if var.var_name != var_name:
-                error("Mismatch in variable name!")
-
+        var = NetCDFFileVariable(self.file, var_name)
         if xcoords is not None or ycoords is not None:
-            error("Subsetting of the input dimensions not implemented yet!")
+            raise Exception("Subsetting of the input dimensions not implemented yet!")
 
-        info("Reading variable "+var.var_name, level=1)
+        surfex.util.info("Reading variable "+var.var_name, level=1)
         times_to_read = []
         prev_time_steps = []
         if times is None:
@@ -76,9 +62,9 @@ class Netcdf(object):
                     prev_time_steps.append(0)
         else:
             if not isinstance(times, (list, tuple)):
-                error("Times must be a list!")
+                raise Exception("Times must be a list!")
             if isinstance(times[0], date):
-                info("Time provided in call as datetime objects", level=2)
+                surfex.util.info("Time provided in call as datetime objects", level=2)
                 times_in_var = var.datetimes
                 for i in range(0, len(times_in_var)):
                     for j in range(0, len(times)):
@@ -107,9 +93,9 @@ class Netcdf(object):
             for i in range(0, var.levels.shape[0]):
                 levels_to_read.append(i)
         else:
-            info("Level provided in call. lev_from_ind=" + str(lev_from_ind), level=2)
+            surfex.util.info("Level provided in call. lev_from_ind=" + str(lev_from_ind), level=2)
             if not isinstance(levels, (list, tuple)):
-                error("Levels must be a list!")
+                raise Exception("Levels must be a list!")
             levels_in_var = var.levels
             for i in range(0, levels_in_var.shape[0]):
                 for j in range(0, len(levels)):
@@ -119,7 +105,7 @@ class Netcdf(object):
                             levels_to_read.append(i)
                     else:
                         # NB! Round number to avoid round off when matching
-                        if round(levels_in_var[i], 5) == round(levels[j], 5):
+                        if round(float(levels_in_var[i]), 5) == round(float(levels[j]), 5):
                             levels_to_read.append(i)
 
         members_to_read = []
@@ -128,8 +114,8 @@ class Netcdf(object):
                 members_to_read.append(i)
         else:
             if not isinstance(members, (list, tuple)):
-                error("Members must be a list!")
-            info("Ensemble members provided in call", level=2)
+                raise Exception("Members must be a list!")
+            surfex.util.info("Ensemble members provided in call", level=2)
             members_in_var = var.members
             for i in range(0, members_in_var.shape[0]):
                 for j in range(0, len(members)):
@@ -137,7 +123,7 @@ class Netcdf(object):
                         members_to_read.append(i)
 
             if len(members_to_read) == 0:
-                error("No ensemble members found for " + var.var_name)
+                raise Exception("No ensemble members found for " + var.var_name)
 
         lons = var.lons
         lats = var.lats
@@ -149,8 +135,9 @@ class Netcdf(object):
         dim_levels = max(len(levels_to_read), 1)
         dim_members = max(len(members_to_read), 1)
 
-        info("Dimensions in output", level=3)
-        info(str(dim_x) + " " + str(dim_y) + " " + str(dim_t) + " " + str(dim_levels) + " " + str(dim_members), level=3)
+        surfex.util.info("Dimensions in output", level=3)
+        surfex.util.info(str(dim_x) + " " + str(dim_y) + " " + str(dim_t) + " " + str(dim_levels) + " " +
+                         str(dim_members), level=3)
 
         lon_ind = slice(0, dim_x, 1)
         lat_ind = slice(0, dim_y, 1)
@@ -180,11 +167,11 @@ class Netcdf(object):
                 prev_dims.append(members_to_read)
                 mapping[4] = i
             else:
-                error(str(types[i])+" is not defined!")
+                raise Exception(str(types[i])+" is not defined!")
 
-        info("Read " + var.var_name + " with dimensions: " + str(dims), level=2)
+        surfex.util.info("Read " + var.var_name + " with dimensions: " + str(dims), level=2)
         if deaccumulate:
-            info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
+            surfex.util.info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
         field = self.file[var.var_name][dims]
         if units is not None:
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
@@ -206,7 +193,7 @@ class Netcdf(object):
         reverse_mapping = []
         for d in range(0, 5):
             if d not in mapping:
-                info("Adding dimension " + str(d), level=3)
+                surfex.util.info("Adding dimension " + str(d), level=3)
                 field = np.expand_dims(field, len(dims) + i)
                 reverse_mapping.append(len(dims) + i)
                 i = i + 1
@@ -214,20 +201,10 @@ class Netcdf(object):
                 reverse_mapping.append(mapping[d])
 
         # Transpose to 5D array
-        info("Transpose to 5D array", level=1)
+        surfex.util.info("Transpose to 5D array", level=1)
         field = np.transpose(field, reverse_mapping)
 
-        if plot:
-            if CAN_PLOT:
-                for t in range(0, dim_t):
-                    for z in range(0, dim_levels):
-                        for m in range(0, dim_members):
-                            plt.imshow(np.reshape(field[:, :, t, z, m], [dim_x, dim_y]), interpolation='nearest')
-                            plt.show()
-            else:
-                error("You must install matplotlib properly to be able to plot")            
-
-        info("Shape of output: "+str(field.shape), level=2)
+        surfex.util.info("Shape of output: "+str(field.shape), level=2)
         return field
 
     def points(self, var_name, lons, lats, levels=None, members=None, times=None, xcoords=None, ycoords=None,
@@ -244,26 +221,26 @@ class Netcdf(object):
          np.array: 4D array with inpterpolated values in order pos,time,height,ensemble
 
         """
-        var = Variable(self.file, var_name)
+        var = NetCDFFileVariable(self.file, var_name)
         field = self.slice(var_name, levels=levels, members=members, times=times, xcoords=xcoords, ycoords=ycoords,
                            deaccumulate=deaccumulate, instantanious=instantanious, lev_from_ind=lev_from_ind,
                            units=units)
         alpha_out = None
         if alpha:
-            alpha_out = alpha_grid_rot(var.lons, var.lats)
+            alpha_out = surfex.interpolation.alpha_grid_rot(var.lons, var.lats)
             
         if lons is None or lats is None:
-            error("You must set lons and lats when interpolation is set!")
+            raise Exception("You must set lons and lats when interpolation is set!")
 
         interpolated_field = np.empty([len(lons), field.shape[2], field.shape[3], field.shape[4]])
         
         if interpolation == "nearest":
-            info("Nearest neighbour", level=2)
-            if not hasattr(self, "nearest"):
-                self.nearest = NearestNeighbour(lons, lats, var.lons, var.lats)
+            surfex.util.info("Nearest neighbour", level=2)
+            if self.nearest is None:
+                self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var.lons, var.lats)
             else:
                 if not self.nearest.interpolator_ok(field.shape[0], field.shape[1], var.lons, var.lats):
-                    self.nearest = NearestNeighbour(lons, lats, var.lons, var.lats)
+                    self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var.lons, var.lats)
 
             ind_n = self.nearest.index[:, 1]*field.shape[0] + self.nearest.index[:, 0]
             field0 = field.reshape((field.shape[0]*field.shape[1], field.shape[2], field.shape[3], field.shape[4]),
@@ -277,12 +254,12 @@ class Netcdf(object):
                 alpha_out = alpha_out.flatten(order='F')[ind_n]
 
         elif interpolation == "linear":
-            info("Linear interpolation", level=2)
-            if not hasattr(self, "linear"):
-                self.linear = Linear(lons, lats, var.lons, var.lats)
+            surfex.util.info("Linear interpolation", level=2)
+            if self.linear is None:
+                self.linear = surfex.interpolation.Linear(lons, lats, var.lons, var.lats)
             else:
-                if not self.linear.interpolator_ok(field.shape[0], field.shape[1]):
-                    self.linear = Linear(lons, lats, var.lons, var.lats)
+                if not self.linear.interpolator_ok(field.shape[0], field.shape[1], var.lons, var.lats):
+                    self.linear = surfex.interpolation.Linear(lons, lats, var.lons, var.lats)
 
             for t in range(0, field.shape[2]):
                 for z in range(0, field.shape[3]):
@@ -290,8 +267,9 @@ class Netcdf(object):
                         values = np.reshape(field[:, :, t, z, m], (field.shape[0], field.shape[1]))
                         interpolated_field[:, t, z, m] = self.linear.interpolate(values)
         else:
-            error("Interpolation type " + interpolation + " not implemented!")
-        info(str(interpolated_field.shape), level=3)
+            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
+
+        surfex.util.info(str(interpolated_field.shape), level=3)
         return alpha_out, interpolated_field
 
 
@@ -310,7 +288,7 @@ class Axis(Enum):
     Hybrid = 11
 
 
-class Variable(object):
+class NetCDFFileVariable(object):
     def __init__(self, fh, var_name):
         self.file = fh
         self.var_name = var_name
@@ -319,7 +297,8 @@ class Variable(object):
     def axis_types(self):
         types = []
         if self.var_name not in self.file.variables:
-            error(self.var_name + " is missing in file!")
+            raise Exception(self.var_name + " is missing in file!")
+
         if self.file.variables[self.var_name]:
             for i in range(0, len(self.file.variables[self.var_name].dimensions)):
                 dim_name = self.file.variables[self.var_name].dimensions[i]
@@ -373,7 +352,7 @@ class Variable(object):
         for i in range(0, len(axis_types)):
             if axis_types[i] == Axis.Lat:
                 latvals = self.file.variables[self.dim_names[i]]
-                warning("Assumed to 2D in (lon,lat) order")
+                surfex.util.warning("Assumed to 2D in (lon,lat) order")
             elif axis_types[i] == Axis.GeoY:
                 # TODO: if lat/lon are 1D, create a 2D mesh
                 # TODO: Assume the name for now. Must be found in attributes
@@ -381,7 +360,7 @@ class Variable(object):
                 latvals = np.transpose(latvals, (1, 0))
 
         if latvals.shape[0] == 0:
-            error("No latitude found for " + self.var_name)
+            raise Exception("No latitude found for " + self.var_name)
         return latvals
 
     @property
@@ -403,7 +382,7 @@ class Variable(object):
                 lonvals = np.transpose(lonvals, (1, 0))
 
         if lonvals.shape[0] == 0:
-            error("No longitude found for " + self.var_name)
+            raise Exception("No longitude found for " + self.var_name)
         return lonvals
 
     @property
@@ -425,7 +404,7 @@ class Variable(object):
                     times.append(datetime.strptime(dt, '%c'))
 
         if len(times) == 0:
-            info("No time found for " + self.var_name, level=2)
+            surfex.util.info("No time found for " + self.var_name, level=2)
         return times
 
     @property
@@ -442,7 +421,7 @@ class Variable(object):
                 times = self.file.variables[self.dim_names[i]]
 
         if times.shape[0] == 0:
-            info("No time found for "+self.var_name, level=2)
+            surfex.util.info("No time found for "+self.var_name, level=2)
         return times
 
     @property
@@ -459,7 +438,7 @@ class Variable(object):
                 members = self.file.variables[self.dim_names[i]]
 
         if members.shape[0] == 0:
-            info("No ensemble members found for " + self.var_name, level=2)
+            surfex.util.info("No ensemble members found for " + self.var_name, level=2)
         return members
 
     @property
@@ -476,11 +455,11 @@ class Variable(object):
                 levels = self.file.variables[self.dim_names[i]]
 
         if levels.shape[0] == 0:
-            info("No levels found for " + self.var_name, level=2)
+            surfex.util.info("No levels found for " + self.var_name, level=2)
         return levels
 
     @staticmethod
-    def is_level(self, axis_type):
+    def is_level(axis_type):
         if axis_type == Axis.Height or axis_type == Axis.Pressure or axis_type == Axis.GeoZ or axis_type == Axis.Hybrid:
             return True
         else:

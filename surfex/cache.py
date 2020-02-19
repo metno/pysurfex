@@ -93,3 +93,7 @@ class Cache:
     @staticmethod
     def generate_netcdf_id(varname, filename, validtime):
         return "%s%s%s" % (varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+
+    @staticmethod
+    def generate_surfex_id(varname, patches, layers, filename, validtime):
+        return "%s%s%s%s%s" % (varname, patches, layers, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))

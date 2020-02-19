@@ -7,6 +7,7 @@ import os
 import sys
 import surfex
 import yaml
+import json
 from datetime import datetime, timedelta
 
 
@@ -442,16 +443,16 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
                 print("No ref height \"" + ref_height + "\" defined for " + sfx_var)
                 raise KeyError
 
-        obj = surfex.iostuff.ConstantValue(geo, sfx_var, const_dict)
+        obj = surfex.read.ConstantValue(geo, sfx_var, const_dict)
     else:
 
         # Construct the converter
         # print sfx_var
-        converter = surfex.iostuff.Converter(selected_converter, start, defs, conf_dict, forcingformat,
-                                             first_base_time, timestep, debug)
+        converter = surfex.read.Converter(selected_converter, start, defs, conf_dict, forcingformat,
+                                          first_base_time, timestep, debug)
 
         # Construct the input object
-        obj = surfex.iostuff.ConvertedInput(geo, sfx_var, converter)
+        obj = surfex.read.ConvertedInput(geo, sfx_var, converter)
     return obj
 
 
@@ -473,7 +474,7 @@ def set_forcing_config(args):
     # Read point/domain config
     area_file = args.area
     if area_file != "":
-        geo_out = surfex.geo.get_geo_object(area_file)
+        geo_out = surfex.geo.get_geo_object(json.load(open(area_file, "r")))
     else:
         print("You must provide an json area file")
         raise

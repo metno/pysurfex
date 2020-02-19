@@ -1,11 +1,8 @@
 import os
-import json
 import surfex
 from surfex.util import data_merge
 import copy
-import shutil
-import subprocess
-from abc import ABC, abstractmethod, ABCMeta
+from abc import abstractmethod, ABCMeta
 import numpy as np
 try:
     from StringIO import StringIO   # Python 2.x
@@ -13,11 +10,11 @@ except ImportError:
     from io import StringIO         # Python 3.x
 
 
-class InputFieldData(object):
+class ReadData(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, geo, var_name):
-        self.geo_out = geo
+        self.geo = geo
         self.var_name = var_name
         # print "Constructed "+self.__class__.__name__+" for " + self.var_name
 
@@ -31,31 +28,28 @@ class InputFieldData(object):
 
 
 # Direct data can be ead with this class with converter = None
-class ConvertedInput(InputFieldData):
+class ConvertedInput(ReadData):
 
     def __init__(self, geo, var_name, converter):
-        InputFieldData.__init__(self, geo, var_name)
-        self.geo_out = geo
-        self.var_name = var_name
+        ReadData.__init__(self, geo, var_name)
         self.converter = converter
 
     def read_time_step(self, validtime, cache):
-        field = self.converter.read_time_step(self.geo_out, validtime, cache)
+        field = self.converter.read_time_step(self.geo, validtime, cache)
         # Preserve positive values for precipitation
-        if self.var_name == "RAIN" or self.var_name == "SNOW":
-            field[field < 0.] = 0.
+        # TODO
+        # if self.var_name == "RAIN" or self.var_name == "SNOW":
+        #    field[field < 0.] = 0.
         return field
 
     def print_info(self):
         self.converter.print_info()
 
 
-class ConstantValue(InputFieldData):
+class ConstantValue(ReadData):
 
     def __init__(self, geo, var_name, var_dict):
-        InputFieldData.__init__(self, geo, var_name)
-        self.geo_out = geo
-        self.var_name = var_name
+        ReadData.__init__(self, geo, var_name)
         self.var_dict = var_dict
         if "value" in self.var_dict:
             self.value = self.var_dict["value"]
@@ -64,7 +58,7 @@ class ConstantValue(InputFieldData):
             raise
 
     def read_time_step(self, validtime, cache):
-        field = np.array([float(i) for i in range(0, self.geo_out.npoints)])
+        field = np.array([float(i) for i in range(0, self.geo.npoints)])
         field.fill(self.value)
         # print field.shape
         return field
@@ -90,108 +84,8 @@ def remove_existing_file(f_in, f_out):
             os.unlink(f_out)
 
 
-def create_working_dir(workdir):
-    # Create work directory
-    if workdir is not None:
-        if os.path.isdir(workdir):
-            shutil.rmtree(workdir)
-        os.makedirs(workdir, exist_ok=True)
-        os.chdir(workdir)
-
-
-def clean_working_dir(workdir):
-    # Clean up
-    shutil.rmtree(workdir)
-
-
 #######################################################
 #######################################################
-
-
-class InputDataToSurfexBinaries(ABC):
-
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def prepare_input(self):
-        return NotImplementedError
-
-
-class OutputDataFromSurfexBinaries(ABC):
-
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def archive_files(self):
-        return NotImplementedError
-
-
-class JsonOutputData(OutputDataFromSurfexBinaries):
-    def __init__(self, data):
-        OutputDataFromSurfexBinaries.__init__(self)
-        self.data = data
-
-    def archive_files(self):
-        for output_file, target in self.data.items():
-
-            print(output_file, target)
-            command = "mv"
-            if type(target) is dict:
-                for key in target:
-                    print(output_file, key, target[key])
-                    command = target[key]
-                    target = key
-
-            cmd = command + " " + output_file + " " + target
-            try:
-                print(cmd)
-                subprocess.check_call(cmd, shell=True)
-            except IOError:
-                print(cmd + " failed")
-                raise
-
-
-class JsonOutputDataFromFile(JsonOutputData):
-    def __init__(self, file):
-        JsonOutputData.__init__(self, json.load(open(file, "r")))
-
-    def archive_files(self):
-        JsonOutputData.archive_files(self)
-
-
-class JsonInputData(InputDataToSurfexBinaries):
-    def __init__(self, data):
-        InputDataToSurfexBinaries.__init__(self)
-        self.data = data
-
-    def prepare_input(self):
-        for target, input_file in self.data.items():
-
-            print(target, input_file)
-            command = "ln -sf"
-            if type(input_file) is dict:
-                for key in input_file:
-                    print(key, input_file[key])
-                    command = str(input_file[key])
-                    input_file = str(key)
-
-            cmd = command + " " + input_file + " " + target
-            try:
-                print(cmd)
-                subprocess.check_call(cmd, shell=True)
-            except IOError:
-                print(cmd + " failed")
-                raise
-
-
-class JsonInputDataFromFile(JsonInputData):
-    def __init__(self, file):
-        JsonInputData.__init__(self, json.load(open(file, "r")))
-
-    def prepare_input(self):
-        JsonInputData.prepare_input(self)
 
 
 class Converter:
@@ -200,7 +94,7 @@ class Converter:
     The converter is default "None" to read a plain field
     """
 
-    def __init__(self, name, validtime, defs, conf, fileformat, basetime, intervall, debug):
+    def __init__(self, name, validtime, defs, conf, fileformat, basetime, debug=False):
         """
         Initializing the converter
 
@@ -212,7 +106,11 @@ class Converter:
         self.name = name
         self.validtime = validtime
         self.basetime = basetime
-        self.intervall = intervall
+        # self.intervall = intervall
+
+        if self.name not in conf:
+            print(conf)
+            raise KeyError(self.name + " is missing in converter definition")
 
         if self.name == "none":
             self.var = self.create_variable(fileformat, defs, conf[self.name], debug)
@@ -253,12 +151,16 @@ class Converter:
         var_dict = copy.deepcopy(var_dict)
         merged_dict = data_merge(defs, var_dict)
 
+        print(fileformat)
         if fileformat == "netcdf":
-            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime, self.intervall, debug,
+            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug,
                                                  need_alpha=need_alpha)
         elif fileformat == "grib":
-            var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime, self.intervall, debug,
+            var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime,  debug=debug,
                                                need_alpha=need_alpha)
+        elif fileformat == "surfex":
+            var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug,
+                                                 need_alpha=need_alpha)
         elif fileformat == "constant":
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
         else:
@@ -335,3 +237,42 @@ class Converter:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
         return field
+
+
+def read_surfex_field(varname, filename, validtime, patch=-1, layer=-1, accumulated=False, fileformat=None,
+                      filetype=None, debug=False, geo=None):
+
+    if fileformat is None:
+        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
+
+    if filetype == "surf":
+        if fileformat.lower() == "ascii":
+            geo = surfex.file.AsciiSurfexFile(filename).geo
+        elif fileformat.lower() == "nc":
+            geo = surfex.file.NCSurfexFile(filename).geo
+        else:
+            if geo is None:
+                raise NotImplementedError("Not implemnted and geo is None")
+    elif geo is None:
+        raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
+
+    var_dict = {
+        "none": {
+            "varname": varname,
+            "patches": patch,
+            "layers": layer,
+            "fileformat": fileformat,
+            "filetype": filetype,
+            "filepattern": filename,
+            "accumulated": accumulated,
+            "file_inc": 6,
+            "offset": 0,
+            "fcint": 3
+        }
+    }
+    cache = surfex.cache.Cache(debug, 3600)
+
+    # name, validtime, defs, conf, fileformat, basetime,  debug):
+    converter = Converter("none", validtime, {}, var_dict, "surfex", validtime, debug=debug)
+    field = ConvertedInput(geo, varname, converter).read_time_step(validtime, cache)
+    return field

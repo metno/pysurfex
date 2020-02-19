@@ -3,14 +3,30 @@ import surfex
 import jsonmerge
 
 
+class HorizontalOptimalInterpolation(object):
+    def __init__(self, var, input_file, output_file, json_settings):
+        # import subprocess
+
+        options = ""
+        for opt in json_settings:
+            options = options + " -" + opt + "=" + json_settings[opt]
+
+        cmd = "gridpp " + input_file + " " + output_file + " -v " + var + " -c oi " + options
+        print(cmd)
+        # ret = subprocess.check_call(cmd)
+        # if ret != 0:
+        #    raise Exception(cmd + " failed!")
+
+
 class Assimilation(object):
     def __init__(self, ass_input=None, ass_output=None):
         self.ass_input = ass_input
         self.ass_output = ass_output
 
 
-def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, perturbed_runs=None, lsmfile=None, obsfile=None,
-                 check_existence=False, oi_coeffs=None, climfile=None, sfx_first_guess=None, ascatfile=None):
+def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, perturbed_runs=None, lsmfile=None,
+                           obsfile=None, check_existence=False, oi_coeffs=None, climfile=None, sfx_first_guess=None,
+                           ascatfile=None):
 
     settings = surfex.capitalize_namelist_dict(settings)
     data = None
@@ -25,7 +41,7 @@ def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, per
 
     if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "OI":
         oi_data = set_input_vertical_soil_oi(dtg, settings, ua_first_guess, oi_coeffs=oi_coeffs, climfile=climfile,
-                                                      lsmfile=lsmfile, ascatfile=ascatfile, check_existence=check_existence)
+                                             lsmfile=lsmfile, ascatfile=ascatfile, check_existence=check_existence)
         if data is not None:
             print(oi_data)
             data = jsonmerge.merge(data, oi_data)
@@ -35,7 +51,7 @@ def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, per
 
     if settings["NAM_ASSIM"]['CASSIM_ISBA'] == "EKF":
         ekf_data = set_input_vertical_soil_ekf(dtg, settings, sfx_first_guess, perturbed_runs, lsmfile=lsmfile,
-                                                        check_existence=check_existence)
+                                               check_existence=check_existence)
         if data is not None:
             data = jsonmerge.merge(data, ekf_data)
         else:
@@ -102,7 +118,7 @@ def set_input_sea_assimilation(settings, sstfile, check_existence=False):
 
 
 def set_input_vertical_soil_oi(dtg, settings, first_guess, oi_coeffs=None, climfile=None, lsmfile=None, ascatfile=None,
-                                   check_existence=False):
+                               check_existence=False):
 
     settings = surfex.capitalize_namelist_dict(settings)
     if first_guess is None:

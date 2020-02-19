@@ -4,10 +4,8 @@
         "cgrid": "CONF PROJ"
     },
     "nam_conf_proj": {
-        "xlat0": 50,
-        "xlon0": 0,
-        "xrpk": 0.866025404,
-        "xbeta": 0.0
+        "xlat0": 59,
+        "xlon0": 11
     },
     "nam_conf_proj_grid": {
         "ilone": 11,
@@ -18,6 +16,100 @@
         "njmax": 89,
         "xdx": 2500.0,
         "xdy": 2500.0
+    }
+  },
+  "CONF_PROJ_TEST": {
+    "nam_pgd_grid": {
+        "cgrid": "CONF PROJ"
+    },
+    "nam_conf_proj": {
+        "xlat0": 59.5,
+        "xlon0": 9
+    },
+    "nam_conf_proj_grid": {
+        "ilone": 1,
+        "ilate": 1,
+        "xlatcen": 60,
+        "xloncen": 10,
+        "nimax": 9,
+        "njmax": 9,
+        "xdx": 10000.0,
+        "xdy": 10000.0
+    }
+  },
+  "LONLAT_REG_TEST": {
+    "nam_pgd_grid": {
+        "cgrid": "LONLAT_REG"
+    },
+    "nam_lonlat_reg": {
+      "xlonmin": 10,
+      "xlonmax": 11,
+      "xlatmin": 60,
+      "xlatmax": 61,
+      "nlon": 11,
+      "nlat": 11
+    }
+  },
+  "LATLONVAL_TEST": {
+    "nam_pgd_grid": {
+        "cgrid": "LONLATVAL"
+    },
+    "nam_lonlatval": {
+      "xx": [
+        10,
+        11
+      ],
+      "xy": [
+        61,
+        62
+      ],
+      "xdx": [
+        0.1,
+        0.1
+      ],
+      "xdy": [
+        0.1,
+        0.1
+      ]
+    }
+  },
+  "IGN_TEST": {
+    "nam_pgd_grid": {
+        "cgrid": "IGN"
+    },
+    "nam_ign": {
+      "clambert": 7,
+      "npoints": 2,
+      "xx": [
+        100000, 110000
+      ],
+      "xy":[
+        100000, 110000
+      ],
+      "xdx": [
+        1000, 1000
+      ],
+      "xdy": [
+        1000,1000
+      ],
+      "xx_llcorner": 10000,
+      "xy_llcorner": 10000,
+      "xcellsize": 1000,
+      "ncols": 10,
+      "nrows": 10
+    }
+  },
+  "CARTESIAN_TEST": {
+    "nam_pgd_grid": {
+        "cgrid": "CARTESIAN"
+    },
+    "nam_cartesian": {
+      "xlat0": 0,
+      "xlon0": 0,
+      "nimax": 10,
+      "njmax": 10,
+      "xdx": 1000,
+      "xdy": 1000
     }
   }
 }

@@ -8,7 +8,6 @@ from os import path
 import surfex
 
 here = path.abspath(path.dirname(__file__))
-#exec(open('/version.py').read())
 
 # Get the long description from the relevant file
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
@@ -29,7 +28,7 @@ setup(
     url='https://github.com/metno/forcing-offline-surfex',
 
     # Author details
-    author='Trygve Aspelien and John de Vries',
+    author='Trygve Aspelien',
     author_email='trygve.aspelien@met.no',
 
     # Choose your license
@@ -53,10 +52,9 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # What does your project relate to?
@@ -70,7 +68,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy>=1.11', 'scipy', 'netCDF4','cfunits','pyproj','pyyaml'],
+    install_requires=['numpy>=1.11', 'scipy', 'netCDF4', 'cfunits', 'pyproj', 'pyyaml'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -78,7 +76,7 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
     #    'dev': ['check-manifest'],
-        'test': ['coverage', 'pep8','matplotlib<2'],
+        'test': ['coverage', 'pep8', 'matplotlib<2'],
     #    'test': ['pytest'],
     },
 
@@ -89,7 +87,7 @@ setup(
     # have to be included in MANIFEST.in as well.
     package_dir={'forcing': 'forcing'},
     package_data={
-        'forcing': ['cfg/config.yml','cfg/area.yml','cfg/user.yml'],
+        'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml'],
     },
     include_package_data=True,
 
@@ -97,7 +95,7 @@ setup(
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('forcing', ['cfg/config.yml','cfg/area.yml','cfg/user.yml'])],
+    # data_files=[('forcing', ['cfg/config.yml','cfg/area.yml','cfg/user.yml'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow

@@ -1,38 +1,26 @@
 import numpy as np
-import time
 from surfex.util import error
 from surfex.interpolation import NearestNeighbour, Linear, alpha_grid_rot
 from pyproj import Proj
-
-# Check matplotlib and cartopy
-CAN_PLOT = True
-try:
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-except:
-    CAN_PLOT = False
-
-# Check ECCODES
-HAS_ECCODES=True
-try:
-    from eccodes import *
-except:
-    print("Warning: eccodes not found. Needed for reading grib files")
-    HAS_ECCODES = False
 
 
 class Grib(object):
 
     def __init__(self, fname):
-        if not HAS_ECCODES:
-            error("You must install eccodes properly with python support to read grib files")
         self.fname = fname
         self.projection = None
         self.lons = None
         self.lats = None
+        self.nearest = None
+        self.linear = None
         # print "Grib constructor "
 
-    def field(self, w_par, w_typ, w_lev, w_tri, plot=False, lons=None, lats=None):
+    def field(self, w_par, w_typ, w_lev, w_tri, time):
+
+        try:
+            from eccodes import codes_grib_new_from_file, codes_get, CodesInternalError, codes_get_values, codes_release
+        except ImportError:
+            raise Exception("eccodes not found. Needed for reading grib files")
 
         """
 
@@ -75,7 +63,7 @@ class Grib(object):
                 typ = codes_get(gid, "indicatorOfTypeOfLevel")
                 tri = codes_get(gid, "timeRangeIndicator")
 
-                # p rint "Read:", par, lev, typ, tri
+                # print "Read:", par, lev, typ, tri
                 if w_par == par and w_lev == lev and w_typ == typ and w_tri == tri:
                     # print "Found:", par, lev, typ, tri
 
@@ -115,39 +103,15 @@ class Grib(object):
                         x0, y0 = proj4(lon0, lat0)
                         x0 = int(round(x0))
                         y0 = int(round(y0))
-                        field = np.empty([nx, ny])
-                        lons = np.empty([nx, ny])
-                        lats = np.empty([nx, ny])
-                        X = np.arange(x0, x0 + (nx * dx), dx)
-                        Y = np.arange(y0, y0 + (ny * dy), dy)
-                        yv, xv = np.meshgrid(Y, X)
+
+                        x = np.arange(x0, x0 + (nx * dx), dx)
+                        y = np.arange(y0, y0 + (ny * dy), dy)
+                        yv, xv = np.meshgrid(y, x)
+                        print("Hopefullly valid for time ", time)
                         field = values.reshape((nx, ny), order='F')
                         lons, lats = proj4(xv, yv, inverse=True)
-                        self.lons = lons
-                        self.lats = lats
-                        self.x0 = x0
-                        self.y0 = y0
-                        self.dx = dx
-                        self.dy = dy
-                        self.nx = nx
-                        self.ny = ny
                     else:
-                        error(geo["gridType"] + " not implemented yet!")
-
-                    if plot:
-                        if not CAN_PLOT:
-                            error("You are missing either matplotlib or cartopy. " +
-                                  "Maybe you need to add them to PYTHONPATH?")
-                        proj = ccrs.LambertConformal(central_longitude=lon_center, central_latitude=lat_center,
-                                                     standard_parallels=[lat_ref])
-                        ax = plt.axes(projection=proj)
-                        ax.set_global()
-                        ax.coastlines(resolution="10m")
-                        bd = 10000
-                        ax.set_extent([X[0] - bd, X[len(X)-1] + bd, Y[0] - bd, Y[len(Y)-1] + bd], proj)
-                        plt.contourf(X, Y, np.transpose(field), transform=proj)
-                        plt.colorbar()
-                        plt.show()
+                        raise NotImplementedError(geo["gridType"] + " not implemented yet!")
 
                     codes_release(gid)
                     fh.close()
@@ -156,8 +120,7 @@ class Grib(object):
                     return lons, lats, field
                 codes_release(gid)
 
-    def points(self, par, typ, level, tri, time, plot=False, lons=None, lats=None, instantanious=0.,
-               interpolation=None, alpha=False):
+    def points(self, par, typ, level, tri, time, lons=None, lats=None, interpolation=None, alpha=False):
 
         """
                 Reads a 2-D field and interpolates it to requested positions
@@ -170,7 +133,7 @@ class Grib(object):
 
         """
 
-        var_lons, var_lats, field = self.field(par, typ, level, tri, plot)
+        var_lons, var_lats, field = self.field(par, typ, level, tri, time)
 
         alpha_out = None
         if alpha:
@@ -181,7 +144,7 @@ class Grib(object):
 
         interpolated_field = np.empty([len(lons)])
         if interpolation == "nearest":
-            if not hasattr(self, "nearest"):
+            if self.nearest is None:
                 self.nearest = NearestNeighbour(lons, lats, var_lons, var_lats)
             else:
                 if not self.nearest.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
@@ -194,7 +157,7 @@ class Grib(object):
                 alpha_out = alpha_out.flatten(order='F')[ind_n]
 
         elif interpolation == "linear":
-            if not hasattr(self, "linear"):
+            if self.linear is None:
                 self.linear = Linear(lons, lats, var_lons, var_lats)
             else:
                 if not self.linear.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
