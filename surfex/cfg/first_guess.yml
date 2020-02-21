@@ -1,0 +1,142 @@
+
+grib1:
+  fcint: 3
+  file_inc: 1
+  offset: 0
+grib2:
+  fcint: 3
+  file_inc: 1
+  offset: 0
+netcdf:
+  fcint: 3
+  file_inc: 1
+  offset: 0
+surfex:
+  fcint: 3
+  file_inc: 1
+  offset: 0
+
+air_temperature_2m:
+  grib1:
+    converter:
+      none:
+        parameter: 11
+        type: sfc
+        level: 2
+        tri: 0
+  netcdf:
+    converter:
+      none:
+        name: air_temperature_2m
+  surfex:
+    converter:
+      none:
+        varname: Tair
+        interpolator: none
+
+
+relative_humidity_2m:
+  grib1:
+    converter:
+      none:
+        parameter: 52
+        type: sfc
+        level: 2
+        tri: 0
+  netcdf:
+    converter:
+      none:
+        name: relative_humidity_2m
+    surfex:
+      converter:
+        none:
+          varname: HU2M
+
+surface_snow_thickness:
+  grib1:
+    converter:
+      none:
+        parameter: 66
+        type: sfc
+        level: 0
+        tri: 0
+      sweclim:
+        parameter: 65
+        type: sfc
+        level: 0
+        tri: 0
+      swe2sd:
+        swe:
+          parameter: 13
+          type: sfc
+          level: 800
+          tri: 0
+        rho:
+          parameter: 191
+          type: sfc
+          level: 800
+          tri: 0
+  netcdf:
+    converter:
+      none:
+        name: surface_snow_thickness
+      sweclim:
+        swe:
+          name: liquid_water_content_of_surface_snow
+
+  surfex:
+    converter:
+      none:
+        varname: DSN_T_ISBA
+
+altitude:
+  grib1:
+    converter:
+      none:
+        parameter: -1
+        type: sfc
+        level: 0
+        tri: 0
+      phi2m:
+        phi:
+          parameter: 6
+          type: sfc
+          level: 0
+          tri: 0
+  netcdf:
+    converter:
+      none:
+        name: altitude
+      phi2m:
+        phi:
+          name: surface_geopotential
+  surfex:
+    converter:
+      none:
+        varname: ZS
+        interpolator: none
+
+land_area_fraction:
+  grib1:
+    converter:
+      none:
+        parameter: -1
+        type: sfc
+        level: 0
+        tri: 0
+      sea2land:
+        parameter: 1
+        type: pt
+        level: 0
+        tri: 0
+  netcdf:
+    converter:
+      none:
+        name: land_area_fraction
+      sea2land:
+        sea:
+          name: sea_area_fraction
+  surfex:
+    converter:
+      none:
+        varname: FRAC_LAND

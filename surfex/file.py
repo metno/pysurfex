@@ -2,7 +2,7 @@ import os
 import surfex
 import shutil
 import numpy as np
-from datetime import timedelta
+from datetime import timedelta, datetime
 from netCDF4 import Dataset, num2date
 import re
 import abc
@@ -128,8 +128,9 @@ class SurfexFileVariable(object):
 
 def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None):
 
-    if filetype.lower() != "surf" and filetype.lower() != "ts" and filetype.lower() != "forcing":
-        raise Exception("Invalid filetype: " + filetype + " Allowed: surf/ts/forcing")
+    if filetype is not None:
+        if filetype.lower() != "surf" and filetype.lower() != "ts" and filetype.lower() != "forcing":
+            raise Exception("Invalid filetype: " + filetype + " Allowed: surf/ts/forcing")
 
     if fileformat is None:
         fileformat, filetype = guess_file_format(fname, filetype)
@@ -226,46 +227,29 @@ class SurfexFile(object):
         print("Constructed SurfFile")
 
     @abc.abstractmethod
-    def field(self, varname, patches=-1, layers=-1, validtime=None, interpolation=None,  alpha=False):
+    def field(self, var, validtime=None):
         raise NotImplementedError("This method is not implemented for this class!")
 
     @abc.abstractmethod
-    def points(self, varname, lons, lats, patches=-1, layers=-1, validtime=None, interpolation=None,  alpha=False):
+    def points(self, var, geo_out, validtime=None, interpolation=None):
         raise NotImplementedError("This method is not implemented for this class!")
 
-    def interpolate_field(self, field, lons, lats, var_lons, var_lats, interpolation, alpha=False):
+    def interpolate_field(self, field, geo_in, geo_out, interpolation="nearest", cache=None):
 
-        interpolated_field = np.empty([len(lons)])
-        alpha_out = None
         if interpolation == "nearest":
-            if self.nearest is None:
-                self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var_lons, var_lats)
-            else:
-                if not self.nearest.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
-                    self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var_lons, var_lats)
-
-            ind_n = self.nearest.index[:, 1] * field.shape[0] + self.nearest.index[:, 0]
-            interpolated_field = field.flatten(order='F')[ind_n]
-
-            if alpha:
-                alpha_out = alpha_out.flatten(order='F')[ind_n]
-
+            surfex.util.info("Nearest neighbour", level=2)
+            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo_out, cache=cache)
         elif interpolation == "linear":
-            if self.linear is None:
-                self.linear = surfex.interpolation.Linear(lons, lats, var_lons, var_lats)
-            else:
-                if not self.linear.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
-                    self.linear = surfex.interpolation.Linear(lons, lats, var_lons, var_lats)
-
-                interpolated_field[:] = self.linear.interpolate(field)
-                alpha_out = self.linear.interpolate(alpha_out)
-        elif interpolation is None:
-            # TODO Make sure conversion from 2-D to 1-D is correct
-            interpolated_field[:] = field
+            surfex.util.info("Linear interpolation", level=2)
+            interpolator = surfex.interpolation.Linear(geo_in, geo_out, cache=cache)
+        elif interpolation == "none":
+            surfex.util.info("No interpolation", level=2)
+            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo_out, cache=cache)
         else:
-            raise Exception("Interpolation type " + interpolation + " not implemented!")
+            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
 
-        return alpha_out, interpolated_field
+        field = interpolator.interpolate(field)
+        return field, interpolator
 
 
 class AsciiSurfexFile(SurfexFile):
@@ -411,11 +395,24 @@ class AsciiSurfexFile(SurfexFile):
         values = np.asarray(values)
         return values
 
-    def field(self, variable):
-        pass
+    def field(self, var, validtime=None):
+        raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, variable):
-        pass
+    def points(self, var, geo_out, validtime=None, interpolation=None):
+        raise NotImplementedError("TODO: Not implemented yet")
+
+
+class NCSurfexFile(SurfexFile):
+    def __init__(self, filename):
+
+        geo = None
+        SurfexFile.__init__(self, filename, geo)
+
+    def field(self, var, validtime=None):
+        raise NotImplementedError("TODO: Not implemented yet")
+
+    def points(self, var, geo_out, validtime=None, interpolation=None):
+        raise NotImplementedError("TODO: Not implemented yet")
 
 
 class NetCDFSurfexFile(SurfexFile):
@@ -586,10 +583,10 @@ class NetCDFSurfexFile(SurfexFile):
 
         return np.asarray(times_read), values
 
-    def field(self, variable):
+    def field(self, var, validtime=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, variable):
+    def points(self, var, geo_out, validtime=None, interpolation=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
 
@@ -663,10 +660,10 @@ class TexteSurfexFile(SurfexFile):
         self.file.close()
         return times_read, values
 
-    def field(self, variable):
+    def field(self, varn, validtime=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, variable):
+    def points(self, var, geo_out, validtime=None, interpolation=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
 
@@ -684,8 +681,9 @@ class ForcingFileNetCDF(SurfexFile):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.fh.close()
 
-    def read_field(self, var, times):
+    def read_field(self, variable, times):
 
+        var = variable.varname
         field = None
         if self.fh.variables[var].shape[0] > 0:
             if len(self.fh.variables[var].dimensions) == 1:
@@ -725,33 +723,84 @@ class ForcingFileNetCDF(SurfexFile):
                 if npoints == 0:
                     raise Exception("No points found")
 
-                if len(times) == 0:
-                    raise Exception("Time index was not found for times " + str(times))
+                if len(times_read) == 0 and len(times) > 0:
+                    raise Exception("Valid time not found in file!")
 
                 field = self.fh.variables[var][times_read, 0: npoints]
 
-        print(self.geo.lons.shape)
-        print(self.geo.lats.shape)
-        var_lons = np.reshape(self.geo.lons, [9, 9])
-        var_lats = np.reshape(self.geo.lats, [9, 9])
-        return field, var_lons, var_lats
+        return field, self.geo
 
-    def field(self, varname, validtime=None, patches=-1, layers=-1, interpolation=None, alpha=False):
+    def field(self, var, validtime=None):
         if validtime is None:
-            raise Exception("You must set times to read forcing data")
+            validtime = []
+            # raise Exception("You must set times to read forcing data")
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        else:
+            validtime = [validtime]
 
-        field, var_lons, var_lats = self.read_field(varname, [validtime])
-        return field, var_lons, var_lats
+        field, geo_in = self.read_field(var, validtime)
+        # Reshape to fortran 2D style
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        return field, geo_in
 
-    def points(self, varname, lons, lats, patches=-1, layers=-1, validtime=None, interpolation=None,
-               alpha=False):
+    def points(self, var, geo_out, validtime=None, interpolation=None, cache=None):
 
-        print(validtime)
-        field, var_lons, var_lats = self.field(varname, patches=-1, layers=-1, interpolation=None, alpha=False,
-                                               validtime=validtime)
-        alpha_out, interpolated_field = SurfexFile.interpolate_field(self, field, lons, lats, var_lons, var_lats,
-                                                                     interpolation=interpolation, alpha=alpha)
-        return alpha_out, interpolated_field
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexFile.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                            cache=cache)
+        return points, interpolator
+
+
+def read_surfex_field(varname, filename, validtime=None, basetime=None, patches=-1, layers=-1, fileformat=None,
+                      filetype=None, geo=None, datatype=None, interval=None):
+
+    if fileformat is None:
+        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
+
+    if filetype == "surf":
+        if fileformat.lower() == "ascii":
+            geo = surfex.file.AsciiSurfexFile(filename).geo
+        elif fileformat.lower() == "nc":
+            geo = surfex.file.NCSurfexFile(filename).geo
+        else:
+            if geo is None:
+                raise NotImplementedError("Not implemnted and geo is None")
+    elif geo is None:
+        raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
+
+    sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat, geo=geo)
+    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers, basetime=basetime,
+                                         interval=interval, datatype=datatype)
+    field, geo_out = sfx_io.field(var, validtime=validtime)
+    return field
+
+
+def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None, patches=-1, layers=-1, fileformat=None,
+                       filetype=None, geo=None, datatype=None, interval=None, interpolation="nearest"):
+
+    if fileformat is None:
+        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
+
+    if filetype == "surf":
+        if fileformat.lower() == "ascii":
+            geo = surfex.file.AsciiSurfexFile(filename).geo
+        elif fileformat.lower() == "nc":
+            geo = surfex.file.NCSurfexFile(filename).geo
+        else:
+            if geo is None:
+                raise NotImplementedError("Not implemnted and geo is None")
+    elif geo is None:
+        raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
+
+    sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat, geo=geo)
+    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers, basetime=basetime,
+                                         interval=interval, datatype=datatype)
+    field, geo_out = sfx_io.points(var, geo_out, validtime=validtime, interpolation=interpolation)
+    return field
 
 
 def parse_filepattern(file_pattern, basetime, validtime):

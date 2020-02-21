@@ -6,16 +6,51 @@ import surfex
 import os
 
 
-class SurfexGeo(ABC):
-    def __init__(self, proj, npoints, nlons, nlats, lons, lats):
+class Geo(object):
+    def __init__(self, npoints, nlons, nlats, lons, lats, proj=None):
+        can_interpolate = False
         self.proj = proj
         self.npoints = npoints
         self.nlons = nlons
         self.nlats = nlats
-        self.lons = np.array(lons)
-        self.lats = np.array(lats)
+        self.lonlist = np.array(lons).flatten()
+        self.latlist = np.array(lats).flatten()
+        if self.npoints != self.nlons and self.npoints != self.nlats:
+            # Make 2D array
+            can_interpolate = True
+            self.lons = np.reshape(self.lonlist, [self.nlons, self.nlats])
+            self.lats = np.reshape(self.latlist, [self.nlons, self.nlats])
+        self.can_interpolate = can_interpolate
+
+    def identifier(self):
+        f_lon = ""
+        l_lon = ""
+        if self.lonlist is not None:
+            f_lon = str(round(float(self.lonlist[0]), 2))
+            l_lon = str(round(float(self.lonlist[-1]), 2))
+        f_lat = ""
+        l_lat = ""
+        if self.latlist is not None:
+            f_lat = str(round(float(self.latlist[0]), 2))
+            l_lat = str(round(float(self.latlist[-1]), 2))
+
+        tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" + f_lon + ":" + l_lon +\
+              ":" + f_lat + ":" + l_lat + ":"
+        tag = tag.replace(" ", "")
+        return tag
+
+    def is_identical(self, geo_to_check):
+        if self.identifier() == geo_to_check.identifier():
+            print("Geometries are identical")
+            return True
+        else:
+            return False
+
+
+class SurfexGeo(ABC, Geo):
+    def __init__(self, proj, npoints, nlons, nlats, lons, lats):
         self.mask = None
-        print(self.npoints)
+        Geo.__init__(self, npoints, nlons, nlats, lons, lats, proj=proj)
 
     @abstractmethod
     def update_namelist(self, nml):
@@ -39,10 +74,10 @@ class ConfProj(SurfexGeo):
                 self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
                 self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
             else:
-                print("Missing keys")
+                print("Missing keys1")
                 raise KeyError
         else:
-            print("Missing key")
+            print("Missing key2")
             raise KeyError
 
         if "nam_conf_proj" in domain_dict:
@@ -50,28 +85,26 @@ class ConfProj(SurfexGeo):
                 self.xlon0 = domain_dict["nam_conf_proj"]["xlon0"]
                 self.xlat0 = domain_dict["nam_conf_proj"]["xlat0"]
             else:
-                raise KeyError("Missing keys")
+                raise KeyError("Missing keys3")
         else:
-            raise KeyError("Missing key")
+            raise KeyError("Missing key4")
 
         earth = 6.37122e+6
         proj4 = "+proj=lcc +lat_0=" + str(self.xlat0) + " +lon_0=" + str(self.xlon0) + " +lat_1=" + \
-                str(self.xlat0) + " +lat_2=" + str(self.xlat0) + " +no_defs +R=" + str(earth)
+                str(self.xlat0) + " +lat_2=" + str(self.xlat0) + " +units=m +no_defs +R=" + str(earth)
 
         proj = Proj(proj4)
+        xloncen, xlatcen = proj(self.xloncen, self.xlatcen)
+        x0 = xloncen - (0.5 * (float(self.nimax) - 1.) * self.xdx)
+        y0 = xlatcen - (0.5 * (float(self.njmax) - 1.) * self.xdy)
+        x = np.arange(x0, x0 + (self.nimax * self.xdx), self.xdx)
+        y = np.arange(y0, y0 + (self.njmax * self.xdy), self.xdy)
+        xv, yv = np.meshgrid(x, y)
+        lons, lats = proj(xv, yv, inverse=True)
 
-        lons = []
-        lats = []
-        x0 = self.xloncen - 0.5 * (self.nimax - 1) * self.xdx
-        y0 = self.xlatcen - 0.5 * (self.njmax - 1) * self.xdy
-        for j in range(0, self.njmax):
-            for i in range(0, self.nimax):
-                # lon, lat = xy2pos(i * self.xdx, j * self.xdy)
-                lon, lat = proj(x0 + (float(i) * self.xdx), y0 + (float(j) * self.xdy), inverse=True)
-                # print(x0, y0, lon, lat)
-                lons.append(lon)
-                lats.append(lat)
-        SurfexGeo.__init__(self, proj, self.nimax * self.njmax, len(lons), len(lats), lons, lats)
+        npoints = self.nimax * self.njmax
+        SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax, np.reshape(lons, [npoints], order="F"),
+                           np.reshape(lats, [npoints], order="F"))
 
     def update_namelist(self, nml):
         nml.update({
@@ -111,6 +144,7 @@ class LonLatVal(SurfexGeo):
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = Proj(proj4)
                 SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), self.xx, self.xy)
+                self.can_interpolate = False
             else:
                 print("Missing keys")
                 raise KeyError
@@ -149,6 +183,7 @@ class Cartesian(SurfexGeo):
                 proj = None
                 # proj, npoints, nlons, nlats, lons, lats
                 SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, [], [])
+                self.can_interpolate = False
             else:
                 print("Missing keys")
                 raise KeyError
@@ -281,6 +316,7 @@ class IGN(SurfexGeo):
             lats.append(lat)
 
         SurfexGeo.__init__(self, proj, npoints, npoints, npoints, lons, lats)
+        self.can_interpolate = False
 
     @staticmethod
     def get_coord(pin, pdin, coord, recreate=False):

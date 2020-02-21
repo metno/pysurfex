@@ -1,6 +1,5 @@
 import numpy as np
-from surfex.util import error
-from surfex.interpolation import NearestNeighbour, Linear, alpha_grid_rot
+import surfex
 from pyproj import Proj
 
 
@@ -15,7 +14,7 @@ class Grib(object):
         self.linear = None
         # print "Grib constructor "
 
-    def field(self, w_par, w_typ, w_lev, w_tri, time):
+    def field(self, gribvar, time):
 
         try:
             from eccodes import codes_grib_new_from_file, codes_get, CodesInternalError, codes_get_values, codes_release
@@ -25,6 +24,14 @@ class Grib(object):
         """
 
         """
+
+        if gribvar.version == 1:
+            w_par = gribvar.par
+            w_typ = gribvar.typ
+            w_lev = gribvar.level
+            w_tri = gribvar.tri
+        else:
+            raise NotImplementedError
 
         geography = ["bitmapPresent",
                      "Nx",
@@ -45,6 +52,7 @@ class Grib(object):
                      "gridType"
                      ]
 
+        geo_out = None
         fh = open(self.fname)
         while 1:
             gid = codes_grib_new_from_file(fh)
@@ -86,30 +94,44 @@ class Grib(object):
                         nx = geo["Nx"]
                         ny = geo["Ny"]
 
-                        lon_center = geo["LoVInDegrees"]
-                        lat_center = geo["LaDInDegrees"]
-                        lat_ref = geo["Latin2InDegrees"]
-                        lon0 = geo["longitudeOfFirstGridPointInDegrees"]
-                        lat0 = geo["latitudeOfFirstGridPointInDegrees"]
+                        lon0 = geo["LoVInDegrees"]
+                        lat0 = geo["LaDInDegrees"]
+                        ll_lon = geo["longitudeOfFirstGridPointInDegrees"]
+                        ll_lat = geo["latitudeOfFirstGridPointInDegrees"]
                         dx = geo["DxInMetres"]
                         dy = geo["DyInMetres"]
 
-                        proj4_string = "+proj=lcc +lat_0=" + str(lat_center) + " +lon_0=" + str(lon_center) + \
-                                       " +lat_1=" + str(lat_ref) + " +lat_2=" + str(lat_ref) + \
-                                       " +no_defs +units=m +R=6.371e+06"
-                        self.projection = proj4_string
-                        proj4 = Proj(proj4_string)
-
-                        x0, y0 = proj4(lon0, lat0)
-                        x0 = int(round(x0))
-                        y0 = int(round(y0))
-
-                        x = np.arange(x0, x0 + (nx * dx), dx)
-                        y = np.arange(y0, y0 + (ny * dy), dy)
-                        yv, xv = np.meshgrid(y, x)
                         print("Hopefullly valid for time ", time)
-                        field = values.reshape((nx, ny), order='F')
-                        lons, lats = proj4(xv, yv, inverse=True)
+
+                        earth = 6.37122e+6
+                        proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
+                                str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+
+                        proj = Proj(proj4)
+                        x0, y0 = proj(ll_lon, ll_lat)
+                        xc = x0 + 0.5 * (nx - 1) * dx
+                        yc = y0 + 0.5 * (ny - 1) * dy
+                        lonc, latc = proj(xc, yc, inverse=True)
+                        field = np.reshape(values, [nx, ny], order="F")
+
+                        if geo_out is None:
+                            domain = {
+                                "nam_conf_proj": {
+                                    "xlon0": lon0,
+                                    "xlat0": lat0
+                                },
+                                "nam_conf_proj_grid": {
+                                    "xloncen": lonc,
+                                    "xlatcen": latc,
+                                    "nimax": nx,
+                                    "njmax": ny,
+                                    "xdx":  dx,
+                                    "xdy": dy,
+                                    "ilone": 0,
+                                    "ilate": 0
+                                }
+                            }
+                            geo_out = surfex.geo.ConfProj(domain)
                     else:
                         raise NotImplementedError(geo["gridType"] + " not implemented yet!")
 
@@ -117,10 +139,14 @@ class Grib(object):
                     fh.close()
                     # print lons
                     # print lats
-                    return lons, lats, field
+
+                    if geo_out is None:
+                        raise Exception("No geometry is found in file")
+
+                    return field, geo_out
                 codes_release(gid)
 
-    def points(self, par, typ, level, tri, time, lons=None, lats=None, interpolation=None, alpha=False):
+    def points(self, gribvar, geo, validtime=None, interpolation="nearest", cache=None):
 
         """
                 Reads a 2-D field and interpolates it to requested positions
@@ -133,41 +159,28 @@ class Grib(object):
 
         """
 
-        var_lons, var_lats, field = self.field(par, typ, level, tri, time)
-
-        alpha_out = None
-        if alpha:
-            alpha_out = alpha_grid_rot(var_lons, var_lats)
-
-        if lons is None or lats is None:
-            error("You must set lons and lats when interpolation is set!")
-
-        interpolated_field = np.empty([len(lons)])
+        field, geo_in = self.field(gribvar, validtime)
         if interpolation == "nearest":
-            if self.nearest is None:
-                self.nearest = NearestNeighbour(lons, lats, var_lons, var_lats)
-            else:
-                if not self.nearest.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
-                    self.nearest = NearestNeighbour(lons, lats, var_lons, var_lats)
-
-            ind_n = self.nearest.index[:, 1]*field.shape[0] + self.nearest.index[:, 0]
-            interpolated_field = field.flatten(order='F')[ind_n]
-
-            if alpha:
-                alpha_out = alpha_out.flatten(order='F')[ind_n]
-
+            surfex.util.info("Nearest neighbour", level=2)
+            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo, cache=cache)
         elif interpolation == "linear":
-            if self.linear is None:
-                self.linear = Linear(lons, lats, var_lons, var_lats)
-            else:
-                if not self.linear.interpolator_ok(field.shape[0], field.shape[1], var_lons, var_lats):
-                    self.linear = Linear(lons, lats, var_lons, var_lats)
-
-                interpolated_field[:] = self.linear.interpolate(field)
-                alpha_out = self.linear.interpolate(alpha_out)
-        elif interpolation is None:
-            # TODO Make sure conversion from 2-D to 1-D is correct
-            interpolated_field[:] = field
+            surfex.util.info("Linear interpolation", level=2)
+            interpolator = surfex.interpolation.Linear(geo_in, geo, cache=cache)
+        elif interpolation == "none":
+            surfex.util.info("No interpolation", level=2)
+            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo, cache=cache)
         else:
-            error("Interpolation type " + interpolation+" not implemented!")
-        return alpha_out, interpolated_field
+            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
+
+        field = interpolator.interpolate(field)
+        return field, interpolator
+
+
+class Grib1Variable(object):
+    def __init__(self, par, typ, level, tri):
+        self.version = 1
+        self.par = par
+        self.typ = typ
+        self.level = level
+        self.tri = tri
+

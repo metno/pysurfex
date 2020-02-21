@@ -4,8 +4,8 @@
         "cgrid": "CONF PROJ"
     },
     "nam_conf_proj": {
-        "xlat0": 59,
-        "xlon0": 11
+        "xlat0": 60,
+        "xlon0": 10
     },
     "nam_conf_proj_grid": {
         "ilone": 11,
@@ -32,7 +32,7 @@
         "xlatcen": 60,
         "xloncen": 10,
         "nimax": 9,
-        "njmax": 9,
+        "njmax": 19,
         "xdx": 10000.0,
         "xdy": 10000.0
     }
@@ -110,6 +110,25 @@
       "njmax": 10,
       "xdx": 1000,
       "xdy": 1000
+    }
+  },
+  "SVALBARD": {
+    "nam_pgd_grid": {
+        "cgrid": "CONF PROJ"
+    },
+    "nam_conf_proj": {
+        "xlat0": 78.65,
+        "xlon0": 21.3
+    },
+    "nam_conf_proj_grid": {
+        "ilone": 0,
+        "ilate": 0,
+        "xlatcen": 78.65,
+        "xloncen": 21.3,
+        "nimax": 470,
+        "njmax": 548,
+        "xdx": 1000.0,
+        "xdy": 1000.0
     }
   }
 }

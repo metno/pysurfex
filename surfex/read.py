@@ -120,7 +120,7 @@ class Converter:
             self.p = self.create_variable(fileformat, defs, conf[self.name]["p"], debug)
         elif name == "windspeed" or name == "winddir":
             self.x = self.create_variable(fileformat, defs, conf[self.name]["x"], debug)
-            self.y = self.create_variable(fileformat, defs, conf[self.name]["y"], debug, need_alpha=True)
+            self.y = self.create_variable(fileformat, defs, conf[self.name]["y"], debug)
         elif name == "totalprec":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
             self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"], debug)
@@ -134,6 +134,10 @@ class Converter:
             self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
         elif name == "phi2m":
             self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"], debug)
+        elif self.name == "swe2sd":
+            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"], debug)
+        elif self.name == "sweclim":
+            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"], debug)
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
@@ -143,7 +147,7 @@ class Converter:
     def print_info(self):
         print(self.name)
 
-    def create_variable(self, fileformat, defs, var_dict, debug, need_alpha=False):
+    def create_variable(self, fileformat, defs, var_dict, debug):
 
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables
@@ -151,16 +155,13 @@ class Converter:
         var_dict = copy.deepcopy(var_dict)
         merged_dict = data_merge(defs, var_dict)
 
-        print(fileformat)
         if fileformat == "netcdf":
-            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug,
-                                                 need_alpha=need_alpha)
-        elif fileformat == "grib":
+            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug)
+        elif fileformat == "grib1" or fileformat == "grib2":
             var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime,  debug=debug,
-                                               need_alpha=need_alpha)
+                                               grib_type=fileformat)
         elif fileformat == "surfex":
-            var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug,
-                                                 need_alpha=need_alpha)
+            var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug)
         elif fileformat == "constant":
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
         else:
@@ -180,13 +181,14 @@ class Converter:
             field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x.read_variable(geo, validtime, cache)
-            alpha, field_y = self.y.read_variable(geo, validtime, cache)
+            field_y = self.y.read_variable(geo, validtime, cache)
             # field_y = self.y.read_variable(geo,validtime,cache)
             if self.name == "windspeed":
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
                 np.where(field < 0.005, field, 0)
             elif self.name == "winddir":
-                field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180 - alpha, 360)
+                # TODO chek formulation
+                field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180, 360)
 
         elif self.name == "rh2q":
             field_rh = self.rh.read_variable(geo, validtime, cache)  # %
@@ -233,46 +235,20 @@ class Converter:
             field = self.phi.read_variable(geo, validtime, cache)
             field = np.divide(field, gravity)
             field[(field < 0)] = 0.
+        elif self.name == "swe2sd":
+            field = self.swe.read_variable(geo, validtime, cache)
+            rho = self.swe.read_variable(geo, validtime, cache)
+            field = np.divide(field, rho)
+        elif self.name == "sweclim":
+            field = self.swe.read_variable(geo, validtime, cache)
+            rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312., "07": 312., "08": 143.,
+                       "09": 143., "10": 161., "11": 182., "12": 213.}
+            month = validtime.strftime("%m")
+            if month in rhoclim:
+                field = np.divide(field, rhoclim[month])
+            else:
+                raise Exception("Could not found climatological mean for month " + str(month))
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
         return field
-
-
-def read_surfex_field(varname, filename, validtime, patch=-1, layer=-1, accumulated=False, fileformat=None,
-                      filetype=None, debug=False, geo=None):
-
-    if fileformat is None:
-        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
-
-    if filetype == "surf":
-        if fileformat.lower() == "ascii":
-            geo = surfex.file.AsciiSurfexFile(filename).geo
-        elif fileformat.lower() == "nc":
-            geo = surfex.file.NCSurfexFile(filename).geo
-        else:
-            if geo is None:
-                raise NotImplementedError("Not implemnted and geo is None")
-    elif geo is None:
-        raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
-
-    var_dict = {
-        "none": {
-            "varname": varname,
-            "patches": patch,
-            "layers": layer,
-            "fileformat": fileformat,
-            "filetype": filetype,
-            "filepattern": filename,
-            "accumulated": accumulated,
-            "file_inc": 6,
-            "offset": 0,
-            "fcint": 3
-        }
-    }
-    cache = surfex.cache.Cache(debug, 3600)
-
-    # name, validtime, defs, conf, fileformat, basetime,  debug):
-    converter = Converter("none", validtime, {}, var_dict, "surfex", validtime, debug=debug)
-    field = ConvertedInput(geo, varname, converter).read_time_step(validtime, cache)
-    return field

@@ -456,4 +456,5 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             print("Can not handle input type "+str(inp))
             raise Exception
 
-    return surfex.ascii2nml(merged_json_settings), surfex.JsonInputData(ecoclimap_json), surfex.JsonInputData(input_for_surfex_json)
+    return surfex.ascii2nml(merged_json_settings), surfex.JsonInputData(ecoclimap_json), \
+           surfex.JsonInputData(input_for_surfex_json)

@@ -141,10 +141,10 @@ class NetCDFOutput(SurfexForcing):
         self.forcing_file['TSTEP'][:] = self.time_step_intervall
         self.forcing_file['LON'] = self.file_handler.createVariable("LON", "f4", ("Number_of_points",))
         self.forcing_file['LON'].longname = "Longitude"
-        self.forcing_file['LON'][:] = geo.lons
+        self.forcing_file['LON'][:] = geo.lonlist
         self.forcing_file['LAT'] = self.file_handler.createVariable("LAT", "f4", ("Number_of_points",))
         self.forcing_file['LAT'].longname = "Latitude"
-        self.forcing_file['LAT'][:] = geo.lats
+        self.forcing_file['LAT'][:] = geo.latlist
         self.forcing_file['ZS'] = self.file_handler.createVariable("ZS", "f4", ("Number_of_points",))
         self.forcing_file['ZS'].longname = "Surface_Orography"
         self.forcing_file['ZS'][:] = zs
@@ -388,6 +388,7 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
     defs = {}
     if forcingformat in conf:
         defs = copy.deepcopy(conf[forcingformat])
+        defs.update({"timestep": timestep})
 
     # All objects with converters, find converter dict entry
     conf_dict = {}
@@ -449,7 +450,7 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
         # Construct the converter
         # print sfx_var
         converter = surfex.read.Converter(selected_converter, start, defs, conf_dict, forcingformat,
-                                          first_base_time, timestep, debug)
+                                          first_base_time, debug)
 
         # Construct the input object
         obj = surfex.read.ConvertedInput(geo, sfx_var, converter)

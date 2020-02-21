@@ -39,29 +39,52 @@ class Cache:
                 found = True
         return found
 
-    def interpolator_is_set(self, inttype, fileformat):
+    def interpolator_is_set(self, inttype, geo_in, geo_out):
+        identifier_in = geo_in.identifier()
+        identifier_out = geo_out.identifier()
         if inttype in self.interpolators:
-            if fileformat in self.interpolators[inttype]:
-                return True
+            if identifier_out in self.interpolators[inttype]:
+                if identifier_in in self.interpolators[inttype][identifier_out]:
+                    return True
+                else:
+                    print("Coud not find in ", identifier_in)
+                    return False
             else:
+                print("Coud not find out", identifier_out)
                 return False
         else:
             return False
 
-    def get_interpolator(self, inttype, fileformat):
-        if self.interpolator_is_set(inttype, fileformat):
-            return self.interpolators[inttype][fileformat]
+    def get_interpolator(self, inttype, geo_in, geo_out):
+        identifier_in = geo_in.identifier()
+        identifier_out = geo_out.identifier()
+        if self.interpolator_is_set(inttype, geo_in, geo_out):
+            return self.interpolators[inttype][identifier_out][identifier_in]
         else:
             return None
 
-    def update_interpolator(self, inttype, fileformat, value):
-        # print "Update interpolator ",type,format,self.interpolators
-        this_dict = {fileformat: value}
+    def update_interpolator(self, inttype, geo_in, geo_out, value):
+        identifier_in = geo_in.identifier()
+        identifier_out = geo_out.identifier()
+
+        print("Update interpolator ", inttype, identifier_in, identifier_out)
+        this_dict = {}
         if inttype in self.interpolators:
-            for f in self.interpolators[inttype]:
-                this_dict.update({f: self.interpolators[inttype][f]})
-        self.interpolators.update({inttype: this_dict})
-    
+            out_geos = {}
+            for out_grid in self.interpolators[inttype]:
+                in_geos = {}
+                for f in self.interpolators[inttype][out_grid]:
+                    in_geos.update({f: self.interpolators[inttype][out_grid][f]})
+                in_geos.update({identifier_out: value})
+                out_geos.update({out_grid: in_geos})
+            this_dict.update({inttype: out_geos})
+            print(inttype)
+            print(this_dict)
+            self.interpolators.update({inttype: this_dict})
+        else:
+            self.interpolators.update({inttype: {identifier_out: {identifier_in: value}}})
+
+
     def save_field(self, id_str, field):
         self.saved_fields[id_str] = field
     
@@ -87,8 +110,15 @@ class Cache:
             return False
 
     @staticmethod
-    def generate_grib_id(level, tri, par, typ, filename, validtime):
-        return "%d%d%d%s%s%s" % (level, tri, par, typ, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+    def generate_grib_id(gribvar, filename, validtime):
+        if gribvar.version == 1:
+            par = gribvar.par
+            typ = gribvar.typ
+            level = gribvar.level
+            tri = gribvar.tri
+            return "%d%d%d%s%s%s" % (level, tri, par, typ, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+        else:
+            raise NotImplementedError
 
     @staticmethod
     def generate_netcdf_id(varname, filename, validtime):

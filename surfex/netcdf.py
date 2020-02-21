@@ -10,8 +10,6 @@ from enum import Enum
 class Netcdf(object):
     def __init__(self, filename):
         self.filename = filename
-        self.nearest = None
-        self.linear = None
         print(filename)
         self.file = netCDF4.Dataset(filename, "r")
 
@@ -131,6 +129,11 @@ class Netcdf(object):
         # Dimensions of the "problem"
         dim_x = lons.shape[0]
         dim_y = lats.shape[1]
+
+        print(lons.shape)
+        print(lats.shape)
+        geo = surfex.geo.Geo(dim_x * dim_y, dim_x, dim_y, lons, lats)
+
         dim_t = max(len(times_to_read), 1)
         dim_levels = max(len(levels_to_read), 1)
         dim_members = max(len(members_to_read), 1)
@@ -172,6 +175,7 @@ class Netcdf(object):
         surfex.util.info("Read " + var.var_name + " with dimensions: " + str(dims), level=2)
         if deaccumulate:
             surfex.util.info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
+
         field = self.file[var.var_name][dims]
         if units is not None:
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
@@ -204,12 +208,26 @@ class Netcdf(object):
         surfex.util.info("Transpose to 5D array", level=1)
         field = np.transpose(field, reverse_mapping)
 
+        print("Read netcdf from ", self.filename, "times", times)
         surfex.util.info("Shape of output: "+str(field.shape), level=2)
-        return field
+        return field, geo
 
-    def points(self, var_name, lons, lats, levels=None, members=None, times=None, xcoords=None, ycoords=None,
-               deaccumulate=False, interpolation="nearest", instantanious=0., lev_from_ind=False, units=None,
-               alpha=False):
+    def field(self, var_name, level=None, member=None, validtime=None,  units=None):
+
+        if validtime is None:
+            validtime = []
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        else:
+            validtime = [validtime]
+
+        field, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
+        # Reshape to fortran 2D style
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        return field, geo_in
+
+    def points(self, var_name, geo, level=None, member=None, validtime=None,  units=None, interpolation="nearest",
+               cache=None):
 
         """
         Assembles a 5D slice and interpolates it to requested positions
@@ -221,56 +239,24 @@ class Netcdf(object):
          np.array: 4D array with inpterpolated values in order pos,time,height,ensemble
 
         """
-        var = NetCDFFileVariable(self.file, var_name)
-        field = self.slice(var_name, levels=levels, members=members, times=times, xcoords=xcoords, ycoords=ycoords,
-                           deaccumulate=deaccumulate, instantanious=instantanious, lev_from_ind=lev_from_ind,
-                           units=units)
-        alpha_out = None
-        if alpha:
-            alpha_out = surfex.interpolation.alpha_grid_rot(var.lons, var.lats)
-            
-        if lons is None or lats is None:
-            raise Exception("You must set lons and lats when interpolation is set!")
 
-        interpolated_field = np.empty([len(lons), field.shape[2], field.shape[3], field.shape[4]])
-        
+        # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
+        # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
+        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units)
         if interpolation == "nearest":
             surfex.util.info("Nearest neighbour", level=2)
-            if self.nearest is None:
-                self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var.lons, var.lats)
-            else:
-                if not self.nearest.interpolator_ok(field.shape[0], field.shape[1], var.lons, var.lats):
-                    self.nearest = surfex.interpolation.NearestNeighbour(lons, lats, var.lons, var.lats)
-
-            ind_n = self.nearest.index[:, 1]*field.shape[0] + self.nearest.index[:, 0]
-            field0 = field.reshape((field.shape[0]*field.shape[1], field.shape[2], field.shape[3], field.shape[4]),
-                                   order='F')
-            
-            for t in range(0, field.shape[2]):
-                for z in range(0, field.shape[3]):
-                    for m in range(0, field.shape[4]):
-                        interpolated_field[:, t, z, m] = field0[ind_n, t, z, m]
-            if alpha:
-                alpha_out = alpha_out.flatten(order='F')[ind_n]
-
+            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo, cache=cache)
         elif interpolation == "linear":
             surfex.util.info("Linear interpolation", level=2)
-            if self.linear is None:
-                self.linear = surfex.interpolation.Linear(lons, lats, var.lons, var.lats)
-            else:
-                if not self.linear.interpolator_ok(field.shape[0], field.shape[1], var.lons, var.lats):
-                    self.linear = surfex.interpolation.Linear(lons, lats, var.lons, var.lats)
-
-            for t in range(0, field.shape[2]):
-                for z in range(0, field.shape[3]):
-                    for m in range(0, field.shape[4]):
-                        values = np.reshape(field[:, :, t, z, m], (field.shape[0], field.shape[1]))
-                        interpolated_field[:, t, z, m] = self.linear.interpolate(values)
+            interpolator = surfex.interpolation.Linear(geo_in, geo, cache=cache)
+        elif interpolation == "none":
+            surfex.util.info("No interpolation", level=2)
+            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo, cache=cache)
         else:
             raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
 
-        surfex.util.info(str(interpolated_field.shape), level=3)
-        return alpha_out, interpolated_field
+        field = interpolator.interpolate(field)
+        return field, interpolator
 
 
 class Axis(Enum):

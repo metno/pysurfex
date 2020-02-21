@@ -5,8 +5,8 @@ netcdf:
   file_inc: 21600
   fcint: 21600
 
-# General grib settings
-grib:
+# General grib1 settings
+grib1:
   filepattern: not_defined
   offset: 0
   file_inc: 3600
@@ -22,7 +22,7 @@ ZS:
       phi2m:
         phi:
           name: surface_geopotential
-  grib:
+  grib1:
     converter:
       none:
         parameter: -1
@@ -48,7 +48,7 @@ ZREF:
           name: air_temperature_ml
     constant:
       value: 12.5
-    grib:
+    grib1:
       converter:
         none:
           parameter: -1
@@ -67,7 +67,7 @@ UREF:
           name: air_temperature_ml
     constant:
       value: 12.5
-    grib:
+    grib1:
       converter:
         none:
           parameter: -1
@@ -82,7 +82,7 @@ TA:
       converter:
         none:
           name: air_temperature_2m
-    grib:
+    grib1:
       converter:
         none:
           parameter: 11
@@ -95,7 +95,7 @@ TA:
         none:
           name: air_temperature_ml
           level: 0.99851962924
-    grib:
+    grib1:
       converter:
         none:
           parameter: 11
@@ -122,7 +122,7 @@ QA:
           p:
             name: surface_air_pressure
             units: "Pa"
-    grib:
+    grib1:
       converter:
         none:
           parameter: 51
@@ -163,7 +163,7 @@ QA:
           p:
             name: surface_air_pressure
             units: "Pa"
-    grib:
+    grib1:
       converter:
         none:
           parameter: 51
@@ -199,7 +199,7 @@ WIND:
             name: x_wind_10m
           y:
             name: y_wind_10m
-    grib:
+    grib1:
       converter:
         none:
           parameter: 32
@@ -230,7 +230,7 @@ WIND:
           y:
             name: y_wind_ml
             level: 0.99851962924
-    grib:
+    grib1:
       converter:
         none:
           parameter: 207
@@ -259,9 +259,11 @@ WIND_DIR:
         winddir:
           x:
             name: x_wind_10m
+            rotate_to_geographic: True
           y:
             name: y_wind_10m
-    grib:
+            rotate_to_geographic: True
+    grib1:
       converter:
         none:
           parameter: 31
@@ -274,11 +276,13 @@ WIND_DIR:
             type: sfc
             level: 10
             tri: 0
+            rotate_to_geographic: True
           y:
             parameter: 34
             type: sfc
             level: 10
             tri: 0
+            rotate_to_geographic: True
   ml:
     netcdf:
       converter:
@@ -289,10 +293,12 @@ WIND_DIR:
           x:
             name: x_wind_ml
             level: 0.99851962924
+            rotate_to_geographic: True
           y:
             name: y_wind_ml
             level: 0.99851962924
-    grib:
+            rotate_to_geographic: True
+    grib1:
       converter:
         none:
           parameter: 249
@@ -305,11 +311,13 @@ WIND_DIR:
             type: ml
             level: 65
             tri: 0
+            rotate_to_geographic: True
           y:
             parameter: 34
             type: ml
             level: 65
             tri: 0
+            rotate_to_geographic: True
 
 # Rainfall rate
 RAIN:
@@ -328,7 +336,7 @@ RAIN:
           name: snowfall_amount_acc
           accumulated: True
           instant: 3600.
-  grib:
+  grib1:
     converter:
       none:
         parameter: 221
@@ -373,7 +381,7 @@ SNOW:
           name: surface_air_pressure
           units: "Pa"
 
-  grib:
+  grib1:
     converter:
       none:
         parameter: 185
@@ -388,7 +396,7 @@ PS:
     converter:
       none:
         name: surface_air_pressure
-  grib:
+  grib1:
     converter:
       none:
         parameter: 1
@@ -404,7 +412,7 @@ DIR_SW:
         name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
         accumulated: True
         instant: 3600.
-  grib:
+  grib1:
     converter:
       none:
         parameter: 117
@@ -420,7 +428,7 @@ SCA_SW:
         name: scattered_short_wave_radiation
   constant:
     value: 0
-  grib:
+  grib1:
     converter:
       none:
         parameter: 14
@@ -436,7 +444,7 @@ LW:
         name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
         accumulated: True
         instant: 3600.
-  grib:
+  grib1:
     converter:
       none:
         parameter: 115
@@ -450,7 +458,7 @@ CO2:
     converter:
       none:
         name: carbon_dioxide
-  grib:
+  grib1:
     converter:
       none:
         parameter: -1

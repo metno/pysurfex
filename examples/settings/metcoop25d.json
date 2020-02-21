@@ -1,0 +1,19 @@
+{
+  "nam_pgd_grid": {
+    "cgrid": "CONF PROJ"
+  },
+  "nam_conf_proj": {
+    "xlat0": 63.3,
+    "xlon0": 15.0
+  },
+  "nam_conf_proj_grid": {
+    "ilone": 11,
+    "ilate": 11,
+    "xlatcen": 63.3,
+    "xloncen": 17.5,
+    "nimax": 949,
+    "njmax": 1069,
+    "xdx": 2500.0,
+    "xdy": 2500.0
+  }
+}

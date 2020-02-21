@@ -2,6 +2,7 @@ grib:
         fcint: 10800
         file_inc: 3600
         offset: 0
+        timestep: 3600
         filepattern: "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib_fp"
         blueprint:
                 0: "archive/2019/11/13/00/fc2019111300_000grib_fp"
@@ -20,6 +21,7 @@ netcdf:
         fcint: 21600
         file_inc: 21600
         offset: 10800
+        timestep: 3600
         filepattern: "archive/@YYYY@/@MM@/@DD@/meps@YYYY@@MM@@DD@Z@HH@.nc"
         blueprint:
                 0: "archive/2019/11/13/meps20191113Z00.nc"

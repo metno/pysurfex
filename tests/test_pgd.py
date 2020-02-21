@@ -34,10 +34,9 @@ class PGDTest(unittest.TestCase):
         my_geo = surfex.geo.get_geo_object(domain)
         print(my_geo.cgrid)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_input = surfex.iostuff.JsonInputData({})
+        my_input = surfex.run.JsonInputData({})
 
-
-        my_ecoclimap = surfex.iostuff.JsonInputData({})
+        my_ecoclimap = surfex.run.JsonInputData({})
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
 
@@ -45,7 +44,7 @@ class PGDTest(unittest.TestCase):
         rte = {}
         my_batch = surfex.run.BatchJob(rte=rte)
         binary = "time"
-        surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input=my_input)
+        surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input_data=my_input)
         os.remove("OPTIONS.nam")
 
     def test_input_json_from_file(self):
@@ -56,7 +55,7 @@ class PGDTest(unittest.TestCase):
         fh.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname + "\": \"ln -sf\"}}")
         fh.close()
 
-        my_input = surfex.iostuff.JsonInputDataFromFile(fname)
+        my_input = surfex.run.JsonInputDataFromFile(fname)
         my_input.prepare_input()
         os.remove(fname)
         os.remove("testfile_in" + str(os.getpid()))
@@ -71,7 +70,7 @@ class PGDTest(unittest.TestCase):
         fh.write("{\"" + file_to_archive + "\": {\"" + destination + "\": \"cp\"}}")
         fh.close()
 
-        my_output = surfex.iostuff.JsonOutputDataFromFile(fname)
+        my_output = surfex.run.JsonOutputDataFromFile(fname)
         my_output.archive_files()
         os.remove(fname)
         os.remove(file_to_archive)

@@ -22,7 +22,7 @@ class TestVariable(unittest.TestCase):
             for i in range(11):
                 with self.subTest(i=i):
                     validtime = initialtime + timedelta(seconds=intervall*i)
-                    variable = Variable(basetime, validtime, var_dict, intervall, debug, need_alpha=False)
+                    variable = Variable(basetime, validtime, var_dict, debug)
                     new = variable.open_new_file(var_dict['fcint'], var_dict['offset'], var_dict['file_inc'])
                     basetime = variable.basetime
                     if debug:
@@ -31,7 +31,7 @@ class TestVariable(unittest.TestCase):
                         print("basetime:", variable.basetime)
                         print("validtime:", variable.validtime)
                         print("previous time:", variable.previoustime)
-                        print("time elapsed:", variable.timeElapsed)
+                        print("time elapsed:", variable.time_elapsed)
                         print("filename:", variable.filename)
                         print("previous_filename:", variable.previousfilename)
             

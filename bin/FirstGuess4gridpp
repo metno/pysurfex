@@ -1,386 +1,46 @@
 #!/usr/bin/env python3
 
-import netCDF4 as nc
-import eccodes as ec
+import netCDF4
 import yaml
-from pyproj import Proj
 import numpy as np
 import sys
 import os
 from argparse import ArgumentParser
-from datetime import datetime,timedelta
-import calendar
-try:
-    from scipy.interpolate import NearestNDInterpolator
-    import cartopy.crs as ccrs
-    import matplotlib.pyplot as plt
-    CAN_INTERPOLATE = True
-except:
-    CAN_INTERPOLATE = False
+from datetime import datetime
+import surfex
+import json
 
 
-class converter():
-    def __init__(self, name,var, config, ua_name, sfx_name, laf_fname):
-        self.name = name
-        self.var = var
-        self.config = config
-        self.ua_name = ua_name
-        self.sfx_name = sfx_name
-        self.laf_fname = laf_fname
+def create_template(my_variables, my_nx, my_ny, fname="raw.nc"):
 
-    def get_grib_definitions(self, var=None):
-        fname = self.ua_name
-        if var is None:
-            dict = self.config[self.var]["converter"][self.name]
-        else:
-            dict = self.config[self.var]["converter"][self.name][var]
+    my_fg = netCDF4.Dataset(fname, "w")
+    my_fg.createDimension("y", my_ny)
+    my_fg.createDimension("x", my_nx)
+    my_fg.createDimension("time", 1)
+    my_fg.createVariable("time", "f8", "time")
+    my_fg.variables["time"].long_name = "time"
+    my_fg.variables["time"].standard_name = "time"
+    my_fg.variables["time"].units = "seconds since 1970-01-01 00:00:00 +00:00"
+    my_fg.createVariable("longitude", "f8", ("y", "x"))
+    my_fg.variables["longitude"].units = "degree_east"
+    my_fg.variables["longitude"].long_name = "longitude"
+    my_fg.variables["longitude"].standard_name = "longitude"
+    my_fg.createVariable("latitude", "f8", ("y", "x"))
+    my_fg.variables["latitude"].units = "degree_north"
+    my_fg.variables["latitude"].long_name = "latitude"
+    my_fg.variables["latitude"].standard_name = "latitude"
+    my_fg.createVariable("x", "f4", "x")
+    my_fg.variables["x"].long_name = "x-coordinate in Cartesian system"
+    my_fg.variables["x"].standard_name = "projection_x_coordinate"
+    my_fg.variables["x"].units = "m"
+    my_fg.createVariable("y", "f4", "y")
+    my_fg.variables["y"].long_name = "y-coordinate in Cartesian system"
+    my_fg.variables["y"].standard_name = "projection_y_coordinate"
+    my_fg.variables["y"].units = "m"
 
-        if "ftype" in dict:
-            if dict["ftype"] == "sfx":
-                fname = self.sfx_name
-            if dict["ftype"] == "ua":
-                fname = self.ua_name
-            if dict["ftype"] == "laf":
-                fname = self.laf_fname
-
-        if fname is None:
-            print("The file is not set for " + self.var + " converter: " + self.name)
-            sys.exit(1)
-        if not os.path.isfile(fname):
-            print("The file " + fname + " does not exist!")
-            sys.exit(1)
-
-        par = dict["par"]
-        lev = dict["lev"]
-        typ = dict["typ"]
-        tri = dict["tri"]
-        return fname, par, lev, typ, tri
-
-    def read_field(self, sdf, readTime=True):
-        if self.name == "none":
-            fname, par, lev, typ, tri = self.get_grib_definitions()
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y,dt,field=var.read_field(sdf, readTime)
-            return lons, lats, X, Y, dt, field
-        elif self.name == "swe2sd":
-            fname, par, lev, typ, tri = self.get_grib_definitions("swe")
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y, dt, swe = var.read_field(sdf, readTime)
-            fname, par, lev, typ, tri = self.get_grib_definitions("rho")
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y, dt, rho = var.read_field(sdf, readTime)
-            field = np.divide(swe, rho)
-            return lons, lats, X, Y, dt, field
-        elif self.name == "sweclim":
-            fname, par, lev, typ, tri = self.get_grib_definitions()
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y, dt, field = var.read_field(sdf, readTime)
-            rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312., "07": 312., "08": 143.,
-                       "09": 143., "10": 161., "11": 182., "12": 213.}
-            month = dt.strftime("%m")
-            if month in rhoclim:
-                field = np.divide(field, rhoclim[month])
-                return lons, lats, X, Y, dt, field
-            else:
-                print("Could not found climatological mean for month "+str(month))
-                sys.exit(1)
-
-        elif self.name == "phi2m":
-            fname, par, lev, typ, tri = self.get_grib_definitions()
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y, dt, field = var.read_field(sdf, readTime)
-            field = np.divide(field, 9.81)
-            return lons, lats, X, Y, dt, field
-        elif self.name == "sea2land":
-            fname, par, lev, typ, tri = self.get_grib_definitions()
-            var = variable(fname, par, lev, typ, tri)
-            lons, lats, X, Y, dt, field = var.read_field(sdf, readTime)
-            field = np.subtract(1, field)
-            return lons, lats, X, Y, dt, field
-        else:
-            print("Converter not " + self.name + " not defined")
-            sys.exit(1)
-
-
-class variable():
-
-    def __init__(self, fname, par, lev, typ, tri):
-        self.fname = fname
-        self.par = par
-        self.lev = lev
-        self.typ = typ
-        self.tri = tri
-        #print("Constructed variable")
-
-    def read_field(self, sdf, readTime):
-        geography = ["bitmapPresent",
-                     "Nx",
-                     "Ny",
-                     "latitudeOfFirstGridPointInDegrees",
-                     "longitudeOfFirstGridPointInDegrees",
-                     "LoVInDegrees",
-                     "DxInMetres",
-                     "DyInMetres",
-                     "iScansNegatively",
-                     "jScansPositively",
-                     "jPointsAreConsecutive",
-                     "Latin1InDegrees",
-                     "LaDInDegrees",
-                     "Latin2InDegrees",
-                     "latitudeOfSouthernPoleInDegrees",
-                     "longitudeOfSouthernPoleInDegrees",
-                     "gridType"
-                     ]
-
-        if self.fname is None or not os.path.isfile(self.fname):
-            print("The file " + str(self.fname) + " does not exist!")
-            sys.exit(1)
-
-        print("Reading file: " + self.fname)
-        f = open(self.fname, "r")
-        while 1:
-            gid = ec.codes_grib_new_from_file(f)
-            if gid is None:
-                break
-
-            par = ec.codes_get(gid, "indicatorOfParameter")
-            lev = ec.codes_get(gid, "level")
-            typ = ec.codes_get(gid, "indicatorOfTypeOfLevel")
-            tri = ec.codes_get(gid, "timeRangeIndicator")
-
-            if self.par == par and self.lev == lev and self.typ == typ and self.tri == tri:
-                print("Found:", self.par, self.lev, self.typ, self.tri)
-                geo = {}
-                for key in geography:
-                    try:
-                        geo.update({key: ec.codes_get(gid, key)})
-                    except ec.CodesInternalError as err:
-                        print('Error with key="%s" : %s' % (key, err.msg))
-
-                print('There are %d values, average is %f, min is %f, max is %f' % (
-                    ec.codes_get_size(gid, 'values'),
-                    ec.codes_get(gid, 'average'),
-                    ec.codes_get(gid, 'min'),
-                    ec.codes_get(gid, 'max')
-                ))
-
-                # Date/time
-                if readTime:
-                    d = ec.codes_get(gid, "validityDate")
-                    t = ec.codes_get(gid, "validityTime")
-                    h = int(t)/100
-                    m = 0
-                    if h != 0:
-                        m = t % h
-                    s = (h*3600)+(m*60)
-                    print(s)
-                    print(h)
-                    print(m)
-                    date = datetime.strptime(str(d), "%Y%m%d")
-                    time = timedelta(seconds=s)
-                    dt = date+time
-                else:
-                    dt = None
-
-                # Missing values
-                mv = None
-                try:
-                    mv = ec.codes_get(gid, "missingValue")
-                except:
-                    print("Field does not contain missing values")
-
-                if geo["gridType"].lower() == "lambert":
-                    values = ec.codes_get_values(gid)
-                    nx = geo["Nx"]
-                    ny = geo["Ny"]
-
-                    lonCenter = geo["LoVInDegrees"]
-                    latCenter = geo["LaDInDegrees"]
-                    latRef = geo["Latin2InDegrees"]
-                    lon0 = geo["longitudeOfFirstGridPointInDegrees"]
-                    lat0 = geo["latitudeOfFirstGridPointInDegrees"]
-                    dx = geo["DxInMetres"]
-                    dy = geo["DyInMetres"]
-
-                    proj4_string = "+proj=lcc +lat_0=" + str(latCenter) + " +lon_0=" + str(lonCenter) + " +lat_1=" + \
-                                   str(latRef) + " +lat_2=" + str(latRef) + " +no_defs +units=m +R=6.371e+06"
-                    proj4 = Proj(proj4_string)
-
-                    x0, y0 = proj4(lon0, lat0)
-                    x0 = int(round(x0))
-                    y0 = int(round(y0))
-                    field = np.empty([nx, ny])
-                    lons = np.empty([nx, ny])
-                    lats = np.empty([nx, ny])
-                    X = np.arange(x0, x0 + (nx * dx), dx)
-                    Y = np.arange(y0, y0 + (ny * dy), dy)
-                    ii = 0
-                    for j in range(0, ny):
-                        for i in range(0, nx):
-                            field[i, j] = values[ii]
-                            lons[i, j], lats[i, j] = proj4(X[i], Y[j], inverse=True)
-                            ii = ii + 1
-
-                    if mv is not None:
-                        field[field == mv] = np.nan
-                    ec.codes_release(gid)
-                    f.close()
-
-                    # Do interpolation
-                    if sdf is not None:
-                        if CAN_INTERPOLATE:
-                            lons, lats, X, Y, field = sdf.interpolateField(lons, lats, field)
-                        else:
-                            print("Can not interpolate!")
-                            exit(1)
-
-                    return lons, lats, X, Y, dt, field
-                else:
-                    print(geo["gridType"] + " not implemented yet!")
-
-            ec.codes_release(gid)
-        f.close()
-
-
-class subDomain():
-
-    def __init__(self, file):
-        self.file = file
-        sdf = nc.Dataset(self.file, "r")
-        print(sdf.variables["GRID_TYPE"][:])
-        print(nc.chartostring(sdf.variables["GRID_TYPE"][:]))
-        proj = str(nc.chartostring(sdf.variables["GRID_TYPE"][:]))
-        print(type(proj))
-        proj = proj.replace(" ", "")
-        print(proj)
-        self.interpolated = False
-        self.grid_points = None
-        if proj == "CONFPROJ":
-            xx = sdf.variables["XX"][:, :]
-            yy = sdf.variables["YY"][:, :]
-            lat0 = sdf.variables["LAT0"][:]
-            lon0 = sdf.variables["LON0"][:]
-            rpk = sdf.variables["RPK"][:]
-            beta = sdf.variables["BETA"][:]
-            latori = sdf.variables["LATORI"][:]
-            lonori = sdf.variables["LONORI"][:]
-            imax = int(sdf.variables["IMAX"][:])
-            jmax = int(sdf.variables["JMAX"][:])
-
-            # Set longitudes and latitudes based on this information
-            self.X = np.empty([imax])
-            self.Y = np.empty([jmax])
-            for i in range(0, imax):
-                self.X[i] = xx[0][i]
-            for j in range(0, jmax):
-                self.Y[j] = yy[j][0]
-
-            self.nx = imax
-            self.ny = jmax
-             
-            self.proj = ccrs.LambertConformal(central_longitude=lonori, central_latitude=latori,
-                                              standard_parallels=[lat0])
-            g0 = ccrs.Geodetic()
-            self.lons = np.empty([self.nx, self.ny])
-            self.lats = np.empty([self.nx, self.ny])
-            for i in range(0, imax):
-                for j in range(0, jmax):
-                    lon, lat = g0.transform_point(self.X[i], self.Y[j], self.proj)
-                    self.lons[i, j] = lon
-                    self.lats[i, j] = lat
-        else:
-            print("Projection " + proj + " not implemented yet")
-            exit(3)
-
-    def interpolateField(self, lons, lats, fieldIn):
-
-        dim_x = lons.shape[0]
-        dim_y = lats.shape[1]
-
-        if not self.interpolated:
-            self.interpolated = True
-            lons_vec = np.reshape(lons, dim_x * dim_y)
-            lats_vec = np.reshape(lats, dim_x * dim_y)
-
-            values_vec = np.arange(dim_x * dim_y)
-
-            print("Interpolating..." + str(dim_x * dim_y) + " points")
-            points = (lons_vec, lats_vec)
-            interpolator = NearestNDInterpolator(points, values_vec)
-
-            self.grid_points = np.empty([self.nx, self.ny])
-            for i in range(0, self.nx):
-                for j in range(0, self.ny):
-                    ii = int(interpolator(self.lons[i][j], self.lats[i][j]))
-
-                    max_distance = 4000.
-                    dist = self.distance(self.lons[i][j], self.lats[i][j], lons_vec[ii], lats_vec[ii])
-                    if dist.max() > max_distance:
-                        print("Point is too far away from nearest point: " + str(dist.max()) + " Max distance=" +
-                              str(max_distance))
-                        exit(3)
-                    self.grid_points[i][j] = ii
-
-        # Setting values
-        print("Setting interpolated values")
-        field = np.empty([self.nx, self.ny])
-        fieldIn = np.reshape(fieldIn, (dim_x * dim_y))
-        for i in range(0, self.nx):
-            for j in range(0, self.ny):
-                ii = int(self.grid_points[i][j])
-                field[i][j] = fieldIn[ii]
-
-        return self.lons, self.lats, self.X, self.Y, field
-
-    def distance(self, lon1, lat1, lon2, lat2):
-        """
-        Computes the great circle distance between two points using the
-        haversine formula. Values can be vectors.
-        """
-        # Convert from degrees to radians
-        pi = 3.14159265
-        lon1 = lon1 * 2 * pi / 360
-        lat1 = lat1 * 2 * pi / 360
-        lon2 = lon2 * 2 * pi / 360
-        lat2 = lat2 * 2 * pi / 360
-        dlon = lon2 - lon1
-        dlat = lat2 - lat1
-        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
-        c = 2 * np.arcsin(np.sqrt(a))
-        distance = 6.367e6 * c
-        return distance
-
-
-def create_template(vars, nx, ny, fname="raw.nc"):
-
-    fg = nc.Dataset(fname, "w")
-    fg.createDimension("y", ny)
-    fg.createDimension("x", nx)
-    fg.createDimension("time", 1)
-    fg.createVariable("time", "f8", ("time"))
-    fg.variables["time"].long_name = "time"
-    fg.variables["time"].standard_name = "time"
-    fg.variables["time"].units = "seconds since 1970-01-01 00:00:00 +00:00"
-    fg.createVariable("longitude", "f8", ("y", "x"))
-    fg.variables["longitude"].units = "degree_east"
-    fg.variables["longitude"].long_name = "longitude"
-    fg.variables["longitude"].standard_name = "longitude"
-    fg.createVariable("latitude", "f8", ("y", "x"))
-    fg.variables["latitude"].units = "degree_north"
-    fg.variables["latitude"].long_name = "latitude"
-    fg.variables["latitude"].standard_name = "latitude"
-    fg.createVariable("x", "f4", ("x"))
-    fg.variables["x"].long_name = "x-coordinate in Cartesian system"
-    fg.variables["x"].standard_name = "projection_x_coordinate"
-    fg.variables["x"].units = "m"
-    fg.createVariable("y", "f4", ("y"))
-    fg.variables["y"].long_name = "y-coordinate in Cartesian system"
-    fg.variables["y"].standard_name = "projection_y_coordinate"
-    fg.variables["y"].units = "m"
-
-    standard_name = {"air_temperature_2m": "air_temperature", 
+    standard_name = {"air_temperature_2m": "air_temperature",
                      "relative_humidity_2m": "relative_humidity",
-                     "altitude": "altitude", 
+                     "altitude": "altitude",
                      "surface_snow_thickness": "surface_snow_thickness",
                      "land_area_fraction": "land_area_fraction"}
     long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
@@ -388,96 +48,171 @@ def create_template(vars, nx, ny, fname="raw.nc"):
                  "altitude": "Altitude",
                  "surface_snow_thickness": "Surface snow thickness",
                  "land_area_fraction": "Land Area Fraction"}
-    units = {"air_temperature_2m": "K", 
-             "relative_humidity_2m": "1", 
+    units = {"air_temperature_2m": "K",
+             "relative_humidity_2m": "1",
              "altitude": "m",
              "surface_snow_thickness": "m",
              "land_area_fraction": "1"}
-    fillvalue = {"air_temperature_2m": "9.96921e+36", 
+    fillvalue = {"air_temperature_2m": "9.96921e+36",
                  "relative_humidity_2m": "9.96921e+36",
-                 "altitude": "9.96921e+36", 
+                 "altitude": "9.96921e+36",
                  "surface_snow_thickness": "9.96921e+36",
                  "land_area_fraction": "9.96921e+36"}
 
-    for var in vars:
-        if var == "altitude":
-            fg.createVariable(var, "f4", ("y", "x"), fill_value=fillvalue[var])
+    for my_var in my_variables:
+        if my_var == "altitude":
+            my_fg.createVariable(my_var, "f4", ("y", "x"), fill_value=fillvalue[my_var])
         else:
-            fg.createVariable(var, "f4", ("time", "y", "x"), fill_value=fillvalue[var])
-        fg.variables[var].long_name = long_name[var]
-        fg.variables[var].standard_name = standard_name[var]
-        fg.variables[var].units = units[var]
+            my_fg.createVariable(my_var, "f4", ("time", "y", "x"), fill_value=fillvalue[my_var])
+        my_fg.variables[my_var].long_name = long_name[my_var]
+        my_fg.variables[my_var].standard_name = standard_name[my_var]
+        my_fg.variables[my_var].units = units[my_var]
 
-    return fg
-
-
-parser = ArgumentParser(description="Create first guess file for gridpp from grib")
-parser.add_argument('ua_gribfile', type=str, help="Upper air grib file")
-
-parser.add_argument('-o', dest="output", type=str, help="output file", default="raw.nc")
-parser.add_argument('-sfx', type=str, default=None, help="SURFEX grib file", nargs="?")
-parser.add_argument('-laf', type=str, default=None, help="Land area fraction grib file", nargs="?")
-parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?", choices=["sweclim", "swe2sd"])
-parser.add_argument('--laf_converter', type=str, default="sea2land", help="", nargs="?", choices=["none", "sea2land"])
-parser.add_argument('--altitude_converter', type=str, default="phi2m", help="", nargs="?", choices=["none", "phi2m"])
-parser.add_argument('--sdf', type=str, default=None,
-                    help="NetCDF offline file defining the sub-domain to interpolate to", nargs="?")
-parser.add_argument('--config', '-c', type=str, help="YAML config file", default="grib_codes.yaml", nargs="?")
-args = parser.parse_args(sys.argv[1:])
+    return my_fg
 
 
-grib_codes = yaml.load(open(args.config))
-ftype = "ua"
-if "ftype" in grib_codes: 
-    ftype = grib_codes[ftype]
-vars = ["air_temperature_2m", "relative_humidity_2m", "surface_snow_thickness", "altitude"]
-#vars = ["air_temperature_2m"]
-if args.laf is not None:
-    vars.append("land_area_fraction")
+def parse_args(my_args):
+    parser = ArgumentParser(description="Create first guess file for gridpp")
+    parser.add_argument('-dtg', dest="dtg", type=str, help="Domain", required=True)
+    parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
+    parser.add_argument('-if', dest="inputformat", type=str, help="output file", default="grib2")
+    parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
 
-if args.sdf is not None:
-    if CAN_INTERPOLATE:
-        subdomain = subDomain(args.sdf)
+    parser.add_argument('-t2m_file', type=str, default=None, help="File with T2M", nargs="?")
+    parser.add_argument('-t2m_format', type=str, default=None, help="File format for file with T2M", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('-t2m_converter', type=str, default="none", help="Converter for T2M", nargs="?",
+                        choices=["none"])
+    parser.add_argument('-rh2m_file', type=str, default=None, help="File with RH2M", nargs="?")
+    parser.add_argument('-rh2m_format', type=str, default=None, help="File format for file with RH2M", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('-rh2m_converter', type=str, default="none", help="Converter for RH2M", nargs="?",
+                        choices=["none"])
+
+    parser.add_argument('-sd_file', type=str, default=None, help="Snow depth file", nargs="?")
+    parser.add_argument('-sd_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?",
+                        choices=["none", "sweclim", "swe2sd"])
+
+    parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
+    parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--laf_converter', type=str, default="sea2land", help="", nargs="?",
+                        choices=["none", "sea2land"])
+
+    parser.add_argument('-altitude_file', type=str, default=None, help="SURFEX grib file", nargs="?")
+    parser.add_argument('-altitude_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--altitude_converter', type=str, default="phi2m", help="", nargs="?",
+                        choices=["none", "phi2m"])
+
+    parser.add_argument('-o', dest="output", type=str, help="Output file", default="raw.nc")
+    parser.add_argument('--config', '-c', dest="config", type=str, help="YAML config file",
+                        default="first_guess.yml", nargs="?")
+
+    if len(my_args) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args(my_args)
+
+
+if __name__ == "__main__":
+
+    args = parse_args(sys.argv[1:])
+
+    if not os.path.exists(args.config):
+        raise FileNotFoundError("You must provide an existing config file")
+
+    if os.path.exists(args.domain):
+        geo = surfex.geo.get_geo_object(json.load(open(args.domain, "r")))
     else:
-        print("You can not interpolate!")
-        exit(1)
-else:
-    subdomain = None
+        raise FileNotFoundError
 
-first = True
-for var in vars:
-    ua_name = args.ua_gribfile
-    sfx_name = args.sfx
-    convertName = "none"
-    if var == "surface_snow_thickness":
-        convertName = args.sd_converter
-    if var == "altitude":
-        convertName = args.altitude_converter
-    if var == "land_area_fraction":
-        convertName = args.laf_converter
+    validtime = datetime.strptime(args.dtg, "%Y%m%d%H")
+    variables = ["air_temperature_2m", "relative_humidity_2m", "surface_snow_thickness", "altitude",
+                 "land_area_fraction"]
 
-    if var == "land_area_fraction":
-        lons, lats, X, Y, dt, field = \
-            converter(convertName, var, grib_codes, ua_name, sfx_name, args.laf).read_field(subdomain, readTime=False)
-    else:
-        lons, lats, X, Y, dt, field = \
-            converter(convertName, var, grib_codes, ua_name, sfx_name, args.laf).read_field(subdomain)
+    cache = surfex.cache.Cache(True, 3600)
+    fg = None
+    for var in variables:
 
-    # Create file
-    if first:
-        fg = create_template(vars, X.shape[0], Y.shape[0], args.output)
-    if var == "altitude":
-        field[field < 0] = 0
+        inputfile = args.inputfile
+        fileformat = args.inputformat
+        converter = "none"
+        if var == "air_temperature_2m":
+            if args.t2m_file is not None:
+                inputfile = args.t2m_file
+            if args.t2m_format is not None:
+                fileformat = args.t2m_format
+            if args.t2m_converter is not None:
+                converter = args.t2m_converter
+        elif var == "relative_humidity_2m":
+            if args.rh2m_file is not None:
+                inputfile = args.rh2m_file
+            if args.rh2m_format is not None:
+                fileformat = args.rh2m_format
+            if args.rh2m_converter is not None:
+                converter = args.rh2m_converter
+        elif var == "surface_snow_thickness":
+            if args.sd_file is not None:
+                inputfile = args.sd_file
+            if args.sd_format is not None:
+                fileformat = args.sd_format
+            if args.sd_converter is not None:
+                converter = args.sd_converter
+        elif var == "altitude":
+            if args.altitude_file is not None:
+                inputfile = args.altitude_file
+            if args.altitude_format is not None:
+                fileformat = args.altitude_format
+            if args.altitude_converter is not None:
+                converter = args.altitude_converter
+        elif var == "land_area_fraction":
+            if args.laf_file is not None:
+                inputfile = args.laf_file
+            if args.laf_format is not None:
+                fileformat = args.laf_format
+            if args.laf_converter is not None:
+                converter = args.laf_converter
+        else:
+            raise NotImplementedError
 
-    #print(var,field.shape)
-    fg.variables[var][:] = np.transpose(field)
-    if first:
-        epoch=calendar.timegm(dt.timetuple())
-        fg.variables["time"][:] = epoch
-        fg.variables["longitude"][:] = np.transpose(lons)
-        fg.variables["latitude"][:] = np.transpose(lats)
-        fg.variables["x"][:] = X
-        fg.variables["y"][:] = Y
+        if inputfile is None:
+            raise Exception("You must set input file")
 
-    first = False
-fg.close()
+        if fileformat is None:
+            raise Exception("You must set file format")
+
+        config = yaml.load(open(args.config, "r"))
+        defs = config[fileformat]
+        defs.update({"filepattern": inputfile})
+
+        converter_conf = config[var][fileformat]["converter"]
+        if converter not in config[var][fileformat]["converter"]:
+            raise Exception("No converter " + converter + " definition found in " + args.config + "!")
+
+        debug = False
+        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+        field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+        field = np.reshape(field, [geo.nlons, geo.nlats])
+
+        # Create file
+        if fg is None:
+            nx = geo.nlons
+            ny = geo.nlats
+            fg = create_template(variables, nx, ny, args.output)
+            fg.variables["time"][:] = float(validtime.strftime("%s"))
+            fg.variables["longitude"][:] = np.transpose(geo.lons)
+            fg.variables["latitude"][:] = np.transpose(geo.lats)
+            fg.variables["x"][:] = [i for i in range(0, nx)]
+            fg.variables["y"][:] = [i for i in range(0, ny)]
+
+        if var == "altitude":
+            field[field < 0] = 0
+
+        fg.variables[var][:] = np.transpose(field)
+
+    if fg is not None:
+        fg.close()
