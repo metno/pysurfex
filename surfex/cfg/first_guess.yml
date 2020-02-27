@@ -24,6 +24,14 @@ air_temperature_2m:
         type: sfc
         level: 2
         tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 0
+        parameterNumber: 0
+        levelType: sfc
+        level: 2
   netcdf:
     converter:
       none:
@@ -43,6 +51,14 @@ relative_humidity_2m:
         type: sfc
         level: 2
         tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 192
+        levelType: sfc
+        level: 2
   netcdf:
     converter:
       none:
@@ -76,6 +92,21 @@ surface_snow_thickness:
           type: sfc
           level: 800
           tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 60
+        levelType: sfc
+        level: 0
+      sweclim:
+        swe:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 60
+          levelType: sfc
+          level: 0
   netcdf:
     converter:
       none:
@@ -83,7 +114,6 @@ surface_snow_thickness:
       sweclim:
         swe:
           name: liquid_water_content_of_surface_snow
-
   surfex:
     converter:
       none:
@@ -103,6 +133,16 @@ altitude:
           type: sfc
           level: 0
           tri: 0
+  grib2:
+    converter:
+      none:
+      phi2m:
+        phi:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 4
+          levelType: sfc
+          level: 0
   netcdf:
     converter:
       none:
@@ -125,17 +165,23 @@ land_area_fraction:
         level: 0
         tri: 0
       sea2land:
-        parameter: 1
-        type: pt
-        level: 0
-        tri: 0
+        sea:
+          parameter: 1
+          type: pt
+          level: 0
+          tri: 0
+  grib2:
+    converter:
+      none:
+      sea2land:
+        sea:
   netcdf:
     converter:
       none:
         name: land_area_fraction
       sea2land:
         sea:
-          name: sea_area_fraction
+          name: sea_fraction
   surfex:
     converter:
       none:

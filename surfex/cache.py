@@ -84,7 +84,6 @@ class Cache:
         else:
             self.interpolators.update({inttype: {identifier_out: {identifier_in: value}}})
 
-
     def save_field(self, id_str, field):
         self.saved_fields[id_str] = field
     
@@ -94,7 +93,7 @@ class Cache:
             yyyy = int(key[-10:-6])
             mm = int(key[-6:-4])
             dd = int(key[-4:-2])
-            hh = int(key[-2:])
+            hh = int(float(key[-2:]))
             field_time = datetime.datetime(yyyy, mm, dd, hh)
             td = (this_time - field_time).total_seconds()
             if td > self.max_age:
@@ -116,7 +115,17 @@ class Cache:
             typ = gribvar.typ
             level = gribvar.level
             tri = gribvar.tri
-            return "%d%d%d%s%s%s" % (level, tri, par, typ, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+            return ":%d:%d:%d:%s:%s:%s" % (level, tri, par, typ, filename.split("/")[-1],
+                                            validtime.strftime('%Y%m%d%H'))
+        elif gribvar.version == 2:
+            dis = gribvar.discipline
+            pc = gribvar.parameterCategory
+            pn = gribvar.parameterNumber
+            lt = gribvar.levelType
+            lev = gribvar.level
+            tsp = gribvar.typeOfStatisticalProcessing
+            return ":%d:%d:%d:%s:%d:%d:%s:%s" % (dis, pc, pn, lt, lev, tsp, filename.split("/")[-1],
+                                                  validtime.strftime('%Y%m%d%H'))
         else:
             raise NotImplementedError
 

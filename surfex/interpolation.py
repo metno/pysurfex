@@ -118,7 +118,9 @@ class NearestNeighbour(Interpolation):
             subdom = test1[:, 0] * test1[:, 1] * test2[:, 0] * test2[:, 1]
 
             surfex.util.info("Interpolating..." + str(len(interpolated_lons)) + " points")
-            nn = NearestNDInterpolator(points[subdom, :], values_vec[subdom])
+            # nn = NearestNDInterpolator(points[subdom, :], values_vec[subdom])
+
+            nn = NearestNDInterpolator(points[:, :], values_vec[:])
             surfex.util.info("Interpolation finished")
 
             # Set max distance as sanity
@@ -128,6 +130,7 @@ class NearestNeighbour(Interpolation):
             else:
                 raise Exception("You only have one point is your input field!")
 
+            print(interpolated_lons, interpolated_lats)
             ii = nn(interpolated_lons, interpolated_lats)
             i = x[ii]
             j = y[ii]

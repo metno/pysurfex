@@ -24,22 +24,22 @@ if __name__ == "__main__":
 
     obs_titan = None
     if args.titan is not None:
-        obs_titan = surfex.read_ascii_file_with_header(args.titan, offset=100)
+        obs_titan = surfex.obsmon.read_ascii_file_with_header(args.titan, offset=100)
     obs_gridpp = None
     if args.gridpp is not None:
-        obs_gridpp = surfex.read_ascii_file_with_header(args.gridpp, offset=200)
+        obs_gridpp = surfex.obsmon.read_ascii_file_with_header(args.gridpp, offset=200)
 
     varname = args.varname
     DTG = args.DTG
     dbname = args.output
 
-    conn = surfex.open_db(dbname)
-    surfex.create_db(conn, modes, stat_cols)
+    conn = surfex.obsmon.open_db(dbname)
+    surfex.obsmon.create_db(conn, modes, stat_cols)
     if args.titan is not None:
-        surfex.populate_usage_db(conn, DTG, varname, obs_titan)
+        surfex.obsmon.populate_usage_db(conn, DTG, varname, obs_titan)
 
     if args.gridpp is not None:
-        surfex.populate_usage_db(conn, DTG, varname, obs_gridpp)
-        surfex.populate_obsmon_db(conn, DTG, surfex.calculate_statistics(obs_gridpp, modes, stat_cols), modes, stat_cols)
+        surfex.obsmon.populate_usage_db(conn, DTG, varname, obs_gridpp)
+        surfex.obsmon.populate_obsmon_db(conn, DTG, surfex.obsmon.calculate_statistics(obs_gridpp, modes, stat_cols), modes, stat_cols)
 
-    surfex.close_db(conn)
+    surfex.obsmon.close_db(conn)

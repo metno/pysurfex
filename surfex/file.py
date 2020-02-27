@@ -710,9 +710,14 @@ class ForcingFileNetCDF(SurfexFile):
                         indices = []
                         [indices.append(i) for i in range(0, dimlen)]
                         times_for_var = num2date(times_for_var[indices], units=units, calendar=t_cal)
+                        # print(times_for_var)
                         for times_to_read in range(0, len(times)):
+                            # print(times_to_read, times[times_to_read])
                             for t in range(0, len(times_for_var)):
-                                if times_for_var[t] == times[times_to_read]:
+                                # print(t, times_for_var[t], times[times_to_read])
+                                test_time = times_for_var[t].strftime("%Y%m%d%H")
+                                test_time = datetime.strptime(test_time, "%Y%m%d%H")
+                                if test_time == times[times_to_read]:
                                     times_read.append(t)
                                     print(t, times[times_to_read])
                     else:
@@ -724,6 +729,7 @@ class ForcingFileNetCDF(SurfexFile):
                     raise Exception("No points found")
 
                 if len(times_read) == 0 and len(times) > 0:
+                    print(times)
                     raise Exception("Valid time not found in file!")
 
                 field = self.fh.variables[var][times_read, 0: npoints]
@@ -812,6 +818,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     day = basetime.strftime('%d')
     hour = basetime.strftime('%H')
     dt = validtime-basetime
+    l = "%d" % (dt.seconds / 3600)
     ll = "%02d" % (dt.seconds / 3600)
     lll = "%03d" % (dt.seconds / 3600)
     llll = "%04d" % (dt.seconds / 3600)
@@ -820,6 +827,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace('@MM@', month)
     file_name = file_name.replace('@DD@', day)
     file_name = file_name.replace('@HH@', hour)
+    file_name = file_name.replace('@L@', l)
     file_name = file_name.replace('@LL@', ll)
     file_name = file_name.replace('@LLL@', lll)
     file_name = file_name.replace('@LLLL@', llll)

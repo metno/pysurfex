@@ -13,6 +13,21 @@ grib1:
   fcint: 10800
   interpolator: nearest
 
+# General grib2 settings
+grib2:
+  filepattern: not_defined
+  offset: 0
+  file_inc: 3600
+  fcint: 10800
+  interpolator: nearest
+
+surfex:
+  filepattern: not_defined
+  offset: 0
+  file_inc: 3600
+  fcint: 10800
+  interpolator: nearest
+
 # Orography
 ZS:
   netcdf:
@@ -35,6 +50,18 @@ ZS:
           type: sfc
           level: 0
           tri: 0
+  grib2:
+    converter:
+      none:
+
+      phi2m:
+        phi:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 4
+          levelType: sfc
+          level: 0
+
 
 # Reference height Z
 ZREF:
@@ -55,6 +82,15 @@ ZREF:
           type: sfc
           level: 0
           tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: ml
+          level: 65
+
 # Reference height U
 UREF:
   screen:
@@ -74,6 +110,14 @@ UREF:
           type: sfc
           level: 0
           tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: ml
+          level: 65
 
 # Temperature
 TA:
@@ -89,6 +133,14 @@ TA:
           type: sfc
           level: 2
           tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: sfc
+          level: 2
   ml:
     netcdf:
       converter:
@@ -102,6 +154,14 @@ TA:
           type: ml
           level: 65
           tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: ml
+          level: 65
 
 # Specific humidity
 QA:
@@ -145,6 +205,33 @@ QA:
             type: sfc
             level: 0
             tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 0
+          levelType: sfc
+          level: 0
+        rh2q:
+          rh:
+            discipline: 0
+            parameterCategory: 1
+            parameterNumber: 192
+            levelType: sfc
+            level: 2
+          t:
+            discipline: 0
+            parameterCategory: 0
+            parameterNumber: 0
+            levelType: sfc
+            level: 2
+          p:
+            discipline: 0
+            parameterCategory: 3
+            parameterNumber: 0
+            levelType: sfc
+            level: 0
   ml:
     netcdf:
       converter:
@@ -183,9 +270,36 @@ QA:
             tri: 0
           p:
             parameter: 1
-            type: ml
-            level: 65
+            type: sfc
+            level: 0
             tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 0
+          levelType: ml
+          level: 65
+        rh2q:
+          rh:
+            discipline: 0
+            parameterCategory: 1
+            parameterNumber: 192
+            levelType: ml
+            level: 65
+          t:
+            discipline: 0
+            parameterCategory: 0
+            parameterNumber: 0
+            levelType: ml
+            level: 65
+          p:
+            discipline: 0
+            parameterCategory: 3
+            parameterNumber: 0
+            levelType: sfc
+            level: 0
 
 # Wind speed
 WIND:
@@ -217,6 +331,28 @@ WIND:
             type: sfc
             level: 10
             tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: sfc
+          level: 10
+        windspeed:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: sfc
+            level: 10
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: sfc
+            level: 10
+
   ml:
     netcdf:
       converter:
@@ -248,6 +384,27 @@ WIND:
             type: ml
             level: 65
             tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: ml
+          level: 65
+        windspeed:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: ml
+            level: 65
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: ml
+            level: 65
 
 # Wind direction
 WIND_DIR:
@@ -283,6 +440,29 @@ WIND_DIR:
             level: 10
             tri: 0
             rotate_to_geographic: True
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: sfc
+          level: 10
+        winddir:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: sfc
+            level: 10
+            rotate_to_geographic: True
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: sfc
+            level: 10
+            rotate_to_geographic: True
   ml:
     netcdf:
       converter:
@@ -317,6 +497,29 @@ WIND_DIR:
             type: ml
             level: 65
             tri: 0
+            rotate_to_geographic: True
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 0
+          levelType: ml
+          level: 65
+        winddir:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: ml
+            level: 65
+            rotate_to_geographic: True
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: ml
+            level: 65
             rotate_to_geographic: True
 
 # Rainfall rate
@@ -356,7 +559,33 @@ RAIN:
           level: 0
           tri: 4
           instant: 3600.
-
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 65
+        levelType: sfc
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
+      totalprec:
+        totalprec:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 8
+          levelType: sfc
+          level: 0
+          instant: 3600.
+          typeOfStatisticalProcessing: 1
+        snow:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 200
+          levelType: sfc
+          level: 0
+          instant: 3600.
+          typeOfStatisticalProcessing: 1
 
 # Snow fall amount rate
 SNOW:
@@ -389,6 +618,16 @@ SNOW:
         level: 0
         tri: 4
         instant: 3600.
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 200
+        levelType: sfc
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
 
 # Surface air pressure
 PS:
@@ -403,6 +642,14 @@ PS:
         type: sfc
         level: 0
         tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 3
+        parameterNumber: 0
+        levelType: sfc
+        level: 0
 
 # Direct shortwave radiation
 DIR_SW:
@@ -419,6 +666,16 @@ DIR_SW:
         type: sfc
         level: 0
         tri: 4
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 4
+        parameterNumber: 3
+        levelType: sfc
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
 
 # Direct scattered radiation
 SCA_SW:
@@ -435,6 +692,9 @@ SCA_SW:
         type: sfc
         level: 0
         tri: 0
+  grib2:
+    converter:
+      none:
 
 # Long wave radiation
 LW:
@@ -451,6 +711,16 @@ LW:
         type: sfc
         level: 0
         tri: 4
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 5
+        parameterNumber: 4
+        levelType: sfc
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
 
 # Carbon dioxide
 CO2:
@@ -465,5 +735,9 @@ CO2:
         type: sfc
         level: 0
         tri: 0
+  grib2:
+    converter:
+      none:
+
   constant:
     value: 0.00062

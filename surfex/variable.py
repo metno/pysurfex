@@ -33,7 +33,7 @@ class Variable(object):
             print("Constructed " + self.__class__.__name__ + " for " + str(self.var_dict))
 
     @abc.abstractmethod
-    def read_variable(self, geo, validtime, cache):
+    def read_variable(self, geo, validtime, cache, geo_in=None):
         raise NotImplementedError('users must define read_variable to use this base class')
 
     @abc.abstractmethod
@@ -150,7 +150,7 @@ class NetcdfVariable(Variable):
 
         Variable.__init__(self, basetime, validtime, var_dict, debug)
 
-    def read_variable(self, geo, validtime, cache):
+    def read_variable(self, geo, validtime, cache, geo_in=None):
 
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
@@ -251,13 +251,22 @@ class GribVariable(Variable):
             print(var_dict)
             for i in range(0, len(mandatory)):
                 if mandatory[i] not in var_dict:
-                    error("Grib variable must have attribute \"" + mandatory[i] + "\". var_dict=" + str(var_dict))
+                    error("Grib1 variable must have attribute \"" + mandatory[i] + "\". var_dict=" + str(var_dict))
+            Variable.__init__(self, basetime, validtime, var_dict, debug)
+            self.grib_type = grib_type
+        elif grib_type == "grib2":
+            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level", "fcint",
+                         "offset", "file_inc", "filepattern"]
+            print(var_dict)
+            for i in range(0, len(mandatory)):
+                if mandatory[i] not in var_dict:
+                    error("Grib2 variable must have attribute \"" + mandatory[i] + "\". var_dict=" + str(var_dict))
             Variable.__init__(self, basetime, validtime, var_dict, debug)
             self.grib_type = grib_type
         else:
             raise NotImplementedError
 
-    def read_variable(self, geo, validtime, cache):
+    def read_variable(self, geo, validtime, cache, geo_in=None):
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
@@ -281,7 +290,15 @@ class GribVariable(Variable):
                 tri = self.var_dict["tri"]
                 gribvar = surfex.grib.Grib1Variable(par, typ, level, tri)
             elif self.grib_type == "grib2":
-                raise NotImplementedError
+                discipline = self.var_dict["discipline"]
+                pc = self.var_dict["parameterCategory"]
+                pn = self.var_dict["parameterNumber"]
+                lt = self.var_dict["levelType"]
+                lev = self.var_dict["level"]
+                tsp = -1
+                if "typeOfStatisticalProcessing" in self.var_dict:
+                    tsp = self.var_dict["typeOfStatisticalProcessing"]
+                gribvar = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp)
             else:
                 raise NotImplementedError
 
@@ -291,7 +308,7 @@ class GribVariable(Variable):
 
             # Re-read field
             previous_field = None
-            if tri == 4:
+            if gribvar.is_accumulated():
                 print(self.basetime, self.initialtime, self.previoustime)
                 can_read = True
                 if self.basetime <= self.initialtime:
@@ -332,7 +349,7 @@ class GribVariable(Variable):
                 cache.save_field(id_str, field)
 
             # Deaccumulate
-            if tri == 4:
+            if gribvar.is_accumulated():
                 instant = [(validtime - self.previoustime).total_seconds()]
                 if "instant" in self.var_dict:
                     instant = [self.var_dict["instant"]]
@@ -358,25 +375,26 @@ class SurfexVariable(Variable):
 
         Variable.__init__(self, basetime, validtime, var_dict, debug)
 
-    def read_variable(self, geo, validtime, cache):
+    def read_variable(self, geo, validtime, cache, geo_in=None):
 
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
 
             # print "Updating filehandler for "+self.print_variable_info()
-            if cache.file_open(self.filename):
+            if cache is not None and cache.file_open(self.filename):
                 self.file_handler = cache.get_file_handler(self.filename)
             else:
                 fileformat = None
-                if "fileformat" in  self.var_dict:
+                if "fileformat" in self.var_dict:
                     fileformat = self.var_dict["fileformat"]
                 filetype = None
                 if "filetype" in self.var_dict:
                     filetype = self.var_dict["filetype"]
                 self.file_handler = surfex.file.get_surfex_io_object(self.filename, fileformat=fileformat,
-                                                                     filetype=filetype, geo=geo)
-                cache.set_file_handler(self.filename, self.file_handler)
+                                                                     filetype=filetype, geo=geo_in)
+                if cache is not None:
+                    cache.set_file_handler(self.filename, self.file_handler)
 
         if self.file_handler is None:
             warning("No file handler exist for this time step")
@@ -421,7 +439,8 @@ class SurfexVariable(Variable):
                     print(self.basetime, self.initialtime, self.previoustime)
                     previous_field = np.zeros([geo.npoints])
                 else:
-                    id_str = cache.generate_surfex_id(varname, patches, layers, self.previousfilename, self.previoustime)
+                    id_str = cache.generate_surfex_id(varname, patches, layers, self.previousfilename,
+                                                      self.previoustime)
                     if cache.is_saved(id_str):
                         previous_field = cache.saved_fields[id_str]
                     else:
@@ -429,7 +448,7 @@ class SurfexVariable(Variable):
                         if self.debug:
                             print("Re-read ", self.previoustime, " from ", self.previousfilename)
                         self.file_handler.fname = self.previousfilename
-                        previous_field, intp = self.file_handler.points(var, validime=self.previoustime,
+                        previous_field, intp = self.file_handler.points(var, geo, validime=self.previoustime,
                                                                         interpolation=int_type, cache=cache)
 
                         # Change filename back in handler. Ready to read this time step
@@ -437,16 +456,19 @@ class SurfexVariable(Variable):
                         cache.save_field(id_str, previous_field)
 
             # Read field
-            id_str = cache.generate_surfex_id(varname, patches, layers, self.filename, self.validtime)
-            if cache.is_saved(id_str):
+            id_str = None
+            if cache is not None:
+                id_str = cache.generate_surfex_id(varname, patches, layers, self.filename, self.validtime)
+            if cache is not None and cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
                 print(validtime)
-                field, interpolator = self.file_handler.points(var, validtime=validtime, interpolation=int_type,
+                field, interpolator = self.file_handler.points(var, geo, validtime=validtime, interpolation=int_type,
                                                                cache=cache)
                 # Rotate wind to geographic if requested
                 field = self.rotate_geographic_wind(field, interpolator)
-                cache.save_field(id_str, field)
+                if cache is not None:
+                    cache.save_field(id_str, field)
 
             # Deaccumulate
             if accumulated:

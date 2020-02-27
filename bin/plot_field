@@ -57,6 +57,8 @@ if __name__ == "__main__":
     domain_json = json.load(open(domain, "r"))
     geo = surfex.geo.get_geo_object(domain_json)
 
+    geo_out = None
+    field = None
     if filetype == "grib1":
         gribvar = surfex.grib.Grib1Variable(6, "sfc", 0, 0)
         # field, geo_in_file = surfex.grib.Grib(filename).field(gribvar, validtime)
@@ -102,21 +104,39 @@ datatype=None,
 interval=None
         '''
 
-        # geo_out = geo
-        # field = surfex.file.read_surfex_field(variable, filename, validtime=validtime, geo=geo, filetype=inputtype)
-        geo_out = json.load(open("examples/settings/svalbard_test.json", "r"))
-        geo_out = surfex.get_geo_object(geo_out)
-        field = surfex.file.read_surfex_points(variable, filename, geo_out, validtime=validtime, geo=geo,
-                                               filetype=inputtype, interpolation="nearest")
-        field = np.reshape(field, [geo_out.nlons, geo_out.nlats])
+        geo_out = geo
+        field = surfex.file.read_surfex_field(variable, filename, validtime=validtime, geo=geo, filetype=inputtype)
+        # geo_out = json.load(open("examples/settings/svalbard_test.json", "r"))
+        # geo_out = surfex.get_geo_object(geo_out)
+        # field = surfex.file.read_surfex_points(variable, filename, geo_out, validtime=validtime, geo=geo,
+        #                                       filetype=inputtype, interpolation="nearest")
+        # field = np.reshape(field, [geo_out.nlons, geo_out.nlats])
 
-        plt.contourf(geo_out.lons, geo_out.lats, field)
-        plt.title("surfex:" + variable + " " + validtime.strftime("%Y%m%d%H"))
-        plt.colorbar()
-        if output is None:
-            plt.show()
-        else:
-            print("Saving figure in " + output)
-            plt.savefig(output)
+        # plt.contourf(geo_out.lons, geo_out.lats, field)
+        # plt.title("surfex:" + variable + " " + validtime.strftime("%Y%m%d%H"))
+        # plt.colorbar()
+        # if output is None:
+        #    plt.show()
+        # else:
+        #    print("Saving figure in " + output)
+        #    plt.savefig(output)
     else:
         raise NotImplementedError
+
+    if geo_out is None:
+        raise Exception("No geometry to plot")
+
+    if field is None:
+        raise Exception("No field read")
+
+    if geo_out.npoints != geo_out.nlons and geo_out.npoints != geo_out.nlats:
+        field = np.reshape(field, [geo_out.nlons, geo_out.nlats])
+
+    plt.contourf(geo_out.lons, geo_out.lats, field)
+    plt.title(filetype + ": " + variable + " " + validtime.strftime("%Y%m%d%H"))
+    plt.colorbar()
+    if output is None:
+        plt.show()
+    else:
+        print("Saving figure in " + output)
+        plt.savefig(output)

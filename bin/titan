@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from surfex import obs
+import surfex
 import numpy as np
 import json
 
@@ -75,6 +75,27 @@ if __name__ == "__main__":
                         "eps2": 0.5
                     }
                 }
+            },
+            "set4": {
+                "filepattern": "not_used",
+                "filenames": ["/lustre/storeA/project/metproduction/products/netatmo/2020/02/26/20200226T053501Z.json",
+                              "/lustre/storeA/project/metproduction/products/netatmo/2020/02/26/20200226T054501Z.json"
+                              ],
+                "filetype": "netatmo",
+                'tests': {
+                    'plausibility': {
+                        'do_test': True,
+                        'max': 278,
+                        'min': 272
+                    },
+                    'sct': {
+                        'do_test': True,
+                        'passive': False,
+                        "t2pos": 4.0,
+                        "t2neg": 4.0,
+                        "eps2": 0.5
+                    }
+                }
             }
         },
         'sd': {
@@ -83,9 +104,10 @@ if __name__ == "__main__":
     }
 
     test_flags = {"plausibility": 99, "firstguess": 4, "sct": 25, "climatology": 55, "buddy": 66}
-    tests = ["climatology"]
+    tests = ["plausibility", "climatology", "climatology",  "firstguess", "sct"]
     #tests = ["plausibility", "climatology", "buddy", "firstguess", "sct"],
+    tests = ["sct"]
     obs_time = datetime.strptime("2020021600", "%Y%m%d%H")
-    data_set = obs.DataSet("t2m", settings["t2m"], tests, test_flags, obs_time)
+    data_set = surfex.TitanDataSet("t2m", settings["t2m"], tests, test_flags, obs_time, debug=True)
     data_set.perform_tests()
     data_set.write_output("/tmp/obs.txt")
