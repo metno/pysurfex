@@ -482,3 +482,101 @@ class SurfexVariable(Variable):
 
     def print_variable_info(self):
         print(":" + str(self.var_dict) + ":")
+
+
+class FaVariable(Variable):
+
+    """
+    FA variable
+    """
+
+    def __init__(self, var_dict, basetime, validtime, debug):
+
+        mandatory = ["name", "fcint", "offset", "file_inc", "filepattern"]
+        for i in range(0, len(mandatory)):
+            if mandatory[i] not in var_dict:
+                raise Exception("NetCDF variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
+
+        Variable.__init__(self, basetime, validtime, var_dict, debug)
+
+    def read_variable(self, geo, validtime, cache, geo_in=None):
+
+        self.validtime = validtime
+        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
+                              int(self.var_dict["file_inc"])):
+            # print "Updating filehandler for "+self.print_variable_info()
+            if cache.file_open(self.filename):
+                self.file_handler = cache.get_file_handler(self.filename)
+            else:
+                self.file_handler = surfex.fa.Fa(self.filename)
+                cache.set_file_handler(self.filename, self.file_handler)
+
+        if self.file_handler is None:
+            surfex.util.warning("No file handler exist for this time step")
+            field = np.array([len(geo.lons)])
+            field = field.fill(np.nan)
+        else:
+            var_name = self.var_dict["name"]
+            accumulated = False
+            if "accumulated" in self.var_dict:
+                accumulated = self.var_dict["accumulated"]
+            int_type = "nearest"
+            if "interpolator" in self.var_dict:
+                int_type = self.var_dict["interpolator"]
+
+            # Re-read field
+            previous_field = None
+            if accumulated:
+                print(self.basetime, self.initialtime, self.previoustime)
+                can_read = True
+                if self.basetime <= self.initialtime:
+                    if self.previoustime < self.basetime:
+                        can_read = False
+
+                if not can_read:
+                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
+                    print(self.basetime, self.initialtime, self.previoustime)
+                    previous_field = np.zeros([geo.npoints])
+                else:
+                    # Re-read field
+                    id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
+                    if cache.is_saved(id_str):
+                        print("Updating cached value ", id_str)
+                        previous_field = cache.saved_fields[id_str]
+                    else:
+                        # Modify filename in handler
+                        fname = self.filename
+                        if self.debug:
+                            print("Re-read ", self.previoustime, " from ", self.previousfilename)
+                        self.file_handler.fname = self.previousfilename
+                        previous_field, intp = self.file_handler.points(var_name,  geo,
+                                                                        validtime=self.previoustime,
+                                                                        interpolation=int_type, cache=cache)
+                        cache.save_field(id_str, previous_field)
+                        # Change filename back in handler. Ready to read this time step
+                        self.file_handler.fname = fname
+
+            id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+            field, interpolator = self.file_handler.points(var_name, geo, validtime=validtime,
+                                                           interpolation=int_type, cache=cache)
+            # Rotate wind to geographic if requested
+            field = self.rotate_geographic_wind(field, interpolator)
+            cache.save_field(id_str, field)
+
+            if accumulated:
+                print("accumulated variable ", self.var_dict)
+                print("field", field)
+                print("prevous", previous_field)
+                print("deccumulated", self.deaccumulate(field, previous_field, 0))
+            if accumulated:
+                instant = [(validtime - self.previoustime).total_seconds()]
+                if "instant" in self.var_dict:
+                    instant = [self.var_dict["instant"]]
+                field = self.deaccumulate(field, previous_field, float(instant[0]))
+                print("instant", field)
+
+        self.previoustime = validtime
+        return field
+
+    def print_variable_info(self):
+        print(":" + str(self.var_dict) + ":")

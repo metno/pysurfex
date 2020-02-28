@@ -28,6 +28,13 @@ surfex:
   fcint: 10800
   interpolator: nearest
 
+fa:
+  filepattern: not_defined
+  offset: 0
+  file_inc: 3600
+  fcint: 10800
+  interpolator: nearest
+
 # Orography
 ZS:
   netcdf:
@@ -53,7 +60,6 @@ ZS:
   grib2:
     converter:
       none:
-
       phi2m:
         phi:
           discipline: 0
@@ -61,7 +67,10 @@ ZS:
           parameterNumber: 4
           levelType: sfc
           level: 0
-
+  fa:
+    converter:
+      phi2m:
+        name: SURFGEOPOTENTIEL
 
 # Reference height Z
 ZREF:
@@ -90,6 +99,9 @@ ZREF:
           parameterNumber: 0
           levelType: ml
           level: 65
+    fa:
+      converter:
+        none:
 
 # Reference height U
 UREF:
@@ -118,6 +130,9 @@ UREF:
           parameterNumber: 0
           levelType: ml
           level: 65
+    fa:
+      converter:
+        none:
 
 # Temperature
 TA:
@@ -141,6 +156,10 @@ TA:
           parameterNumber: 0
           levelType: sfc
           level: 2
+    fa:
+      converter:
+        none:
+          name: CLSTEMPERATURE
   ml:
     netcdf:
       converter:
@@ -162,6 +181,10 @@ TA:
           parameterNumber: 0
           levelType: ml
           level: 65
+    fa:
+      converter:
+        none:
+          name: S065TEMPERATURE
 
 # Specific humidity
 QA:
@@ -232,6 +255,17 @@ QA:
             parameterNumber: 0
             levelType: sfc
             level: 0
+    fa:
+      converter:
+        none:
+          name: CLSHUMI.SPECIFI
+        rh2q:
+          rh:
+            name: CLSHUMI_RELATIV
+          t:
+            name: CLSTEMPERATURE
+          p:
+            name: SURFPRESSION
   ml:
     netcdf:
       converter:
@@ -300,6 +334,17 @@ QA:
             parameterNumber: 0
             levelType: sfc
             level: 0
+    fa:
+      converter:
+        none:
+          name: S065HUMI.SPECIFI
+        rh2q:
+          rh:
+            name: S065HUMI_RELATIV
+          t:
+            name: S065TEMPERATURE
+          p:
+            name: SURFPRESSION
 
 # Wind speed
 WIND:
@@ -352,7 +397,15 @@ WIND:
             parameterNumber: 3
             levelType: sfc
             level: 10
-
+    fa:
+      converter:
+        none:
+          name: CLSWIND.VELOCITY
+        windspeed:
+          x:
+            name: CLSVENT.ZONAL
+          y:
+            name: CLSVENT.MERIDIEN
   ml:
     netcdf:
       converter:
@@ -405,6 +458,15 @@ WIND:
             parameterNumber: 3
             levelType: ml
             level: 65
+    fa:
+      converter:
+        none:
+          name: S065WIND.VELOCITY
+        windspeed:
+          x:
+            name: S065VENT.ZONAL
+          y:
+            name: S065VENT.MERIDIEN
 
 # Wind direction
 WIND_DIR:
@@ -463,6 +525,17 @@ WIND_DIR:
             levelType: sfc
             level: 10
             rotate_to_geographic: True
+    fa:
+      converter:
+        none:
+          name:
+        windspeed:
+          x:
+            name: CLSVENT.ZONAL
+            rotate_to_geographic: True
+          y:
+            name: CLSVENT.MERIDIEN
+            rotate_to_geographic: True
   ml:
     netcdf:
       converter:
@@ -520,6 +593,17 @@ WIND_DIR:
             parameterNumber: 3
             levelType: ml
             level: 65
+            rotate_to_geographic: True
+    fa:
+      converter:
+        none:
+          name:
+        windspeed:
+          x:
+            name: S065VENT.ZONAL
+            rotate_to_geographic: True
+          y:
+            name: S065VENT.MERIDIEN
             rotate_to_geographic: True
 
 # Rainfall rate
@@ -586,6 +670,12 @@ RAIN:
           level: 0
           instant: 3600.
           typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      none:
+        intant: 3600
+        accumulated: False
+        name: SURFACCPLUIE
 
 # Snow fall amount rate
 SNOW:
@@ -628,6 +718,12 @@ SNOW:
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      none:
+        intant: 3600
+        accumulated: False
+        name: SURFACCNEIGE
 
 # Surface air pressure
 PS:
@@ -650,6 +746,10 @@ PS:
         parameterNumber: 0
         levelType: sfc
         level: 0
+  fa:
+    converter:
+      none:
+        name: SURFPRESSION
 
 # Direct shortwave radiation
 DIR_SW:
@@ -676,6 +776,9 @@ DIR_SW:
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      name: "SURFRAYT SOLA DE"
 
 # Direct scattered radiation
 SCA_SW:
@@ -721,6 +824,9 @@ LW:
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      name: "SURFRAYT THER DE"
 
 # Carbon dioxide
 CO2:

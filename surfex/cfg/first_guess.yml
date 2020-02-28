@@ -15,6 +15,10 @@ surfex:
   fcint: 3
   file_inc: 1
   offset: 0
+fa:
+  fcint: 3
+  file_inc: 1
+  offset: 0
 
 air_temperature_2m:
   grib1:
@@ -41,6 +45,10 @@ air_temperature_2m:
       none:
         varname: Tair
         interpolator: none
+  fa:
+    converter:
+      none:
+        name:  name: CLSTEMPERATURE
 
 
 relative_humidity_2m:
@@ -67,6 +75,10 @@ relative_humidity_2m:
       converter:
         none:
           varname: HU2M
+  fa:
+    converter:
+      none:
+        name: CLSHUMI.RELATIV
 
 surface_snow_thickness:
   grib1:
@@ -118,6 +130,10 @@ surface_snow_thickness:
     converter:
       none:
         varname: DSN_T_ISBA
+  fa:
+    converter:
+      none:
+        name: DSN_T_ISBA
 
 altitude:
   grib1:
@@ -155,6 +171,10 @@ altitude:
       none:
         varname: ZS
         interpolator: none
+  fa:
+    converter:
+      phi2m:
+        name: SURFGEOPOTENTIEL
 
 land_area_fraction:
   grib1:
@@ -186,3 +206,7 @@ land_area_fraction:
     converter:
       none:
         varname: FRAC_LAND
+  fa:
+    converter:
+      none:
+        name: SURFIND.TERREMER
