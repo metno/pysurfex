@@ -12,7 +12,7 @@ pyproj
 pyproj
 scipy
 f90nml
-cf-units
+cfunits
 enum34
 requests
 python-dateutil
