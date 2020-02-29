@@ -1,11 +1,13 @@
 import numpy as np
 import surfex
 from pyproj import Proj
-HAS_ECCODES = True
 try:
     import eccodes
     import gribapi
+    HAS_ECCODES = True
 except ImportError:
+    HAS_ECCODES = False
+except RuntimeError("Could not load the ecCodes library!"):
     HAS_ECCODES = False
 
 

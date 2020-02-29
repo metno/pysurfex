@@ -3,10 +3,12 @@ from math import exp
 import sys
 import surfex
 import numpy as np
-HAS_ECCODES = True
 try:
     from eccodes import codes_set, codes_bufr_new_from_file, CodesInternalError, codes_release, codes_get, \
         CODES_MISSING_DOUBLE, CODES_MISSING_LONG
+    HAS_ECCODES = True
+except ImportError:
+    HAS_ECCODES = False
 except RuntimeError:
     HAS_ECCODES = False
     print("ECCODES not found. Needed for bufr and grib1/2 reading")
