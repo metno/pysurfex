@@ -15,11 +15,12 @@ class Geo(object):
         self.nlats = nlats
         self.lonlist = np.array(lons).flatten()
         self.latlist = np.array(lats).flatten()
-        if self.npoints != self.nlons and self.npoints != self.nlats:
-            # Make 2D array
-            can_interpolate = True
-            self.lons = np.reshape(self.lonlist, [self.nlons, self.nlats])
-            self.lats = np.reshape(self.latlist, [self.nlons, self.nlats])
+        if lons.shape[0] > 0 and lats.shape[0] > 0:
+            if self.npoints != self.nlons and self.npoints != self.nlats:
+                # Make 2D array
+                can_interpolate = True
+                self.lons = np.reshape(self.lonlist, [self.nlons, self.nlats])
+                self.lats = np.reshape(self.latlist, [self.nlons, self.nlats])
         self.can_interpolate = can_interpolate
 
     def identifier(self):
@@ -50,6 +51,7 @@ class Geo(object):
 class SurfexGeo(ABC, Geo):
     def __init__(self, proj, npoints, nlons, nlats, lons, lats):
         self.mask = None
+        self.proj = proj
         Geo.__init__(self, npoints, nlons, nlats, lons, lats, proj=proj)
 
     @abstractmethod
@@ -74,11 +76,9 @@ class ConfProj(SurfexGeo):
                 self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
                 self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
             else:
-                print("Missing keys1")
-                raise KeyError
+                raise KeyError("Missing keys1")
         else:
-            print("Missing key2")
-            raise KeyError
+            raise KeyError("Missing key2")
 
         if "nam_conf_proj" in domain_dict:
             if "xlon0" and "xlat0" in domain_dict["nam_conf_proj"]:
@@ -143,7 +143,8 @@ class LonLatVal(SurfexGeo):
                 self.xdy = domain_dict["nam_lonlatval"]["xdy"]
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = Proj(proj4)
-                SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), self.xx, self.xy)
+                SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), np.asarray(self.xx),
+                                   np.asarray(self.xy))
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -182,7 +183,8 @@ class Cartesian(SurfexGeo):
                 self.xdy = domain_dict["nam_cartesian"]["xdy"]
                 proj = None
                 # proj, npoints, nlons, nlats, lons, lats
-                SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, [], [])
+                SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, np.asarray([]),
+                                   np.asarray([]))
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -240,11 +242,13 @@ class LonLatReg(SurfexGeo):
         dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
         dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
         print(dlon, dlat)
-        for i in range(0, self.nlon):
-            lons.append(self.xlonmin + i * dlon)
-            lats.append(self.xlatmin + i * dlat)
+        for j in range(0, self.nlat):
+            for i in range(0, self.nlon):
+                lons.append(self.xlonmin + i * dlon)
+                lats.append(self.xlatmin + j * dlat)
+
         # proj, npoints, nlons, nlats, lons, lats
-        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, len(lons), len(lats), lons, lats)
+        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat, np.asarray(lons), np.asarray(lats))
 
     def update_namelist(self, nml):
         nml.update({
@@ -315,7 +319,7 @@ class IGN(SurfexGeo):
             lons.append(lon)
             lats.append(lat)
 
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, lons, lats)
+        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats))
         self.can_interpolate = False
 
     @staticmethod

@@ -43,13 +43,11 @@ air_temperature_2m:
   surfex:
     converter:
       none:
-        varname: Tair
-        interpolator: none
+        varname: T2M_ISBA
   fa:
     converter:
       none:
-        name:  name: CLSTEMPERATURE
-
+        name: CLSTEMPERATURE
 
 relative_humidity_2m:
   grib1:
@@ -71,10 +69,10 @@ relative_humidity_2m:
     converter:
       none:
         name: relative_humidity_2m
-    surfex:
-      converter:
-        none:
-          varname: HU2M
+  surfex:
+    converter:
+      none:
+        varname: HU2M_ISBA
   fa:
     converter:
       none:
@@ -129,7 +127,8 @@ surface_snow_thickness:
   surfex:
     converter:
       none:
-        varname: DSN_T_ISBA
+        #varname: DSN_T_ISBA
+        varname: T2M_ISBA
   fa:
     converter:
       none:
@@ -170,7 +169,6 @@ altitude:
     converter:
       none:
         varname: ZS
-        interpolator: none
   fa:
     converter:
       phi2m:
@@ -206,6 +204,10 @@ land_area_fraction:
     converter:
       none:
         varname: FRAC_LAND
+      sea2land:
+        sea:
+          varname: FRAC_SEA
+
   fa:
     converter:
       none:

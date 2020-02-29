@@ -91,6 +91,7 @@ class Grib(object):
                         dx = geo["DxInMetres"]
                         dy = geo["DyInMetres"]
 
+                        # TODO Check time consistency
                         print("Hopefullly valid for time ", time)
 
                         earth = 6.37122e+6

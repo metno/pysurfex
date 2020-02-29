@@ -19,3 +19,4 @@ from .interpolation import NearestNeighbour, NoInterpolation, Linear
 from .titan import TitanDataSet
 from .timeseries import TimeSeries
 from .obsmon import *
+from .fa import Fa

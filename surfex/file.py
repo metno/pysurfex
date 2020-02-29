@@ -3,9 +3,10 @@ import surfex
 import shutil
 import numpy as np
 from datetime import timedelta, datetime
-from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, num2date, chartostring
 import re
 import abc
+import pyproj
 
 
 class SurfexIO(object):
@@ -25,7 +26,7 @@ class SurfexIO(object):
     def symlink_input(self):
         if self.input_file is not None:
             f_out = os.getcwd() + "/" + self.filename
-            surfex.remove_existing_file(self.input_file, f_out)
+            surfex.read.remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
                 print("Symlink " + self.input_file + " -> " + f_out)
                 os.symlink(self.input_file, f_out)
@@ -33,7 +34,7 @@ class SurfexIO(object):
     def copy_input(self):
         if self.input_file is not None:
             f_out = os.getcwd() + "/" + self.filename
-            surfex.remove_existing_file(self.input_file, f_out)
+            surfex.read.remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
                 print("Copy " + self.input_file + " -> " + f_out)
                 shutil.copy2(self.input_file, f_out)
@@ -136,22 +137,21 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None):
         fileformat, filetype = guess_file_format(fname, filetype)
 
     if fileformat.lower() == "ascii":
-        if filetype == "surf":
+        if filetype.lower() == "surf":
             obj = AsciiSurfexFile(fname)
-        elif filetype == "forcing":
+        elif filetype.lower() == "forcing":
             raise NotImplementedError("Not implemented yet")
         else:
             raise NotImplementedError
 
     elif fileformat.lower() == "netcdf":
-        if filetype == "surf":
-            # obj = NCSurfexFile(fname)
-            raise NotImplementedError("Not implemented yet")
+        if filetype.lower() == "surf":
+            obj = NCSurfexFile(fname)
         elif filetype == "ts":
             if geo is None:
                 raise Exception("Format NetCDF needs a geometry")
             obj = NetCDFSurfexFile(geo, fname)
-        elif filetype == "forcing":
+        elif filetype.lower() == "forcing":
             if geo is None:
                 raise Exception("Format NetCDF needs a geometry for reading forcing files")
             obj = ForcingFileNetCDF(fname, geo)
@@ -177,6 +177,9 @@ def guess_file_format(fname, ftype=None):
         for needle in range(0, len(needles)):
             if re.search(needles[needle], fn):
                 ftype = "surf"
+
+        if ext.endswith("nc"):
+            ftype = "surf"
         needles = [".*PROGNOSTIC.*", ".*DIAGNOSTICS.*", "SURF_ATM.*"]
         for needle in range(0, len(needles)):
             if re.search(needles[needle], fn):
@@ -201,6 +204,10 @@ def guess_file_format(fname, ftype=None):
         fileformat = "texte"
     if ext.endswith("nc"):
         fileformat = "netcdf"
+    if ext.endswith("fa"):
+        fileformat = "fa"
+    if ext.endswith("sfx"):
+        fileformat = "fa"
 
     if ftype is None or fileformat is None:
         raise Exception("Filetype and/or format not set: " + str(ftype) + " & " + str(fileformat))
@@ -231,7 +238,7 @@ class SurfexFile(object):
         raise NotImplementedError("This method is not implemented for this class!")
 
     @abc.abstractmethod
-    def points(self, var, geo_out, validtime=None, interpolation=None):
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
         raise NotImplementedError("This method is not implemented for this class!")
 
     def interpolate_field(self, field, geo_in, geo_out, interpolation="nearest", cache=None):
@@ -286,7 +293,6 @@ class AsciiSurfexFile(SurfexFile):
             geo = surfex.geo.LonLatVal(domain)
 
         elif grid[0] == "LONLAT REG":
-
             domain = {
                 "nam_lonlatval_reg": {
                     "lonmin": self.read("LONMIN", "&FULL", "float")[0],
@@ -398,21 +404,170 @@ class AsciiSurfexFile(SurfexFile):
     def field(self, var, validtime=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, var, geo_out, validtime=None, interpolation=None):
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
         raise NotImplementedError("TODO: Not implemented yet")
 
 
 class NCSurfexFile(SurfexFile):
-    def __init__(self, filename):
 
-        geo = None
+    def __init__(self, filename):
+        self.filename = filename
+        self.fh = Dataset(filename, "r")
+
+        cgrid = str(chartostring(self.fh["GRID_TYPE"][:])).strip()
+        print(":" + cgrid + ":")
+        if cgrid == "CONF PROJ":
+            lon0 = self.fh["LON0"][:]
+            lat0 = self.fh["LAT0"][:]
+            nx = int(self.fh["IMAX"][0])
+            ny = int(self.fh["JMAX"][0])
+            dx = float(self.fh["DX"][0][0])
+            dy = float(self.fh["DY"][0][0])
+
+            ll_lon = self.fh["LONORI"][:]
+            ll_lat = self.fh["LATORI"][:]
+            earth = 6.37122e+6
+            proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
+                    str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+
+            proj = pyproj.Proj(proj4)
+            x0, y0 = proj(ll_lon, ll_lat)
+            xc = x0 + 0.5 * (nx - 1) * dx
+            yc = y0 + 0.5 * (ny - 1) * dy
+            lonc, latc = proj(xc, yc, inverse=True)
+
+            domain = {
+                "nam_conf_proj": {
+                    "xlon0": self.fh["LON0"][0],
+                    "xlat0": self.fh["LAT0"][0],
+                    "xrpk": self.fh["RPK"][0],
+                    "beta": self.fh["BETA"][0]
+                },
+                "nam_conf_proj_grid": {
+                    "xloncen": lonc,
+                    "xlatcen": latc,
+                    "nimax": nx,
+                    "njmax": ny,
+                    "xdx": dx,
+                    "xdy": dy,
+                    "ilone": 0,
+                    "ilate": 0
+                }
+            }
+            geo = surfex.geo.ConfProj(domain)
+        elif cgrid == "IGN":
+            domain = {
+                "nam_ign": {
+                    "clambert": self.fh["CLAMBERT"][0],
+                    "xx": self.fh["XX"][:],
+                    "xy": self.fh["XY"][:],
+                    "xdx": self.fh["DX"][:],
+                    "xdy": self.fh["DY"][:]
+                }
+            }
+            geo = surfex.geo.IGN(domain)
+
+        elif cgrid == "LONLATVAL":
+            domain = {
+                "nam_lonlatval": {
+                    "xx": self.fh["XX"][:],
+                    "xy": self.fh["XY"][:],
+                    "xdx": self.fh["DX"][:],
+                    "xdy": self.fh["DY"][:]
+                }
+            }
+            geo = surfex.geo.LonLatVal(domain)
+
+        elif cgrid == "LONLAT REG":
+            domain = {
+                "nam_lonlatval_reg": {
+                    "lonmin": self.fh["LONMIN"][0],
+                    "latmin": self.fh["LATMIN"][0],
+                    "lonmax": self.fh["LONMAX"][0],
+                    "latmax": self.fh["LATMAX"][0],
+                    "nlon": self.fh["NLON"][0],
+                    "nlat": self.fh["NLAT"][0],
+                    "reg_lon": self.fh["REG_LON"][0],
+                    "reg_lat": self.fh["REG_LAT"][0],
+                }
+            }
+            geo = surfex.geo.LonLatReg(domain)
+        else:
+            raise NotImplementedError(cgrid + " is not implemented")
+
         SurfexFile.__init__(self, filename, geo)
 
     def field(self, var, validtime=None):
-        raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, var, geo_out, validtime=None, interpolation=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+        if validtime is None:
+            pass
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        else:
+            if hasattr(self.fh, "DTCUR-YEAR"):
+                year = self.fh["DTCUR-YEAR"][0]
+                month = self.fh["DTCUR-MONTH"][0]
+                day = self.fh["DTCUR-DAY"][0]
+                time = int(self.fh["DTCUR-TIME"][0])
+                hour = int(time/3600)
+
+                # TODO minutes
+                time_in_file = datetime(year=year, month=month, day=day, hour=hour)
+                if validtime != time_in_file:
+                    print(time_in_file, validtime)
+                    raise Exception("Mismatch in times in file and the wanted time")
+            else:
+                print("Not checking time")
+
+        geo_in = self.geo
+        field = self.fh[var.varname][:]
+        # Reshape to fortran 2D style
+
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        field = np.transpose(field)
+        return field, geo_in
+
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
+
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexFile.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                            cache=cache)
+        return points, interpolator
+
+
+class FaSurfexFile(SurfexFile):
+
+    def __init__(self, filename, geo):
+        self.fh = surfex.fa.Fa(filename)
+
+        SurfexFile.__init__(self, filename, geo)
+
+    def field(self, var, validtime=None):
+        if validtime is None:
+            pass
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+
+        geo_in = self.geo
+        field = self.fh.field(var.varname, validtime)
+
+        # Reshape to fortran 2D style
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        field = np.transpose(field)
+        return field, geo_in
+
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
+
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexFile.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                            cache=cache)
+        return points, interpolator
 
 
 class NetCDFSurfexFile(SurfexFile):
@@ -427,16 +582,17 @@ class NetCDFSurfexFile(SurfexFile):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.fh.close()
 
-    def read(self, var, patches, layers, times):
+    def read(self, var, times):
         """
 
         Read a field, return a 2D array
         :param var:
-        :param patches:
-        :param layers:
         :param times:
-        :return: times,values[t,vals (1-D) ]
+        :return: values, geo
         """
+
+        layers = var.layers
+        patches = var.patches
 
         if not isinstance(times, (list, tuple)):
             raise Exception("times must be list or tuple")
@@ -451,7 +607,7 @@ class NetCDFSurfexFile(SurfexFile):
         dim_indices = []
         mapping = {}
         npatch = 1
-        # nlayers = 1
+
         if self.fh.variables[var].shape[0] > 0:
             # p rint self.fh.variables[var]
             for dim in self.fh.variables[var].dimensions:
@@ -507,8 +663,6 @@ class NetCDFSurfexFile(SurfexFile):
                         this_dim = layers
                     else:
                         [this_dim.append(i) for i in range(0, dimlen)]
-                # TODO layers
-
                 elif dim == "lon":
                     mapping[1] = ndims
                     [this_dim.append(i) for i in range(0, dimlen)]
@@ -581,13 +735,31 @@ class NetCDFSurfexFile(SurfexFile):
         else:
             raise Exception("Variable " + var + " not found!")
 
-        return np.asarray(times_read), values
+        return values, self.geo
 
     def field(self, var, validtime=None):
-        raise NotImplementedError("TODO: Not implemented yet")
 
-    def points(self, var, geo_out, validtime=None, interpolation=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+        if validtime is None:
+            validtime = []
+            # raise Exception("You must set times to read forcing data")
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        else:
+            validtime = [validtime]
+
+        field, geo_in = self.read(var, validtime)
+        # Reshape to fortran 2D style
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        return field, geo_in
+
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexFile.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                            cache=cache)
+        return points, interpolator
 
 
 class TexteSurfexFile(SurfexFile):
@@ -600,16 +772,12 @@ class TexteSurfexFile(SurfexFile):
         SurfexFile.__init__(self,  fname, geo)
         self.file = None
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exit TEXTE")
-
-    def read(self, variable):
+    def read(self, variable, times):
         self.file = open(self.fname, mode="r")
 
         base_time = variable.basetime
         interval = variable.interval
         npatch = variable.patches
-        times = variable.times
 
         if base_time is None:
             raise Exception("Basetime must be set for TEXTE")
@@ -658,13 +826,30 @@ class TexteSurfexFile(SurfexFile):
 
         # print values.shape
         self.file.close()
-        return times_read, values
+        return values, self.geo
 
-    def field(self, varn, validtime=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+    def field(self, var, validtime=None):
+        if validtime is None:
+            raise Exception("You must set times to read forcing data")
+        elif type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        else:
+            validtime = [validtime]
 
-    def points(self, var, geo_out, validtime=None, interpolation=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+        field, geo_in = self.read(var, validtime)
+        # Reshape to fortran 2D style
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        return field, geo_in
+
+    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
+
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexFile.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                            cache=cache)
+        return points, interpolator
 
 
 class ForcingFileNetCDF(SurfexFile):
@@ -677,9 +862,6 @@ class ForcingFileNetCDF(SurfexFile):
         self.nx = self.lons.shape[0]
         self.ny = self.lats.shape[0]
         SurfexFile.__init__(self, fname, geo)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.fh.close()
 
     def read_field(self, variable, times):
 
@@ -779,14 +961,14 @@ def read_surfex_field(varname, filename, validtime=None, basetime=None, patches=
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
     sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat, geo=geo)
-    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers, basetime=basetime,
-                                         interval=interval, datatype=datatype)
+    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
+                                         basetime=basetime, interval=interval, datatype=datatype)
     field, geo_out = sfx_io.field(var, validtime=validtime)
     return field
 
 
-def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None, patches=-1, layers=-1, fileformat=None,
-                       filetype=None, geo=None, datatype=None, interval=None, interpolation="nearest"):
+def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None, patches=-1, layers=-1,
+                       fileformat=None, filetype=None, geo=None, datatype=None, interval=None, interpolation="nearest"):
 
     if fileformat is None:
         fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
@@ -803,13 +985,14 @@ def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
     sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat, geo=geo)
-    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers, basetime=basetime,
-                                         interval=interval, datatype=datatype)
+    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
+                                         basetime=basetime, interval=interval, datatype=datatype)
     field, geo_out = sfx_io.points(var, geo_out, validtime=validtime, interpolation=interpolation)
     return field
 
 
 def parse_filepattern(file_pattern, basetime, validtime):
+
     # print(file_pattern)
     file_name = str(file_pattern)
     year = basetime.strftime('%Y')
@@ -818,7 +1001,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     day = basetime.strftime('%d')
     hour = basetime.strftime('%H')
     dt = validtime-basetime
-    l = "%d" % (dt.seconds / 3600)
+    l1 = "%d" % (dt.seconds / 3600)
     ll = "%02d" % (dt.seconds / 3600)
     lll = "%03d" % (dt.seconds / 3600)
     llll = "%04d" % (dt.seconds / 3600)
@@ -827,7 +1010,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace('@MM@', month)
     file_name = file_name.replace('@DD@', day)
     file_name = file_name.replace('@HH@', hour)
-    file_name = file_name.replace('@L@', l)
+    file_name = file_name.replace('@L@', l1)
     file_name = file_name.replace('@LL@', ll)
     file_name = file_name.replace('@LLL@', lll)
     file_name = file_name.replace('@LLLL@', llll)

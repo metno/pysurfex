@@ -70,7 +70,6 @@ class GeoTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 
-    '''
     def test_geo_lonlat_reg(self):
         domain = {
             "nam_pgd_grid": {
@@ -115,7 +114,6 @@ class GeoTest(unittest.TestCase):
         domain = {"nam_lonlat_reg": {"not_existing": "some_value"}}
         with self.assertRaises(KeyError):
             surfex.geo.LonLatReg(domain)
-    '''
 
     def test_geo_lonlatval(self):
         domain = {
@@ -144,7 +142,6 @@ class GeoTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             surfex.geo.LonLatVal(domain)
 
-    '''
     def test_geo_cartesian(self):
         domain = {
             "nam_pgd_grid": {
@@ -173,9 +170,7 @@ class GeoTest(unittest.TestCase):
         domain = {"nam_cartesian": {"not_existing": "some_value"}}
         with self.assertRaises(KeyError):
             surfex.geo.Cartesian(domain)
-    '''
 
-    '''
     def test_geo_ign(self):
         domain = {
             "nam_pgd_grid": {
@@ -183,11 +178,11 @@ class GeoTest(unittest.TestCase):
             },
             "nam_ign": {
                 "clambert": 7,
-                "npoints": 0,
-                "xx": 11,
-                "xy": 21,
-                "xdx": 1000,
-                "xdy": 1000,
+                "npoints": 1,
+                "xx": [11],
+                "xy": [21],
+                "xdx": [1000],
+                "xdy": [1000],
                 "xx_llcorner": 0,
                 "xy_llcorner": 0,
                 "xcellsize": 1000,
@@ -230,7 +225,6 @@ class GeoTest(unittest.TestCase):
         domain = {"nam_ign": {"not_existing": "some_value"}}
         with self.assertRaises(KeyError):
             surfex.geo.IGN(domain)
-    '''
 
     def test_set_domain(self):
         domains = {"NAME": {"nam_pgd_grid": {"cgrid": "some_projection"}}}

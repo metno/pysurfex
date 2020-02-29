@@ -33,7 +33,7 @@ class Fa(object):
             dx = field.geometry.grid["X_resolution"]
             dy = field.geometry.grid["Y_resolution"]
 
-            # TODO: Can i get centre point directly
+            # TODO: Can I get centre point directly
             earth = 6.37122e+6
             proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
                     str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
