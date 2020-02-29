@@ -9,6 +9,7 @@ os: linux
 
 before_install:
   - sudo apt-get -y install libudunits2-dev
+  - sudo apt-get -y install libeccodes-dev
 
 install:
   pip install -r requirements.txt
