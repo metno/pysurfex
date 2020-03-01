@@ -10,6 +10,10 @@ except ImportError:
 except RuntimeError:
     eccodes = None
     gribapi = None
+# Needed in Pythin 3.5
+except ModuleNotFoundError:
+    eccodes = None
+    gribapi = None
 
 
 class Grib(object):

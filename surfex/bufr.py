@@ -11,6 +11,10 @@ except ImportError:
 except RuntimeError:
     eccodes = None
     print("ECCODES not found. Needed for bufr reading")
+# Needed in Pythin 3.5
+except ModuleNotFoundError:
+    eccodes = None
+    gribapi = None
 
 
 class BufrObservationSet(surfex.obs.ObservationSet):
