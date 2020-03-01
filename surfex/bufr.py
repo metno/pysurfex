@@ -11,8 +11,8 @@ except ImportError:
 except RuntimeError:
     eccodes = None
     print("ECCODES not found. Needed for bufr reading")
-# Needed in Pythin 3.5
-except ModuleNotFoundError:
+# Needed in Python 3.5
+except:
     eccodes = None
     gribapi = None
 

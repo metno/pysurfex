@@ -10,8 +10,8 @@ except ImportError:
 except RuntimeError:
     eccodes = None
     gribapi = None
-# Needed in Pythin 3.5
-except ModuleNotFoundError:
+# Needed in Python 3.5
+except:
     eccodes = None
     gribapi = None
 
