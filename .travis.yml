@@ -15,8 +15,8 @@ install:
 
 # command to run tests
 script:
-  - wget https://drive.google.com/open?id=1BZCfkop_CLfN2dHjfHpuO4XIz7nfE6Vv -o testdata.tgz
-  - tar -xvf testdata.tgz
+  - wget "https://docs.google.com/uc?export=download&id=1fMAetPj7ho4UYOX6FMAuU5pF2QK3y3J1" -O tesdata.zip
+  - unzip -o testdata.zip
   - nosetests
 
 # Deploy
