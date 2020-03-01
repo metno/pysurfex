@@ -43,7 +43,7 @@ class PGDTest(unittest.TestCase):
         pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo)
         rte = {}
         my_batch = surfex.run.BatchJob(rte=rte)
-        binary = "time"
+        binary = "uname"
         surfex.SURFEXBinary(binary, my_batch, pgdfile, my_settings, my_ecoclimap, input_data=my_input)
         os.remove("OPTIONS.nam")
 
