@@ -4,11 +4,12 @@ from pyproj import Proj
 try:
     import eccodes
     import gribapi
-    HAS_ECCODES = True
 except ImportError:
-    HAS_ECCODES = False
-except RuntimeError("Could not load the ecCodes library!"):
-    HAS_ECCODES = False
+    eccodes = None
+    gribapi = None
+except RuntimeError:
+    eccodes = None
+    gribapi = None
 
 
 class Grib(object):
@@ -24,7 +25,7 @@ class Grib(object):
 
     def field(self, gribvar, time):
 
-        if not HAS_ECCODES:
+        if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
         """
@@ -184,7 +185,7 @@ class Grib1Variable(object):
             return False
 
     def matches(self, gid):
-        if not HAS_ECCODES:
+        if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
         par = eccodes.codes_get(gid, "indicatorOfParameter")
@@ -217,7 +218,7 @@ class Grib2Variable(object):
         self.typeOfStatisticalProcessing = tsp
 
     def matches(self, gid):
-        if not HAS_ECCODES:
+        if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
         discipline = eccodes.codes_get(gid, "discipline")
@@ -264,7 +265,7 @@ class Grib2Variable(object):
 
 
 def print_grib_id(gid):
-    if not HAS_ECCODES:
+    if eccodes is None:
         raise Exception("eccodes not found. Needed for reading grib files")
 
     version = eccodes.codes_get(gid, "edition")

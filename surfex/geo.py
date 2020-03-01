@@ -9,12 +9,14 @@ import os
 class Geo(object):
     def __init__(self, npoints, nlons, nlats, lons, lats, proj=None):
         can_interpolate = False
+        if type(lons) != np.ndarray or type(lats) != np.ndarray:
+            raise Exception("Longitudes and latitudes must be numpy nd arrays")
         self.proj = proj
         self.npoints = npoints
         self.nlons = nlons
         self.nlats = nlats
-        self.lonlist = np.array(lons).flatten()
-        self.latlist = np.array(lats).flatten()
+        self.lonlist = lons.flatten()
+        self.latlist = lats.flatten()
         if lons.shape[0] > 0 and lats.shape[0] > 0:
             if self.npoints != self.nlons and self.npoints != self.nlats:
                 # Make 2D array

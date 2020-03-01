@@ -1,31 +1,5 @@
-toml
-json ; python_version < '3'
-pyyaml
-numpy
-matplotlib
-coveralls
-pep8
-netCDF4
-jsonmerge
-datetime
-pyproj
-pyproj
-scipy
-f90nml
-cfunits
-enum34
-requests
-python-dateutil
-StringIO; python_version < '3'
+# This is an implicit value, here for clarity
+--index-url https://pypi.python.org/simple/
 
-# Optional
-eccodes
-python-csv
-db-sqlite3
-nose
-
-# Not on pypi
-# epygram
-# titanlib
-# gridppOI
+-e .
 

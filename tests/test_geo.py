@@ -49,6 +49,7 @@ class GeoTest(unittest.TestCase):
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
+        print(my_geo.identifier())
 
         new_domain = {"not_existing": {"not_existing": "some_value"},
                       "nam_conf_proj_grid": domain["nam_conf_proj_grid"]}
@@ -178,11 +179,11 @@ class GeoTest(unittest.TestCase):
             },
             "nam_ign": {
                 "clambert": 7,
-                "npoints": 1,
-                "xx": [11],
-                "xy": [21],
-                "xdx": [1000],
-                "xdy": [1000],
+                "npoints": 3,
+                "xx": [11000, 13000, 11000],
+                "xy": [21000, 21000, 23000],
+                "xdx": [1000, 1000, 1000],
+                "xdy": [1000,1000, 1000],
                 "xx_llcorner": 0,
                 "xy_llcorner": 0,
                 "xcellsize": 1000,
@@ -190,12 +191,16 @@ class GeoTest(unittest.TestCase):
                 "nrows": 1
             }
         }
-        my_geo = surfex.get_geo_object(domain)
+        my_geo = surfex.geo.IGN(domain, recreate=True)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
         my_settings = surfex.ascii2nml(json_settings)
         my_settings = my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         self.assertEqual(my_settings["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
+
+        my_geo1 = surfex.geo.IGN(domain, recreate=False)
+        my_geo2 = surfex.geo.IGN(domain, recreate=True)
+        self.assertTrue(my_geo1.is_identical(my_geo2))
 
         domain = {
             "nam_pgd_grid": {

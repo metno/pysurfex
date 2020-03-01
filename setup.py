@@ -5,7 +5,6 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
-import surfex
 
 here = path.abspath(path.dirname(__file__))
 
@@ -14,14 +13,14 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='forcing',
+    name='surfex',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=surfex.__version__,
+    # version=surfex.__version__,
 
-    description='A program to run SURFEX',
+    description='Python API to SURFEX',
     long_description=long_description,
 
     # The project's main homepage.
@@ -68,7 +67,35 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy>=1.11', 'scipy', 'netCDF4', 'cfunits', 'pyproj', 'pyyaml'],
+    install_requires=[
+        "numpy",
+        "scipy",
+        "netCDF4",
+        "cfunits",
+        "pyproj",
+        "pyyaml",
+        "toml",
+        "matplotlib",
+        "netCDF4",
+        "jsonmerge",
+        "datetime",
+        "f90nml",
+        "cfunits",
+        "enum34",
+        "requests",
+        "python-dateutil",
+        "json; python_version < '3'",
+        "StringIO; python_version < '3'",
+        "eccodes",
+        "python-csv",
+        "db-sqlite3",
+        "nose"
+    ],
+
+    # Not on pypi
+    # epygram
+    # titanlib
+    # gridppOI
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -76,18 +103,22 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
     #    'dev': ['check-manifest'],
-        'test': ['coverage', 'pep8', 'matplotlib<2'],
-    #    'test': ['pytest'],
+        'test': [
+            "coverage",
+            "coveralls",
+            "pep8",
+            "nose"
+        ],
     },
 
-    test_suite="forcing.tests",
+    test_suite="surfex.tests",
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_dir={'forcing': 'forcing'},
     package_data={
-        'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml'],
+        'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml', 'cfg/first_guess.yml'],
     },
     include_package_data=True,
 
@@ -100,10 +131,38 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-    entry_points={
-        'console_scripts': [
-            'create_forcing=forcing:create_forcing',
-            'plot_offline=forcing:plot_offline',
-        ],
-    },
+
+    # entry_points={
+    #    'console_scripts': [
+    #        'create_forcing=forcing:create_forcing',
+    #        'plot_offline=forcing:plot_offline',
+    #    ],
+    # },
+    scripts=[
+        'bin/create_forcing',
+        'bin/ascii2sqlite',
+        'bin/bufr2titan',
+        'bin/create_forcing',
+        'bin/create_gridpp_parameters',
+        'bin/create_surfex_json_namelist',
+        'bin/FirstGuess4gridpp',
+        'bin/gridpp',
+        'bin/json-gui2toml',
+        'bin/masterodb',
+        'bin/merge_json',
+        'bin/merge_json_namelist_settings',
+        'bin/merge_toml_files',
+        'bin/offline',
+        'bin/oi2soda',
+        'bin/perturbed_offline',
+        'bin/pgd',
+        'bin/plot',
+        'bin/plot_field',
+        'bin/plot_timeseries',
+        'bin/prep',
+        'bin/set_assimilation_input',
+        'bin/set_domain',
+        'bin/soda',
+        'bin/titan'
+    ],
 )

@@ -1,11 +1,9 @@
 import pyproj
 import surfex
-HAS_EPYGRAM = False
 try:
     import epygram
-    HAS_EPYGRAM = True
 except ImportError:
-    HAS_EPYGRAM = False
+    epygram = None
 
 
 class Fa(object):
@@ -19,10 +17,14 @@ class Fa(object):
 
     def field(self, varname, validtime):
 
+        if epygram is None:
+            raise Exception("You need epygram to read FA files")
+
         resource = epygram.formats.resource(self.fname, openmode='r')
         field = resource.readfield(varname)
 
         # TODO: check time
+        print("Not checking validtime at the moment: ", validtime)
 
         if field.geometry.name == "lambert":
             ny = field.geometry.dimensions["Y_CIzone"]
@@ -94,5 +96,3 @@ class Fa(object):
 
         field = interpolator.interpolate(field)
         return field, interpolator
-
-

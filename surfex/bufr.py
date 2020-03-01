@@ -4,18 +4,20 @@ import sys
 import surfex
 import numpy as np
 try:
-    from eccodes import codes_set, codes_bufr_new_from_file, CodesInternalError, codes_release, codes_get, \
-        CODES_MISSING_DOUBLE, CODES_MISSING_LONG
-    HAS_ECCODES = True
+    import eccodes
 except ImportError:
-    HAS_ECCODES = False
+    eccodes = None
+    print("ECCODES not found. Needed for bufr reading")
 except RuntimeError:
-    HAS_ECCODES = False
-    print("ECCODES not found. Needed for bufr and grib1/2 reading")
+    eccodes = None
+    print("ECCODES not found. Needed for bufr reading")
 
 
 class BufrObservationSet(surfex.obs.ObservationSet):
     def __init__(self, bufrfile, provider, test_json, var, lonrange, latrange, valid_dtg, valid_range):
+
+        if eccodes is None:
+            raise Exception("ECCODES not found. Needed for bufr reading")
 
         # open bufr file
         f = open(bufrfile)
@@ -63,7 +65,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         # removed = 0
         while 1:
             # get handle for message
-            bufr = codes_bufr_new_from_file(f)
+            bufr = eccodes.codes_bufr_new_from_file(f)
             if bufr is None:
                 break
 
@@ -72,9 +74,9 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             # we need to instruct ecCodes to expand all the descriptors
             # i.e. unpack the data values
             try:
-                codes_set(bufr, 'unpack', 1)
+                eccodes.codes_set(bufr, 'unpack', 1)
                 decoded = True
-            except CodesInternalError as err:
+            except eccodes.CodesInternalError as err:
                 not_decoded = not_decoded + 1
                 print('Error with key="unpack" : %s' % err.msg)
                 decoded = False
@@ -97,10 +99,10 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 # all_found = True
                 for key in keys:
                     try:
-                        val = codes_get(bufr, key)
+                        val = eccodes.codes_get(bufr, key)
                         # if val != CODES_MISSING_DOUBLE:
                         #    print('  %s: %s' % (key,val))
-                        if val == CODES_MISSING_DOUBLE or val == CODES_MISSING_LONG:
+                        if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
                             val = np.nan
                         if key == "latitude":
                             lat = val
@@ -127,8 +129,9 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         if key == "totalSnowDepth":
                             sd = val
 
-                    except CodesInternalError as err:
-                        all_found = False
+                    except eccodes.CodesInternalError:
+                        pass
+                        # all_found = False
                         # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
                 # Assign value to var
@@ -165,12 +168,12 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 if not all_found:
                     nerror += 1
 
-                #print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
-                if lat > latrange[0] and lat < latrange[1] and lon > lonrange[0] and lon < lonrange[1]:
-                    obsDTG = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+                # print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
+                if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
+                    obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
                     # print(value)
                     if not np.isnan(value):
-                        if self.inside_window(obsDTG, valid_dtg, valid_range):
+                        if self.inside_window(obs_dtg, valid_dtg, valid_range):
                             observations.append(surfex.obs.Observation(valid_dtg, lon, lat, value, elev=elev))
                         else:
                             ntime += 1
@@ -186,7 +189,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                     sys.stdout.flush()
 
             # delete handle
-            codes_release(bufr)
+            eccodes.codes_release(bufr)
 
         print("\nObservations for var=" + var)
         print("Found " + str(len(observations)) + "/" + str(cnt))
@@ -218,7 +221,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         if valid_dtg is None:
             return True
         else:
-            if obs_dtg >= (valid_dtg - valid_range) and obs_dtg <= (valid_dtg + valid_range):
+            if (valid_dtg - valid_range) <= obs_dtg <= (valid_dtg + valid_range):
                 return True
             else:
                 return False
