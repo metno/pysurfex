@@ -292,16 +292,18 @@ class AsciiSurfexFile(SurfexIO):
         elif grid[0] == "CONF PROJ":
             domain = {
                 "nam_conf_proj": {
-                    "lon0": self.read("LON0", "&FULL", "float")[0],
-                    "lat0": self.read("LAT0", "&FULL", "float")[0]
+                    "xlon0": self.read("LON0", "&FULL", "float")[0],
+                    "xlat0": self.read("LAT0", "&FULL", "float")[0]
                 },
                 "nam_conf_proj_grid": {
                     "xloncen": self.read("LONORI", "&FULL", "float")[0],
                     "xlatcen": self.read("LATORI", "&FULL", "float")[0],
                     "nimax": self.read("IMAX", "&FULL", "integer")[0],
                     "njmax": self.read("JMAX", "&FULL", "integer")[0],
-                    "xdx": self.read("XX", "&FULL", "float"),
-                    "xdy": self.read("YY", "&FULL", "float")
+                    "xdx": self.read("XX", "&FULL", "float")[0],
+                    "xdy": self.read("YY", "&FULL", "float")[0],
+                    "ilone": 0,  # self.read("ILONE", "&FULL", "integer")[0],
+                    "ilate": 0   # self.read("ILATE", "&FULL", "integer")[0],
                 }
             }
             return surfex.geo.ConfProj(domain)
@@ -378,10 +380,23 @@ class AsciiSurfexFile(SurfexIO):
         return values
 
     def field(self, var, validtime=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+
+        # TODO
+        read_par = var.varname
+        read_tile = "&FULL"
+        datatype = "float"
+        field = self.read(read_par, read_tile, datatype)
+
+        return field, self.get_geo()
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
-        raise NotImplementedError("TODO: Not implemented yet")
+        if validtime is not None and type(validtime) != datetime:
+            raise Exception("validime must be a datetime object")
+        field, geo_in = self.field(var, validtime=validtime)
+
+        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
+                                                          cache=cache)
+        return points, interpolator
 
 
 class NCSurfexFile(SurfexIO):

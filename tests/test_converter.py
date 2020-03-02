@@ -58,3 +58,40 @@ class ConverterTest(unittest.TestCase):
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
+
+    '''
+    my_geo = surfex.geo.get_geo_object(domain)
+
+    fileformat = "surfex"
+    var = "FRAC_NATURE"
+    converter = "none"
+    config = {
+        "surfex": {
+            "fcint": 10800,
+            "file_inc": 3600,
+            "offset": 0
+        },
+        "FRAC_NATURE": {
+            "surfex": {
+                "converter": {
+                    "none": {
+                        "varname": "FRAC_NATURE",
+                        "filepattern": "testdata/PGD.txt"
+                    }
+                }
+            }
+        }
+    }
+
+    print(var, fileformat)
+
+    defs = config[fileformat]
+    converter_conf = config[var][fileformat]["converter"]
+    debug = False
+
+    validtime = datetime(year=2020, month=2, day=1, hour=6)
+    cache = surfex.Cache(debug, 7200)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
+    field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
+    '''

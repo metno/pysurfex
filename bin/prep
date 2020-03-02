@@ -21,7 +21,8 @@ def parse():
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
     parser.add_argument('--output', '-o', required=True, nargs='?')
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
-    parser.add_argument('--archive', '-a', required=False, default=None, nargs='?', help="JSON file with archive output")
+    parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
+                        help="JSON file with archive output")
     parser.add_argument('binary', type=str, nargs='?')
 
     if len(sys.argv) == 1:
@@ -31,7 +32,7 @@ def parse():
     args = parser.parse_args()
 
     return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, \
-           args.domain, args.archive, args.pgd
+        args.domain, args.archive, args.pgd
 
 
 if __name__ == "__main__":
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         raise FileNotFoundError
 
     if os.path.exists(domain):
-        my_geo = surfex.json2geo(json.load(open(domain, "r")))
+        my_geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
     else:
         raise FileNotFoundError
 
@@ -85,6 +86,7 @@ if __name__ == "__main__":
 
         my_pgdfile = surfex.file.SURFFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
         prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output)
-        surfex.SURFEXBinary(binary, my_batch, prepfile, my_settings, my_ecoclimap, input=my_input, pgdfile=my_pgdfile)
+        surfex.SURFEXBinary(binary, my_batch, prepfile, my_settings, my_ecoclimap, input_data=my_input,
+                            pgdfile=my_pgdfile)
     else:
         print(output + " already exists!")

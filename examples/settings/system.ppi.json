@@ -9,5 +9,5 @@
   "soc_sub_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
   "flake_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
   "ecoclimap_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
-  "ecoclimap_bin_dir": "/home/asmundb/git/Harmonie/util/offline/MY_RUN/ECOCLIMAP/"
+  "ecoclimap_bin_dir": "/lustre/storeA/users/asmundb/harmonie/harmonie_ppi_gfortran/lib/util/offline/MY_RUN/ECOCLIMAP/"
 }
