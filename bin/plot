@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import matplotlib.pyplot as plt
 import json
 import argparse
 import numpy as np
 import surfex
 from datetime import datetime
 import sys
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise Exception("You need matplotlib to plot")
 
 
 def parse_args(args_in):

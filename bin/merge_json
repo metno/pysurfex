@@ -45,4 +45,3 @@ if __name__ == "__main__":
             json_settings = merge(json_settings, json.load(open(f, "r")))
         print("merging json_setings: ", json_settings)
     json.dump(json_settings, open(my_output, "w"), indent=my_indent)
-

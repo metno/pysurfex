@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 
 
-class GeoTest(unittest.TestCase):
+class ConverterTest(unittest.TestCase):
     domain = {
         "nam_conf_proj_grid": {
             "xlatcen": 60,

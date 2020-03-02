@@ -40,7 +40,7 @@ def parse():
 
     args = parser.parse_args()
     return args.dtg, args.settings, args.sst, args.ua_fg, args.sfx_fg, args.perts, args.lsm, args.clim, args.obs, \
-           args.oi_coeffs, args.check, args.indent, args.output
+        args.oi_coeffs, args.check, args.indent, args.output
 
 
 if __name__ == "__main__":
@@ -52,8 +52,8 @@ if __name__ == "__main__":
         raise FileNotFoundError
     dtg = datetime.strptime(dtg, "%Y%m%d%H")
     assim_input_json = surfex.set_assimilation_input(dtg, settings, sstfile=sst, ua_first_guess=ua_fg,
-                                                   sfx_first_guess=sfx_fg, perturbed_runs=perts,
-                                                   lsmfile=lsm, climfile=clim, obsfile=obs, oi_coeffs=oi_coeffs,
-                                                   check_existence=check)
+                                                     sfx_first_guess=sfx_fg, perturbed_runs=perts,
+                                                     lsmfile=lsm, climfile=clim, obsfile=obs, oi_coeffs=oi_coeffs,
+                                                     check_existence=check)
 
     json.dump(assim_input_json.data, open(output_file, "w"), indent=indent)

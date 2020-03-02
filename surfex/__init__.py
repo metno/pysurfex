@@ -1,6 +1,5 @@
 __version__ = '0.0.1-dev'
 
-from .format import *
 from .file import *
 from .geo import *
 from .read import ConvertedInput, Converter, ConstantValue

@@ -75,7 +75,6 @@ setup(
         "pyproj",
         "pyyaml",
         "toml",
-        "matplotlib",
         "netCDF4",
         "jsonmerge",
         "datetime",
@@ -89,7 +88,7 @@ setup(
         "eccodes",
         "python-csv",
         "db-sqlite3",
-        "nose"
+        "configParser"
     ],
 
     # Not on pypi
@@ -109,6 +108,8 @@ setup(
             "pep8",
             "nose"
         ],
+        'plot': ['matplotlib'],
+        'plot_on_map': ['cartopy'],
     },
 
     test_suite="surfex.tests",

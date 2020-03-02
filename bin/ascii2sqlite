@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
     if args.gridpp is not None:
         surfex.obsmon.populate_usage_db(conn, DTG, varname, obs_gridpp)
-        surfex.obsmon.populate_obsmon_db(conn, DTG, surfex.obsmon.calculate_statistics(obs_gridpp, modes, stat_cols), modes, stat_cols)
+        surfex.obsmon.populate_obsmon_db(conn, DTG, surfex.obsmon.calculate_statistics(obs_gridpp, modes, stat_cols),
+                                         modes, stat_cols, varname)
 
     surfex.obsmon.close_db(conn)

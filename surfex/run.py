@@ -63,7 +63,7 @@ class SURFEXBinary(object):
                 print("PGD is " + self.pgdfile.filename)
                 if self.pgdfile.input_file is not None and \
                         os.path.abspath(self.pgdfile.filename) != os.path.abspath(self.pgdfile.input_file):
-                    surfex.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+                    surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
                     os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
                 if not os.path.exists(self.pgdfile.filename):
                     print("PGD not found! " + self.pgdfile.filename)
@@ -76,7 +76,7 @@ class SURFEXBinary(object):
                     print("PREP is " + self.iofile.filename)
                     if self.iofile.input_file is not None and \
                             os.path.abspath(self.iofile.filename) != os.path.abspath(self.iofile.input_file):
-                        surfex.remove_existing_file(self.iofile.input_file, self.iofile.filename)
+                        surfex.read.remove_existing_file(self.iofile.input_file, self.iofile.filename)
                         os.symlink(self.iofile.input_file, self.iofile.filename)
                     if not os.path.exists(self.iofile.filename):
                         print("PREP not found! " + self.iofile.filename)

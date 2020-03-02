@@ -6,7 +6,7 @@ Offline SURFEX Forcing and Visualization of SURFEX data
 
 Tool to create offline SURFEX forcing and plotting and verification of results
 
-Installation on ubuntu
+Installation on debian based Linux system
 ----------------------
 
 Install the required pacakges:
@@ -23,25 +23,31 @@ General dependencies
 
 .. code-block:: bash
 
-  sys
-  os
-  re
-  cartopy
-  abc
   numpy
-  pyproj
-  copy
-  datetime
-  ConfigParser
-  argparse
   scipy
-  yaml
+  cfunits
+  pyproj
+  pyyaml
+  toml
+  jsonmerge
+  datetime
+  f90nml
+  cfunits
+  enum34
+  requests
+  python-dateutil
+  json; python_version < '3'
+  StringIO; python_version < '3'
+  eccodes
+  python-csv
+  db-sqlite3
+  configParser
 
 To read NetCDF files:
 
 .. code-block:: bash
 
-  netcdfpy https://github.com/metno/offline-surfex-forcing
+  NetCDF4
 
 To read grib files:
 
@@ -76,16 +82,6 @@ folder:
 
   sudo pip install -e .
 
-This will create the executables ``/usr/local/bin/create_forcing`` and ``/usr/local/bin/plot_offline``. If ``/user/local/bin`` is not in your PATH
-environment variable, then add it (i.e add ``export PATH=/usr/local/bin/:$PATH`` to ``~/.bashrc``).
-
-Usage
------
-
-.. code-block:: bash
-
-  create_forcing
-  plot_offline
 
 
 

@@ -11,14 +11,17 @@ def parse():
     """Parse the command line input arguments."""
     soda = False
     if str(__file__).endswith("perturbed_offline"):
-        desc="Run perturbed Offline SURFEX"
+        desc = "Run perturbed Offline SURFEX"
     elif str(__file__).endswith("offline"):
-        desc="Run Offline SURFEX" 
+        desc = "Run Offline SURFEX"
     elif str(__file__).endswith("soda"):
-        desc="Run SURFEX data assimilation (SODA)"
+        desc = "Run SURFEX data assimilation (SODA)"
         soda = True
     else:
-        desc="Undefined program description"
+        desc = "Undefined program description"
+
+    my_assim_input = None
+    my_assim_output = None
     parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
@@ -36,23 +39,22 @@ def parse():
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
     if soda:
-        parser.add_argument('--assim_input', required=False, default=None, nargs='?', help="JSON file with assimilation input")
-        parser.add_argument('--assim_output', required=False, default=None, nargs='?', help="JSON file with assimilation output")
-    else:
-        assim_input = None
-        assim_output = None
-    parser.add_argument('binary', type=str, nargs='?')
+        parser.add_argument('--assim_input', required=False, default=None, nargs='?',
+                            help="JSON file with assimilation input")
+        parser.add_argument('--assim_output', required=False, default=None, nargs='?',
+                            help="JSON file with assimilation output")
 
+    parser.add_argument('binary', type=str, nargs='?')
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit()
 
     args = parser.parse_args()
     if soda:
-        assim_input = args.assim_input
-        assim_output = args.assim_output
+        my_assim_input = args.assim_input
+        my_assim_output = args.assim_output
     return args.binary, args.rte, args.wrapper, args.json, args.force, args.output, args.input, args.ecoclimap, \
-        args.domain, args.archive, args.pgd, args.prep, assim_input, assim_output, args.pert
+        args.domain, args.archive, args.pgd, args.prep, my_assim_input, my_assim_output, args.pert
 
 
 if __name__ == "__main__":
@@ -71,7 +73,7 @@ if __name__ == "__main__":
         raise FileNotFoundError
 
     if os.path.exists(domain):
-        my_geo = surfex.json2geo(json.load(open(domain, "r")))
+        my_geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
     else:
         raise FileNotFoundError
 
@@ -116,8 +118,6 @@ if __name__ == "__main__":
 
         # Create input
         my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)
-        my_input = surfex.JsonInputDataFromFile(input_file)
-
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
@@ -128,10 +128,11 @@ if __name__ == "__main__":
         surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
         if pert is None:
             surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
-                            assim=assim, surfout=surffile, input=my_input, archive=my_archive)
+                                assim=assim, surfout=surffile, input_data=my_input, archive_data=my_archive)
         else:
             surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, my_ecoclimap,
-                                pgdfile=my_pgdfile, surfout=surffile, input=my_input, archive=my_archive, print_namelist=True)
+                                    pgdfile=my_pgdfile, surfout=surffile, input_data=my_input, archive_data=my_archive,
+                                    print_namelist=True)
 
     else:
         print(output + " already exists!")

@@ -10,6 +10,27 @@ class GeoTest(unittest.TestCase):
     #        my_geo = surfex.geo.SurfexGeo(None, 1, 1, 1, 1, 1)
     #        my_geo.update_namelist(my_settings)
 
+    def setUp(self):
+        self.domain_conf_proj = {
+            "nam_conf_proj_grid": {
+                "xlatcen": 60,
+                "ilone": 1,
+                "xdx": 2500.0,
+                "njmax": 2,
+                "xloncen": 10,
+                "xdy": 2500.0,
+                "nimax": 3,
+                "ilate": 2
+            },
+            "nam_pgd_grid": {
+                "cgrid": "CONF PROJ"
+            },
+            "nam_conf_proj": {
+                "xlon0": 0,
+                "xlat0": 50,
+            }
+        }
+
     def test_geo_not_defined(self):
         domain = {"nam_pgd_grid": {"cgrid": "not_existing"}}
         with self.assertRaises(NotImplementedError):
@@ -25,49 +46,31 @@ class GeoTest(unittest.TestCase):
             surfex.geo.get_geo_object(domain)
 
     def test_geo_conf_proj(self):
-        domain = {
-            "nam_conf_proj_grid": {
-                "xlatcen": 60,
-                "ilone": 11,
-                "xdx": 2500.0,
-                "njmax": 89,
-                "xloncen": 10,
-                "xdy": 2500.0,
-                "nimax": 89,
-                "ilate": 11
-            },
-            "nam_pgd_grid": {
-                "cgrid": "CONF PROJ"
-            },
-            "nam_conf_proj": {
-                "xlon0": 0,
-                "xlat0": 50,
-            }
-        }
-        my_geo = surfex.geo.get_geo_object(domain)
+
+        my_geo = surfex.geo.get_geo_object(self.domain_conf_proj)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
-        self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
+        self.assertEqual(self.domain_conf_proj["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         print(my_geo.identifier())
 
         new_domain = {"not_existing": {"not_existing": "some_value"},
-                      "nam_conf_proj_grid": domain["nam_conf_proj_grid"]}
+                      "nam_conf_proj_grid": self.domain_conf_proj["nam_conf_proj_grid"]}
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 
         new_domain = {"not_existing": {"not_existing": "some_value"},
-                      "nam_conf_proj": domain["nam_conf_proj"]}
+                      "nam_conf_proj": self.domain_conf_proj["nam_conf_proj"]}
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 
         new_domain = {"nam_conf_proj": {"not_existing": "some_value"},
-                      "nam_conf_proj_grid": domain["nam_conf_proj_grid"]}
+                      "nam_conf_proj_grid": self.domain_conf_proj["nam_conf_proj_grid"]}
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 
         new_domain = {"nam_conf_proj_grid": {"not_existing": "some_value"},
-                      "nam_conf_proj": domain["nam_conf_proj"]}
+                      "nam_conf_proj": self.domain_conf_proj["nam_conf_proj"]}
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 

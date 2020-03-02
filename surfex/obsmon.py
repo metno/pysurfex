@@ -3,20 +3,19 @@ HAS_SQLITE = True
 try:
     import sqlite3
 except ImportWarning:
-    HAS_SQLITE = False
+    sqlite3 = None
     print("Could not import sqlie3 modules")
 
-HAS_CSV = True
 try:
     import csv
 except ImportWarning:
+    csv = None
     print("Could not import csv module")
-    HAS_CSV = False
 
 
 def read_ascii_file_with_header(filename, offset=1):
 
-    if not HAS_CSV:
+    if csv is None:
         raise Exception("Could not import needed csv module")
 
     observations = []
@@ -80,7 +79,7 @@ def read_ascii_file_with_header(filename, offset=1):
 
 
 def open_db(dbname):
-    if not HAS_SQLITE:
+    if sqlite3 is None:
         raise Exception("You need SQLITE for obsmon")
 
     conn = sqlite3.connect(dbname)
@@ -95,11 +94,16 @@ def create_db(conn, modes, stat_cols):
     c = conn.cursor()
 
     # Create usage table
-    c.execute(
-        '''CREATE TABLE IF NOT EXISTS usage (DTG INT, obnumber INT, obname CHAR(20), satname CHAR(20), varname CHAR(20), level INT, latitude FLOAT, longitude FLOAT, statid CHAR(20), obsvalue FLOAT, fg_dep FLOAT, an_dep FLOAT, biascrl FLOAT, active INT, rejected INT, passive INT, blacklisted INT, anflag INT)''')
+    cmd = "CREATE TABLE IF NOT EXISTS usage (DTG INT, obnumber INT, obname CHAR(20), satname CHAR(20), " \
+          "varname CHAR(20), level INT, latitude FLOAT, longitude FLOAT, statid CHAR(20), obsvalue FLOAT, " \
+          "fg_dep FLOAT, an_dep FLOAT, biascrl FLOAT, active INT, rejected INT, passive INT, blacklisted INT, " \
+          "anflag INT)"
+
+    c.execute(cmd)
 
     # Create obsmon table
-    cmd = "CREATE TABLE IF NOT EXISTS obsmon (DTG INT, obnumber INT, obname CHAR(20), satname CHAR(20), varname CHAR(20), level INT, passive INT"
+    cmd = "CREATE TABLE IF NOT EXISTS obsmon (DTG INT, obnumber INT, obname CHAR(20), satname CHAR(20), " \
+          "varname CHAR(20), level INT, passive INT"
     for mode in modes:
         for col in stat_cols:
             cmd = cmd + "," + col + "_" + mode + " FLOAT"

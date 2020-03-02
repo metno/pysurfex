@@ -41,4 +41,4 @@ if __name__ == "__main__":
     mm = args.dtg[4:6]
     dd = args.dtg[6:8]
     hh = args.dtg[8:10]
-    surfex.var2ascii(t2m, rh2m, sd, yy, mm, dd, hh)
+    surfex.assim.var2ascii(t2m, rh2m, sd, yy, mm, dd, hh)

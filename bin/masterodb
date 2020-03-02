@@ -24,9 +24,12 @@ def parse():
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
-    parser.add_argument('--binary', '-b', required=False, default=None, nargs='?', help="Full path of MASTERODB binary")
-    parser.add_argument('--assim_input', required=False, default=None, nargs='?', help="JSON file with assimilation input")
-    parser.add_argument('--assim_output', required=False, default=None, nargs='?', help="JSON file with assimilation output")
+    parser.add_argument('--binary', '-b', required=False, default=None, nargs='?',
+                        help="Full path of MASTERODB binary")
+    parser.add_argument('--assim_input', required=False, default=None, nargs='?',
+                        help="JSON file with assimilation input")
+    parser.add_argument('--assim_output', required=False, default=None, nargs='?',
+                        help="JSON file with assimilation output")
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -58,7 +61,7 @@ if __name__ == "__main__":
         raise FileNotFoundError
 
     if os.path.exists(domain):
-        my_geo = surfex.json2geo(json.load(open(domain, "r")))
+        my_geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
         print(my_geo)
     else:
         raise FileNotFoundError
@@ -94,6 +97,7 @@ if __name__ == "__main__":
         else:
             raise FileNotFoundError
 
+    assim = None
     if assim_input is not None or assim_output is not None:
         assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
 
@@ -113,7 +117,7 @@ if __name__ == "__main__":
         my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo)
         surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
         masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
-                                     assim=assim, binary=binary, input=my_input, print_namelist=True)
+                                     assim=assim, binary=binary, input_data=my_input, print_namelist=True)
         masterodb.archive_output()
 
     else:
@@ -127,7 +131,7 @@ if __name__ == "__main__":
             surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
             print(my_surffile)
             masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
-                                         assim=assim, binary=binary, input=my_input, archive=my_archive,
+                                         assim=assim, binary=binary, input_data=my_input, archive_data=my_archive,
                                          print_namelist=True)
 
             # Archive output
