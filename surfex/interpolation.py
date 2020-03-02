@@ -130,7 +130,7 @@ class NearestNeighbour(Interpolation):
             else:
                 raise Exception("You only have one point is your input field!")
 
-            print(interpolated_lons, interpolated_lats)
+            # print(interpolated_lons, interpolated_lats)
             ii = nn(interpolated_lons, interpolated_lats)
             i = x[ii]
             j = y[ii]

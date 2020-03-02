@@ -290,22 +290,43 @@ class AsciiSurfexFile(SurfexIO):
             return surfex.geo.LonLatReg(domain)
 
         elif grid[0] == "CONF PROJ":
+            lon0 = self.read("LON0", "&FULL", "float")[0]
+            lat0 = self.read("LAT0", "&FULL", "float")[0]
+            nx = self.read("IMAX", "&FULL", "integer")[0]
+            ny = self.read("JMAX", "&FULL", "integer")[0]
+            dx = self.read("XX", "&FULL", "float")[0]
+            dy = self.read("XX", "&FULL", "float")[0]
+
+            ll_lon = self.read("LONORI", "&FULL", "float")[0]
+            ll_lat = self.read("LATORI", "&FULL", "float")[0]
+
+            earth = 6.37122e+6
+            proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
+                    str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+
+            proj = pyproj.Proj(proj4)
+            x0, y0 = proj(ll_lon, ll_lat)
+            xc = x0 + 0.5 * (nx + 1) * dx
+            yc = y0 + 0.5 * (ny + 1) * dy
+            lonc, latc = proj(xc, yc, inverse=True)
+
             domain = {
                 "nam_conf_proj": {
-                    "xlon0": self.read("LON0", "&FULL", "float")[0],
-                    "xlat0": self.read("LAT0", "&FULL", "float")[0]
+                    "xlon0": lon0,
+                    "xlat0": lat0
                 },
                 "nam_conf_proj_grid": {
-                    "xloncen": self.read("LONORI", "&FULL", "float")[0],
-                    "xlatcen": self.read("LATORI", "&FULL", "float")[0],
-                    "nimax": self.read("IMAX", "&FULL", "integer")[0],
-                    "njmax": self.read("JMAX", "&FULL", "integer")[0],
-                    "xdx": self.read("XX", "&FULL", "float")[0],
-                    "xdy": self.read("YY", "&FULL", "float")[0],
-                    "ilone": 0,  # self.read("ILONE", "&FULL", "integer")[0],
-                    "ilate": 0   # self.read("ILATE", "&FULL", "integer")[0],
+                    "xloncen": lonc,
+                    "xlatcen": latc,
+                    "nimax": nx,
+                    "njmax": ny,
+                    "xdx": dx,
+                    "xdy": dx,
+                    "ilone": 0,
+                    "ilate": 0
                 }
             }
+            print(domain)
             return surfex.geo.ConfProj(domain)
         else:
             raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
@@ -386,8 +407,10 @@ class AsciiSurfexFile(SurfexIO):
         read_tile = "&FULL"
         datatype = "float"
         field = self.read(read_par, read_tile, datatype)
-
-        return field, self.get_geo()
+        geo_in = self.get_geo()
+        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        # field = np.transpose(field)
+        return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
         if validtime is not None and type(validtime) != datetime:
@@ -415,7 +438,7 @@ class NCSurfexFile(SurfexIO):
 
         fh = Dataset(self.filename, "r")
         cgrid = str(chartostring(fh["GRID_TYPE"][:])).strip()
-        print(":" + cgrid + ":")
+        # print(":" + cgrid + ":")
         if cgrid == "CONF PROJ":
             lon0 = fh["LON0"][:]
             lat0 = fh["LAT0"][:]
@@ -432,16 +455,16 @@ class NCSurfexFile(SurfexIO):
 
             proj = pyproj.Proj(proj4)
             x0, y0 = proj(ll_lon, ll_lat)
-            xc = x0 + 0.5 * (nx - 1) * dx
-            yc = y0 + 0.5 * (ny - 1) * dy
+            xc = x0 + 0.5 * (nx + 1) * dx
+            yc = y0 + 0.5 * (ny + 1) * dy
             lonc, latc = proj(xc, yc, inverse=True)
 
             domain = {
                 "nam_conf_proj": {
-                    "xlon0": fh["LON0"][0],
-                    "xlat0": fh["LAT0"][0],
-                    "xrpk": fh["RPK"][0],
-                    "beta": fh["BETA"][0]
+                    "xlon0": lon0,
+                    "xlat0": lat0  # ,
+                    # "xrpk": fh["RPK"][0],
+                    # "beta": fh["BETA"][0]
                 },
                 "nam_conf_proj_grid": {
                     "xloncen": lonc,
@@ -518,12 +541,11 @@ class NCSurfexFile(SurfexIO):
             else:
                 print("Not checking time")
 
-        geo_in = self.geo
+        geo_in = self.get_geo()
         field = fh[var.varname][:]
-        # Reshape to fortran 2D style
 
+        # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
-        field = np.transpose(field)
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):

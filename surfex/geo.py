@@ -215,7 +215,7 @@ class Cartesian(SurfexGeo):
 
 class LonLatReg(SurfexGeo):
     def __init__(self, from_json):
-        self.cgrid = "LONLAT_REG"
+        self.cgrid = "LONLAT REG"
         domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
@@ -471,7 +471,7 @@ def get_geo_object(from_json):
                 return ConfProj(from_json)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLATVAL":
                 return LonLatVal(from_json)
-            elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLAT_REG":
+            elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLAT REG":
                 return LonLatReg(from_json)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "IGN":
                 return IGN(from_json)

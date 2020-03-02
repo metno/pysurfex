@@ -2,32 +2,16 @@ import unittest
 import surfex
 from datetime import datetime
 import numpy as np
+import json
 
 
 class ConverterTest(unittest.TestCase):
-    domain = {
-        "nam_conf_proj_grid": {
-            "xlatcen": 60,
-            "ilone": 11,
-            "xdx": 2500.0,
-            "njmax": 89,
-            "xloncen": 10,
-            "xdy": 2500.0,
-            "nimax": 89,
-            "ilate": 11
-        },
-        "nam_pgd_grid": {
-            "cgrid": "CONF PROJ"
-        },
-        "nam_conf_proj": {
-            "xlon0": 0,
-            "xlat0": 50,
-        }
-    }
+
+    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
-    var = "TS"
+    var = "TG1P1"
     converter = "none"
     config = {
         "surfex": {
@@ -35,12 +19,12 @@ class ConverterTest(unittest.TestCase):
             "file_inc": 3600,
             "offset": 0
         },
-        "TS": {
+        "TG1P1": {
             "surfex": {
                 "converter": {
                     "none": {
-                        "varname": "TS",
-                        "filepattern": "testdata/FG_SODA.nc"
+                        "varname": "TG1P1",
+                        "filepattern": "testdata/PREP_CONF_PROJ.nc"
                     }
                 }
             }
@@ -59,7 +43,7 @@ class ConverterTest(unittest.TestCase):
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
-    '''
+    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
@@ -76,7 +60,7 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "varname": "FRAC_NATURE",
-                        "filepattern": "testdata/PGD.txt"
+                        "filepattern": "testdata/PGD_CONF_PROJ.txt"
                     }
                 }
             }
@@ -94,4 +78,3 @@ class ConverterTest(unittest.TestCase):
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
-    '''

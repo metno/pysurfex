@@ -77,7 +77,7 @@ class GeoTest(unittest.TestCase):
     def test_geo_lonlat_reg(self):
         domain = {
             "nam_pgd_grid": {
-                "cgrid": "LONLAT_REG"
+                "cgrid": "LONLAT REG"
             },
             "nam_lonlat_reg": {
                 "xlonmin": 10,
@@ -97,7 +97,7 @@ class GeoTest(unittest.TestCase):
 
         domain = {
             "nam_pgd_grid": {
-                "cgrid": "LONLAT_REG"
+                "cgrid": "LONLAT REG"
             },
             "nam_lonlat_reg": {
                 "xlonmin": 10,
