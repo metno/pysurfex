@@ -187,7 +187,7 @@ class GeoTest(unittest.TestCase):
                 "xx": [11000, 13000, 11000],
                 "xy": [21000, 21000, 23000],
                 "xdx": [1000, 1000, 1000],
-                "xdy": [1000,1000, 1000],
+                "xdy": [1000, 1000, 1000],
                 "xx_llcorner": 0,
                 "xy_llcorner": 0,
                 "xcellsize": 1000,
