@@ -2,55 +2,27 @@
 
 import json
 import surfex
-import argparse
-import sys
 import os
 import toml
 
-
-def parse():
-    """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
-
-    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--config', '-c', type=str, nargs="?", required=False, help="Input TOML file if wanted")
-    parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
-    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
-    parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?', help="")
-    parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
-                        help="Input json file for SURFEX binaries")
-    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP")
-    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
-    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
-                        help="Input PGD file for PREP input file")
-    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False, default=None,
-                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
-    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
-                        help="DTG (YYYYMMDDHH)")
-    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
-
-    parser.add_argument('--ecoclimap', '-e', type=str, nargs="?", required=False, default="ecoclimap.json",
-                        help="Input ecoclimap json file for SURFEX binaries")
-    parser.add_argument('program', help="For which program you should create the JSON file",
-                        choices=["pgd", "prep", "offline", "soda"])
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args()
-
-    return args.program, args.config, args.path, args.indent, args.system, args.namelist, args.files, args.ecoclimap, \
-           args.forc_zs, args.prep_file, args.prep_filetype, args.prep_pgdfile, args.prep_pgdfiletype, args.dtg
-
-
 if __name__ == "__main__":
 
-    program, settings_file, input_path, indent, system_settings, name_of_namelist, name_of_input_files, \
-        name_of_ecoclimap, forc_zs, prep_file, prep_filetype, prep_pgdfile, prep_pgdfiletype, dtg = parse()
+    args = surfex.parse_args_create_surfex_json_namelist()
+
+    program = args.program
+    settings_file = args.config
+    input_path = args.path
+    indent = args.indent
+    system_settings = args.system
+    name_of_namelist = args.namelist
+    name_of_input_files = args.files
+    name_of_ecoclimap = args.ecoclimap
+    forc_zs = args.forc_zs
+    prep_file = args.prep_file
+    prep_filetype = args.prep_filetype
+    prep_pgdfile = args.prep_pgdfile
+    prep_pgdfiletype = args.prep_pgdfiletype
+    dtg = args.dtg
 
     env = {}
     if os.path.exists(settings_file):
@@ -80,4 +52,3 @@ if __name__ == "__main__":
     # Ecoclimap
     print("\nEcoclimap: ", ecoclimap_json.data)
     json.dump(ecoclimap_json.data, open(name_of_ecoclimap, "w"), indent=indent)
-

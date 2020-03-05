@@ -2,11 +2,14 @@
 
 import surfex
 import sys
-import argparse
-import os
-import json
 
 
+if __name__ == "__main__":
+    args = surfex.parse_args_surfex_binary(sys.argv[1:], "prep")
+    surfex.run_surfex_binary(args, "prep")
+
+
+'''
 def parse():
     """Parse the command line input arguments."""
     parser = argparse.ArgumentParser()
@@ -90,3 +93,4 @@ if __name__ == "__main__":
                             pgdfile=my_pgdfile)
     else:
         print(output + " already exists!")
+'''

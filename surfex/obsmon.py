@@ -289,3 +289,34 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
     c.execute(cmd)
     # Save (commit) the changes
     conn.commit()
+
+
+def write_obsmon_sqlite_file(args):
+    modes = ["total", "land", "sea"]
+    stat_cols = ["nobs", "fg_bias", "fg_abs_bias", "fg_rms", "fg_dep", "fg_uncorr", "bc", "an_bias", "an_abs_bias",
+                 "an_rms", "an_dep"]
+
+    if args.titan is None and args.gridpp is None:
+        raise Exception("You must provide at least one file")
+
+    obs_titan = None
+    if args.titan is not None:
+        obs_titan = read_ascii_file_with_header(args.titan, offset=100)
+    obs_gridpp = None
+    if args.gridpp is not None:
+        obs_gridpp = read_ascii_file_with_header(args.gridpp, offset=200)
+
+    varname = args.varname
+    dtg = args.DTG
+    dbname = args.output
+
+    conn = open_db(dbname)
+    create_db(conn, modes, stat_cols)
+    if args.titan is not None:
+        populate_usage_db(conn, dtg, varname, obs_titan)
+
+    if args.gridpp is not None:
+        populate_usage_db(conn, dtg, varname, obs_gridpp)
+        populate_obsmon_db(conn, dtg, calculate_statistics(obs_gridpp, modes, stat_cols),
+                           modes, stat_cols, varname)
+    close_db(conn)

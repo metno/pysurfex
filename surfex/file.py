@@ -91,6 +91,7 @@ class SurfexSurfIO(object):
 
 class PGDFile(SurfexSurfIO):
     def __init__(self, csurf_filetype, cpgdfile, geo, input_file=None, symlink=True, archive_file=None):
+        print(cpgdfile, csurf_filetype)
         cpgdfile = get_surfex_io_object(cpgdfile, filetype="surf", geo=geo, fileformat=csurf_filetype)
 
         SurfexSurfIO.__init__(self, cpgdfile, csurf_filetype, input_file=input_file,
@@ -306,8 +307,8 @@ class AsciiSurfexFile(SurfexIO):
 
             proj = pyproj.Proj(proj4)
             x0, y0 = proj(ll_lon, ll_lat)
-            xc = x0 + 0.5 * (nx + 1) * dx
-            yc = y0 + 0.5 * (ny + 1) * dy
+            xc = x0 + 0.5 * (nx - 1) * dx
+            yc = y0 + 0.5 * (ny - 1) * dy
             lonc, latc = proj(xc, yc, inverse=True)
 
             domain = {
@@ -425,6 +426,7 @@ class AsciiSurfexFile(SurfexIO):
 class NCSurfexFile(SurfexIO):
 
     def __init__(self, filename, geo=None):
+        print(filename)
         if not filename.endswith(".nc"):
             filename = filename + ".nc"
 
@@ -455,8 +457,8 @@ class NCSurfexFile(SurfexIO):
 
             proj = pyproj.Proj(proj4)
             x0, y0 = proj(ll_lon, ll_lat)
-            xc = x0 + 0.5 * (nx + 1) * dx
-            yc = y0 + 0.5 * (ny + 1) * dy
+            xc = x0 + 0.5 * (nx - 1) * dx
+            yc = y0 + 0.5 * (ny - 1) * dy
             lonc, latc = proj(xc, yc, inverse=True)
 
             domain = {

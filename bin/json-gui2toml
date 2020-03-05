@@ -5,7 +5,6 @@ import argparse
 import surfex
 import sys
 import os
-import toml
 
 
 def parse():
@@ -35,7 +34,7 @@ def recursive_items(dictionary):
 
 if __name__ == "__main__":
 
-    input_file, output_file  = parse()
+    input_file, output_file = parse()
 
     print("Writing settings to " + output_file)
     fh = open(output_file, "w")
@@ -44,13 +43,13 @@ if __name__ == "__main__":
         for key, value in recursive_items(json.load(open(input_file, "r"))):
             val = value
             if type(value) is bool:
-               if val:
-                  val = ".TRUE."
-               else:
-                  val = ".FALSE."
+                if val:
+                    val = ".TRUE."
+                else:
+                    val = ".FALSE."
             print(key, '=', val+'')
             fh.write(key + '=' + val+'\n')
     else:
-       print("Input file does not exist: " + input_file)
-       raise FileNotFoundError
+        print("Input file does not exist: " + input_file)
+        raise FileNotFoundError
     fh.close()

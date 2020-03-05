@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -x
-nosetests --with-coverage --cover-erase --cover-html --cover-html-dir=coverage --cover-package=. tests/test_geo.py tests/test_pgd.py tests/test_variable.py tests/test_converter.py || exit 1
+nosetests --with-coverage --cover-erase --cover-html --cover-html-dir=coverage --cover-package=. tests/test_geo.py tests/test_pgd.py tests/test_variable.py tests/test_converter.py tests/test_forcing.py || exit 1
 
 if [ "$USER" == "trygveasp" ]; then
   rm -rf /lustre/storeA/users/trygveasp/coverage

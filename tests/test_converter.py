@@ -78,3 +78,40 @@ class ConverterTest(unittest.TestCase):
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
+
+
+    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    my_geo = surfex.geo.get_geo_object(domain)
+
+    fileformat = "netcdf"
+    var = "T2M"
+    converter = "none"
+    config = {
+        "netcdf": {
+            "fcint": 10800,
+            "file_inc": 3600,
+            "offset": 0
+        },
+        "T2M": {
+            "netcdf": {
+                "converter": {
+                    "none": {
+                        "name": "air_temperature_2m",
+                        "filepattern": "testdata/meps_det_2_5km_20200220T00Z.nc"
+                    }
+                }
+            }
+        }
+    }
+
+    print(var, fileformat)
+
+    defs = config[fileformat]
+    converter_conf = config[var][fileformat]["converter"]
+    debug = False
+
+    validtime = datetime(year=2020, month=2, day=20, hour=1)
+    cache = surfex.Cache(debug, 7200)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
+    field = np.reshape(field, [my_geo.nlons, my_geo.nlats])

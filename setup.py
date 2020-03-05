@@ -142,7 +142,6 @@ setup(
     scripts=[
         'bin/create_forcing',
         'bin/ascii2sqlite',
-        'bin/bufr2titan',
         'bin/create_forcing',
         'bin/create_gridpp_parameters',
         'bin/create_surfex_json_namelist',

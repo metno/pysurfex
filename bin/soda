@@ -1,1 +1,9 @@
-offline
+#!/usr/bin/env python3
+
+import surfex
+import sys
+
+if __name__ == "__main__":
+
+    args = surfex.parse_args_surfex_binary(sys.argv[1:], "soda")
+    surfex.run_surfex_binary(args, "soda")

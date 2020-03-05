@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 import netCDF4
 
+
 def main():
     parser = argparse.ArgumentParser(description='Create parameter file for calibration methods (currently OI and override) in gridpp.i The program reads TITAN output and puts observed and CI values into the parameter file. If CI (rep column) is missing in the input, then a default value is used.')
     parser.add_argument('files', help='Netatmo input file', nargs="*")

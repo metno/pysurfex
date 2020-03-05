@@ -222,16 +222,10 @@ class NetcdfVariable(Variable):
             cache.save_field(id_str, field)
 
             if accumulated:
-                print("accumulated variable ", self.var_dict)
-                print("field", field)
-                print("prevous", previous_field)
-                print("deccumulated", self.deaccumulate(field, previous_field, 0))
-            if accumulated:
                 instant = [(validtime - self.previoustime).total_seconds()]
                 if "instant" in self.var_dict:
                     instant = [self.var_dict["instant"]]
                 field = self.deaccumulate(field, previous_field, float(instant[0]))
-                print("instant", field)
 
         self.previoustime = validtime
         return field

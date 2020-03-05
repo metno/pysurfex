@@ -130,8 +130,6 @@ class Netcdf(object):
         dim_x = lons.shape[0]
         dim_y = lats.shape[1]
 
-        print(lons.shape)
-        print(lats.shape)
         geo = surfex.geo.Geo(dim_x * dim_y, dim_x, dim_y, lons, lats)
 
         dim_t = max(len(times_to_read), 1)
@@ -450,3 +448,63 @@ class NetCDFFileVariable(object):
             return True
         else:
             return False
+
+
+def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc"):
+
+    my_fg = netCDF4.Dataset(fname, "w")
+    my_fg.createDimension("y", my_ny)
+    my_fg.createDimension("x", my_nx)
+    my_fg.createDimension("time", 1)
+    my_fg.createVariable("time", "f8", "time")
+    my_fg.variables["time"].long_name = "time"
+    my_fg.variables["time"].standard_name = "time"
+    my_fg.variables["time"].units = "seconds since 1970-01-01 00:00:00 +00:00"
+    my_fg.createVariable("longitude", "f8", ("y", "x"))
+    my_fg.variables["longitude"].units = "degree_east"
+    my_fg.variables["longitude"].long_name = "longitude"
+    my_fg.variables["longitude"].standard_name = "longitude"
+    my_fg.createVariable("latitude", "f8", ("y", "x"))
+    my_fg.variables["latitude"].units = "degree_north"
+    my_fg.variables["latitude"].long_name = "latitude"
+    my_fg.variables["latitude"].standard_name = "latitude"
+    my_fg.createVariable("x", "f4", "x")
+    my_fg.variables["x"].long_name = "x-coordinate in Cartesian system"
+    my_fg.variables["x"].standard_name = "projection_x_coordinate"
+    my_fg.variables["x"].units = "m"
+    my_fg.createVariable("y", "f4", "y")
+    my_fg.variables["y"].long_name = "y-coordinate in Cartesian system"
+    my_fg.variables["y"].standard_name = "projection_y_coordinate"
+    my_fg.variables["y"].units = "m"
+
+    standard_name = {"air_temperature_2m": "air_temperature",
+                     "relative_humidity_2m": "relative_humidity",
+                     "altitude": "altitude",
+                     "surface_snow_thickness": "surface_snow_thickness",
+                     "land_area_fraction": "land_area_fraction"}
+    long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
+                 "relative_humidity_2m": "Screen level relative humidity (RH2M)",
+                 "altitude": "Altitude",
+                 "surface_snow_thickness": "Surface snow thickness",
+                 "land_area_fraction": "Land Area Fraction"}
+    units = {"air_temperature_2m": "K",
+             "relative_humidity_2m": "1",
+             "altitude": "m",
+             "surface_snow_thickness": "m",
+             "land_area_fraction": "1"}
+    fillvalue = {"air_temperature_2m": "9.96921e+36",
+                 "relative_humidity_2m": "9.96921e+36",
+                 "altitude": "9.96921e+36",
+                 "surface_snow_thickness": "9.96921e+36",
+                 "land_area_fraction": "9.96921e+36"}
+
+    for my_var in my_variables:
+        if my_var == "altitude":
+            my_fg.createVariable(my_var, "f4", ("y", "x"), fill_value=fillvalue[my_var])
+        else:
+            my_fg.createVariable(my_var, "f4", ("time", "y", "x"), fill_value=fillvalue[my_var])
+        my_fg.variables[my_var].long_name = long_name[my_var]
+        my_fg.variables[my_var].standard_name = standard_name[my_var]
+        my_fg.variables[my_var].units = units[my_var]
+
+    return my_fg

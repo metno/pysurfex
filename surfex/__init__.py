@@ -19,3 +19,4 @@ from .titan import TitanDataSet
 from .timeseries import TimeSeries
 from .obsmon import *
 from .fa import Fa
+from .cli import *

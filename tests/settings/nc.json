@@ -1,0 +1,8 @@
+{
+  "nam_io_offline": {
+    "csurf_filetype": "NC",
+    "cpgdfile": "PGD_TEST",
+    "cprepfile": "PREP_TEST",
+    "csurffile": "SURFOUT_TEST"
+  }
+}

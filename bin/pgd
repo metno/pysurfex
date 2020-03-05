@@ -2,11 +2,14 @@
 
 import surfex
 import sys
-import argparse
-import os
-import json
 
 
+if __name__ == "__main__":
+
+    args = surfex.parse_args_surfex_binary(sys.argv[1:], "pgd")
+    surfex.run_surfex_binary(args, "pgd")
+
+'''
 def parse():
     """Parse the command line input arguments."""
     parser = argparse.ArgumentParser("Create physiography for SURFEX (PGD)")
@@ -88,3 +91,4 @@ if __name__ == "__main__":
                             archive_data=my_archive)
     else:
         print(output + " already exists!")
+'''
