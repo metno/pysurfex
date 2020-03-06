@@ -66,17 +66,20 @@ class ConfProj(SurfexGeo):
         self.cgrid = "CONF PROJ"
         domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
 
+        self.ilone = None
+        self.ilate = None
         if "nam_conf_proj_grid" in domain_dict:
-            if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" and "ilone" and "ilate" \
-                    in domain_dict["nam_conf_proj_grid"]:
+            if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" in domain_dict["nam_conf_proj_grid"]:
                 self.nimax = domain_dict["nam_conf_proj_grid"]["nimax"]
                 self.njmax = domain_dict["nam_conf_proj_grid"]["njmax"]
                 self.xloncen = domain_dict["nam_conf_proj_grid"]["xloncen"]
                 self.xlatcen = domain_dict["nam_conf_proj_grid"]["xlatcen"]
                 self.xdx = domain_dict["nam_conf_proj_grid"]["xdx"]
                 self.xdy = domain_dict["nam_conf_proj_grid"]["xdy"]
-                self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
-                self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
+                if "ilone" in domain_dict["nam_conf_proj_grid"]:
+                    self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
+                if "ilate" in domain_dict["nam_conf_proj_grid"]:
+                    self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
             else:
                 raise KeyError("Missing keys1")
         else:
@@ -109,26 +112,46 @@ class ConfProj(SurfexGeo):
                            np.reshape(lats, [npoints], order="F"))
 
     def update_namelist(self, nml):
-        nml.update({
-            "nam_pgd_grid": {
-                "cgrid": self.cgrid
-            },
-            "nam_conf_proj": {
-                "xlon0": self.xlon0,
-                "xlat0": self.xlat0,
-                "xrpk": math.sin(math.radians(self.xlat0)),
-                "xbeta": 0},
-            "nam_conf_proj_grid": {
-                "ilone": self.ilone,
-                "ilate": self.ilate,
-                "xlatcen": self.xlatcen,
-                "xloncen": self.xloncen,
-                "nimax": self.nimax,
-                "njmax": self.njmax,
-                "xdx": self.xdx,
-                "xdy": self.xdy
-            }
-        })
+        if self.ilate is None or self.ilate is None:
+            nml.update({
+                "nam_pgd_grid": {
+                    "cgrid": self.cgrid
+                },
+                "nam_conf_proj": {
+                    "xlon0": self.xlon0,
+                    "xlat0": self.xlat0,
+                    "xrpk": math.sin(math.radians(self.xlat0)),
+                    "xbeta": 0},
+                "nam_conf_proj_grid": {
+                    "xlatcen": self.xlatcen,
+                    "xloncen": self.xloncen,
+                    "nimax": self.nimax,
+                    "njmax": self.njmax,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy
+                }
+            })
+        else:
+            nml.update({
+                "nam_pgd_grid": {
+                    "cgrid": self.cgrid
+                },
+                "nam_conf_proj": {
+                    "xlon0": self.xlon0,
+                    "xlat0": self.xlat0,
+                    "xrpk": math.sin(math.radians(self.xlat0)),
+                    "xbeta": 0},
+                "nam_conf_proj_grid": {
+                    "ilone": self.ilone,
+                    "ilate": self.ilate,
+                    "xlatcen": self.xlatcen,
+                    "xloncen": self.xloncen,
+                    "nimax": self.nimax,
+                    "njmax": self.njmax,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy
+                }
+            })
         return nml
 
 
