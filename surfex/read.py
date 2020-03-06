@@ -140,6 +140,12 @@ class Converter:
             self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"], debug)
         elif self.name == "sea2land":
             self.sea = self.create_variable(fileformat, defs, conf[self.name]["sea"], debug)
+        elif self.name == "tap":
+            self.tap1 = self.create_variable(fileformat, defs, conf[self.name]["tap1"], debug)
+            self.tap2 = self.create_variable(fileformat, defs, conf[self.name]["tap2"], debug)
+        elif self.name == "rhp":
+            self.rhp1 = self.create_variable(fileformat, defs, conf[self.name]["rhp1"], debug)
+            self.rhp2 = self.create_variable(fileformat, defs, conf[self.name]["rhp2"], debug)
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
@@ -255,6 +261,14 @@ class Converter:
         elif self.name == "sea2land":
             field = self.sea.read_variable(geo, validtime, cache, geo_in=geo_in)
             field = np.subtract(1, field)
+        elif self.name == "tap":
+            tap1 = self.tap1.read_variable(geo, validtime, cache, geo_in=geo_in)
+            tap2 = self.tap2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = np.where(np.isnan(tap1), tap2, tap1)
+        elif self.name == "rhp":
+            rhp1 = self.rhp1.read_variable(geo, validtime, cache, geo_in=geo_in)
+            rhp2 = self.rhp2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = np.where(np.isnan(rhp1), rhp2, rhp1)
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
