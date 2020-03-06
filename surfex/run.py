@@ -252,16 +252,19 @@ class JsonInputDataFromFile(JsonInputData):
         JsonInputData.prepare_input(self)
 
 
-def create_working_dir(workdir):
+def create_working_dir(workdir, enter=True):
     # Create work directory
     if workdir is not None:
         if os.path.isdir(workdir):
             shutil.rmtree(workdir)
         os.makedirs(workdir, exist_ok=True)
-        os.chdir(workdir)
+        if enter:
+            os.chdir(workdir)
 
 
-def clean_working_dir(workdir):
+def clean_working_dir(workdir, exit=True):
+    if exit:
+        os.chdir("..")
     # Clean up
     shutil.rmtree(workdir)
 

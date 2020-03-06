@@ -247,10 +247,10 @@ class GeoTest(unittest.TestCase):
         with self.assertRaises(Exception):
             surfex.geo.set_domain(domains, "NAME")
 
-        domains = json.load(open("tests/settings/domains.json", "r"))
+        domains = json.load(open("test/settings/domains.json", "r"))
         domain_name = "CONF_PROJ_TEST"
         domain_json = surfex.geo.set_domain(domains, domain_name)
-        saved_domain = json.load(open("tests/settings/conf_proj_test.json"))
+        saved_domain = json.load(open("test/settings/conf_proj_test.json"))
         self.assertDictEqual(domain_json, saved_domain)
 
 

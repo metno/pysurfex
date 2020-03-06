@@ -6,6 +6,7 @@ import json
 import os
 import yaml
 import numpy as np
+import toml
 
 
 class LoadFromFile(Action):
@@ -186,6 +187,52 @@ def parse_args_create_surfex_json_namelist(argv):
         sys.exit()
 
     return parser.parse_args(argv)
+
+
+def create_surfex_json_namelist(args):
+
+    program = args.program
+    settings_file = args.config
+    input_path = args.path
+    indent = args.indent
+    system_settings = args.system
+    name_of_namelist = args.namelist
+    name_of_input_files = args.files
+    name_of_ecoclimap = args.ecoclimap
+    forc_zs = args.forc_zs
+    prep_file = args.prep_file
+    prep_filetype = args.prep_filetype
+    prep_pgdfile = args.prep_pgdfile
+    prep_pgdfiletype = args.prep_pgdfiletype
+    dtg = args.dtg
+
+    env = {}
+    if os.path.exists(settings_file):
+        print("Read toml settings from " + settings_file)
+        env = toml.load(open(settings_file, "r"))
+        print(env)
+    else:
+        raise FileNotFoundError("Input file does not exist: " + settings_file)
+
+    merged_json_settings, ecoclimap_json, input_for_surfex_json = \
+        surfex.set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs, prep_file,
+                                               prep_filetype, prep_pgdfile, prep_pgdfiletype, dtg)
+
+    # Namelist settings
+    print("\nNamelist: ")
+    for key in merged_json_settings:
+        print(key, ":", merged_json_settings[key])
+
+    # Dump namelist as json
+    merged_json_settings = surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
+
+    # Input files for SURFEX binary
+    print("\nInput files: ", input_for_surfex_json.data)
+    json.dump(input_for_surfex_json.data, open(name_of_input_files, "w"), indent=indent)
+
+    # Ecoclimap
+    print("\nEcoclimap: ", ecoclimap_json.data)
+    json.dump(ecoclimap_json.data, open(name_of_ecoclimap, "w"), indent=indent)
 
 
 def parse_args_first_guess_for_oi(argv):

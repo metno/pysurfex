@@ -7,7 +7,7 @@ import json
 
 class ConverterTest(unittest.TestCase):
 
-    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
@@ -43,7 +43,7 @@ class ConverterTest(unittest.TestCase):
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
-    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
@@ -80,7 +80,7 @@ class ConverterTest(unittest.TestCase):
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
 
-    domain = surfex.geo.set_domain(json.load(open("tests/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "netcdf"

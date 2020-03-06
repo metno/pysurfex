@@ -8,7 +8,7 @@ from surfex.variable import Variable
 class TestVariable(unittest.TestCase):
    
     def setUp(self):
-        with open("tests/fixtures/config.yml", 'r') as cfgf:
+        with open("test/fixtures/config.yml", 'r') as cfgf:
             self.cfg = yaml.safe_load(cfgf)
 
     def test_open_new_file(self):
