@@ -146,6 +146,9 @@ class Converter:
         elif self.name == "rhp":
             self.rhp1 = self.create_variable(fileformat, defs, conf[self.name]["rhp1"], debug)
             self.rhp2 = self.create_variable(fileformat, defs, conf[self.name]["rhp2"], debug)
+        elif self.name == "sdp":
+            self.sdp1 = self.create_variable(fileformat, defs, conf[self.name]["sdp1"], debug)
+            self.sdp2 = self.create_variable(fileformat, defs, conf[self.name]["sdp2"], debug)
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError
@@ -269,6 +272,10 @@ class Converter:
             rhp1 = self.rhp1.read_variable(geo, validtime, cache, geo_in=geo_in)
             rhp2 = self.rhp2.read_variable(geo, validtime, cache, geo_in=geo_in)
             field = np.where(np.isnan(rhp1), rhp2, rhp1)
+        elif self.name == "sdp":
+            sdp1 = self.rhp1.read_variable(geo, validtime, cache, geo_in=geo_in)
+            sdp2 = self.rhp2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = np.where(np.isnan(sdp1), sdp2, sdp1)
         else:
             print("Converter " + self.name + " not implemented")
             raise NotImplementedError

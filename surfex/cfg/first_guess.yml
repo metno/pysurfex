@@ -28,6 +28,17 @@ air_temperature_2m:
         type: sfc
         level: 2
         tri: 0
+      tap:
+        tap1:
+          par: 11
+          typ: sfc
+          lev: 832
+          tri: 0
+        tap2:
+          par: 11
+          typ: sfc
+          lev: 842
+          tri: 0
   grib2:
     converter:
       none:
@@ -57,6 +68,17 @@ relative_humidity_2m:
         type: sfc
         level: 2
         tri: 0
+      rhp:
+        rhp1:
+          par: 52
+          typ: sfc
+          lev: 832
+          tri: 0
+        rhp2:
+          par: 52
+          typ: sfc
+          lev: 842
+          tri: 0
   grib2:
     converter:
       none:
@@ -102,6 +124,18 @@ surface_snow_thickness:
           type: sfc
           level: 800
           tri: 0
+      sdp:
+        sdp1:
+          par: 66
+          typ: sfc
+          lev: 832
+          tri: 0
+        sdp2:
+          par: 66
+          typ: sfc
+          lev: 842
+          tri: 0
+
   grib2:
     converter:
       none:
@@ -127,8 +161,7 @@ surface_snow_thickness:
   surfex:
     converter:
       none:
-        #varname: DSN_T_ISBA
-        varname: T2M_ISBA
+        varname: DSN_T_ISBA
   fa:
     converter:
       none:
