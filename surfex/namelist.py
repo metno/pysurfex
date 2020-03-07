@@ -242,11 +242,11 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
 
         # RSMIN
         if env["COVER"]["SG"]:
-            input_list.append({"file": input_path + "/rsmin.json"})
-            input_list.append({"file": input_path + "/rsmin_mod.json"})
-        else:
             input_list.append({"file": input_path + "/rsmin_sg.json"})
             input_list.append({"file": input_path + "/rsmin_sg_mod.json"})
+        else:
+            input_list.append({"file": input_path + "/rsmin.json"})
+            input_list.append({"file": input_path + "/rsmin_mod.json"})
 
         # Treedrag
         if env["TREEDRAG"]["TREEDATA_FILE"] != "":
