@@ -18,7 +18,12 @@ except:
 
 
 class BufrObservationSet(surfex.obs.ObservationSet):
-    def __init__(self, bufrfile, provider, test_json, var, lonrange, latrange, valid_dtg, valid_range):
+    def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, label=""):
+
+        if lonrange is None:
+            lonrange = [-180, 180]
+        if latrange is None:
+            latrange = [-90, 90]
 
         if eccodes is None:
             raise Exception("ECCODES not found. Needed for bufr reading")
@@ -38,13 +43,26 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             'hour',
             'minute',
             'heightOfStationGroundAboveMeanSeaLevel',
-            'heightOfStation'
+            'heightOfStation',
+            'stationNumber',
+            'blockNumber'
         ]
-        if var == "relativeHumidityAt2M":
-            keys.append("airTemperatureAt2M")
-            keys.append("dewpointTemperatureAt2M")
-        else:
-            keys.append(var)
+        nerror = {}
+        ntime = {}
+        nundef = {}
+        ndomain = {}
+        nobs = {}
+        for var in variables:
+            if var == "relativeHumidityAt2M":
+                keys.append("airTemperatureAt2M")
+                keys.append("dewpointTemperatureAt2M")
+            else:
+                keys.append(var)
+            nerror.update({var: 0})
+            ntime.update({var: 0})
+            nundef.update({var: 0})
+            ndomain.update({var: 0})
+            nobs.update({var: 0})
 
         # The cloud information is stored in several blocks in the
         # SYNOP message and the same key means a different thing in different
@@ -61,10 +79,10 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         observations = list()
 
         # loop for the messages in the file
-        nerror = 0
-        ndomain = 0
-        nundef = 0
-        ntime = 0
+        # nerror = 0
+        # ndomain = 0
+        # nundef = 0
+        # ntime = 0
         not_decoded = 0
         # removed = 0
         while 1:
@@ -96,6 +114,9 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 day = -1
                 hour = -1
                 minute = -1
+                stid = "NA"
+                station_number = -1
+                block_number = -1
                 t2m = np.nan
                 td2m = np.nan
                 # rh2m = np.nan
@@ -126,6 +147,10 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             elev = val
                         if key == "heightOfStationGroundAboveMeanSeaLevel":
                             elev = val
+                        if key == "stationNumber":
+                            station_number = val
+                        if key == "blockNumber":
+                            block_number = val
                         if key == "airTemperatureAt2M":
                             t2m = val
                         if key == "dewpointTemperatureAt2M":
@@ -139,52 +164,59 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
                 # Assign value to var
-                if var == "relativeHumidityAt2M":
-                    if not np.isnan(t2m) and not np.isnan(td2m):
-                        value = self.td2rh(td2m, t2m)
-                elif var == "airTemperatureAt2M":
-                    value = t2m
-                elif var == "totalSnowDepth":
-                    value = sd
-                else:
-                    raise NotImplementedError("Var " + var + " is not coded! Please do it!")
-
-                all_found = True
-                if np.isnan(lat):
-                    all_found = False
-                if np.isnan(lon):
-                    all_found = False
-                if year == -1:
-                    all_found = False
-                if month == -1:
-                    all_found = False
-                if day == -1:
-                    all_found = False
-                if hour == -1:
-                    all_found = False
-                if minute == -1:
-                    all_found = False
-                if np.isnan(elev):
-                    all_found = False
-                if np.isnan(value):
-                    all_found = False
-
-                if not all_found:
-                    nerror += 1
-
-                # print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
-                if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
-                    obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
-                    # print(value)
-                    if not np.isnan(value):
-                        if self.inside_window(obs_dtg, valid_dtg, valid_range):
-                            observations.append(surfex.obs.Observation(valid_dtg, lon, lat, value, elev=elev))
-                        else:
-                            ntime += 1
+                for var in variables:
+                    if var == "relativeHumidityAt2M":
+                        if not np.isnan(t2m) and not np.isnan(td2m):
+                            value = self.td2rh(td2m, t2m)
+                        value = value * 0.01
+                    elif var == "airTemperatureAt2M":
+                        value = t2m
+                    elif var == "totalSnowDepth":
+                        value = sd
                     else:
-                        nundef += 1
-                else:
-                    ndomain += 1
+                        raise NotImplementedError("Var " + var + " is not coded! Please do it!")
+
+                    all_found = True
+                    if np.isnan(lat):
+                        all_found = False
+                    if np.isnan(lon):
+                        all_found = False
+                    if year == -1:
+                        all_found = False
+                    if month == -1:
+                        all_found = False
+                    if day == -1:
+                        all_found = False
+                    if hour == -1:
+                        all_found = False
+                    if minute == -1:
+                        all_found = False
+                    if np.isnan(elev):
+                        all_found = False
+                    if np.isnan(value):
+                        all_found = False
+
+                    if not all_found:
+                        nerror.update({var: nerror[var] + 1})
+
+                    # print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
+                    if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
+                        obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+                        # print(value)
+                        if not np.isnan(value):
+                            if self.inside_window(obs_dtg, valid_dtg, valid_range):
+                                # print(valid_dtg, lon, lat, value, elev, stid)
+                                if station_number > 0 and block_number > 0:
+                                    stid = str((block_number * 1000) + station_number)
+                                observations.append(surfex.obs.Observation(obs_dtg, lon, lat, value,
+                                                                           elev=elev, stid=stid, varname=var))
+                                nobs.update({var: nobs[var] + 1})
+                            else:
+                                ntime.update({var: ntime[var] + 1})
+                        else:
+                            nundef.update({var: nundef[var] + 1})
+                    else:
+                        ndomain.update({var: ndomain[var] + 1})
 
                 cnt += 1
 
@@ -195,17 +227,18 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             # delete handle
             eccodes.codes_release(bufr)
 
-        print("\nObservations for var=" + var)
-        print("Found " + str(len(observations)) + "/" + str(cnt))
+        print("\nFound " + str(len(observations)) + "/" + str(cnt))
         print("Not decoded: " + str(not_decoded))
-        print("Observations removed because of domain check: " + str(ndomain))
-        print("Observations removed because of not being defined/found: " + str(nundef))
-        print("Observations removed because of time window: " + str(ntime))
-        print("Messages not containing information on all keys: " + str(nerror))
+        for var in variables:
+            print("\nObservations for var=" + var + ": " + str(nobs[var]))
+            print("Observations removed because of domain check: " + str(ndomain[var]))
+            print("Observations removed because of not being defined/found: " + str(nundef[var]))
+            print("Observations removed because of time window: " + str(ntime[var]))
+            print("Messages not containing information on all keys: " + str(nerror[var]))
         # close the file
         f.close()
 
-        surfex.obs.ObservationSet.__init__(self, provider, test_json, observations)
+        surfex.obs.ObservationSet.__init__(self, observations, label=label)
 
     @staticmethod
     def td2rh(td, t):

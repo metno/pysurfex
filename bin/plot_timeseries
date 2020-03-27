@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
-import json
 import argparse
 import numpy as np
 import surfex
@@ -9,164 +8,70 @@ from datetime import datetime
 import sys
 
 
-def parse_args(args_in):
-    parser = argparse.ArgumentParser("Plot field")
-    parser.add_argument('-d', '--domain', dest="domain", type=str, help="Domain json definition",
-                        default=None, required=False)
-    parser.add_argument('-v', '--variable', dest="variable", type=str, help="Variable name", required=True)
-    parser.add_argument('-i', '--inputfile', dest="inputfile", type=str, help="Input file", default="", required=False)
-    parser.add_argument('-ft', '--filetype', dest="filetype", type=str, help="Filetype", default="surfex",
-                        required=False, choices=["netcdf", "grib1", "grib2", "surfex"])
-    parser.add_argument('-t', '--validtime', dest="validtime", type=str, help="Valid time", default=None, required=False)
-    parser.add_argument('-it', '--inputtype', dest="inputtype", type=str, help="Input type", default=None,
-                        required=False, choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"])
-    parser.add_argument('-if', '--inputformat', dest="inputformat", type=str, help="Input format", default=None,
-                        required=False)
+def parse_plot_timeseries_args(argv):
+    parser = argparse.ArgumentParser("Plot timeseries from JSON time series file")
+    parser.add_argument('filename', type=str, default=None, help="JSON time series file")
+    parser.add_argument('-lon', type=float, default=None, help="Longitude", required=False)
+    parser.add_argument('-lat', type=float, default=None, help="Latitude", required=False)
+    parser.add_argument('-stid', type=str, default=None, help="Station id", required=False)
+    parser.add_argument('-stationlist', type=str, default=None, help="Station list", required=False)
+    parser.add_argument('-start', type=str, default=None, help="Start time (YYYYMMDDHH)", required=False)
+    parser.add_argument('-end', type=str, default=None, help="End time (YYYYMMDDHH)", required=False)
+    parser.add_argument('-interval', type=int, default=None, help="Interval", required=False)
     parser.add_argument('-o', '--output', dest="output", type=str, help="Input format", default=None,
                         required=False)
-    parser.add_argument('--interpolation', default="none")
-
-    if len(args_in) == 0:
+    if len(argv) < 3:
         parser.print_help()
         sys.exit()
 
-    return parser.parse_args(args_in)
+    return parser.parse_args(argv)
+
+
+def plot_timeseries_from_json(args):
+
+    lon = args.lon
+    lat = args.lat
+    stid = args.stid
+    stationlist = args.stationlist
+    starttime = args.start
+    if starttime is not None:
+        starttime = datetime.strptime(args.start, "%Y%m%d%H")
+    endtime = args.end
+    if endtime is not None:
+        endtime = datetime.strptime(args.end, "%Y%m%d%H")
+    interval = args.interval
+    filename = args.filename
+    output = args.output
+
+    if lon is None and lat is None:
+        if stid is None:
+            raise Exception("You must provide lon and lat or stid")
+        if stationlist is None:
+            raise Exception("You must provide a stationlist with the stid")
+        lons, lats = surfex.Observation.get_pos_from_stid(stationlist, [stid])
+        lon = lons[0]
+        lat = lats[0]
+
+    ts = surfex.TimeSeriesFromJson(filename, lons=[lon], lats=[lat], starttime=starttime, endtime=endtime,
+                                   interval=interval)
+
+    nt = len(ts.times)
+    vals = np.zeros(nt)
+    for i in range(0, nt):
+        vals[i] = ts.values[i][0]
+
+    ts_stid = str(ts.stids[0])
+    if ts_stid == "NA" and stid is not None:
+        ts_stid = stid
+    plt.title("var= " + ts.varname + " lon: " + str(lon) + " lat: " + str(lat) + " stid: " + ts_stid)
+    plt.plot(ts.times, vals)
+    if output is None:
+        plt.show()
+    else:
+        plt.savefig(output)
 
 
 if __name__ == "__main__":
 
-    # args = parse_args(sys.argv[1:])
-
-    #domain = args.domain
-    #validtime = datetime.strptime(args.validtime, "%Y%m%d%H")
-    #variable = args.variable
-    #filename = args.inputfile
-    #filetype = args.filetype
-    #inputtype = args.inputtype
-    #fileformat = args.inputformat
-    #output = args.output
-
-    domain = "examples/settings/svalbard.json"
-    domain_json = json.load(open(domain, "r"))
-    geo_in = surfex.geo.get_geo_object(domain_json)
-
-    # 78.200588, 15.573134
-    lons = [15.573134]
-    lats = [78.200588]
-    delta = [0.1]
-    geo_json = {
-        "nam_pgd_grid": {
-            "cgrid": "LONLATVAL"
-        },
-        "nam_lonlatval": {
-            "xx": lons,
-            "xy": lats,
-            "xdx": delta,
-            "xdy": delta
-        }
-    }
-    geo = surfex.LonLatVal(geo_json)
-
-
-
-    conf = {
-        "SNOW": {
-            "surfex": {
-                "converter": {
-                    "none": {
-                        "varname": "Snowf",
-                        "fcint": 24*3600,
-                        "file_inc": 24*600,
-                        "offset": 0,
-                        "filepattern": "/lustre/storeB/users/trygveasp/thredds/snow/forcing/FORCING_@YYYY@@MM@@DD@@HH@.nc"
-                    }
-                }
-            },
-            "netcdf": {
-                "converter": {
-                    "none": {
-                        "name": "snowfall_amount_acc",
-                        "accumulated": True,
-                        "fcint": 6 * 3600,
-                        "instant": 0,
-                        "file_inc": 6 * 600,
-                        "offset": 3*3600,
-                        "filepattern": "/lustre/storeB/immutable/archive/projects/metproduction/DNMI_AROME_ARCTIC/@YYYY@/@MM@/@DD@/arome_arctic_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
-                    }
-                }
-            }
-
-        },
-        "RAIN": {
-            "surfex": {
-                "converter": {
-                    "none": {
-                        "varname": "Rainf",
-                        "fcint": 24 * 3600,
-                        "file_inc": 24 * 600,
-                        "offset": 0,
-                        "filepattern": "/lustre/storeB/users/trygveasp/thredds/snow/forcing/FORCING_@YYYY@@MM@@DD@@HH@.nc"
-                    }
-                }
-            },
-            "netcdf": {
-                "converter": {
-                    "totalprec": {
-                        "totalprec": {
-                            "name": "precipitation_amount_acc",
-                            "accumulated": True,
-                            "instant": 0.,
-                            "fcint": 6 * 3600,
-                            "file_inc": 6 * 600,
-                            "offset": 3 * 3600,
-                            "filepattern": "/lustre/storeB/immutable/archive/projects/metproduction/DNMI_AROME_ARCTIC/@YYYY@/@MM@/@DD@/arome_arctic_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
-                        },
-                        "snow": {
-                            "name": "snowfall_amount_acc",
-                            "accumulated": True,
-                            "instant": 0.,
-                            "fcint": 6 * 3600,
-                            "file_inc": 6 * 600,
-                            "offset": 3 * 3600,
-                            "filepattern": "/lustre/storeB/immutable/archive/projects/metproduction/DNMI_AROME_ARCTIC/@YYYY@/@MM@/@DD@/arome_arctic_extracted_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    # start = datetime.strptime(args.start, "%Y%m%d%H")
-    # end = datetime.strptime(args.end, "%Y%m%d%H")
-    start = datetime.strptime("2018100106", "%Y%m%d%H")
-    end = datetime.strptime("2018100306", "%Y%m%d%H")
-    interval = 3600
-
-    cache = surfex.Cache(False, 7200)
-    # Create var
-    var = "RAIN"
-    fileformat = "surfex"
-    converter = "none"
-    ts1 = surfex.TimeSeries(var, fileformat, conf, geo, converter, start, end, cache=cache, interval=interval,
-                            geo_in=geo_in)
-
-    fileformat = "netcdf"
-    converter = "totalprec"
-    cache = surfex.Cache(False, 7200)
-    ts2 = surfex.TimeSeries(var, fileformat, conf, geo, converter, start, end, cache=cache, interval=interval,
-                            geo_in=geo_in)
-
-    print("TRYGVE1: ", ts1.times)
-    print("TRYGVE2: ", ts1.values)
-    print("TRYGVE3: ", ts1.values[0])
-    print(ts1.values.shape)
-    #print(ts1.times, ts1.values[0][:], ts1.values[1][:])
-    #print(ts1.times, ts2.values[0, :], ts2.values[1, :])
-    print(ts1.values[:, 0])
-    print(ts2.values[:, 0])
-    plt.plot(ts1.times, ts1.values[:, 0]*3600.)
-    plt.plot(ts2.times, ts2.values[:, 0], '--')
-    plt.savefig("ts.png")
-
-
-
+    my_args = parse_plot_timeseries_args(sys.argv[1:])
+    plot_timeseries_from_json(my_args)

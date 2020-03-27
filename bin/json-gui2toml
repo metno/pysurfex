@@ -29,7 +29,7 @@ def recursive_items(dictionary):
         if type(my_value) is dict:
             yield from recursive_items(my_value)
         else:
-            yield (my_key, my_value)
+            yield my_key, my_value
 
 
 if __name__ == "__main__":

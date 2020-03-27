@@ -82,7 +82,6 @@ setup(
         "cfunits",
         "enum34",
         "requests",
-        "python-dateutil",
         "json; python_version < '3'",
         "StringIO; python_version < '3'",
         "eccodes",

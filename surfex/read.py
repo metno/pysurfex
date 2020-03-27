@@ -175,6 +175,8 @@ class Converter:
             var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug)
         elif fileformat == "fa":
             var = surfex.variable.FaVariable(merged_dict, self.basetime, self.validtime, debug=debug)
+        elif fileformat == "obs":
+            var = surfex.variable.ObservationVariable(merged_dict, self.basetime, self.validtime, debug=debug)
         elif fileformat == "constant":
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
         else:

@@ -23,7 +23,10 @@ class Variable(object):
         self.basetime = basetime
         self.validtime = validtime
         self.var_dict = copy.deepcopy(var_dict)
-        self.filepattern = var_dict["filepattern"]
+        if "filepattern" in var_dict:
+            self.filepattern = var_dict["filepattern"]
+        else:
+            self.filepattern = None
         self.file_handler = None
         self.previousfilename = None
         self.time_elapsed = validtime-basetime
@@ -58,6 +61,9 @@ class Variable(object):
         return field
 
     def open_new_file(self, fcint, offset, file_inc):
+
+        if self.filepattern is None:
+            return True
 
         new = False
         filepattern = self.var_dict["filepattern"]
@@ -574,3 +580,98 @@ class FaVariable(Variable):
 
     def print_variable_info(self):
         print(":" + str(self.var_dict) + ":")
+
+
+class ObservationVariable(Variable):
+    def __init__(self,  var_dict, basetime, validtime, debug):
+
+        mandatory = ["filetype", "fcint", "offset", "file_inc"]
+
+        for i in range(0, len(mandatory)):
+            print(mandatory[i], var_dict)
+            if mandatory[i] not in var_dict:
+                raise Exception("Observation variable must have attribute " + mandatory[i] + " var_dict:" +
+                                str(var_dict))
+
+        Variable.__init__(self, basetime, validtime, var_dict, debug)
+
+    def read_variable(self, geo, validtime, cache, geo_in=None):
+
+        self.validtime = validtime
+        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
+                              int(self.var_dict["file_inc"])):
+
+            if cache is not None and cache.file_open(self.filename):
+                self.file_handler = cache.get_file_handler(self.filename)
+            else:
+                var_dict = self.var_dict
+                var_dict = {"set": var_dict}
+                self.file_handler = surfex.get_datasources(validtime, var_dict)[0]
+
+                if cache is not None:
+                    cache.set_file_handler(self.filename, self.file_handler)
+
+        if self.file_handler is None:
+            warning("No file handler exist for this time step")
+            field = np.array([geo.nlons])
+            field = field.fill(np.nan)
+        else:
+            if "varname" in self.var_dict:
+                varname = self.var_dict["varname"]
+            else:
+                varname = None
+
+            accumulated = False
+            if "accumulated" in self.var_dict:
+                accumulated = self.var_dict["accumulated"]
+
+            # Re-read field
+            previous_field = None
+            if accumulated:
+                print(self.basetime, self.initialtime, self.previoustime)
+                can_read = True
+                if self.basetime <= self.initialtime:
+                    if self.previoustime < self.basetime:
+                        can_read = False
+
+                if not can_read:
+                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
+                    print(self.basetime, self.initialtime, self.previoustime)
+                    previous_field = np.zeros([geo.npoints])
+                else:
+                    id_str = cache.generate_obs_id(varname, self.previousfilename, self.previoustime)
+                    if cache.is_saved(id_str):
+                        previous_field = cache.saved_fields[id_str]
+                    else:
+                        fname = self.filename
+                        if self.debug:
+                            print("Re-read ", self.previoustime, " from ", self.previousfilename)
+                        self.file_handler.fname = self.previousfilename
+
+                        times, previous_field, stids = self.file_handler.points(geo)
+
+                        # Change filename back in handler. Ready to read this time step
+                        self.file_handler.fname = fname
+                        cache.save_field(id_str, previous_field)
+
+            # Read field
+            id_str = None
+            if cache is not None:
+                id_str = cache.generate_obs_id(varname, self.filename, self.validtime)
+            if cache is not None and cache.is_saved(id_str):
+                field = cache.saved_fields[id_str]
+            else:
+                times, field, stids = self.file_handler.points(geo)
+
+            # Deaccumulate
+            if accumulated:
+                instant = [(validtime - self.previoustime).total_seconds()]
+                if "instant" in self.var_dict:
+                    instant = [self.var_dict["instant"]]
+                field = self.deaccumulate(field, previous_field, float(instant[0]))
+
+        self.previoustime = validtime
+        return field
+
+    def print_variable_info(self):
+        pass

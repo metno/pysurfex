@@ -66,7 +66,7 @@ class Interpolation(object):
 
 class NearestNeighbour(Interpolation):
 
-    def __init__(self, geo_in, geo_out, cache=None):
+    def __init__(self, geo_in, geo_out, cache=None, distance_check=True,  distance_limit=3):
         from scipy.interpolate import NearestNDInterpolator
 
         if not geo_in.can_interpolate:
@@ -123,21 +123,25 @@ class NearestNeighbour(Interpolation):
             nn = NearestNDInterpolator(points[:, :], values_vec[:])
             surfex.util.info("Interpolation finished")
 
-            # Set max distance as sanity
-            distance_check = 3.
-            if len(lons_vec) > 1 and len(lats_vec) > 1:
-                max_distance = distance_check * self.distance(lons_vec[0], lats_vec[0], lons_vec[1], lats_vec[1])
-            else:
-                raise Exception("You only have one point is your input field!")
-
             # print(interpolated_lons, interpolated_lats)
             ii = nn(interpolated_lons, interpolated_lats)
             i = x[ii]
             j = y[ii]
-            dist = self.distance(interpolated_lons, interpolated_lats, lons_vec[ii], lats_vec[ii])
-            if dist.max() > max_distance:
-                raise Exception("Point is too far away from nearest point: " + str(dist.max()) +
-                                " Max distance=" + str(max_distance))
+
+            self.distances = self.distance(interpolated_lons, interpolated_lats, lons_vec[ii], lats_vec[ii])
+            # Set max distance as sanity
+            if distance_check:
+                if len(lons_vec) > 1 and len(lats_vec) > 1:
+                    max_distance = distance_limit * self.distance(lons_vec[0], lats_vec[0], lons_vec[1], lats_vec[1])
+                else:
+                    raise Exception("You only have one point is your input field!")
+
+                # dist = self.distance(interpolated_lons, interpolated_lats, lons_vec[ii], lats_vec[ii])
+                if self.distances.max() > max_distance:
+                    if distance_check:
+                        raise Exception("Point is too far away from nearest point: " + str(self.distances.max()) +
+                                        " Max distance=" + str(max_distance))
+
             grid_points = np.column_stack((i, j))
             self.index = grid_points
 
@@ -176,7 +180,6 @@ class Linear(Interpolation):
             # nx, ny = self.setup_weights(int_lons, int_lats, var_lons, var_lats)
 
             Interpolation.__init__(self, "linear", nx, ny, var_lons, var_lats)
-
 
     '''
     def setup_weights(self, int_lons, int_lats, var_lons, var_lats):

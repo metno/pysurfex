@@ -548,6 +548,8 @@ class NCSurfexFile(SurfexIO):
 
         # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        # Does not work wih interpolator
+        # field = np.transpose(field)
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):

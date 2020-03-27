@@ -262,10 +262,8 @@ def create_working_dir(workdir, enter=True):
             os.chdir(workdir)
 
 
-def clean_working_dir(workdir, exit=True):
+def clean_working_dir(workdir):
     if exit:
         os.chdir("..")
     # Clean up
     shutil.rmtree(workdir)
-
-

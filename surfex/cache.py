@@ -116,7 +116,7 @@ class Cache:
             level = gribvar.level
             tri = gribvar.tri
             return ":%d:%d:%d:%s:%s:%s" % (level, tri, par, typ, filename.split("/")[-1],
-                                            validtime.strftime('%Y%m%d%H'))
+                                           validtime.strftime('%Y%m%d%H'))
         elif gribvar.version == 2:
             dis = gribvar.discipline
             pc = gribvar.parameterCategory
@@ -125,7 +125,7 @@ class Cache:
             lev = gribvar.level
             tsp = gribvar.typeOfStatisticalProcessing
             return ":%d:%d:%d:%s:%d:%d:%s:%s" % (dis, pc, pn, lt, lev, tsp, filename.split("/")[-1],
-                                                  validtime.strftime('%Y%m%d%H'))
+                                                 validtime.strftime('%Y%m%d%H'))
         else:
             raise NotImplementedError
 
@@ -136,3 +136,7 @@ class Cache:
     @staticmethod
     def generate_surfex_id(varname, patches, layers, filename, validtime):
         return "%s%s%s%s%s" % (varname, patches, layers, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+
+    @staticmethod
+    def generate_obs_id(varname, filename, validtime):
+        return "%s%s%s" % (varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))

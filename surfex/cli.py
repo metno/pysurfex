@@ -144,8 +144,11 @@ def parse_args_ascii2sqlite(argv):
     parser = ArgumentParser("Create SQLite data base for obsmon")
     parser.add_argument('DTG', type=str, help="YYYYMMDDHH")
     parser.add_argument('varname', type=str, help="Variable name")
-    parser.add_argument('--titan', type=str, help="TITAN output file", default=None)
-    parser.add_argument('--gridpp', type=str, help="gridpp diagnostic file", default=None)
+    parser.add_argument('--titan', type=str, help="TITAN output file", required=True)
+    parser.add_argument('--fg_file', type=str, help="First guess file", required=True)
+    parser.add_argument('--an_file', type=str, help="Analysis file", required=True)
+    parser.add_argument('--file_var', type=str, help="File variable", required=True)
+    parser.add_argument('--gridpp', type=str, help="gridpp diagnostic file", required=True)
     parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
 
     return parser.parse_args(argv)
@@ -206,7 +209,6 @@ def create_surfex_json_namelist(args):
     prep_pgdfiletype = args.prep_pgdfiletype
     dtg = args.dtg
 
-    env = {}
     if os.path.exists(settings_file):
         print("Read toml settings from " + settings_file)
         env = toml.load(open(settings_file, "r"))
@@ -224,7 +226,7 @@ def create_surfex_json_namelist(args):
         print(key, ":", merged_json_settings[key])
 
     # Dump namelist as json
-    merged_json_settings = surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
+    surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
 
     # Input files for SURFEX binary
     print("\nInput files: ", input_for_surfex_json.data)
@@ -236,39 +238,51 @@ def create_surfex_json_namelist(args):
 
 
 def parse_args_first_guess_for_oi(argv):
+    parser = ArgumentParser(description="Create first guess file for gridpp")
+    parser.add_argument('-dtg', dest="dtg", type=str, help="Domain", required=True)
+    parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
+    parser.add_argument('-if', dest="inputformat", type=str, help="output file", default="grib2")
+    parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
 
-    """Parse the command line input arguments."""
-    parser = ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
+    parser.add_argument('-t2m_file', type=str, default=None, help="File with T2M", nargs="?")
+    parser.add_argument('-t2m_format', type=str, default=None, help="File format for file with T2M", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('-t2m_converter', type=str, default="none", help="Converter for T2M", nargs="?",
+                        choices=["none"])
+    parser.add_argument('-rh2m_file', type=str, default=None, help="File with RH2M", nargs="?")
+    parser.add_argument('-rh2m_format', type=str, default=None, help="File format for file with RH2M", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('-rh2m_converter', type=str, default="none", help="Converter for RH2M", nargs="?",
+                        choices=["none"])
 
-    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--config', '-c', type=str, nargs="?", required=False, help="Input TOML file if wanted")
-    parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
-    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
-    parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?', help="")
-    parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
-                        help="Input json file for SURFEX binaries")
-    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP")
-    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
-    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
-                        help="Input PGD file for PREP input file")
-    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False,
-                        default=None,
-                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
-    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
-                        help="DTG (YYYYMMDDHH)")
-    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
+    parser.add_argument('-sd_file', type=str, default=None, help="Snow depth file", nargs="?")
+    parser.add_argument('-sd_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?",
+                        choices=["none", "sweclim", "swe2sd"])
 
-    parser.add_argument('--ecoclimap', '-e', type=str, nargs="?", required=False, default="ecoclimap.json",
-                        help="Input ecoclimap json file for SURFEX binaries")
-    parser.add_argument('program', help="For which program you should create the JSON file",
-                        choices=["pgd", "prep", "offline", "soda"])
+    parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
+    parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--laf_converter', type=str, default="sea2land", help="", nargs="?",
+                        choices=["none", "sea2land"])
+
+    parser.add_argument('-altitude_file', type=str, default=None, help="SURFEX grib file", nargs="?")
+    parser.add_argument('-altitude_format', type=str, default=None, help="Snow depth file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--altitude_converter', type=str, default="phi2m", help="", nargs="?",
+                        choices=["none", "phi2m"])
+
+    parser.add_argument('-o', dest="output", type=str, help="Output file", default="raw.nc")
+    parser.add_argument('--config', '-c', dest="config", type=str, help="YAML config file",
+                        default="first_guess.yml", nargs="?")
+    parser.add_argument('variables', nargs="+", choices=["air_temperature_2m", "relative_humidity_2m",
+                                                         "surface_snow_thickness"],
+                        help="Variables to create first guess for")
 
     if len(argv) == 0:
         parser.print_help()
-        sys.exit()
+        sys.exit(1)
 
     return parser.parse_args(argv)
 
@@ -284,8 +298,8 @@ def first_guess_for_oi(args):
         raise FileNotFoundError(args.domain)
 
     validtime = datetime.strptime(args.dtg, "%Y%m%d%H")
-    variables = ["air_temperature_2m", "relative_humidity_2m", "surface_snow_thickness", "altitude",
-                 "land_area_fraction"]
+    variables = args.variables
+    variables = variables + ["altitude", "land_area_fraction"]
 
     cache = surfex.cache.Cache(True, 3600)
     fg = None
@@ -330,7 +344,7 @@ def first_guess_for_oi(args):
             if args.laf_converter is not None:
                 converter = args.laf_converter
         else:
-            raise NotImplementedError
+            raise NotImplementedError("Variable not implemented " + var)
 
         if inputfile is None:
             raise Exception("You must set input file")
@@ -690,6 +704,7 @@ def run_surfex_binary(args, mode):
         if need_prep:
             my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path)
 
+        surffile = None
         if need_prep and need_pgd:
             surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output)
 
@@ -714,3 +729,143 @@ def run_surfex_binary(args, mode):
 
     else:
         print(output + " already exists!")
+
+
+def parse_args_gridpp(argv):
+    parser = ArgumentParser(description="Create horisontal OI analysis")
+    parser.add_argument('-i', '--input_file', type=str, help="Input NetCDF file with all variables", required=True)
+    parser.add_argument('-obs', '--obs_file', type=str, help="Input JSON file with QC observations", required=True)
+    parser.add_argument('-o', '--output_file', type=str, help="Output NetCDF file with all variables", required=True)
+    parser.add_argument('-v', '--var', type=str, help="Variable", required=True)
+    parser.add_argument('--minrho', dest='min_rho', type=float, default=0.0013, required=False)
+    parser.add_argument('-hor', dest='hlength', type=float, required=True)
+    parser.add_argument('-vert', dest='vlength', type=float, default=100000, required=False)
+    parser.add_argument('--wmin', dest='wmin', type=float, default=0., required=False)
+    parser.add_argument('--maxElevDiff', dest='max_elev_diff', type=float, default=100., required=False)
+    parser.add_argument('--landOnly', dest='land_only', action="store_true", default=False)
+    parser.add_argument('--maxLocations', dest='max_locations', type=int, default=20, required=False)
+    parser.add_argument('--elevGradient', dest='elev_gradient', type=float, default=-0.0065, required=False,
+                        choices=[0, -0.0065])
+    parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.5, required=False)
+
+    if len(sys.argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args(argv)
+
+
+def run_gridpp(args):
+
+    var = args.var
+    input_file = args.input_file
+    output_file = args.output_file
+    min_rho = args.min_rho
+    hlength = args.hlength
+    vlength = args.vlength
+    wmin = args.wmin
+    max_elev_diff = args.max_elev_diff
+    land_only = args.land_only
+    max_locations = args.max_locations
+    elev_gradient = args.elev_gradient
+    epsilon = args.epsilon
+
+    # Get input fields
+    geo, validtime, background, glafs, gelevs = surfex.read_first_guess_netcdf_file(input_file, var)
+
+    an_time = validtime
+    # Read OK observations
+    observations = surfex.dataset_from_file(an_time, args.obs_file,  qc_flag=0)
+
+    field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,  min_rho=min_rho,
+                                 hlength=hlength, vlength=vlength, wmin=wmin, max_elev_diff=max_elev_diff,
+                                 land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
+                                 epsilon=epsilon)
+
+    surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
+
+
+def parse_args_titan(argv):
+    parser = ArgumentParser(description="Do quality control of observations")
+    parser.add_argument('-i', '--input_file', type=str, help="Input json file with observation sets and test settings",
+                        required=True)
+    parser.add_argument('-o', '--output_file', type=str, help="Output json file with quality checked observations",
+                        required=False, default="qc_obs.json")
+    parser.add_argument('-v', '--variable', type=str, help="Observation variable")
+    parser.add_argument('--indent', type=int, default=None, help="Indent")
+    parser.add_argument('-dtg', type=str, help="Date time group YYYYMMDDHH", required=True)
+
+    parser.add_argument('tests', nargs='+', type=str, help="Which tests to run and order to run")
+
+    if len(sys.argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args(argv)
+
+
+def run_titan(args):
+
+    input_file = args.input_file
+    if os.path.exists(input_file):
+        settings = json.load(open(input_file, "r"))
+    else:
+        raise FileNotFoundError("Could not find input file " + input_file)
+    tests = args.tests
+
+    # Find name of global config file
+    root = __file__
+    if os.path.islink(root):
+        root = os.path.realpath(root)
+    base = os.path.dirname(os.path.abspath(root))
+    qc_config = base + "/cfg/qc_codes.json"
+
+    test_flags = json.load(open(qc_config, "r"))
+
+    an_time = datetime.strptime(args.dtg, "%Y%m%d%H")
+    var = args.variable
+
+    data_set = surfex.TitanDataSet(var, settings[var], tests, test_flags, an_time, debug=True)
+    data_set.perform_tests()
+
+    data_set.write_output(args.output_file, indent=args.indent)
+
+
+def parse_args_oi2soda(argv):
+    parser = ArgumentParser(description="Create ASCII input for SODA from gridPP files")
+    parser.add_argument('--t2m_file', type=str, help="NetCDF file for T2M", required=False, default=None)
+    parser.add_argument('--t2m_var', type=str, help="NetCDF variable name for T2M", required=False,
+                        default="air_temperature_2m")
+    parser.add_argument('--rh2m_file', type=str, help="NetCDF file for RH2M", required=False, default=None)
+    parser.add_argument('--rh2m_var', type=str, help="NetCDF variable name for RH2M", required=False,
+                        default="relative_humidity_2m")
+    parser.add_argument('--sd_file', type=str, help="NetCDF file for SD", required=False, default=None)
+    parser.add_argument('--sd_var', type=str, help="NetCDF variable name for SD", required=False,
+                        default="surface_snow_thickness")
+    parser.add_argument('dtg', type=str, help="DTG", default=None)
+
+    if len(argv) < 3:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args(argv)
+
+
+def run_oi2soda(args):
+
+    t2m_file = args.t2m_file
+    rh2m_file = args.rh2m_file
+    sd_file = args.sd_file
+
+    t2m = None
+    if t2m_file is not None:
+        t2m = {"file": t2m_file, "var": args.t2m_var}
+    rh2m = None
+    if rh2m_file is not None:
+        rh2m = {"file": rh2m_file, "var": args.rh2m_var}
+    sd = None
+    if sd_file is not None:
+        sd = {"file": sd_file, "var": args.sd_var}
+
+    dtg = datetime.strptime(args.dtg, "%Y%m%d%H")
+    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd)

@@ -2,6 +2,7 @@ import surfex
 import netCDF4
 import numpy as np
 import cfunits
+import os
 import re
 from datetime import datetime, date
 from enum import Enum
@@ -452,6 +453,9 @@ class NetCDFFileVariable(object):
 
 def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc"):
 
+    if os.path.exists(fname):
+        os.remove(fname)
+
     my_fg = netCDF4.Dataset(fname, "w")
     my_fg.createDimension("y", my_ny)
     my_fg.createDimension("x", my_nx)
@@ -499,12 +503,161 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
                  "land_area_fraction": "9.96921e+36"}
 
     for my_var in my_variables:
-        if my_var == "altitude":
-            my_fg.createVariable(my_var, "f4", ("y", "x"), fill_value=fillvalue[my_var])
-        else:
-            my_fg.createVariable(my_var, "f4", ("time", "y", "x"), fill_value=fillvalue[my_var])
+        my_fg.createVariable(my_var, "f4", ("y", "x"), fill_value=fillvalue[my_var])
         my_fg.variables[my_var].long_name = long_name[my_var]
         my_fg.variables[my_var].standard_name = standard_name[my_var]
         my_fg.variables[my_var].units = units[my_var]
 
     return my_fg
+
+
+def read_first_guess_netcdf_file(input_file, var):
+
+    fh = netCDF4.Dataset(input_file)
+    lons = fh["longitude"][:]
+    lats = fh["latitude"][:]
+
+    validtime = int(cfunits.Units.conform(fh["time"][:], cfunits.Units(fh["time"].units),
+                    cfunits.Units("seconds since 1970-01-01 00:00:00")))
+    validtime = datetime.fromtimestamp(validtime)
+
+    nx = lons.shape[0]
+    ny = lons.shape[1]
+    lons = np.array(np.reshape(lons, [nx * ny]))
+    lats = np.array(np.reshape(lats, [nx * ny]))
+    # print(lons.shape, lats.shape, type(lons))
+    geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
+
+    background_in = fh[var][:]
+    background = np.random.rand(nx, ny)
+
+    if "land_area_fraction" in fh.variables:
+        glafs_in = fh["land_area_fraction"][:]
+        glafs = np.random.rand(nx, ny)
+    else:
+        raise Exception("No land area fraction found in first guess file")
+
+    if "altitude" in fh.variables:
+        gelevs_in = fh["altitude"][:]
+        gelevs = np.random.rand(nx, ny)
+    else:
+        raise Exception("No altitude found in first guess file")
+
+    for i in range(0, nx):
+        for j in range(0, ny):
+            # print(i, j, background_in[i][j])
+            background[i][j] = background_in[i][j]
+            glafs[i][j] = glafs_in[i][j]
+            gelevs[i][j] = gelevs_in[i][j]
+
+    fh.close()
+    return geo, validtime, background, glafs, gelevs
+
+
+def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new_file=True, geo=None):
+
+    fh = None
+    if os.path.exists(filename):
+        fh = netCDF4.Dataset(filename, mode="a")
+    else:
+        new_file = True
+
+    if new_file:
+        if geo is None:
+            raise Exception("You need to provide geo to write a new file")
+        fh = create_netcdf_first_guess_template([var, "altitude", "land_area_fraction"],
+                                                geo.nlons, geo.nlats, fname=filename)
+        fh.variables["longitude"][:] = geo.lons
+        fh.variables["latitude"][:] = geo.lats
+        fh.variables["x"][:] = [i for i in range(0, geo.nlons)]
+        fh.variables["y"][:] = [i for i in range(0, geo.nlats)]
+        fh.variables["altitude"][:] = elevs
+        fh.variables["land_area_fraction"][:] = lafs
+
+    fh["time"][:] = float(validtime.strftime("%s"))
+    fh[var][:] = field
+    fh.close()
+
+
+def oi2soda(dtg, t2m=None, rh2m=None, sd=None):
+
+    def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
+
+        if my_nx < 0:
+            my_nx = nx1
+        if my_ny < 0:
+            my_ny = ny1
+        if my_nx != nx1:
+            raise Exception("Mismatch in nx dimension " + str(my_nx) + " != " + str(nx1))
+        if my_ny != ny1:
+            raise Exception("Mismatch in ny dimension " + str(my_ny) + " != " + str(ny1))
+
+        return my_nx, my_ny
+
+    yy = dtg.strftime("%y")
+    mm = dtg.strftime("%m")
+    dd = dtg.strftime("%d")
+    hh = dtg.strftime("%H")
+    nx = -1
+    ny = -1
+    i = 0
+
+    t2m_var = None
+    if t2m is not None:
+        t2m_fh = netCDF4.Dataset(t2m["file"], "r")
+        print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
+        t2m_var = t2m_fh.variables[t2m["var"]]
+        i = i + 1
+        nx, ny = check_input_to_soda_dimensions(nx, ny, t2m_fh.variables[t2m["var"]].shape[1],
+                                                t2m_fh.variables[t2m["var"]].shape[0])
+    rh2m_var = None
+    if rh2m is not None:
+        rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
+        print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
+        rh2m_var = rh2m_fh.variables[rh2m["var"]]
+        i = i + 1
+        nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[1],
+                                                rh2m_fh.variables[rh2m["var"]].shape[0])
+    sd_var = None
+    if sd is not None:
+        sd_fh = netCDF4.Dataset(sd["file"], "r")
+        print(sd["var"], sd_fh.variables[sd["var"]].shape)
+        sd_var = sd_fh.variables[sd["var"]]
+        i = i + 1
+        nx, ny = check_input_to_soda_dimensions(nx, ny, sd_fh.variables[sd["var"]].shape[1],
+                                                sd_fh.variables[sd["var"]].shape[0])
+
+    if i == 0:
+        raise Exception("You must specify at least one file to read from!")
+
+    # undefined = []
+    # for i in range(0, nx *ny):
+    #     undefined.append("999")
+
+    out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
+    for j in range(0, ny):
+        for i in range(0, nx):
+            # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
+            undef = "999"
+            if t2m_var is not None:
+                if np.ma.is_masked(t2m_var[j, i]):
+                    t2m_val = undef
+                else:
+                    t2m_val = str(t2m_var[j, i])
+            else:
+                t2m_val = undef
+            if rh2m_var is not None:
+                if np.ma.is_masked(rh2m_var[j, i]):
+                    rh2m_val = undef
+                else:
+                    rh2m_val = str(rh2m_var[j, i])
+            else:
+                rh2m_val = undef
+            if sd_var is not None:
+                if np.ma.is_masked(sd_var[j, i]):
+                    sd_val = undef
+                else:
+                    sd_val = str(sd_var[j, i])
+            else:
+                sd_val = undef
+            out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")

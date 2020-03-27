@@ -1,21 +1,37 @@
 import os
 import surfex
 import jsonmerge
+import numpy as np
+try:
+    import gridppOI
+except ImportError:
+    gridppOI = None
 
 
-class HorizontalOptimalInterpolation(object):
-    def __init__(self, var, input_file, output_file, json_settings):
-        # import subprocess
+def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, hlength=10000.,
+                  vlength=10000., wmin=0, max_elev_diff=100.,
+                  land_only=False, max_locations=20, elev_gradient=-0.0065, epsilon=0.5):
 
-        options = ""
-        for opt in json_settings:
-            options = options + " -" + opt + "=" + json_settings[opt]
+    if gridppOI is None:
+        raise Exception("You need gridpp to perform OI")
 
-        cmd = "gridpp " + input_file + " " + output_file + " -v " + var + " -c oi " + options
-        print(cmd)
-        # ret = subprocess.check_call(cmd)
-        # if ret != 0:
-        #    raise Exception(cmd + " failed!")
+    glats = geo.lats
+    glons = geo.lons
+
+    def obs2vectors(my_obs):
+        return my_obs.lons, my_obs.lats, my_obs.stids, my_obs.elevs, \
+               my_obs.values, my_obs.cis, my_obs.lafs
+
+    vectors = np.vectorize(obs2vectors)
+    lons, lats, stids, elevs, values, pci, lafs = vectors(observations)
+
+    rstat, field = gridppOI.optimal_interpolation(background, glats, glons, gelevs, glafs,
+                                                  values, pci, lats, lons, elevs, lafs,
+                                                  min_rho, hlength, vlength, wmin,
+                                                  max_elev_diff, land_only, max_locations,
+                                                  elev_gradient, epsilon)
+    field = np.asarray(field)
+    return field
 
 
 class Assimilation(object):
@@ -267,7 +283,7 @@ def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmf
     return ekf_settings
 
 
-def set_assimilation_output(dtg, settings):
+def set_assimilation_output(settings):
 
     settings = surfex.capitalize_namelist_dict(settings)
     data = None

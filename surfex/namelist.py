@@ -195,12 +195,14 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
     if program == "pgd":
 
         # PGS schemes
-        input_list.append({"json": {"NAM_PGD_SCHEMES":
-                                        {"CSEA": env["SURFEX_TILES"]["SEA"],
-                                         "CWATER": env["SURFEX_TILES"]["INLAND_WATER"],
-                                         "CNATURE": env["SURFEX_TILES"]["NATURE"],
-                                         "CTOWN": env["SURFEX_TILES"]["TOWN"]
-                                         }}})
+        input_list.append({
+            "json": {"NAM_PGD_SCHEMES": {
+                "CSEA": env["SURFEX_TILES"]["SEA"],
+                "CWATER": env["SURFEX_TILES"]["INLAND_WATER"],
+                "CNATURE": env["SURFEX_TILES"]["NATURE"],
+                "CTOWN": env["SURFEX_TILES"]["TOWN"]
+                }
+            }})
 
         # Ecoclimap SG
         if env["COVER"]["SG"]:
@@ -211,12 +213,20 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_files))
             input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus.dir", system_files))
 
-        possible_direct_data = {"ISBA":
-                                    {"YSAND": "sand_dir", "YCLAY": "clay_dir", "YSOC_TOP": "soc_top_dir",
-                                     "YSOC_SUB": "soc_sub_dir"},
-                                "COVER": {"YCOVER": "ecoclimap_dir"},
-                                "ZS": {"YZS": "oro_dir"}
-                                }
+        possible_direct_data = {
+            "ISBA": {
+                "YSAND": "sand_dir",
+                "YCLAY": "clay_dir",
+                "YSOC_TOP": "soc_top_dir",
+                "YSOC_SUB": "soc_sub_dir"
+            },
+            "COVER": {
+                "YCOVER": "ecoclimap_dir"
+            },
+            "ZS": {
+                "YZS": "oro_dir"
+            }
+        }
         for namelist_section in possible_direct_data:
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
@@ -332,14 +342,17 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": env["ASSIM_SCHEMES"]["ISBA"]}}})
             nvar = 0
             for ob in range(0, len(env["ASSIM_ISBA_EKF"]["CVAR_M"])):
-                input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["CVAR_M"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["NNCV"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": env["ASSIM_ISBA_EKF"]["XPRT_M"][ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")":
+                                                        env["ASSIM_ISBA_EKF"]["CVAR_M"][ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")":
+                                                        env["ASSIM_ISBA_EKF"]["NNCV"][ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")":
+                                                        env["ASSIM_ISBA_EKF"]["XPRT_M"][ob]}}})
                 if env["ASSIM_ISBA_EKF"]["NNCV"][ob] == 1:
                     nvar += 1
             input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
-        #TODO the need for this must be removed!
+        # TODO the need for this must be removed!
         nobstype = 0
         for ob in range(0, len(env["ASSIM_OBS"]["NNCO"])):
             input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": env["ASSIM_OBS"]["NNCO"][ob]}}})
@@ -395,7 +408,8 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_CLIM": env["ASSIM_ISBA_OI"]["CFILE_FORMAT_CLIM"]}}})
             input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_FG": env["ASSIM_ISBA_OI"]["CFILE_FORMAT_FG"]}}})
             input_for_surfex_json.update({"fort.61": set_input_file_name("oi_coeff_dir",
-                                                                         env["ASSIM_ISBA_OI"]["ANASURF_OI_COEFF"], system_files)})
+                                                                         env["ASSIM_ISBA_OI"]["ANASURF_OI_COEFF"],
+                                                                         system_files)})
 
         if env["ASSIM_SCHEMES"]["ISBA"] == "EKF":
             nvar = 0
@@ -457,4 +471,4 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             raise Exception
 
     return surfex.ascii2nml(merged_json_settings), surfex.JsonInputData(ecoclimap_json), \
-           surfex.JsonInputData(input_for_surfex_json)
+        surfex.JsonInputData(input_for_surfex_json)

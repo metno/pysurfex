@@ -1,28 +1,9 @@
 #!/usr/bin/env python3
 
-
 import surfex
-import argparse
 import sys
-import json
-
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Create horisontal OI analysis")
-    parser.add_argument('-i', '--input_file', type=str, help="Input NetCDF file with all variables", required=True)
-    parser.add_argument('-o', '--output_file', type=str, help="Output NetCDF file with all variables", required=True)
-    parser.add_argument('-v', '--var', type=str, help="Variable", required=True)
-    parser.add_argument('-s', '--settings', type=str, help="JSON file with settings", required=True)
-
-    if len(sys.argv) < 5:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(sys.argv[1:])
-
-    var = args.var
-    input_file = args.input_file
-    output_file = args.output_file
-    json_settings = json.load(open(args.settings, "r"))
-    surfex.assim.HorizontalOptimalInterpolation(var, input_file, output_file, json_settings[var])
+    args = surfex.parse_args_gridpp(sys.argv[1:])
+    surfex.run_gridpp(args)
