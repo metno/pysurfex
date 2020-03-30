@@ -15,7 +15,7 @@ from .variable import *
 from .util import *
 from .cache import *
 from .interpolation import NearestNeighbour, NoInterpolation, Linear
-from .titan import dataset_from_file, TitanDataSet, QCDataSet
+from .titan import dataset_from_file, TitanDataSet, QCDataSet, merge_json_qc_data_sets, dataset_from_json
 from .timeseries import TimeSeries, TimeSeriesFromConverter, TimeSeriesFromJson
 from .obsmon import *
 from .fa import Fa

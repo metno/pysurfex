@@ -4,6 +4,7 @@ import pyproj
 import json
 from datetime import datetime
 import abc
+import os
 
 try:
     import titanlib as tit
@@ -762,7 +763,7 @@ class QCDataSet(object):
             data.update({
                 i: {
                     "varname": self.varnames[i],
-                    "obstime": datetime.strftime(self.obstimes[i], "%Y%m%d%H"),
+                    "obstime": datetime.strftime(self.obstimes[i], "%Y%m%d%H%M%S"),
                     "lon": self.lons[i],
                     "lat": self.lats[i],
                     "stid": self.stids[i],
@@ -778,7 +779,8 @@ class QCDataSet(object):
         if indent is None:
             json.dump(data, open(filename, "w"))
         else:
-            json.dump(data, open(filename, "w"), indent=indent)
+            print(data)
+            json.dump(data, open(filename, "w"), indent=int(indent))
 
     def normalize_ci(self, mask, cmin, cmax):
 
@@ -981,7 +983,11 @@ class TitanDataSet(QCDataSet):
 def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None):
 
     data = json.load(open(filename, "r"))
-    obstime = []
+    return dataset_from_json(an_time, data, qc_flag=qc_flag, skip_flags=skip_flags)
+
+
+def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None):
+
     observations = []
     providers = []
     flags = []
@@ -1003,7 +1009,7 @@ def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None):
                     add = False
 
         if add:
-            obstime.append(datetime.strptime(data[i]["obstime"], "%Y%m%d%H"))
+            obstime = datetime.strptime(data[i]["obstime"], "%Y%m%d%H%M%S")
             lon = data[i]["lon"]
             lat = data[i]["lat"]
             stid = data[i]["stid"]
@@ -1025,3 +1031,27 @@ def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None):
         passed_tests = None
 
     return QCDataSet(an_time, observations, flags, cis, lafs, providers, passed_tests=passed_tests)
+
+
+def merge_json_qc_data_sets(an_time, filenames, qc_flag=None, skip_flags=None):
+
+    ind = 0
+    index_pos = {}
+    data = {}
+    for filename in filenames:
+
+        if os.path.exists(filename):
+            data1 = json.load(open(filename, "r"))
+            for d1 in data1:
+                lon1 = data1[d1]["lon"]
+                lat1 = data1[d1]["lat"]
+                pos1 = surfex.Observation.format_lon(lon1) + ":" + surfex.Observation.format_lat(lat1)
+                if pos1 not in index_pos:
+                    index_pos.update({pos1: ind})
+                    data.update({str(ind): data1[d1]})
+                    ind = ind + 1
+        else:
+            print("File name does not exist: ", filename)
+
+    print("Merged " + str(ind) + " observations")
+    return dataset_from_json(an_time, data, qc_flag=qc_flag, skip_flags=skip_flags)
