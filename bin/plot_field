@@ -9,22 +9,48 @@ from datetime import datetime
 import sys
 
 
-def parse_args(args_in):
+def parse_args_plot_field(args_in):
     parser = argparse.ArgumentParser("Plot field")
-    parser.add_argument('-d', '--domain', dest="domain", type=str, help="Domain json definition",
-                        default=None, required=False)
+    parser.add_argument('-g', '--geo', dest="geo", type=str, help="Domain/points json geometry definition file",
+                        default=None, required=True)
     parser.add_argument('-v', '--variable', dest="variable", type=str, help="Variable name", required=True)
-    parser.add_argument('-i', '--inputfile', dest="inputfile", type=str, help="Input file", default="", required=False)
-    parser.add_argument('-ft', '--filetype', dest="filetype", type=str, help="Filetype", default="surfex",
-                        required=False, choices=["netcdf", "grib1", "grib2", "surfex"])
-    parser.add_argument('-t', '--validtime', dest="validtime", type=str, help="Valid time", default=None, required=False)
-    parser.add_argument('-it', '--inputtype', dest="inputtype", type=str, help="Input type", default=None,
-                        required=False, choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"])
-    parser.add_argument('-if', '--inputformat', dest="inputformat", type=str, help="Input format", default=None,
+    parser.add_argument('-i', '--inputfile', dest="inputfile", type=str, help="Input file", default=None,
                         required=False)
-    parser.add_argument('-o', '--output', dest="output", type=str, help="Input format", default=None,
+    parser.add_argument('-it', '--inputtype', dest="inputtype", type=str, help="Filetype", default="surfex",
+                        required=False, choices=["netcdf", "grib1", "grib2", "surfex", "obs"])
+    parser.add_argument('-t', '--validtime', dest="validtime", type=str, help="Valid time", default=None,
                         required=False)
-    parser.add_argument('--interpolation', default="none")
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output file", default=None,
+                        required=False)
+
+    grib = parser.add_argument_group('grib', 'Grib1/2 settings (-it grib1 or -it grib2)')
+    grib.add_argument('--indicatorOfParameter', type=int, help="Indicator of parameter [grib1]", default=None)
+    grib.add_argument('--timeRangeIndicator', type=int, help="Time range indicator [grib1]", default=0)
+    grib.add_argument('--levelTyp', type=str, help="Level type [grib1/grib2]", default="sfc")
+    grib.add_argument('--level', type=int, help="Level [grib1/grib2]", default=0)
+    grib.add_argument('--discipline', type=int, help="Discipline [grib2]", default=None)
+    grib.add_argument('--parameterCategory', type=int, help="Parameter category [grib2]", default=None)
+    grib.add_argument('--parameterNumber', type=int, help="ParameterNumber [grib2]", default=None)
+    grib.add_argument('--typeOfStatisticalProcessing', type=int, help="TypeOfStatisticalProcessing [grib2]",
+                      default=-1)
+
+    sfx = parser.add_argument_group('Surfex', 'Surfex settings (-it surfex)')
+    sfx.add_argument('--sfx_type', type=str,  help="Surfex file type", default=None,
+                     choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"])
+
+    sfx.add_argument('--sfx_patches', type=int, help="Patches [ascii/texte]", default=-1)
+    sfx.add_argument('--sfx_layers', type=int, help="Layers [ascii/texte]", default=-1)
+    sfx.add_argument('--sfx_datatype', type=str, help="Datatype [ascii]", choices=["string", "float", "integer"],
+                     default="float")
+    sfx.add_argument('--sfx_interval', type=str, help="Interval [texte]", default=None)
+    sfx.add_argument('--sfx_basetime', type=str, help="Basetime [texte]", default=None)
+    sfx.add_argument('--sfx_geo_input', type=str, default=None,
+                     help="JSON file with domain defintion [forcing/netcdf/texte]")
+
+    obs = parser.add_argument_group('Observations', 'Observation settings (scatter plot)')
+    obs.add_argument('--obs_type', type=str, help="Observation source type (-it obs)",
+                     choices=[None, "json", "bufr", "frost", "netatmo"], default=None)
+
     if len(args_in) == 0:
         parser.print_help()
         sys.exit()
@@ -32,111 +58,175 @@ def parse_args(args_in):
     return parser.parse_args(args_in)
 
 
-if __name__ == "__main__":
+def plot_field(args):
 
-    '''
--d /home/trygveasp/revision_control/offline-surfex-forcing/examples/settings/svalbard.json \
--v Tair \
--i /lustre/storeB/users/trygveasp/thredds/snow/forcing/FORCING_2018090106_2018090206.nc \
--ft surfex \
--t 2018090106 \
--it forcing \
--if netcdf
-    '''
-    args = parse_args(sys.argv[1:])
-
-    domain = args.domain
-    validtime = datetime.strptime(args.validtime, "%Y%m%d%H")
+    geo_file = args.geo
+    validtime = None
+    if args.validtime is not None:
+        validtime = datetime.strptime(args.validtime, "%Y%m%d%H")
     variable = args.variable
-    filename = args.inputfile
-    filetype = args.filetype
+    filepattern = args.inputfile
     inputtype = args.inputtype
-    fileformat = args.inputformat
     output = args.output
 
-    domain_json = json.load(open(domain, "r"))
+    domain_json = json.load(open(geo_file, "r"))
     geo = surfex.geo.get_geo_object(domain_json)
 
-    geo_out = None
-    field = None
-    if filetype == "grib1":
-        gribvar = surfex.grib.Grib1Variable(6, "sfc", 0, 0)
-        # field, geo_in_file = surfex.grib.Grib(filename).field(gribvar, validtime)
-        field, intp = surfex.grib.Grib(filename).points(gribvar, geo, validtime=validtime, interpolation="nearest")
-        field = np.reshape(field, [geo.nlons, geo.nlats])
-        field = np.divide(field, 9.81)
-        field[field < 0] = 0
-        field[field > 500] = 500
-        plt.contourf(geo.lons, geo.lats, field)
-        plt.title("grib1:" + variable + " " + validtime.strftime("%Y%m%d%H"))
-        plt.colorbar()
-        if output is None:
-            plt.show()
-        else:
-            print("Saving figure in " + output)
-            plt.savefig(output)
+    contour = True
+    var = "field_to_read"
+    if inputtype == "grib1":
 
-    elif filetype == "netcdf":
+        par = args.indicatorOfParameter
+        lt = args.levelType
+        lev = args.level
+        tri = args.timeRangeIndicator
 
-        # field, geo_in_file = surfex.netcdf.Netcdf(filename).field(variable, validtime=validtime)
-        field, intp = surfex.netcdf.Netcdf(filename).points(variable, geo, validtime=validtime, interpolation="nearest")
-        field = np.reshape(field, [geo.nlons, geo.nlats])
-        print(field.shape)
-        field = np.divide(field, 9.81)
-        field[field < 0] = 0
-        field[field > 500] = 500
-        plt.contourf(geo.lons, geo.lats, field)
-        plt.title("netcdf: "+variable + " " + validtime.strftime("%Y%m%d%H"))
-        plt.colorbar()
-        if output is None:
-            plt.show()
-        else:
-            print("Saving figure in " + output)
-            plt.savefig(output)
+        gribvar = surfex.Grib1Variable(par, lt, lev, tri)
+        title = "grib1:" + gribvar.print_keys() + " " + validtime.strftime("%Y%m%d%H")
+        var_dict = {
+            "parameter": par,
+            "leveltype": lt,
+            "lev": lev,
+            "tri": tri
+        }
 
-    elif filetype == "surfex":
-        # TODO
-        '''
-basetime=None, 
-patches=-1, 
-layers=-1,
-datatype=None, 
-interval=None
-        '''
+    elif inputtype == "grib2":
 
-        geo_out = geo
-        field = surfex.file.read_surfex_field(variable, filename, validtime=validtime, geo=geo, filetype=inputtype)
-        # geo_out = json.load(open("examples/settings/svalbard_test.json", "r"))
-        # geo_out = surfex.get_geo_object(geo_out)
-        # field = surfex.file.read_surfex_points(variable, filename, geo_out, validtime=validtime, geo=geo,
-        #                                       filetype=inputtype, interpolation="nearest")
-        # field = np.reshape(field, [geo_out.nlons, geo_out.nlats])
+        discipline = args.discipline
+        parameter_category = args.parameterCategory
+        parameter_number = args.parameterNumber
+        level_type = args.levelType
+        level = args.level
+        type_of_statistical_processing = args.typeOfStatisticalProcessing
 
-        # plt.contourf(geo_out.lons, geo_out.lats, field)
-        # plt.title("surfex:" + variable + " " + validtime.strftime("%Y%m%d%H"))
-        # plt.colorbar()
-        # if output is None:
-        #    plt.show()
-        # else:
-        #    print("Saving figure in " + output)
-        #    plt.savefig(output)
+        gribvar = surfex.grib.Grib2Variable(discipline, parameter_category, parameter_number, level_type, level,
+                                            tsp=type_of_statistical_processing)
+        title = inputtype + ": " + gribvar.print_keys() + " " + validtime.strftime("%Y%m%d%H")
+
+        var_dict = {
+            "discipline": discipline,
+            "parameterCategory": parameter_category,
+            "parameterNumber": parameter_number,
+            "levelType": level_type,
+            "level": level,
+            "typeOfStatisticalProcessing": type_of_statistical_processing
+        }
+
+    elif inputtype == "netcdf":
+
+        if variable is None:
+            raise Exception("You must provide a variable")
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        title = "netcdf: "+variable + " " + validtime.strftime("%Y%m%d%H")
+        var_dict = {
+            "name": variable,
+            "filepattern": filepattern,
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+
+    elif inputtype == "surfex":
+
+        if variable is None:
+            raise Exception("You must provide a variable")
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        basetime = args.sfx_basetime
+        patches = args.sfx_patches
+        layers = args.sfx_layers
+        datatype = args.sfx_datatype
+        interval = args.sfx_interval
+        geo_sfx_input = args.sfx_geo_input
+
+        sfx_var = surfex.SurfexFileVariable(variable, validtime=validtime, patches=patches, layers=layers,
+                                            basetime=basetime, interval=interval, datatype=datatype)
+
+        title = inputtype + ": " + sfx_var.print_var()
+        var_dict = {
+            "varname": variable,
+            "filepattern": filepattern,
+            "patches": patches,
+            "layers": layers,
+            "datatype": datatype,
+            "interval": interval,
+            "basetime": basetime,
+            "geo_input": geo_sfx_input,
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+
+    elif inputtype == "obs":
+
+        contour = False
+        if variable is None:
+            raise Exception("You must provide a variable")
+
+        obs_input_type = args.obs_type
+        if obs_input_type is None:
+            raise Exception("You must provide an obs type")
+
+        var_dict = {
+            "filetype": obs_input_type,
+            "varname": variable,
+            "filepattern": filepattern,
+            "filenames": [filepattern],
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+        title = inputtype + ": var=" + variable + " type=" + obs_input_type
+
     else:
         raise NotImplementedError
 
-    if geo_out is None:
-        raise Exception("No geometry to plot")
+    defs = {
+        var: {
+            inputtype: {
+                "converter": {
+                    "none": var_dict
+                }
+            }
+
+        }
+    }
+    converter_conf = defs[var][inputtype]["converter"]
+
+    # cache = surfex.Cache(True, 3600)
+    cache = None
+    converter = "none"
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, validtime)
+    field = surfex.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    # field = np.reshape(field, [geo.nlons, geo.nlats])
 
     if field is None:
         raise Exception("No field read")
 
-    if geo_out.npoints != geo_out.nlons and geo_out.npoints != geo_out.nlats:
-        field = np.reshape(field, [geo_out.nlons, geo_out.nlats])
+    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+        if contour:
+            field = np.reshape(field, [geo.nlons, geo.nlats])
+    else:
+        contour = False
 
-    plt.contourf(geo_out.lons, geo_out.lats, field)
-    plt.title(filetype + ": " + variable + " " + validtime.strftime("%Y%m%d%H"))
+    if contour:
+        plt.contourf(geo.lons, geo.lats, field)
+    else:
+        plt.scatter(geo.lonlist, geo.latlist, c=field)
+
+    plt.title(title)
     plt.colorbar()
     if output is None:
         plt.show()
     else:
         print("Saving figure in " + output)
         plt.savefig(output)
+
+
+if __name__ == "__main__":
+
+    my_args = parse_args_plot_field(sys.argv[1:])
+    plot_field(my_args)

@@ -66,8 +66,10 @@ class Netcdf(object):
                 surfex.util.info("Time provided in call as datetime objects", level=2)
                 times_in_var = var.datetimes
                 for i in range(0, len(times_in_var)):
+                    print(i, times_in_var[i], times)
                     for j in range(0, len(times)):
                         # Time steps requested
+                        print(times_in_var[i], times[j])
                         if times_in_var[i] == times[j]:
                             times_to_read.append(i)
                             if i > 0:
@@ -87,6 +89,7 @@ class Netcdf(object):
                             else:
                                 prev_time_steps.append(0)
 
+        print("times to read", times_to_read)
         levels_to_read = []
         if levels is None:
             for i in range(0, var.levels.shape[0]):
@@ -175,6 +178,9 @@ class Netcdf(object):
         if deaccumulate:
             surfex.util.info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
 
+        print(var.var_name)
+        print(dims)
+        print(self.file[var.var_name])
         field = self.file[var.var_name][dims]
         if units is not None:
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
@@ -220,6 +226,7 @@ class Netcdf(object):
         else:
             validtime = [validtime]
 
+        print(level, member, validtime)
         field, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
@@ -241,6 +248,7 @@ class Netcdf(object):
 
         # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
+        print(level, member, validtime)
         field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units)
         if interpolation == "nearest":
             surfex.util.info("Nearest neighbour", level=2)
@@ -385,8 +393,10 @@ class NetCDFFileVariable(object):
                 for t in range(0, len(val)):
                     epochtime = int(cfunits.Units.conform(val[t], cfunits.Units(val.units),
                                                           cfunits.Units("seconds since 1970-01-01 00:00:00")))
-                    dt = datetime.utcfromtimestamp(epochtime).strftime('%c')
-                    times.append(datetime.strptime(dt, '%c'))
+                    print(epochtime)
+                    dt = datetime.utcfromtimestamp(epochtime)
+                    print(dt)
+                    times.append(dt)
 
         if len(times) == 0:
             surfex.util.info("No time found for " + self.var_name, level=2)

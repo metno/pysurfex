@@ -160,6 +160,8 @@ setup(
         'bin/plot_timeseries',
         'bin/prep',
         'bin/set_assimilation_input',
+        'bin/set_geo_from_obs_set',
+        'bin/set_geo_from_stationlist',
         'bin/set_domain',
         'bin/soda',
         'bin/titan'

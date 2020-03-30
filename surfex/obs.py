@@ -114,10 +114,12 @@ def get_datasources(obs_time, settings):
                 filenames = []
                 if "filenames" in settings[obs_set]:
                     filenames = settings[obs_set]["filenames"]
-                if "variable" in settings[obs_set]:
-                    variable = settings[obs_set]["variable"]
+                    if filenames[0] is None:
+                        raise Exception("You must set filenames to not None")
+                if "varname" in settings[obs_set]:
+                    variable = settings[obs_set]["varname"]
                 else:
-                    raise Exception("You must set variable to read NETATMO JSON files")
+                    raise Exception("You must set varname to read NETATMO JSON files")
 
                 lonrange = None
                 if "lonrange" in settings[obs_set]:
@@ -394,7 +396,7 @@ class NetatmoObservationSet(ObservationSet):
             num_valid_stations = len(data)
 
         if debug:
-            print("Writing %d valid observations:" % num_valid_stations)
+            print("Found %d valid observations:" % num_valid_stations)
             print("   %d missing obs" % num_missing_obs)
             print("   %d missing metadata" % num_missing_metadata)
             print("   %d missing timestamp" % num_missing_time)

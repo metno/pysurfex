@@ -19,7 +19,10 @@ class Variable(object):
         if "timstep" in var_dict:
             intervall = var_dict["timestep"]
         self.initialtime = validtime
-        self.previoustime = validtime-timedelta(seconds=intervall)
+        if validtime is not None:
+            self.previoustime = validtime-timedelta(seconds=intervall)
+        else:
+            self.previoustime = None
         self.basetime = basetime
         self.validtime = validtime
         self.var_dict = copy.deepcopy(var_dict)
@@ -29,7 +32,10 @@ class Variable(object):
             self.filepattern = None
         self.file_handler = None
         self.previousfilename = None
-        self.time_elapsed = validtime-basetime
+        if validtime is not None:
+            self.time_elapsed = validtime-basetime
+        else:
+            self.time_elapsed = 0
         self.filename = surfex.file.parse_filepattern(self.filepattern, self.basetime, self.validtime)
         self.debug = debug
         if self.debug:
@@ -63,6 +69,9 @@ class Variable(object):
     def open_new_file(self, fcint, offset, file_inc):
 
         if self.filepattern is None:
+            return True
+
+        if self.validtime is None:
             return True
 
         new = False

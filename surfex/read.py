@@ -108,6 +108,7 @@ class Converter:
         self.basetime = basetime
         # self.intervall = intervall
 
+        print(conf, self.name)
         if self.name not in conf:
             print(conf)
             raise KeyError(self.name + " is missing in converter definition")

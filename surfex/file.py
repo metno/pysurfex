@@ -130,6 +130,9 @@ class SurfexFileVariable(object):
         self.interval = interval
         self.validtime = validtime
 
+    def print_var(self):
+        return self.varname
+
 
 def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None):
 
@@ -547,9 +550,9 @@ class NCSurfexFile(SurfexIO):
         field = fh[var.varname][:]
 
         # Reshape to fortran 2D style
-        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        # field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         # Does not work wih interpolator
-        # field = np.transpose(field)
+        field = np.transpose(field)
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
@@ -1033,6 +1036,9 @@ def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None
 
 
 def parse_filepattern(file_pattern, basetime, validtime):
+
+    if basetime is None or validtime is None:
+        return file_pattern
 
     # print(file_pattern)
     file_name = str(file_pattern)

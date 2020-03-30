@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import json
+import surfex
+from datetime import datetime
+import argparse
+import sys
+import os
+
+
+def parse_args_set_geo_from_stationlist(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('stationlist', type=str, help="Station list")
+    parser.add_argument("--lonrange", type=str,  dest="lonrange", help="Longitude range", default=None, required=False)
+    parser.add_argument("--latrange", type=str, dest="latrange", help="Latitude range", default=None, required=False)
+    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args(argv)
+
+
+def set_geo_from_stationlist(args):
+
+    stationlist = args.stationlist
+    lonrange = args.lonrange
+    latrange = args.latrange
+    if lonrange is None:
+        lonrange = [-180, 180]
+    if latrange is None:
+        latrange = [-90, 90]
+    output = args.output
+
+    lons = []
+    lats = []
+    if os.path.exists(stationlist):
+        stids = json.load(open(stationlist, "r"))
+    else:
+        raise FileNotFoundError("Station list does not exist!")
+
+    for stid in stids:
+        lon, lat = surfex.Observation.get_pos_from_stid(stationlist, [stid])
+        lon = lon[0]
+        lat = lat[0]
+        if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
+            lon = round(lon, 5)
+            lat = round(lat, 5)
+            # print(i, lon, lat)
+            lons.append(lon)
+            lats.append(lat)
+
+    dx = ["0.3"] * len(lons)
+    geo_json = {
+        "nam_pgd_grid": {
+            "cgrid": "LONLATVAL"
+        },
+        "nam_lonlatval": {
+            "xx": lons,
+            "xy": lats,
+            "xdx": dx,
+            "xdy": dx
+        }
+    }
+    # geo = surfex.LonLatVal(geo_json)
+    json.dump(geo_json, open(output, "w"))
+
+
+if __name__ == "__main__":
+    my_args = parse_args_set_geo_from_stationlist(sys.argv[1:])
+    set_geo_from_stationlist(my_args)
