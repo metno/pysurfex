@@ -7,9 +7,9 @@ import os
 from datetime import datetime
 
 
-def parse():
+def parse_args_set_assimilation_input(argv):
     """Parse the command line input arguments."""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser("Set assimilation input")
 
     # dtg, settings, sstfile = None, first_guess = None, perturbed_runs = None, lsmfile = None, obsfile = None,
     # check_existence = False, oi_coeffs = None, climfile = None):
@@ -38,18 +38,33 @@ def parse():
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args()
-    return args.dtg, args.settings, args.sst, args.ua_fg, args.sfx_fg, args.perts, args.lsm, args.clim, args.obs, \
-        args.oi_coeffs, args.check, args.indent, args.output
+    return parser.parse_args(argv)
+    # return args.dtg, args.settings, args.sst, args.ua_fg, args.sfx_fg, args.perts, args.lsm, args.clim, args.obs, \
+    #      args.oi_coeffs, args.check, args.indent, args.output
 
 
 if __name__ == "__main__":
 
-    dtg, settings, sst, ua_fg, sfx_fg, perts, lsm, clim, obs, oi_coeffs, check, indent, output_file = parse()
+    # dtg, settings, sst, ua_fg, sfx_fg, perts, lsm, clim, obs, oi_coeffs, check, indent, output_file = parse()
+    args = parse_args_set_assimilation_input(sys.argv[1:])
+    dtg = args.dtg
+    settings = args.settings
+    sst = args.sst
+    ua_fg = args.ua_fg
+    sfx_fg = args.sfx_fg
+    perts = args.perts
+    lsm = args.lsm
+    clim = args.clim
+    obs = args.obs
+    oi_coeffs = args.oi_coeffs
+    check = args.check
+    indent = args.indent
+    output_file = args.output
+
     if os.path.exists(settings):
         settings = json.load(open(settings, "r"))
     else:
-        raise FileNotFoundError
+        raise FileNotFoundError("Settings not found: " + settings)
     dtg = datetime.strptime(dtg, "%Y%m%d%H")
     assim_input_json = surfex.set_assimilation_input(dtg, settings, sstfile=sst, ua_first_guess=ua_fg,
                                                      sfx_first_guess=sfx_fg, perturbed_runs=perts,

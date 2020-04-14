@@ -78,14 +78,23 @@ class Plausibility(QualityControl):
 
     def test(self, dataset, mask, code=1):
 
-        minvals = self.minvals
-        maxvals = self.maxvals
-        status = dataset.titan_dataset.range_check(minvals, maxvals, mask)
-        if not status:
-            raise Exception("Plausibility test failed")
+        minvals = []
+        maxvals = []
+        values = []
+        for i in range(0, len(mask)):
+            minvals.append(self.minvals[i])
+            maxvals.append(self.maxvals[i])
+            values.append(dataset.values[mask[i]])
 
-        flags = np.array([flag for flag in dataset.titan_dataset.flags])
-        global_flags = self.set_flags(dataset.flags, flags, mask, code)
+        global_flags = dataset.flags
+        status, flags = tit.range_check(values, minvals, maxvals)
+        if not status:
+            raise Exception(self.name + " test failed")
+
+        for i in range(0, len(mask)):
+            if global_flags[mask[i]] == 0 and flags[i] == 1:
+                global_flags[mask[i]] = code
+
         if self.debug:
             for i in range(0, len(mask)):
                 print(self.name, i, mask[i], dataset.values[mask[i]], flags[mask[i]], global_flags[mask[i]])
@@ -545,7 +554,7 @@ class Blacklist(QualityControl):
                     debug = settings[t]["debug"]
 
         if blacklist_file is None:
-            raise Exception("You must set a blacklist ile")
+            raise Exception("You must set a blacklist file")
 
         blacklist_settings = json.load(open(blacklist_file, "r"))
 
@@ -602,6 +611,97 @@ class Blacklist(QualityControl):
         return flags
 
 
+class DomainCheck(QualityControl):
+    def __init__(self, settings=None, domain_file=None, debug=False, max_distance=10000):
+
+        t = "domain"
+        if settings is not None:
+            if t in settings:
+                if domain_file is None:
+                    domain_file = settings[t]["domain_file"]
+                if "debug" in settings[t]:
+                    debug = settings[t]["debug"]
+
+        if domain_file is None:
+            raise Exception("You must set a domain file")
+
+        if os.path.exists(domain_file):
+            self.domain_geo = surfex.get_geo_object(json.load(open(domain_file, "r")))
+        else:
+            raise FileNotFoundError("Could not find domain definition " + domain_file)
+
+        self.max_distance = max_distance
+        self.debug = debug
+        QualityControl.__init__(self, t)
+
+    def set_input(self, test_settings, size):
+        pass
+
+    def test(self, dataset, mask, code=199):
+
+        lons = []
+        lats = []
+        dx = []
+        dy = []
+        for i in range(0, len(mask)):
+            lons.append(dataset.lons[mask[i]])
+            lats.append(dataset.lats[mask[i]])
+            dx.append(0.5)
+            dy.append(0.5)
+
+        settings = {
+            "nam_lonlatval": {
+                "xx": lons,
+                "xy": lats,
+                "xdx": dx,
+                "xdy": dy
+            }
+        }
+        geo_out = surfex.LonLatVal(settings)
+        nn = surfex.NearestNeighbour(self.domain_geo, geo_out, distance_check=False)
+        flags = dataset.flags
+        print(len(flags), len(dataset.lons), len(nn.distances))
+        for i in range(0, len(mask)):
+            if nn.distances[i] > self.max_distance:
+                flags[mask[i]] = code
+
+        if self.debug:
+            for i in range(0, len(mask)):
+                print(self.name, i, mask[i], dataset.lons[mask[i]], dataset.lats[mask[i]], dataset.stids[mask[i]],
+                      flags[mask[i]])
+        return flags
+
+
+class NoMeta(QualityControl):
+    def __init__(self, settings=None, debug=False):
+
+        t = "nometa"
+        if settings is not None:
+            if t in settings:
+                if "debug" in settings[t]:
+                    debug = settings[t]["debug"]
+
+        self.debug = debug
+        QualityControl.__init__(self, t)
+
+    def set_input(self, test_settings, size):
+        pass
+
+    def test(self, dataset, mask, code=101):
+
+        flags = dataset.flags
+        for i in range(0, len(mask)):
+            if np.isnan(dataset.elevs[mask[i]]):
+                flags[mask[i]] = code
+
+        if self.debug:
+            for i in range(0, len(mask)):
+                print(self.name, i, mask[i], dataset.lons[mask[i]], dataset.lats[mask[i]], dataset.stids[mask[i]],
+                      flags[mask[i]])
+
+        return flags
+
+
 def define_quality_control(test_list, settings):
     tests = []
     for t in test_list:
@@ -619,6 +719,10 @@ def define_quality_control(test_list, settings):
             tests.append(Redundancy(settings=settings))
         elif t.lower() == "blacklist":
             tests.append(Blacklist(settings=settings))
+        elif t.lower() == "domain":
+            tests.append(DomainCheck(settings=settings))
+        elif t.lower() == "nometa":
+            tests.append(NoMeta(settings=settings))
         else:
             raise NotImplementedError("Test  " + t + " is not implemented")
 
@@ -627,7 +731,7 @@ def define_quality_control(test_list, settings):
 
 class QCDataSet(object):
     def __init__(self,  analysis_time, observations, flags, cis, lafs, providers, passed_tests=None,
-                 fg_dep=None, an_dep=None):
+                 fg_dep=None, an_dep=None, remove_invalid_elevs=False):
 
         self.analysis_time = analysis_time
         self.index_pos = {}
@@ -666,6 +770,13 @@ class QCDataSet(object):
         self.varnames = varnames
 
         self.flags = flags
+
+        metadata = 0
+        for i in range(0, len(flags)):
+            if remove_invalid_elevs and np.isnan(elevs[i]):
+                self.flags[i] = 101
+                metadata = metadata + 1
+        self.metadata = metadata
         self.cis = cis
         self.lafs = lafs
         self.providers = providers
@@ -707,6 +818,7 @@ class QCDataSet(object):
     def perform_tests(self):
         raise NotImplementedError("You must implement this method")
 
+    '''
     def update_set(self, observations=None, fg_dep=None, an_dep=None):
 
         print("Update data set...")
@@ -755,6 +867,7 @@ class QCDataSet(object):
                     f = int(round((j / len(self.lons) * 100.)))
                     print(str(f) + "%")
         print("Finished updating")
+    '''
 
     def write_output(self, filename, indent=None):
 
@@ -773,14 +886,12 @@ class QCDataSet(object):
                     "ci": self.cis[i],
                     "laf": self.lafs[i],
                     "provider": self.providers[i],
+                    "fg_dep": self.fg_dep[i],
+                    "an_dep": self.an_dep[i],
                     "passed_tests": self.passed_tests[i]
                 }
             })
-        if indent is None:
-            json.dump(data, open(filename, "w"))
-        else:
-            print(data)
-            json.dump(data, open(filename, "w"), indent=int(indent))
+        json.dump(data, open(filename, "w"), indent=indent)
 
     def normalize_ci(self, mask, cmin, cmax):
 
@@ -828,7 +939,7 @@ class QCDataSet(object):
 
 class TitanDataSet(QCDataSet):
 
-    def __init__(self, var, settings, tests, test_flags, an_time, debug=False, remove_invalid_elevs=True,  corep=1):
+    def __init__(self, var, settings, tests, test_flags, an_time, debug=False, corep=1):
 
         self.var = var
         self.tests = define_quality_control(tests, settings)
@@ -879,15 +990,8 @@ class TitanDataSet(QCDataSet):
         else:
             self.passed_tests = passed_tests
 
-        metadata = 0
-        for i in range(0, len(flags)):
-            if remove_invalid_elevs and np.isnan(elevs[i]):
-                self.flags[i] = 101
-                metadata = metadata + 1
-        self.metadata = metadata
-
         QCDataSet.__init__(self, an_time, observations, flags, cis, lafs, providers,
-                           passed_tests=None)
+                           passed_tests=None, remove_invalid_elevs=False)
 
     def perform_tests(self):
 
@@ -980,20 +1084,23 @@ class TitanDataSet(QCDataSet):
             print("\n")
 
 
-def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None):
+def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None):
 
     data = json.load(open(filename, "r"))
-    return dataset_from_json(an_time, data, qc_flag=qc_flag, skip_flags=skip_flags)
+    return dataset_from_json(an_time, data, qc_flag=qc_flag, skip_flags=skip_flags, fg_dep=fg_dep, an_dep=an_dep)
 
 
-def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None):
+def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None):
 
     observations = []
     providers = []
     flags = []
     cis = []
     lafs = []
+    fg_deps = []
+    an_deps = []
     passed_tests = []
+    icounter = -1
     for i in data:
         add = False
         if qc_flag is not None:
@@ -1009,6 +1116,7 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None):
                     add = False
 
         if add:
+            icounter = icounter + 1
             obstime = datetime.strptime(data[i]["obstime"], "%Y%m%d%H%M%S")
             lon = data[i]["lon"]
             lat = data[i]["lat"]
@@ -1024,13 +1132,28 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None):
             flags.append(flag)
             cis.append(data[i]["ci"])
             lafs.append(data[i]["laf"])
+            if fg_dep is not None:
+                fg_deps.append(fg_dep[icounter])
+            else:
+                if "fg_dep" in data[i]:
+                    fg_deps.append(data[i]["fg_dep"])
+                else:
+                    fg_deps.append(np.nan)
+            if an_dep is not None:
+                an_deps.append(an_dep[icounter])
+            else:
+                if "an_dep" in data[i]:
+                    an_deps.append(data[i]["an_dep"])
+                else:
+                    an_deps.append(np.nan)
             if "passed_tests" in data[i]:
                 passed_tests.append(data[i]["passed_tests"])
 
     if len(passed_tests) == 0:
         passed_tests = None
 
-    return QCDataSet(an_time, observations, flags, cis, lafs, providers, passed_tests=passed_tests)
+    return QCDataSet(an_time, observations, flags, cis, lafs, providers, passed_tests=passed_tests,
+                     fg_dep=fg_deps, an_dep=an_deps)
 
 
 def merge_json_qc_data_sets(an_time, filenames, qc_flag=None, skip_flags=None):

@@ -357,8 +357,8 @@ def write_obsmon_sqlite_file(args):
     varname = args.varname
     dbname = args.output
 
-    obs_titan = surfex.dataset_from_file(an_time, args.titan, skip_flags=[150])
-    obs_gridpp = read_ascii_file_with_header(an_time, args.gridpp)
+    obs_titan = surfex.dataset_from_file(an_time, args.qc, skip_flags=[150])
+
     conn = open_db(dbname)
     create_db(conn, modes, stat_cols)
     cache = surfex.Cache(False, 3600)
@@ -396,10 +396,9 @@ def write_obsmon_sqlite_file(args):
         fg_dep.append(obs_titan.values[o] - fg_interpolated_field[o])
         an_dep.append(obs_titan.values[o] - an_interpolated_field[o])
 
-    merged_obs = obs_titan
-    merged_obs.update_set(obs_gridpp, fg_dep=fg_dep, an_dep=an_dep)
+    obs_titan = surfex.dataset_from_file(an_time, args.qc, skip_flags=[150, 199], fg_dep=fg_dep, an_dep=an_dep)
 
-    populate_usage_db(conn, dtg, varname, merged_obs)
-    populate_obsmon_db(conn, dtg, calculate_statistics(merged_obs, modes, stat_cols),
+    populate_usage_db(conn, dtg, varname, obs_titan)
+    populate_obsmon_db(conn, dtg, calculate_statistics(obs_titan, modes, stat_cols),
                        modes, stat_cols, varname)
     close_db(conn)

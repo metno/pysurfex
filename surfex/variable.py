@@ -307,6 +307,7 @@ class GribVariable(Variable):
                 tsp = -1
                 if "typeOfStatisticalProcessing" in self.var_dict:
                     tsp = self.var_dict["typeOfStatisticalProcessing"]
+                print("Trygve ", discipline, pc, pn, lt, lev, tsp)
                 gribvar = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp)
             else:
                 raise NotImplementedError

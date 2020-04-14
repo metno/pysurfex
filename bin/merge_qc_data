@@ -9,7 +9,7 @@ def parse_args_merge_qc_data(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", type=str, nargs="+", dest="filenames", help="Input QC JSON files", required=True)
     parser.add_argument("-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True)
-    parser.add_argument("--indent", help="Indent in output", default=None)
+    parser.add_argument("--indent", type=int, help="Indent in output", default=None)
     parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
 
     if len(argv) == 0:

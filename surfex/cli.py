@@ -140,15 +140,14 @@ def parse_args_create_forcing(argv):
     return parser.parse_args(argv)
 
 
-def parse_args_ascii2sqlite(argv):
+def parse_args_qc2obsmon(argv):
     parser = ArgumentParser("Create SQLite data base for obsmon")
     parser.add_argument('DTG', type=str, help="YYYYMMDDHH")
     parser.add_argument('varname', type=str, help="Variable name")
-    parser.add_argument('--titan', type=str, help="TITAN output file", required=True)
+    parser.add_argument('qc', type=str, help="QC dataset JSONfile")
     parser.add_argument('--fg_file', type=str, help="First guess file", required=True)
     parser.add_argument('--an_file', type=str, help="Analysis file", required=True)
     parser.add_argument('--file_var', type=str, help="File variable", required=True)
-    parser.add_argument('--gridpp', type=str, help="gridpp diagnostic file", required=True)
     parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
 
     return parser.parse_args(argv)
@@ -160,7 +159,7 @@ def parse_args_create_surfex_json_namelist(argv):
     parser = ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--config', '-c', type=str, nargs="?", required=False, help="Input TOML file if wanted")
+    parser.add_argument('--config', '-c', type=str, nargs="?", required=True, help="Input TOML file")
     parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
     parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
@@ -239,7 +238,7 @@ def create_surfex_json_namelist(args):
 
 def parse_args_first_guess_for_oi(argv):
     parser = ArgumentParser(description="Create first guess file for gridpp")
-    parser.add_argument('-dtg', dest="dtg", type=str, help="Domain", required=True)
+    parser.add_argument('-dtg', dest="dtg", type=str, help="Dae (YYYYMMDDHH)", required=True)
     parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
     parser.add_argument('-if', dest="inputformat", type=str, help="output file", default="grib2")
     parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
@@ -399,7 +398,7 @@ def parse_args_masterodb(argv):
     parser.add_argument('--rte', '-r', required=True, nargs='?')
     parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
-    parser.add_argument('--output', '-o', required=True, nargs='?')
+    parser.add_argument('--output', '-o', type=str, required=False)
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
@@ -493,26 +492,32 @@ def run_masterodb(args):
     my_pgdfile = my_settings["NAM_IO_OFFLINE"]["CPGDFILE"]
     my_prepfile = my_settings["NAM_IO_OFFLINE"]["CPREPFILE"]
     my_surffile = my_settings["NAM_IO_OFFLINE"]["CSURFFILE"]
+    lfagmap = False
+    if "LFAGMAP" in my_settings["NAM_IO_OFFLINE"]:
+        lfagmap = my_settings["NAM_IO_OFFLINE"]["LFAGMAP"]
 
-    # Only do archiving
-    if binary is None and archive is not None:
-        my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo)
-        my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo)
-        surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
+    # Not run binary
+    if binary is None:
+
+        my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
+                                         masterodb=True)
+        my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
+                                      masterodb=True)
+        surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
+                                   masterodb=True)
         masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
-                                     assim=assim, binary=binary, input_data=my_input, print_namelist=True)
-        masterodb.archive_output()
+                                     assim=assim, binary=None, input_data=my_input, print_namelist=True)
+
+        if archive is not None:
+            masterodb.archive_output()
 
     else:
         # Normal dry or wet run
         if not os.path.exists(output) or force:
 
-            print(my_settings)
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path)
-            print(my_format)
-            surffile = surfex.PREPFile(my_format, my_surffile, my_geo, archive_file=output)
-            print(my_surffile)
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap)
+            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
             masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
                                          assim=assim, binary=binary, input_data=my_input, archive_data=my_archive,
                                          print_namelist=True)
@@ -559,10 +564,11 @@ def parse_args_surfex_binary(argv, mode):
     if need_prep:
         parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
+    parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
     parser.add_argument('--ecoclimap', '-e', type=str, required=True, nargs='?')
     parser.add_argument('--domain', '-d', type=str, required=True, help="JSON file with domain")
-    parser.add_argument('--output', '-o', type=str, required=True, nargs='?')
+    parser.add_argument('--output', '-o', type=str, required=True)
     if pert:
         parser.add_argument('--pert', '-p', type=int, required=False, default=None)
     parser.add_argument('--input', '-i', type=str, required=False, default=None, nargs='?', help="JSON file with input")
@@ -617,6 +623,7 @@ def run_surfex_binary(args, mode):
     ecoclimap = args.ecoclimap
     domain = args.domain
     archive = args.archive
+    print_namelist = args.print_namelist
 
     pgd_file_path = None
     if need_pgd:
@@ -697,35 +704,38 @@ def run_surfex_binary(args, mode):
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
         my_surffile = my_settings["nam_io_offline"]["csurffile"]
+        lfagmap = False
+        if "LFAGMAP" in my_settings["NAM_IO_OFFLINE"]:
+            lfagmap = my_settings["NAM_IO_OFFLINE"]["LFAGMAP"]
 
+        print(my_pgdfile, lfagmap)
         if need_pgd:
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path)
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap)
 
         if need_prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap)
 
         surffile = None
         if need_prep and need_pgd:
-            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output)
+            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
 
         if perturbed:
             surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, my_ecoclimap,
                                     pgdfile=my_pgdfile, surfout=surffile, input_data=my_input, archive_data=my_archive,
-                                    print_namelist=True)
+                                    print_namelist=print_namelist)
         elif pgd:
-            print(my_format, my_pgdfile)
-
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path,
-                                             archive_file=output)
+                                             archive_file=output, lfagmap=lfagmap)
             surfex.SURFEXBinary(binary, my_batch, my_pgdfile, my_settings, my_ecoclimap,
-                                input_data=my_input, archive_data=my_archive)
+                                input_data=my_input, archive_data=my_archive, print_namelist=print_namelist)
         elif prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output, lfagmap=lfagmap)
             surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
-                                input_data=my_input, archive_data=my_archive)
+                                input_data=my_input, archive_data=my_archive, print_namelist=print_namelist)
         else:
             surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
-                                assim=assim, surfout=surffile, input_data=my_input, archive_data=my_archive)
+                                assim=assim, surfout=surffile, input_data=my_input, archive_data=my_archive,
+                                print_namelist=print_namelist)
 
     else:
         print(output + " already exists!")
@@ -791,10 +801,9 @@ def parse_args_titan(argv):
                         required=True)
     parser.add_argument('-o', '--output_file', type=str, help="Output json file with quality checked observations",
                         required=False, default="qc_obs.json")
-    parser.add_argument('-v', '--variable', type=str, help="Observation variable")
+    parser.add_argument('-v', '--variable', type=str, required=True, help="Observation variable")
     parser.add_argument('--indent', type=int, default=None, help="Indent")
     parser.add_argument('-dtg', type=str, help="Date time group YYYYMMDDHH", required=True)
-
     parser.add_argument('tests', nargs='+', type=str, help="Which tests to run and order to run")
 
     if len(sys.argv) == 0:
@@ -842,7 +851,8 @@ def parse_args_oi2soda(argv):
     parser.add_argument('--sd_file', type=str, help="NetCDF file for SD", required=False, default=None)
     parser.add_argument('--sd_var', type=str, help="NetCDF variable name for SD", required=False,
                         default="surface_snow_thickness")
-    parser.add_argument('dtg', type=str, help="DTG", default=None)
+    parser.add_argument('dtg', nargs="?", type=str, help="DTG", default=None)
+    parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
 
     if len(argv) < 3:
         parser.print_help()
@@ -856,6 +866,7 @@ def run_oi2soda(args):
     t2m_file = args.t2m_file
     rh2m_file = args.rh2m_file
     sd_file = args.sd_file
+    output = args.output
 
     t2m = None
     if t2m_file is not None:
@@ -868,4 +879,4 @@ def run_oi2soda(args):
         sd = {"file": sd_file, "var": args.sd_var}
 
     dtg = datetime.strptime(args.dtg, "%Y%m%d%H")
-    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd)
+    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output)

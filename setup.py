@@ -11,17 +11,18 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+    # print(long_description)
 
 setup(
-    name='surfex',
+    name='pysurfex',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    # version=surfex.__version__,
+    version="0.0.3-dev",
 
     description='Python API to SURFEX',
-    long_description=long_description,
+    long_description='Python API to SURFEX',
 
     # The project's main homepage.
     url='https://github.com/metno/forcing-offline-surfex',
@@ -140,9 +141,8 @@ setup(
     # },
     scripts=[
         'bin/create_forcing',
-        'bin/ascii2sqlite',
+        'bin/qc2obsmon',
         'bin/create_forcing',
-        'bin/create_gridpp_parameters',
         'bin/create_surfex_json_namelist',
         'bin/FirstGuess4gridpp',
         'bin/gridpp',
@@ -164,6 +164,7 @@ setup(
         'bin/set_geo_from_stationlist',
         'bin/set_domain',
         'bin/soda',
-        'bin/titan'
+        'bin/titan',
+        'bin/bufr2json'
     ],
 )

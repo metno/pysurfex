@@ -17,12 +17,16 @@ class Geo(object):
         self.nlats = nlats
         self.lonlist = lons.flatten()
         self.latlist = lats.flatten()
+        self.lonrange = None
+        self.latrange = None
         if lons.shape[0] > 0 and lats.shape[0] > 0:
             if self.npoints != self.nlons and self.npoints != self.nlats:
                 # Make 2D array
                 can_interpolate = True
                 self.lons = np.reshape(self.lonlist, [self.nlons, self.nlats])
                 self.lats = np.reshape(self.latlist, [self.nlons, self.nlats])
+            self.lonrange = [np.min(lons), np.max(lons)]
+            self.latrange = [np.min(lats), np.max(lats)]
         self.can_interpolate = can_interpolate
 
     def identifier(self):
@@ -510,10 +514,37 @@ def get_geo_object(from_json):
         raise KeyError
 
 
-def set_domain(settings, domain):
+def set_domain(settings, domain, hm_mode=False):
     if type(settings) is dict:
         if domain in settings:
-            return settings[domain]
+            if hm_mode:
+
+                ezone = 11
+                if "EZONE" in settings[domain]:
+                    ezone = settings[domain]["EZONE"]
+
+                domain_dict = {
+                    "nam_pgd_grid": {
+                        "cgrid": "CONF PROJ"
+                    },
+                    "nam_conf_proj": {
+                        "xlat0": settings[domain]["LAT0"],
+                        "xlon0": settings[domain]["LON0"],
+                    },
+                    "nam_conf_proj_grid": {
+                        "ilone": ezone,
+                        "ilate": ezone,
+                        "xlatcen": settings[domain]["LATC"],
+                        "xloncen": settings[domain]["LONC"],
+                        "nimax": settings[domain]["NLON"] - ezone,
+                        "njmax": settings[domain]["NLAT"] - ezone,
+                        "xdx": settings[domain]["GSIZE"],
+                        "xdy": settings[domain]["GSIZE"],
+                    }
+                }
+            else:
+                domain_dict = settings[domain]
+            return domain_dict
         else:
             print("Domain not found: " + domain)
             raise Exception

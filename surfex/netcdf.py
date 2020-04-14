@@ -589,7 +589,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
     fh.close()
 
 
-def oi2soda(dtg, t2m=None, rh2m=None, sd=None):
+def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
 
     def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
 
@@ -644,7 +644,11 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None):
     # for i in range(0, nx *ny):
     #     undefined.append("999")
 
-    out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
+    if output is None:
+        out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
+    else:
+        out = open(output, "w")
+
     for j in range(0, ny):
         for i in range(0, nx):
             # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
@@ -671,3 +675,5 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None):
             else:
                 sd_val = undef
             out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")
+
+    out.close()

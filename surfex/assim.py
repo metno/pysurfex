@@ -104,7 +104,7 @@ def set_input_observations(dtg, settings, obsfile, check_existence=False):
         else:
             if check_existence:
                 print(cfile_format_obs)
-                raise NotImplementedError
+                raise FileNotFoundError(obsfile)
 
     return obssettings
 
@@ -164,8 +164,7 @@ def set_input_vertical_soil_oi(dtg, settings, first_guess, oi_coeffs=None, climf
                 print("Needed file missing: " + climfile)
                 raise FileNotFoundError
     else:
-        print("OI needs a climate file")
-        raise FileNotFoundError
+        raise FileNotFoundError("OI needs a climate file")
 
     # First guess for SURFEX
     cfile_format_fg = settings["NAM_ASSIM"]['CFILE_FORMAT_FG']
@@ -306,4 +305,29 @@ def set_output_vertical_soil_ekf(settings):
     if settings["NAM_ASSIM"]['LBEV']:
         # TODO fill with wanted values
         data = "{}"
+
+    print("WARNING: not implemented yet")
+    '''
+    Fromm SODA script
+    mv ANAL_INCR*  $WRK/.
+    mv INNOV* $WRK/.
+    mv OBSout* $WRK/.
+    mv OBSERRORout* $WRK/.
+    [ -f HO_WG2_v1 ] && mv HO_WG2_v1  $WRK/HO_WG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_WG2_v2 ] && mv HO_WG2_v2  $WRK/HO_WG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_WG2_v3 ] && mv HO_WG2_v3  $WRK/HO_WG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_WG1_v1 ] && mv HO_WG1_v1  $WRK/HO_WG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_WG1_v2 ] && mv HO_WG1_v2  $WRK/HO_WG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_WG1_v3 ] && mv HO_WG1_v3  $WRK/HO_WG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG2_v1 ] && mv HO_TG2_v1  $WRK/HO_TG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG2_v2 ] && mv HO_TG2_v2  $WRK/HO_TG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG2_v3 ] && mv HO_TG2_v3  $WRK/HO_TG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG1_v1 ] && mv HO_TG1_v1  $WRK/HO_TG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG1_v2 ] && mv HO_TG1_v2  $WRK/HO_TG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    [ -f HO_TG1_v3 ] && mv HO_TG1_v3  $WRK/HO_TG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    mv BGROUNDout_ASSIM.* $ARCHIVE
+
+    '''
+
+
     return data

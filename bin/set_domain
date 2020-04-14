@@ -6,13 +6,14 @@ import json
 import os
 
 
-def parse():
+def parse(argv):
     """Parse the command line input arguments."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--domain', '-d', required=True, type=str, help="Name of domain")
     parser.add_argument('--domains', required=True, type=str, help="Domain definitions")
+    parser.add_argument('--harmonie', action="store_true", help="Domain in harmonie definition")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
     parser.add_argument('--output', '-o', required=True, nargs='?')
 
@@ -20,21 +21,24 @@ def parse():
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args()
-
-    return args.domain, args.domains, args.output, args.indent
+    return parser.parse_args(argv)
 
 
-def set_domain(domains, domain):
-    return surfex.set_domain(domains, domain)
+def set_domain(domains, domain, hm_mode=False):
+    return surfex.set_domain(domains, domain, hm_mode=hm_mode)
 
 
 if __name__ == "__main__":
 
     try:
-        my_domain, my_domains, my_output, my_indent = parse()
+        args = parse(sys.argv[1:])
+        my_domain = args.domain
+        my_domains = args.domains
+        my_output = args.output
+        my_indent = args.indent
+        harmonie_mode = args.harmonie
         if os.path.exists(my_domains):
-            domain_json = set_domain(json.load(open(my_domains, "r")), my_domain)
+            domain_json = set_domain(json.load(open(my_domains, "r")), my_domain, hm_mode=harmonie_mode)
             if domain_json is not None:
                 json.dump(domain_json, open(my_output, "w"), indent=my_indent)
             else:

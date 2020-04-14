@@ -132,17 +132,41 @@ class Masterodb(object):
             self.input.prepare_input()
 
         # Prepare namelist
-        if os.path.exists('OPTIONS.nam'):
-            os.remove('OPTIONS.nam')
+        if os.path.exists('EXSEG1.nam'):
+            os.remove('EXSEG1.nam')
 
-        self.settings.write('OPTIONS.nam')
-        fh = open('OPTIONS.nam')
+        self.settings.write('EXSEG1.nam')
+        fh = open('EXSEG1.nam')
         content = fh.read()
         fh.close()
         if self.print_namelist:
             print(content)
 
+        print("PGD file for MASTERODB", self.pgdfile.filename)
+        if self.pgdfile.input_file is not None and \
+                os.path.abspath(self.pgdfile.filename) != os.path.abspath(self.pgdfile.input_file):
+            print("Input PGD file is: " + self.pgdfile.input_file)
+            surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+            os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
+
+        if not os.path.exists(self.pgdfile.filename):
+            print("PGD not found! " + self.pgdfile.filename)
+            raise FileNotFoundError
+
         print("PREP file for MASTERODB", self.prepfile.filename)
+        if self.prepfile.input_file is not None and \
+                os.path.abspath(self.prepfile.filename) != os.path.abspath(self.prepfile.input_file):
+
+            print("Input PREP file is: " + self.prepfile.input_file)
+            surfex.read.remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
+            os.symlink(self.prepfile.input_file, self.prepfile.filename)
+
+        if not os.path.exists(self.prepfile.filename):
+            print("PREP not found! " + self.prepfile.filename)
+            raise FileNotFoundError
+
+        if self.assim is not None:
+            self.assim.ass_input.prepare_input()
 
         # Set up assimilation
         if self.assim is not None:

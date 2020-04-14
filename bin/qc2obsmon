@@ -5,5 +5,5 @@ import surfex
 
 if __name__ == "__main__":
 
-    args = surfex.parse_args_ascii2sqlite(sys.argv[1:])
+    args = surfex.parse_args_qc2obsmon(sys.argv[1:])
     surfex.write_obsmon_sqlite_file(args)

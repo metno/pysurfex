@@ -61,7 +61,7 @@ class Grib(object):
             gid = eccodes.codes_grib_new_from_file(fh)
 
             if gid is None:
-                print("Could not find key")
+                print("\nCould not find key")
                 gribvar.print_keys()
                 fh.close()
                 return None
@@ -88,6 +88,7 @@ class Grib(object):
 
                     if geo["gridType"].lower() == "lambert":
                         values = eccodes.codes_get_values(gid)
+                        print(values)
                         nx = geo["Nx"]
                         ny = geo["Ny"]
 
@@ -178,7 +179,7 @@ class Grib1Variable(object):
     def __init__(self, par, typ, level, tri):
         self.version = 1
         self.par = par
-        self.typ = typ
+        self.typ = str(typ).strip()
         self.level = level
         self.tri = tri
 
@@ -192,10 +193,10 @@ class Grib1Variable(object):
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
-        par = eccodes.codes_get(gid, "indicatorOfParameter")
-        lev = eccodes.codes_get(gid, "level")
-        typ = eccodes.codes_get(gid, "levelType")
-        tri = eccodes.codes_get(gid, "timeRangeIndicator")
+        par = int(eccodes.codes_get(gid, "indicatorOfParameter"))
+        lev = int(eccodes.codes_get(gid, "level"))
+        typ = str(eccodes.codes_get(gid, "levelType")).strip("")
+        tri = int(eccodes.codes_get(gid, "timeRangeIndicator"))
 
         if self.par == par and self.level == lev and self.typ == typ and self.tri == tri:
             return True
@@ -206,7 +207,7 @@ class Grib1Variable(object):
         print("\n")
         print("Version:", self.version)
         print("indicatorOfParameter:", self.par)
-        print("levelType", self.level)
+        print("levelType", self.typ)
         print("level:", self.level)
         print("timeRangeIndicator:", self.tri)
 
@@ -225,11 +226,11 @@ class Grib2Variable(object):
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
-        discipline = eccodes.codes_get(gid, "discipline")
-        parameter_category = eccodes.codes_get(gid, "parameterCategory")
-        parameter_number = eccodes.codes_get(gid, "parameterNumber")
-        level_type = eccodes.codes_get(gid, "levelType")
-        level = eccodes.codes_get(gid, "level")
+        discipline = int(eccodes.codes_get(gid, "discipline"))
+        parameter_category = int(eccodes.codes_get(gid, "parameterCategory"))
+        parameter_number = int(eccodes.codes_get(gid, "parameterNumber"))
+        level_type = int(eccodes.codes_get(gid, "levelType"))
+        level = int(eccodes.codes_get(gid, "level"))
         try:
             type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")
         except gribapi.errors.KeyValueNotFoundError:
@@ -240,6 +241,7 @@ class Grib2Variable(object):
         # print(self.parameterCategory, parameter_category)
         # print(self.parameterNumber, parameter_number)
         # print(self.levelType, level_type)
+        # print(self.level, level)
         # print(self.typeOfStatisticalProcessing, type_of_statistical_processing)
         if self.discipline == discipline and \
                 self.parameterCategory == parameter_category and \

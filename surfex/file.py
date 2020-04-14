@@ -90,9 +90,12 @@ class SurfexSurfIO(object):
 
 
 class PGDFile(SurfexSurfIO):
-    def __init__(self, csurf_filetype, cpgdfile, geo, input_file=None, symlink=True, archive_file=None):
+    def __init__(self, csurf_filetype, cpgdfile, geo, input_file=None, symlink=True, archive_file=None,
+                 lfagmap=False, masterodb=False):
         print(cpgdfile, csurf_filetype)
-        cpgdfile = get_surfex_io_object(cpgdfile, filetype="surf", geo=geo, fileformat=csurf_filetype)
+
+        cpgdfile = get_surfex_io_object(cpgdfile, filetype="surf", geo=geo, fileformat=csurf_filetype,
+                                        lfagmap=lfagmap, masterodb=masterodb)
 
         SurfexSurfIO.__init__(self, cpgdfile, csurf_filetype, input_file=input_file,
                               archive_file=archive_file, symlink=symlink)
@@ -100,8 +103,10 @@ class PGDFile(SurfexSurfIO):
         
 
 class PREPFile(SurfexSurfIO):
-    def __init__(self, csurf_filetype, cprepfile, geo, input_file=None, symlink=True, archive_file=None):
-        cprepfile = get_surfex_io_object(cprepfile, filetype="surf", geo=geo, fileformat=csurf_filetype)
+    def __init__(self, csurf_filetype, cprepfile, geo, input_file=None, symlink=True, archive_file=None,
+                 lfagmap=False, masterodb=False):
+        cprepfile = get_surfex_io_object(cprepfile, filetype="surf", geo=geo, fileformat=csurf_filetype,
+                                         lfagmap=lfagmap, masterodb=masterodb)
 
         SurfexSurfIO.__init__(self, cprepfile, csurf_filetype, input_file=input_file,
                               archive_file=archive_file, symlink=symlink)
@@ -109,8 +114,10 @@ class PREPFile(SurfexSurfIO):
 
 
 class SURFFile(SurfexSurfIO):
-    def __init__(self, csurf_filetype, csurffile, geo, archive_file=None, input_file=None):
-        csurffile = get_surfex_io_object(csurffile, filetype="surf", geo=geo, fileformat=csurf_filetype)
+    def __init__(self, csurf_filetype, csurffile, geo, archive_file=None, input_file=None, lfagmap=False,
+                 masterodb=False):
+        csurffile = get_surfex_io_object(csurffile, filetype="surf", geo=geo, fileformat=csurf_filetype,
+                                         lfagmap=lfagmap, masterodb=masterodb)
 
         SurfexSurfIO.__init__(self, csurffile, csurf_filetype, input_file=input_file, archive_file=archive_file)
         self.need_pgd = True
@@ -134,7 +141,7 @@ class SurfexFileVariable(object):
         return self.varname
 
 
-def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None):
+def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfagmap=False, masterodb=False):
 
     if filetype is not None:
         if filetype.lower() != "surf" and filetype.lower() != "ts" and filetype.lower() != "forcing":
@@ -173,9 +180,14 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None):
         obj = TexteSurfexFile(fname, geo)
     elif fileformat.lower() == "fa":
         if filetype.lower() == "surf":
-            obj = FaSurfexFile(fname, geo=geo)
+            obj = FaSurfexFile(fname, geo=geo, lfagmap=lfagmap, masterodb=masterodb)
         else:
             raise NotImplementedError
+    # elif fileformat.lower() == "sfx":
+    #    if filetype.lower() == "surf":
+    #        obj = FaSurfexFile(fname, geo=geo, lfagmap=True, masterodb=masterodb)
+    #    else:
+    #        raise NotImplementedError
     else:
         raise NotImplementedError("Format not implemented: " + fileformat)
 
@@ -568,12 +580,16 @@ class NCSurfexFile(SurfexIO):
 
 class FaSurfexFile(SurfexIO):
 
-    def __init__(self, filename, geo=None, lfagmap=True):
+    def __init__(self, filename, geo=None, lfagmap=True, masterodb=False):
 
         if lfagmap:
             extension = "sfx"
             if not filename.endswith(".sfx"):
-                filename = filename + ".sfx"
+                # Files are written with .fa outside masterodb
+                if masterodb:
+                    filename = filename + ".sfx"
+                else:
+                    filename = filename + ".fa"
         else:
             extension = "fa"
             if not filename.endswith(".fa"):
