@@ -229,7 +229,7 @@ class Grib2Variable(object):
         discipline = int(eccodes.codes_get(gid, "discipline"))
         parameter_category = int(eccodes.codes_get(gid, "parameterCategory"))
         parameter_number = int(eccodes.codes_get(gid, "parameterNumber"))
-        level_type = int(eccodes.codes_get(gid, "levelType"))
+        level_type = int(eccodes.codes_get_long(gid, "levelType"))
         level = int(eccodes.codes_get(gid, "level"))
         try:
             type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")

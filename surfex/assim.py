@@ -25,13 +25,19 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, 
     vectors = np.vectorize(obs2vectors)
     lons, lats, stids, elevs, values, pci, lafs = vectors(observations)
 
+    glats = np.transpose(glats)
+    glons = np.transpose(glons)
+    background = np.transpose(background)
+    gelevs = np.transpose(gelevs)
+    glafs = np.transpose(glafs)
+
     rstat, field = gridppOI.optimal_interpolation(background, glats, glons, gelevs, glafs,
                                                   values, pci, lats, lons, elevs, lafs,
                                                   min_rho, hlength, vlength, wmin,
                                                   max_elev_diff, land_only, max_locations,
                                                   elev_gradient, epsilon)
     field = np.asarray(field)
-    return field
+    return np.transpose(field)
 
 
 class Assimilation(object):

@@ -531,10 +531,13 @@ def read_first_guess_netcdf_file(input_file, var):
                     cfunits.Units("seconds since 1970-01-01 00:00:00")))
     validtime = datetime.fromtimestamp(validtime)
 
-    nx = lons.shape[0]
-    ny = lons.shape[1]
-    lons = np.array(np.reshape(lons, [nx * ny]))
-    lats = np.array(np.reshape(lats, [nx * ny]))
+
+    nx = lons.shape[1]
+    ny = lons.shape[0]
+
+    lons = np.array(np.reshape(lons, [nx * ny], order="F"))
+    lats = np.array(np.reshape(lats, [nx * ny], order="f"))
+
     # print(lons.shape, lats.shape, type(lons))
     geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
 
@@ -553,12 +556,24 @@ def read_first_guess_netcdf_file(input_file, var):
     else:
         raise Exception("No altitude found in first guess file")
 
-    for i in range(0, nx):
-        for j in range(0, ny):
-            # print(i, j, background_in[i][j])
-            background[i][j] = background_in[i][j]
-            glafs[i][j] = glafs_in[i][j]
-            gelevs[i][j] = gelevs_in[i][j]
+    background = fh[var][:]
+    background = np.array(np.reshape(background, [nx * ny]))
+    background = np.reshape(background, [ny, nx])
+    background = np.transpose(background)
+    background = background.tolist()
+    background = np.asarray(background)
+    glafs = fh["land_area_fraction"][:]
+    glafs = np.array(np.reshape(glafs, [nx * ny]))
+    glafs = np.reshape(glafs, [ny, nx])
+    glafs = np.transpose(glafs)
+    glafs = glafs.tolist()
+    glafs = np.asarray(glafs)
+    gelevs = fh["altitude"][:]
+    gelevs = np.array(np.reshape(gelevs, [nx * ny]))
+    gelevs = np.reshape(gelevs, [ny, nx])
+    gelevs = np.transpose(gelevs)
+    gelevs = gelevs.tolist()
+    gelevs = np.asarray(gelevs)
 
     fh.close()
     return geo, validtime, background, glafs, gelevs
@@ -577,15 +592,15 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
             raise Exception("You need to provide geo to write a new file")
         fh = create_netcdf_first_guess_template([var, "altitude", "land_area_fraction"],
                                                 geo.nlons, geo.nlats, fname=filename)
-        fh.variables["longitude"][:] = geo.lons
-        fh.variables["latitude"][:] = geo.lats
+        fh.variables["longitude"][:] = np.transpose(geo.lons)
+        fh.variables["latitude"][:] = np.transpose(geo.lats)
         fh.variables["x"][:] = [i for i in range(0, geo.nlons)]
         fh.variables["y"][:] = [i for i in range(0, geo.nlats)]
-        fh.variables["altitude"][:] = elevs
-        fh.variables["land_area_fraction"][:] = lafs
+        fh.variables["altitude"][:] = np.transpose(elevs)
+        fh.variables["land_area_fraction"][:] = np.transpose(lafs)
 
     fh["time"][:] = float(validtime.strftime("%s"))
-    fh[var][:] = field
+    fh[var][:] = np.transpose(field)
     fh.close()
 
 
@@ -616,26 +631,54 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
     if t2m is not None:
         t2m_fh = netCDF4.Dataset(t2m["file"], "r")
         print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
-        t2m_var = t2m_fh.variables[t2m["var"]]
+        t2m_var = t2m_fh.variables[t2m["var"]][:]
+
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, t2m_fh.variables[t2m["var"]].shape[1],
                                                 t2m_fh.variables[t2m["var"]].shape[0])
+        print(t2m_var.shape, nx*ny)
+        t2m_var = np.reshape(t2m_var, ny * nx, order="F")
+        mask = np.ma.is_masked(t2m_var)
+        t2m_var[mask] = 999.
+
+        t2m_var = t2m_var.tolist()
+    else:
+        t2m_var = [999] * ( nx * ny)
+
     rh2m_var = None
     if rh2m is not None:
         rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
         print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
-        rh2m_var = rh2m_fh.variables[rh2m["var"]]
+
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[1],
                                                 rh2m_fh.variables[rh2m["var"]].shape[0])
+        rh2m_var = rh2m_fh.variables[rh2m["var"]][:]
+        rh2m_var = rh2m_var.reshape([ny * nx], order="F")
+        mask = np.ma.is_masked(rh2m_var)
+        rh2m_var[mask] = 999.
+
+        rh2m_var = rh2m_var.tolist()
+    else:
+        rh2m_var = [999] * ( nx * ny)
+
     sd_var = None
     if sd is not None:
         sd_fh = netCDF4.Dataset(sd["file"], "r")
         print(sd["var"], sd_fh.variables[sd["var"]].shape)
-        sd_var = sd_fh.variables[sd["var"]]
+
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, sd_fh.variables[sd["var"]].shape[1],
                                                 sd_fh.variables[sd["var"]].shape[0])
+
+        sd_var = sd_fh.variables[sd["var"]][:]
+        sd_var = sd_var.reshape([ny *  nx], order="F")
+        mask = np.ma.is_masked(sd_var)
+        sd_var[mask] = 999.
+
+        sd_var = sd_var.tolist()
+    else:
+        sd_var = [999] * ( nx * ny)
 
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
@@ -649,6 +692,11 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
     else:
         out = open(output, "w")
 
+    for i in range(0, nx*ny):
+       out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
+       print(i)
+
+    '''
     for j in range(0, ny):
         for i in range(0, nx):
             # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
@@ -675,5 +723,5 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
             else:
                 sd_val = undef
             out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")
-
+    '''
     out.close()
