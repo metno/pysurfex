@@ -25,7 +25,7 @@ class Observation(object):
 
     @staticmethod
     def obs2vectors(my_obs):
-        # print(my_obs.validtime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value)
+        # print(my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value)
         return my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value, my_obs.varname
 
     @staticmethod
@@ -107,15 +107,17 @@ def get_datasources(obs_time, settings):
                     latrange = settings[obs_set]["latrange"]
 
                 valid_range = timedelta(seconds=3600)
-                datasources.append(surfex.bufr.BufrObservationSet(filename, [varname], obs_time,
-                                                                  valid_range, lonrange=lonrange,
-                                                                  latrange=latrange, label=obs_set))
+                if os.path.exists(filename):
+                    datasources.append(surfex.bufr.BufrObservationSet(filename, [varname], obs_time,
+                                                                      valid_range, lonrange=lonrange,
+                                                                      latrange=latrange, label=obs_set))
+                else:
+                    print("WARNING: filename " + filename + " not set. Not added.")
+
             elif filetype.lower() == "netatmo":
-                filenames = []
+                filenames = None
                 if "filenames" in settings[obs_set]:
                     filenames = settings[obs_set]["filenames"]
-                    if filenames[0] is None:
-                        raise Exception("You must set filenames to not None")
                 if "varname" in settings[obs_set]:
                     variable = settings[obs_set]["varname"]
                 else:
@@ -128,9 +130,13 @@ def get_datasources(obs_time, settings):
                 if "latrange" in settings[obs_set]:
                     latrange = settings[obs_set]["latrange"]
 
-                datasources.append(NetatmoObservationSet(filenames, variable, obs_time,
-                                                         dt=3600, label=obs_set, lonrange=lonrange,
-                                                         latrange=latrange))
+                if filenames is not None:
+                    datasources.append(NetatmoObservationSet(filenames, variable, obs_time,
+                                                             dt=3600, label=obs_set, lonrange=lonrange,
+                                                             latrange=latrange))
+                else:
+                    print("WARNING: filenames not set. Not added.")
+
             elif filetype.lower() == "frost":
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
@@ -143,7 +149,11 @@ def get_datasources(obs_time, settings):
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
-                datasources.append(JsonObservationSet(filename, label=obs_set, var=varname))
+                    
+                if os.path.exists(filename):
+                    datasources.append(JsonObservationSet(filename, label=obs_set, var=varname))
+                else:
+                    print("WARNING: filename " + filename + " not existing. Not added.")
             else:
                 raise NotImplementedError("Unknown observation file format")
         else:
@@ -290,7 +300,7 @@ class NetatmoObservationSet(ObservationSet):
         e.g. [...][...][...]. Instead format it like this: [..., ..., ...]
         """
 
-        target_time = int(target_time.strftime("%s"))
+        # target_time = int(target_time.total_seconds())
 
         observations = []
         num_missing_metadata = 0
@@ -376,21 +386,15 @@ class NetatmoObservationSet(ObservationSet):
         if target_time is not None:
             num_valid_stations = 0
             for my_id, time in times.items():
-                if np.min(np.abs(np.array(time) - target_time)) < dt:
-                    curr_times = np.array(times[my_id])
-                    ind = np.argsort(curr_times)
-                    curr_times = curr_times[ind]
-                    ibest = int(np.argmin(np.abs(curr_times - target_time)))
+                this_diff_times = [(datetime.utcfromtimestamp(t) - target_time).total_seconds() for t in time]
+                curr_times = [datetime.utcfromtimestamp(t) for t in time]
+                # print(this_diff_times, target_time, np.min(np.abs(np.array(this_diff_times))), dt)
+                if np.min(np.abs(np.array(this_diff_times))) < dt:
+                    ibest = int(np.argmin(np.abs(np.array(this_diff_times))))
+                    curr_time = curr_times[ibest]
                     elev = metadata[my_id]["elev"]
-                    if not np.isnan(elev):
-                        # print(target_time, metadata[my_id]["lon"], metadata[my_id]["lat"],
-                        # data[my_id][ibest], metadata[my_id]["elev"])
-                        observations.append(Observation(datetime.fromtimestamp(target_time),
-                                                        metadata[my_id]["lon"], metadata[my_id]["lat"],
-                                                        data[my_id][ibest], elev=elev))
-                    else:
-                        print("Should be removed")
-
+                    observations.append(Observation(curr_time, metadata[my_id]["lon"], metadata[my_id]["lat"],
+                                                    data[my_id][ibest], elev=elev))
                     num_valid_stations += 1
         else:
             num_valid_stations = len(data)

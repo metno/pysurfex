@@ -818,57 +818,6 @@ class QCDataSet(object):
     def perform_tests(self):
         raise NotImplementedError("You must implement this method")
 
-    '''
-    def update_set(self, observations=None, fg_dep=None, an_dep=None):
-
-        print("Update data set...")
-        if observations is not None:
-            print(" " + str(len(observations.lons)) + " new observations")
-
-        for j in range(0, len(self.lons)):
-            lon1 = "{:10.5f}".format(float(self.lons[j]))
-            lat1 = "{:10.5f}".format(float(self.lats[j]))
-            flag1 = self.flags[j]
-
-            if fg_dep is not None:
-                if flag1 != 203 and flag1 != 199:
-                    self.fg_dep[j] = fg_dep[j]
-            if flag1 == 0:
-                if an_dep is not None:
-                    self.an_dep[j] = an_dep[j]
-
-            # print("Set ", j, lon1, lat1, flag1, self.fg_dep[j], self.an_dep[j])
-            if observations is not None:
-                for i in range(0, len(observations.lons)):
-                    lon = "{:10.5f}".format(float(observations.lons[i]))
-                    lat = "{:10.5f}".format(float(observations.lats[i]))
-                    flag = int(observations.flags[i])
-
-                    # print("Could update ", lon, lat, flag, lon1, lat1, self.flags[j], self.fg[j], self.an[j])
-                    if lon == lon1 and lat == lat1:
-                        self.flags[j] = flag
-                        if flag == 0:
-                            pass
-                        elif flag == 203 or flag == 199:
-                            # print(flag)
-                            self.fg_dep[j] = np.nan
-                            self.an_dep[j] = np.nan
-                        else:
-                            self.an_dep[j] = np.nan
-
-                        # print("Update ", i, j, lon, lat, flag, self.lons[j], self.lats[j], self.flags[j],
-                        #       self.fg_dep[j], self.an_dep[j])
-                        break
-
-            if len(self.lons) > 100:
-                percent = int(len(self.lons)/100.)
-                # print(percent)
-                if (j % (percent * 5)) == 0:
-                    f = int(round((j / len(self.lons) * 100.)))
-                    print(str(f) + "%")
-        print("Finished updating")
-    '''
-
     def write_output(self, filename, indent=None):
 
         data = {}

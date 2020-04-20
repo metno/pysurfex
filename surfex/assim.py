@@ -10,7 +10,7 @@ except ImportError:
 
 def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, hlength=10000.,
                   vlength=10000., wmin=0, max_elev_diff=100.,
-                  land_only=False, max_locations=20, elev_gradient=-0.0065, epsilon=0.5):
+                  land_only=False, max_locations=20, elev_gradient=-0.0065, epsilon=0.5, minvalue=None, maxvalue=None):
 
     if gridppOI is None:
         raise Exception("You need gridpp to perform OI")
@@ -37,6 +37,10 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, 
                                                   max_elev_diff, land_only, max_locations,
                                                   elev_gradient, epsilon)
     field = np.asarray(field)
+    if minvalue is not None:
+        field[field < minvalue] = minvalue
+    if maxvalue is not None:
+        field[field > maxvalue] = maxvalue
     return np.transpose(field)
 
 

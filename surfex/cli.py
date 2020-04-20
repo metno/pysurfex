@@ -757,6 +757,8 @@ def parse_args_gridpp(argv):
     parser.add_argument('--elevGradient', dest='elev_gradient', type=float, default=-0.0065, required=False,
                         choices=[0, -0.0065])
     parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.5, required=False)
+    parser.add_argument('--minvalue', dest='minvalue', type=float, default=None, required=False)
+    parser.add_argument('--maxvalue', dest='maxvalue', type=float, default=None, required=False)
 
     if len(sys.argv) == 0:
         parser.print_help()
@@ -779,6 +781,8 @@ def run_gridpp(args):
     max_locations = args.max_locations
     elev_gradient = args.elev_gradient
     epsilon = args.epsilon
+    minvalue = args.minvalue
+    maxvalue = args.maxvalue
 
     # Get input fields
     geo, validtime, background, glafs, gelevs = surfex.read_first_guess_netcdf_file(input_file, var)
@@ -790,7 +794,7 @@ def run_gridpp(args):
     field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,  min_rho=min_rho,
                                  hlength=hlength, vlength=vlength, wmin=wmin, max_elev_diff=max_elev_diff,
                                  land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
-                                 epsilon=epsilon)
+                                 epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue)
 
     surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
 
