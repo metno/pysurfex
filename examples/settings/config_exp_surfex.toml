@@ -1,8 +1,4 @@
 
-DOMAIN = "NORWAY_SOUTH"
-MODIFY_LAKES = ".FALSE"             # Use Vanern/Vattern as Sea, requires new upper air climate files: ".FALSE."|".TRUE."
-TIME_STEP = 60
-
 ###################
 # SURFEX SETTINGS #
 ###################
@@ -21,14 +17,24 @@ XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
 LSPLIT_PATCH = true                 # Split patches into separate variables in output files
 
 [SURFEX.COVER]                      # Land cover information
-YCOVER = "ECOCLIMAP_2_5_p.dir"      # Version of ECOCLIMAP for surfex (1,2,SG)
-                                    # Available versions are 1.1-1.5,2.0-2.2.1,SG and 2.5_plus if you use FLake
-                                    # SG represents SecondGeneration and is now availbale for tests on ECMWF. However,
-                                    # please note that SG is not yet compatible with any availbale lake data base.
-SG = false                          # COCLIMAP second generation
+YCOVER = "ecosg_final_map.dir"      # ECOCLIMAP direct file for surfex
+                                    # YCOVER is taken from [ecoclimap] and for SG [ecoclimap_sg_cover_dir]
+                                    # File paths for direct and dirtype files are set in
+                                    # your appropriate system file [] or in [climdir]
+
+SG = true                                # ECOCLIMAP second generation. [true|false]
+                                         # YCOVER is taken from [ecoclimap_sg_cover_dir]
+                                         # File paths for direct and dirtype files are set in
+                                         # your appropriate system file [] or in [climdir]
+H_TREE = "new_ht_c.dir"                  # Tree height data set.           [tree_height_dir]
+ALBNIR_SOIL = "ANS_DESAG_@MM@@CDD@.dir"  # Near-infrared soil albedo       [albnir_soil_dir]
+ALBNIR_VEG = "ANV_DESAG_@MM@@CDD@.dir"   # Near-infrared vegetation albedo [albnir_veg_dir]
+ALBVIS_SOIL = "AVS_DESAG_@MM@@CDD@.dir"  # Visible soil albedo             [albvis_soil_dir]
+ALBVIS_VEG = "AVV_DESAG_@MM@@CDD@.dir"   # Visible vegetation albedo       [albvis_veg_dir]
+LAI = "LAI_@MM@@CDD@_c.dir"              # Leaf area index                 [lai_dir]
 
 [SURFEX.ZS]                         # Orography
-YZS = "gtopo30.dir"                 # Database with orography: "gmted2010"|"gtopo30"
+YZS = "gmted2010.dir"               # Database with orography: "gmted2010"|"gtopo30" [oro_dir]
 
 [SURFEX.PARAMETERS]
 XRIMAX = 0.2                        # Maximum allowed Richardson number in the surface layer
@@ -62,7 +68,7 @@ LVOLATILE_SIC = false               #
 
 # General FLAKE
 [SURFEX.FLAKE]
-LCLIM = true                        # Use FLAKE climatology
+LCLIM = true                        # Use FLAKE climatology [flake_dir]
 
 ##########
 # NATURE #
@@ -76,14 +82,14 @@ MEB = false                         # Enable Multi Energy Budget (MEB) model
 CANOPY = false                      # Activates surface boundary multi layer scheme over land in SURFEX
                                     # (must be false for NPATCH>1)
 SNOW = "3-L"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
-YSOC_TOP = "soc_top.dir"            # Soil organic carbon data. Options: "soc_top.dir"
-YSOC_SUB = "soc_sub.dir"            # Soil organic carbon data. Options: "soc_sub.dir"
+YSOC_TOP = "soc_top.dir"            # Soil organic carbon data. Options: "soc_top.dir" [soc_top_dir]
+YSOC_SUB = "soc_sub.dir"            # Soil organic carbon data. Options: "soc_sub.dir" [soc_sub_dir]
 
-YSAND = "sand_fao.dir"              # Soil texture input data: "sand_fao.dir"|"SAND_HWSD_MOY_V2.dir"|"sand_SOILGRID.dir"
-                                    # suffix json assumes namelist values provided as a json file
+YSAND = "CLAY_SOILGRID.dir"         # Soil texture input data: "sand_fao.dir"|"SAND_HWSD_MOY_V2.dir"|"sand_SOILGRID.dir"
+                                    # suffix json assumes namelist values provided as a json file. [sand_dir]
 
-YCLAY = "clay_fao.dir"              # Soil texture input data: "clay_fao.dir"|"CLAY_HWSD_MOY_V2.dir"|"clay_SOILGRID.dir"
-                                    # suffix json assumes namelist values provided as a json file
+YCLAY = "CLAY_SOILGRID.dir"         # Soil texture input data: "clay_fao.dir"|"CLAY_HWSD_MOY_V2.dir"|"clay_SOILGRID.dir"
+                                    # suffix json assumes namelist values provided as a json file. [clay_dir]
 PERTSURF = "none"                   # Perturb surface parameters
 XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
 
