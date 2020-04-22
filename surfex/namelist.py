@@ -120,6 +120,39 @@ def set_direct_data_namelist(lnamelist_section, ldtype, ldname, linput_path):
         return {"file": linput_path + "/" + ldname}
 
 
+def parse_eco_sg_fnames(filepattern, decade):
+    filename = filepattern
+    add = 1
+    if decade % 3 == 0:
+        add = 0
+    mm = int(decade / 3) + add
+    mm = "{:02d}".format(mm)
+    cdd = ((decade % 3) * 10) + 5
+    cdd = "{:02d}".format(cdd)
+    filename = filename.replace("@MM@", str(mm))
+    filename = filename.replace("@CDD@", str(cdd))
+    return filename
+
+
+def set_dirtyp_data_namelist(lnamelist_section, ldtype, ldname, vtype=None, decade=None):
+    basename = os.path.splitext(os.path.basename(ldname))[0]
+    filetype_name = ldtype.upper()
+    if vtype is not None or decade is not None:
+        filetype_name = filetype_name + "("
+    if vtype is not None:
+        filetype_name = filetype_name + str(vtype)
+    if vtype is not None and decade is not None:
+        filetype_name = filetype_name + ","
+    if decade is not None:
+        filetype_name = filetype_name + str(decade)
+    if vtype is not None or decade is not None:
+        filetype_name = filetype_name + ")"
+    return {
+        "json": json.loads('{"' + lnamelist_section + '": { "CFNAM_' + filetype_name + '": "' + basename + '", ' +
+                           '"CFTYP_' + filetype_name + '": "DIRTYPE"}}')
+    }
+
+
 def get_surfex_env(settings, var_list, mbr=None):
 
     found = None
@@ -211,11 +244,14 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
         raise FileNotFoundError("System settings not found " + system_settings)
 
     # Ecoclimap settings
-    ecoclimap_json = {}
-    ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
-                       "ecoclimapII_eu_covers_param.bin"]
-    for fname in ecoclimap_files:
-        ecoclimap_json.update(set_input_data("ecoclimap_bin_dir", fname, system_files))
+    if not env["SURFEX"]["COVER"]["SG"]:
+        ecoclimap_json = {}
+        ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
+                           "ecoclimapII_eu_covers_param.bin"]
+        for fname in ecoclimap_files:
+            ecoclimap_json.update(set_input_data("ecoclimap_bin_dir", fname, system_files))
+    else:
+        ecoclimap_json = {}
 
     # Input files for surfex
     input_for_surfex_json = {}
@@ -234,13 +270,36 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             }})
 
         # Ecoclimap SG
+        input_list.append({"json": {"NAM_FRAC": {"LECOSG": env["SURFEX"]["COVER"]["SG"]}}})
         if env["SURFEX"]["COVER"]["SG"]:
-            input_list.append({"file": input_path + "/eco_sg.json"})
+            veg_types = 20
+            decades = 36
+
+            input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": decades}}})
+            tree_height_dir = "tree_height_dir"
+            fname = env["SURFEX"]["COVER"]["H_TREE"]
+            input_for_surfex_json.update(set_input_data(tree_height_dir, fname, system_files))
+            input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
+
+            decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+            for decadal_data_type in decadal_data_types:
+                for vt in range(1, veg_types + 1):
+                    for decade in range(1, decades + 1):
+                        filepattern = env["SURFEX"]["COVER"][decadal_data_type]
+                        fname = parse_eco_sg_fnames(filepattern, decade)
+                        input_for_surfex_json.update(set_input_data(decadal_data_type.lower()+"_dir", fname,
+                                                                    system_files))
+                        input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname, vtype=vt,
+                                                                   decade=decade))
 
         # Set direct input files
         if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
             input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_files))
             input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus.dir", system_files))
+
+        ecoclimap_dir = "ecoclimap_dir"
+        if env["SURFEX"]["COVER"]["SG"]:
+            ecoclimap_dir = "ecoclimap_sg_cover_dir"
 
         possible_direct_data = {
             "ISBA": {
@@ -250,7 +309,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                 "YSOC_SUB": "soc_sub_dir"
             },
             "COVER": {
-                "YCOVER": "ecoclimap_dir"
+                "YCOVER": ecoclimap_dir
             },
             "ZS": {
                 "YZS": "oro_dir"
@@ -370,7 +429,6 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                 input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF": False}}})
             input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": env["SURFEX"]["ISBA"]["XCGMAX"]}}})
 
-
         # SSO
         input_list.append({"json": {"NAM_SSON": {"CROUGH": env["SURFEX"]["SSO"]["SCHEME"]}}})
 
@@ -402,8 +460,8 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
 
         # Climate setting
         if env["SURFEX"]["SEA"]["LVOLATILE_SIC"]:
-            input_list.append({"json": {"NAM_SEAICEn " : { "LVOLATILE_SIC": env["SURFEX"]["SEA"]["LVOLATILE_SIC"],
-                                                           "XSIC_EFOLDING_TIME": 1.0}}})
+            input_list.append({"json": {"NAM_SEAICEn ": {"LVOLATILE_SIC": env["SURFEX"]["SEA"]["LVOLATILE_SIC"],
+                                                         "XSIC_EFOLDING_TIME": 1.0}}})
 
     elif program == "soda":
         input_list.append({"file": input_path + "/soda.json"})

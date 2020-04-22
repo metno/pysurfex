@@ -142,14 +142,13 @@ def get_datasources(obs_time, settings):
                     varname = settings[obs_set]["varname"]
                 else:
                     raise Exception("You must set variable name")
-                print(obs_time)
                 datasources.append(MetFrostObservations(varname, validtime=obs_time))
             elif filetype.lower() == "json":
                 filename = surfex.file.parse_filepattern(filepattern, obs_time, validtime)
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
-                    
+
                 if os.path.exists(filename):
                     datasources.append(JsonObservationSet(filename, label=obs_set, var=varname))
                 else:

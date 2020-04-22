@@ -396,7 +396,7 @@ def parse_args_masterodb(argv):
     parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--ecoclimap', '-e', required=True, nargs='?')
+    parser.add_argument('--ecoclimap', '-e', required=False, default=None, nargs='?')
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=False)
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
@@ -566,7 +566,7 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--ecoclimap', '-e', type=str, required=True, nargs='?')
+    parser.add_argument('--ecoclimap', '-e', type=str, required=False, default=None, nargs='?')
     parser.add_argument('--domain', '-d', type=str, required=True, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=True)
     if pert:
