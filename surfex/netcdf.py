@@ -627,7 +627,6 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
     ny = -1
     i = 0
 
-    t2m_var = None
     if t2m is not None:
         t2m_fh = netCDF4.Dataset(t2m["file"], "r")
         print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
@@ -640,12 +639,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         t2m_var = np.reshape(t2m_var, ny * nx, order="F")
         mask = np.ma.is_masked(t2m_var)
         t2m_var[mask] = 999.
-
         t2m_var = t2m_var.tolist()
-    else:
-        t2m_var = [999] * ( nx * ny)
 
-    rh2m_var = None
     if rh2m is not None:
         rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
         print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
@@ -657,12 +652,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         rh2m_var = rh2m_var.reshape([ny * nx], order="F")
         mask = np.ma.is_masked(rh2m_var)
         rh2m_var[mask] = 999.
-
         rh2m_var = rh2m_var.tolist()
-    else:
-        rh2m_var = [999] * ( nx * ny)
 
-    sd_var = None
     if sd is not None:
         sd_fh = netCDF4.Dataset(sd["file"], "r")
         print(sd["var"], sd_fh.variables[sd["var"]].shape)
@@ -672,29 +663,39 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
                                                 sd_fh.variables[sd["var"]].shape[0])
 
         sd_var = sd_fh.variables[sd["var"]][:]
-        sd_var = sd_var.reshape([ny *  nx], order="F")
+        sd_var = sd_var.reshape([ny * nx], order="F")
         mask = np.ma.is_masked(sd_var)
         sd_var[mask] = 999.
-
         sd_var = sd_var.tolist()
-    else:
-        sd_var = [999] * ( nx * ny)
 
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
+
+    if t2m is None:
+        t2m_var = [999] * (nx * ny)
+    if rh2m is None:
+        rh2m_var = [999] * (nx * ny)
+    if sd is None:
+        sd_var = [999] * (nx * ny)
 
     # undefined = []
     # for i in range(0, nx *ny):
     #     undefined.append("999")
 
+    print(t2m)
+    print(rh2m)
+    print(sd)
+    print(len(t2m_var))
+    print(len(rh2m_var))
+    print(len(sd_var))
     if output is None:
         out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
     else:
         out = open(output, "w")
 
     for i in range(0, nx*ny):
-       out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
-       print(i)
+        out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
+        print("i", i)
 
     '''
     for j in range(0, ny):

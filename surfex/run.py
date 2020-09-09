@@ -28,25 +28,42 @@ class BatchJob(object):
 
 
 class SURFEXBinary(object):
-    def __init__(self, binary, batch, iofile, settings, ecoclimap, surfout=None, assim=None, input_data=None,
-                 archive_data=None, print_namelist=False, pgdfile=None):
+    def __init__(self, binary, batch, iofile, settings, ecoclimap, **kwargs):
         self.binary = binary
         self.batch = batch
         self.iofile = iofile
         self.settings = settings
         self.ecoclimap = ecoclimap
-        self.surfout = surfout
-        self.assim = assim
-        self.input = input_data
-        self.archive = archive_data
-        self.print_namelist = print_namelist
-        self.pgdfile = pgdfile
+
+        self.surfout = None
+        if "surfout" in kwargs:
+            self.surfout = kwargs["surfout"]
+
+        self.assim = None
+        if "assim" in kwargs:
+            self.assim = kwargs["assim"]
+
+        self.input_data = None
+        if "input_data" in kwargs:
+            self.input_data = kwargs["input_data"]
+
+        self.archive_data = None
+        if "archive_data" in kwargs:
+            self.archive_data = kwargs["archive_data"]
+
+        self.print_namelist = False
+        if "print_namelist" in kwargs:
+            self.print_namelist = kwargs["print_namelist"]
+
+        self.pgdfile = None
+        if "pgdfile" in kwargs:
+            self.pgdfile = kwargs["pgdfile"]
 
         # Set input
         self.ecoclimap.prepare_input()
 
-        if self.input is not None:
-            self.input.prepare_input()
+        if self.input_data is not None:
+            self.input_data.prepare_input()
 
         if os.path.exists('OPTIONS.nam'):
             os.remove('OPTIONS.nam')
@@ -96,8 +113,8 @@ class SURFEXBinary(object):
         self.iofile.archive_output_file()
         if self.surfout is not None:
             self.surfout.archive_output_file()
-        if self.archive is not None:
-            self.archive.archive_files()
+        if self.archive_data is not None:
+            self.archive_data.archive_files()
 
 
 class PerturbedOffline(SURFEXBinary):

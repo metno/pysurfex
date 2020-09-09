@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+import sys
+import surfex
+
+args = surfex.kill_cmd(sys.argv[1:])

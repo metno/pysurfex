@@ -18,6 +18,6 @@ class ForcingTest(unittest.TestCase):
                 "--zval", "constant",
                 "--uval", "constant"
                 ]
-        args = surfex.parse_args_create_forcing(argv)
-        options, var_objs, att_objs = surfex.forcing.set_forcing_config(args)
+        kwargs = surfex.parse_args_create_forcing(argv)
+        options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
         surfex.forcing.run_time_loop(options, var_objs, att_objs)

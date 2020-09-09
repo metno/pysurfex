@@ -457,49 +457,147 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
     return obj
 
 
-def set_forcing_config(args):
-    # Time information
+def set_forcing_config(**kwargs):
 
-    debug = args.debug
-    if (int(args.dtg_start) or int(args.dtg_stop)) < 1000010100:
-        print("Invalid start and stop times! " + str(args.dtg_start) + " " + str(args.dtg_stop))
+    debug = False
+    fb = None
+    geo_out = None
+    user_config = {}
+    pattern = None
+    timestep = 3600
+    cache_interval = 3600
+    zsoro = "default"
+    zsoro_converter = "none"
+    zval = "default"
+    zval_converter = "none"
+    uval = "default"
+    uval_converter = "none"
+
+    ta = "default"
+    ta_converter = "none"
+    qa = "default"
+    qa_converter = "none"
+    ps = "default"
+    ps_converter = "none"
+    dir_sw = "default"
+    dir_sw_converter = "none"
+    sca_sw = "default"
+    sca_sw_converter = "none"
+    lw = "default"
+    lw_converter = "none"
+    rain = "default"
+    rain_converter = "none"
+    snow = "default"
+    snow_converter = "none"
+    wind = "default"
+    wind_converter = "none"
+    wind_dir = "default"
+    wind_dir_converter = "none"
+    co2 = "default"
+    co2_converter = "none"
+
+    try:
+        dtg_start = kwargs["dtg_start"]
+        dtg_stop = kwargs["dtg_stop"]
+        input_format = kwargs["input_format"]
+        output_format = kwargs["output_format"]
+        of = kwargs["of"]
+        zref = kwargs["zref"]
+        uref = kwargs["uref"]
+        config = kwargs["config"]
+        if "debug" in kwargs:
+            debug = kwargs["debug"]
+        if "fb" in kwargs:
+            fb = kwargs["fb"]
+        if "geo_out" in kwargs:
+            geo_out = kwargs["geo_out"]
+        if "user_config" in kwargs:
+            user_config = kwargs["user_config"]
+        if "pattern" in kwargs:
+            pattern = kwargs["pattern"]
+        if "timestep" in kwargs:
+            timestep = kwargs["timestep"]
+        if "cache_interval" in kwargs:
+            cache_interval = kwargs["cache_interval"]
+        if "zsoro" in kwargs:
+            zsoro = kwargs["zsoro"]
+        if "zsoro_converter" in kwargs:
+            zsoro_converter = kwargs["zsoro_converter"]
+        if "zval" in kwargs:
+            zval = kwargs["zval"]
+        if "zval_converter" in kwargs:
+            zval_converter = kwargs["zval_converter"]
+        if "uval_converter" in kwargs:
+            uval_converter = kwargs["uval_converter"]
+        if "uval" in kwargs:
+            uval = kwargs["uval"]
+        if "ta" in kwargs:
+            ta = kwargs["ta"]
+        if "ta_converter" in kwargs:
+            ta_converter = kwargs["ta_converter"]
+        if "qa" in kwargs:
+            qa = kwargs["qa"]
+        if "qa_converter" in kwargs:
+            qa_converter = kwargs["qa_converter"]
+        if "ps" in kwargs:
+            ps = kwargs["ps"]
+        if "ps_converter" in kwargs:
+            ps_converter = kwargs["ps_converter"]
+        if "dir_sw" in kwargs:
+            dir_sw = kwargs["dir_sw"]
+        if "dir_sw_converter" in kwargs:
+            dir_sw_converter = kwargs["dir_sw_converter"]
+        if "sca_sw" in kwargs:
+            sca_sw = kwargs["sca_sw"]
+        if "sca_sw_converter" in kwargs:
+            sca_sw_converter = kwargs["sca_sw_converter"]
+        if "lw" in kwargs:
+            lw = kwargs["lw"]
+        if "lw_converter" in kwargs:
+            lw_converter = kwargs["lw_converter"]
+        if "rain" in kwargs:
+            rain = kwargs["rain"]
+        if "rain_converter" in kwargs:
+            rain_converter = kwargs["rain_converter"]
+        if "snow" in kwargs:
+            snow = kwargs["snow"]
+        if "snow_converter" in kwargs:
+            snow_converter = kwargs["snow_converter"]
+        if "wind" in kwargs:
+            wind = kwargs["wind"]
+        if "wind_converter" in kwargs:
+            wind_converter = kwargs["wind_converter"]
+        if "wind_dir" in kwargs:
+            wind_dir = kwargs["wind_dir"]
+        if "wind_dir_converter" in kwargs:
+            wind_dir_converter = kwargs["wind_dir_converter"]
+        if "co2" in kwargs:
+            co2 = kwargs["co2"]
+        if "co2_converter" in kwargs:
+            co2_converter = kwargs["co2_converter"]
+
+    except ValueError:
+        raise Exception("Needed input is missing")
+
+    # Time information
+    if (int(dtg_start) or int(dtg_stop)) < 1000010100:
+        print("Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop))
         raise Exception
 
-    start = datetime.strptime(str.strip(str(args.dtg_start)), '%Y%m%d%H')
-    stop = datetime.strptime(str.strip(str(args.dtg_stop)), '%Y%m%d%H')
-    if args.fb is None:
+    start = datetime.strptime(str.strip(str(dtg_start)), '%Y%m%d%H')
+    stop = datetime.strptime(str.strip(str(dtg_stop)), '%Y%m%d%H')
+    if fb is None:
         first_base_time = start
     else:
-        first_base_time = datetime.strptime(str.strip(str(args.fb)), '%Y%m%d%H')
-
-    # Read point/domain config
-    area_file = args.area
-    if area_file != "":
-        geo_out = surfex.geo.get_geo_object(json.load(open(area_file, "r")))
-    else:
-        print("You must provide an json area file")
-        raise
-
-    # Find name of global config file
-    root = __file__
-    if os.path.islink(root):
-        root = os.path.realpath(root)
-    base = os.path.dirname(os.path.abspath(root))
-    yaml_config = base + "/cfg/config.yml"
-    default_conf = yaml.load(open(yaml_config)) or sys.exit(1)
-
-    # Read user settings. This overrides all other configurations
-    user_settings = {}
-    if args.config != "":
-        user_settings = yaml.load(open(args.config)) or {}
+        first_base_time = datetime.strptime(str.strip(str(fb)), '%Y%m%d%H')
 
     # Merge all settings with user all settings
-    merged_conf = surfex.util.data_merge(default_conf, user_settings)
+    merged_conf = surfex.util.data_merge(config, user_config)
 
     # Replace global settings from
-    fileformat = args.input_format
-    if args.pattern:
-        merged_conf[fileformat]["filepattern"] = args.pattern
+    fileformat = input_format
+    if pattern is not None:
+        merged_conf[fileformat]["filepattern"] = pattern
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
@@ -511,28 +609,28 @@ def set_forcing_config(args):
         ref_height = None
         cformat = fileformat
         if att_var == "ZS":
-            if args.zsoro != "default":
-                cformat = args.zsoro
-            selected_converter = args.zsoro_converter
+            if zsoro != "default":
+                cformat = zsoro
+            selected_converter = zsoro_converter
         elif att_var == "ZREF":
-            if args.zval != "default":
-                cformat = args.zval
-            selected_converter = args.zval_converter
-            ref_height = args.zref
+            if zval != "default":
+                cformat = zval
+            selected_converter = zval_converter
+            ref_height = zref
             if ref_height == "screen":
                 cformat = "constant"
         elif att_var == "UREF":
-            if args.uval != "default":
-                cformat = args.uval
-            selected_converter = args.uval_converter
-            ref_height = args.uref
+            if uval != "default":
+                cformat = uval
+            selected_converter = uval_converter
+            ref_height = uref
             if ref_height == "screen":
                 cformat = "constant"
         else:
             raise NotImplementedError
 
         att_objs.append(set_input_object(atts[i], merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         start, first_base_time, args.timestep, debug))
+                                         start, first_base_time, timestep, debug))
 
     # Set forcing variables (time dependent)
     variables = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR", "CO2"]
@@ -544,67 +642,67 @@ def set_forcing_config(args):
         sfx_var = variables[i]
         cformat = fileformat
         if sfx_var == "TA":
-            if args.ta != "default":
-                cformat = args.ta
-            selected_converter = args.ta_converter
-            ref_height = args.zref
+            if ta != "default":
+                cformat = ta
+            selected_converter = ta_converter
+            ref_height = zref
         elif sfx_var == "QA":
-            if args.qa != "default":
-                cformat = args.qa
-            selected_converter = args.qa_converter
-            ref_height = args.zref
+            if qa != "default":
+                cformat = qa
+            selected_converter = qa_converter
+            ref_height = zref
         elif sfx_var == "PS":
-            if args.ps != "default":
-                cformat = args.ps
-            selected_converter = args.ps_converter
+            if ps != "default":
+                cformat = ps
+            selected_converter = ps_converter
         elif sfx_var == "DIR_SW":
-            if args.dir_sw != "default":
-                cformat = args.dir_sw
-            selected_converter = args.dir_sw_converter
+            if dir_sw != "default":
+                cformat = dir_sw
+            selected_converter = dir_sw_converter
         elif sfx_var == "SCA_SW":
-            if args.sca_sw != "default":
-                cformat = args.sca_sw
-            selected_converter = args.sca_sw_converter
+            if sca_sw != "default":
+                cformat = sca_sw
+            selected_converter = sca_sw_converter
         elif sfx_var == "LW":
-            if args.lw != "default":
-                cformat = args.lw
-            selected_converter = args.lw_converter
+            if lw != "default":
+                cformat = lw
+            selected_converter = lw_converter
         elif sfx_var == "RAIN":
-            if args.rain != "default":
-                cformat = args.rain
-            selected_converter = args.rain_converter
+            if rain != "default":
+                cformat = rain
+            selected_converter = rain_converter
         elif sfx_var == "SNOW":
-            if args.snow != "default":
-                cformat = args.snow
-            selected_converter = args.snow_converter
+            if snow != "default":
+                cformat = snow
+            selected_converter = snow_converter
         elif sfx_var == "WIND":
-            if args.wind != "default":
-                cformat = args.wind
-            selected_converter = args.wind_converter
-            ref_height = args.uref
+            if wind != "default":
+                cformat = wind
+            selected_converter = wind_converter
+            ref_height = uref
         elif sfx_var == "WIND_DIR":
-            if args.wind_dir != "default":
-                cformat = args.wind_dir
-            selected_converter = args.wind_dir_converter
-            ref_height = args.uref
+            if wind_dir != "default":
+                cformat = wind_dir
+            selected_converter = wind_dir_converter
+            ref_height = uref
         elif sfx_var == "CO2":
-            if args.co2 != "default":
-                cformat = args.co2
-            selected_converter = args.co2_converter
+            if co2 != "default":
+                cformat = co2
+            selected_converter = co2_converter
         else:
             raise NotImplementedError
         var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         start, first_base_time, args.timestep, debug))
+                                         start, first_base_time, timestep, debug))
 
     # Save options
     options = dict()
-    options['output_format'] = args.output_format
-    options['output_file'] = args.of
+    options['output_format'] = output_format
+    options['output_file'] = of
     options['start'] = start
     options['stop'] = stop
-    options['timestep'] = args.timestep
+    options['timestep'] = timestep
     options['geo_out'] = geo_out
-    options['debug'] = args.debug
-    options['cache_interval'] = args.cache_interval
+    options['debug'] = debug
+    options['cache_interval'] = cache_interval
 
     return options, var_objs, att_objs

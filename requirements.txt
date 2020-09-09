@@ -4,12 +4,11 @@ netCDF4
 cfunits
 pyproj
 pyyaml
-toml
+tomlkit
 netCDF4
 jsonmerge
 datetime
 f90nml
-cfunits
 enum34
 requests
 json; python_version < '3'

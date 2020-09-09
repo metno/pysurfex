@@ -20,3 +20,4 @@ from .timeseries import TimeSeries, TimeSeriesFromConverter, TimeSeriesFromJson
 from .obsmon import *
 from .fa import Fa
 from .cli import *
+from .configuration import *

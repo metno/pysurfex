@@ -1,0 +1,22 @@
+
+###################
+# Quality Control #
+###################
+
+[QualityControl]
+tests = ["Plausibility"]
+qc_codes = "@HOME@/revision_control/pysurfex/surfex/cfg/qc_codes.json"
+qc_config = "@HOME@/hm_home/sandbox/toml/qc_config.json"
+
+[QualityControl.t2m]
+output = "@ARCHIVE_PATTERN@/qc_t2m.json"
+netatmo_filepattern = "@HOME@/hm_home/sandbox/netatmo/@YYYY@/@MM@/@DD@/@YYYY@@MM@@DD@T@HH@@mm@01Z.json"
+
+[QualityControl.rh2m]
+output = "@ARCHIVE_PATTERN@/qc_rh.json"
+netatmo_filepattern = "@HOME@/hm_home/sandbox/netatmo/@YYYY@/@MM@/@DD@/@YYYY@@MM@@DD@T@HH@@mm@01Z.json"
+
+[QualityControl.sd]
+# tests = "Plausibility FirstGuess"
+output = "@ARCHIVE_PATTERN@/qc_sd.json"
+tests = ""

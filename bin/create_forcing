@@ -4,7 +4,5 @@ import surfex
 import sys
 
 if __name__ == '__main__':
-    args = surfex.parse_args_create_forcing(sys.argv[1:])
-    options, var_objs, att_objs = surfex.forcing.set_forcing_config(args)
-    surfex.forcing.run_time_loop(options, var_objs, att_objs)
-
+    kwargs = surfex.parse_args_create_forcing(sys.argv[1:])
+    surfex.run_create_forcing(**kwargs)

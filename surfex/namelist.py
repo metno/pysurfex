@@ -208,8 +208,26 @@ def merge_toml_env_from_files(toml_files):
     return merged_env
 
 
-def set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs=False, prep_file=None,
-                                    prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None, dtg=None):
+def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths, **kwargs):
+
+    forc_zs = False
+    if "forc_zs" in kwargs:
+        forc_zs = kwargs["forc_zs"]
+    prep_file = None
+    if "prep_file" in kwargs:
+        prep_file = kwargs["prep_file"]
+    prep_filetype = None
+    if "prep_filetype" in kwargs:
+        prep_filetype = kwargs["prep_filetype"]
+    prep_pgdfile = None
+    if "prep_pgdfile" in kwargs:
+        prep_pgdfile = kwargs["prep_pgdfile"]
+    prep_pgdfiletype = None
+    if "prep_pgdfiletype" in kwargs:
+        prep_pgdfiletype = kwargs["prep_pgdfiletype"]
+    dtg = None
+    if "dtg" in kwargs:
+        dtg = kwargs["dtg"]
 
     if program == "prep":
         if prep_file is not None and prep_filetype is None:
@@ -238,18 +256,13 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
     input_list.append({"file": input_path + "/constants.json"})
     input_list.append({"json": {"NAM_SURF_ATM": {"XRIMAX": env["SURFEX"]["PARAMETERS"]["XRIMAX"]}}})
 
-    if os.path.exists(system_settings):
-        system_files = json.load(open(system_settings, "r"))
-    else:
-        raise FileNotFoundError("System settings not found " + system_settings)
-
     # Ecoclimap settings
     if not env["SURFEX"]["COVER"]["SG"]:
         ecoclimap_json = {}
         ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
                            "ecoclimapII_eu_covers_param.bin"]
         for fname in ecoclimap_files:
-            ecoclimap_json.update(set_input_data("ecoclimap_bin_dir", fname, system_files))
+            ecoclimap_json.update(set_input_data("ecoclimap_bin_dir", fname, system_file_paths))
     else:
         ecoclimap_json = {}
 
@@ -278,7 +291,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": decades}}})
             tree_height_dir = "tree_height_dir"
             fname = env["SURFEX"]["COVER"]["H_TREE"]
-            input_for_surfex_json.update(set_input_data(tree_height_dir, fname, system_files))
+            input_for_surfex_json.update(set_input_data(tree_height_dir, fname, system_file_paths))
             input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
 
             decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
@@ -288,14 +301,14 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                         filepattern = env["SURFEX"]["COVER"][decadal_data_type]
                         fname = parse_eco_sg_fnames(filepattern, decade)
                         input_for_surfex_json.update(set_input_data(decadal_data_type.lower()+"_dir", fname,
-                                                                    system_files))
+                                                                    system_file_paths))
                         input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname, vtype=vt,
                                                                    decade=decade))
 
         # Set direct input files
         if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
-            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_files))
-            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus.dir", system_files))
+            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_file_paths))
+            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus.dir", system_file_paths))
 
         ecoclimap_dir = "ecoclimap_dir"
         if env["SURFEX"]["COVER"]["SG"]:
@@ -319,7 +332,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
                 fname = env["SURFEX"][namelist_section][ftype]
-                input_for_surfex_json.update(set_input_data(data_dir, fname, system_files))
+                input_for_surfex_json.update(set_input_data(data_dir, fname, system_file_paths))
                 input_list.append(set_direct_data_namelist("NAM_" + namelist_section, ftype, fname, input_path))
 
         # Set ISBA properties
@@ -349,7 +362,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
         # Treedrag
         if env["SURFEX"]["TREEDRAG"]["TREEDATA_FILE"] != "":
             treeheight = env["SURFEX"]["TREEDRAG"]["TREEDATA_FILE"]
-            input_for_surfex_json.update(set_input_data("tree_height_dir", treeheight, system_files))
+            input_for_surfex_json.update(set_input_data("tree_height_dir", treeheight, system_file_paths))
             input_list.append({"json": {"NAM_DATA_ISBA":
                                         {"CFNAM_H_TREE(4)": treeheight,
                                          "CFTYP_H_TREE(4)": "ASCLLV",
@@ -383,7 +396,8 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                         input_for_surfex_json.update({fname: prep_pgdfile})
                     input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILEPGDTYPE": prep_pgdfiletype}}})
         if dtg is not None:
-            prep_time = datetime.strptime(dtg, "%Y%m%d%H")
+            # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
+            prep_time = dtg
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NYEAR": int(prep_time.strftime("%Y"))}}})
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NMONTH": int(prep_time.strftime("%m"))}}})
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NDAY": int(prep_time.strftime("%d"))}}})
@@ -395,7 +409,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
 
         if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
             # Set NetCDF input for FLAKE
-            input_for_surfex_json.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", system_files))
+            input_for_surfex_json.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", system_file_paths))
             input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE,": env["SURFEX"]["FLAKE"]["LCLIM"]}}})
 
         # ISBA CANOPY
@@ -536,7 +550,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_settings, f
                                                       env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["CFILE_FORMAT_FG"]}}})
             input_for_surfex_json.update({"fort.61": set_input_file_name("oi_coeff_dir",
                                                                          env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["COEFFS"],
-                                                                         system_files)})
+                                                                         system_file_paths)})
 
         if env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"] == "EKF":
             nvar = 0

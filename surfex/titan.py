@@ -87,9 +87,10 @@ class Plausibility(QualityControl):
             values.append(dataset.values[mask[i]])
 
         global_flags = dataset.flags
-        status, flags = tit.range_check(values, minvals, maxvals)
-        if not status:
-            raise Exception(self.name + " test failed")
+        # status, flags = tit.range_check(values, minvals, maxvals)
+        flags = tit.range_check(values, minvals, maxvals)
+        # if not status:
+        #    raise Exception(self.name + " test failed")
 
         for i in range(0, len(mask)):
             if global_flags[mask[i]] == 0 and flags[i] == 1:
@@ -612,26 +613,26 @@ class Blacklist(QualityControl):
 
 
 class DomainCheck(QualityControl):
-    def __init__(self, settings=None, domain_file=None, debug=False, max_distance=10000):
+    def __init__(self, domain_geo, **kwargs):
 
         t = "domain"
-        if settings is not None:
-            if t in settings:
-                if domain_file is None:
-                    domain_file = settings[t]["domain_file"]
-                if "debug" in settings[t]:
-                    debug = settings[t]["debug"]
+        self.domain_geo = domain_geo
 
-        if domain_file is None:
-            raise Exception("You must set a domain file")
-
-        if os.path.exists(domain_file):
-            self.domain_geo = surfex.get_geo_object(json.load(open(domain_file, "r")))
-        else:
-            raise FileNotFoundError("Could not find domain definition " + domain_file)
-
+        max_distance = 10000
+        if "max_distance" in kwargs:
+            max_distance = kwargs["max_distance"]
         self.max_distance = max_distance
+
+        debug = False
+        if "debug" in kwargs:
+            debug = kwargs["debug"]
         self.debug = debug
+
+        # if os.path.exists(domain_file):
+        #    self.domain_geo = surfex.get_geo_object(json.load(open(domain_file, "r")))
+        # else:
+        #    raise FileNotFoundError("Could not find domain definition " + domain_file)
+
         QualityControl.__init__(self, t)
 
     def set_input(self, test_settings, size):
@@ -720,7 +721,12 @@ def define_quality_control(test_list, settings):
         elif t.lower() == "blacklist":
             tests.append(Blacklist(settings=settings))
         elif t.lower() == "domain":
-            tests.append(DomainCheck(settings=settings))
+            domain_file = settings[t.lower()]["domain_file"]
+            if os.path.exists(domain_file):
+                domain_geo = surfex.get_geo_object(json.load(open(domain_file, "r")))
+            else:
+                raise FileNotFoundError("Could not find domain definition " + domain_file)
+            tests.append(DomainCheck(domain_geo))
         elif t.lower() == "nometa":
             tests.append(NoMeta(settings=settings))
         else:
@@ -888,10 +894,11 @@ class QCDataSet(object):
 
 class TitanDataSet(QCDataSet):
 
-    def __init__(self, var, settings, tests, test_flags, an_time, debug=False, corep=1):
+    def __init__(self, var, settings, tests, test_flags, datasources, an_time, debug=False, corep=1):
 
         self.var = var
-        self.tests = define_quality_control(tests, settings)
+        # self.tests = define_quality_control(tests, settings)
+        self.tests = tests
         self.settings = settings
         self.test_flags = test_flags
         self.debug = debug
@@ -904,7 +911,8 @@ class TitanDataSet(QCDataSet):
         varnames = []
         providers = []
         passed_tests = []
-        self.datasources = surfex.obs.get_datasources(an_time, settings["sets"])
+        # self.datasources = surfex.obs.get_datasources(an_time, settings["sets"])
+        self.datasources = datasources
 
         # Get global data
         for obs_set in self.datasources:

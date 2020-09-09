@@ -1,0 +1,125 @@
+
+[Pgd]
+output = "@CLIMDIR@/PGD.@CSURF_FILETYPE@"
+
+[Prep]
+pgd_file = "@CLIMDIR@/PGD.nc"
+prep_input_file = "/home/trygveasp/scratch/hm_home/ecmwf_bd_archive/fc@YYYY@@MM@@DD@@HH@"
+prep_input_format = "GRIB"
+output = "@ARCHIVE_PATTERN@/PREP.CSURF_FILETYPE"
+fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
+
+[FirstGuess]
+fg_pattern = "@ARCHIVE_PATTERN@/SURFOUT.@CSURF_FILETYPE@"
+fg_sfx = "@WRK_PATTERN@/fg_sfx"
+
+[CycleFirstGuess]
+fg_pattern = "@ARCHIVE_PATTERN@/SURFOUT.@CSURF_FILETYPE@"
+fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
+
+[Forecast]
+pgd_file = "@CLIMDIR@/PGD.nc"
+prep_file = "@WRK_PATTERN@/fc_start_sfx"
+output = "@ARCHIVE_PATTERN@/SURFOUT.nc"
+forcing = "@ARCHIVE_PATTERN@/FORCING.nc"
+forc_zs = true
+
+[Soda]
+pgd_file = "@CLIMDIR@/PGD.@CSURF_FILETYPE@"
+prep_file = "@WRK_PATTERN@/fg_sfx"
+fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
+output = "@ARCHIVE_PATTERN@/ANALYSIS.@CSURF_FILETYPE@"
+obsfile = "@ARCHIVE_PATTERN@/OBSERVATIONS.txt"
+sstfile = "sstfile"
+ua_first_guess = "@WRK_PATTERN@/fg_ua"
+# perturbed_runs
+lsmfile = "lsmfile"
+check_existence = false
+oi_coeffs = "/home/trygveasp/revision_control/MNWC/const/sa_const/POLYNOMES_ISBA"
+climfile = "climfile"
+sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
+# ascatfile = "ascatfile"
+
+######################
+# First guess for OI #
+######################
+
+[FirstGuess4OI]
+# inputfile = "https://thredds.met.no/thredds/dodsC/mepslatest/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.ncml"
+inputfile = "https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
+config_file = "@HOME@/revision_control/pysurfex/surfex/cfg/first_guess.yml"
+fileformat = "netcdf"
+variables = ["t2m", "rh2m", "sd"]
+output = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
+
+[FirstGuess4OI.air_temperature_2m]
+converter = "none"
+output = "@ARCHIVE_PATTERN@/raw_t2m_@YYYY@@MM@@DD@@HH@.nc"
+
+[FirstGuess4OI.relative_humidity_2m]
+converter = "none"
+output = "@ARCHIVE_PATTERN@//raw_rh2m_@YYYY@@MM@@DD@@HH@.nc"
+
+[FirstGuess4OI.surface_snow_thickness]
+converter = "sweclim"
+output = "@ARCHIVE_PATTERN@/raw_sd_@YYYY@@MM@@DD@@HH@.nc"
+
+[FirstGuess4OI.altitude]
+converter = "phi2m"
+
+[FirstGuess4OI.land_area_fraction]
+converter = "none"
+
+
+###################
+# OI              #
+###################
+
+[OptimalInterpolation]
+input = "input"
+tests = "Plausibility"
+
+min_rho = 0.0013
+hlength = 30000
+vlength = 100000
+wmin = 0.0
+max_elev_diff = 100.0
+land_only = true
+max_locations = 20
+elev_gradient = 0
+epsilon = 0.5
+
+[OptimalInterpolation.t2m]
+input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
+output = "@ARCHIVE_PATTERN@/an_t2m.nc"
+elev_gradient = 0.0065
+
+[OptimalInterpolation.rh2m]
+input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
+output = "@ARCHIVE_PATTERN@/an_rh2m.nc"
+
+
+[OptimalInterpolation.sd]
+tests = "Plausibility FirstGuess"
+input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
+output = "@ARCHIVE_PATTERN@/an_sd.nc"
+
+[Forcing]
+global_config = "/home/trygveasp/revision_control/pysurfex/surfex/cfg/config.yml"
+output = "@ARCHIVE_PATTERN@/FORCING.nc"
+
+[Oi2soda]
+variables = ["t2m", "rh2m", "sd"]
+output = "@ARCHIVE_PATTERN@/OBSERVATIONS.txt"
+
+[Oi2soda.t2m]
+input = "@ARCHIVE_PATTERN@/an_t2m.nc"
+ncvar = "air_temperature_2m"
+
+[Oi2soda.rh2m]
+input = "@ARCHIVE_PATTERN@/an_rh2m.nc"
+ncvar = "relative_humidity_2m"
+
+[Oi2soda.sd]
+input = "@ARCHIVE_PATTERN@/an_sd.nc"
+ncvar = "surface_snow_thickness"

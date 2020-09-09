@@ -1,0 +1,69 @@
+{
+  "submit_types": ["background", "scalar", "parallel", "ppi"],
+  "default_submit_type": "background",
+  "background": {
+    "HOST": "0",
+    "SUBMIT": "",
+    "OMP_NUM_THREADS": "export OMP_NUM_THREADS=1",
+    "DR_HOOK": "export DR_HOOK=1",
+    "NPROC": "export NPROC=1",
+    "NPROCX": "export NPROCX=1",
+    "NPROCY": "export NPROCY=1",
+    "KILL": "%kill -2 $$ && kill -15 $$",
+    "tasks": [
+      "InitRun"
+    ]
+  },
+  "scalar": {
+    "HOST": "0",
+    "SUBMIT": "",
+    "OMP_NUM_THREADS": "export OMP_NUM_THREADS=1",
+    "NODES": "#PBS -l select=1:ncpus=28:mpiprocs=1:ompthreads=1,place=scatter",
+    "DR_HOOK": "export DR_HOOK=1",
+    "NPROC": "export NPROC=1",
+    "NPROCX": "export NPROCX=1",
+    "NPROCY": "export NPROCY=1",
+    "KILL": "qdel $PBS_JOB_ID"
+  },
+  "parallel": {
+    "HOST": "0",
+    "SUBMIT": "",
+    "SUBMIT_HOOK": "",
+    "OMP_NUM_THREADS": "export OMP_NUM_THREADS=1",
+    "DR_HOOK": "export DR_HOOK=1",
+    "NODES": "#PBS -l select=1:ncpus=28:mpiprocs=6:ompthreads=1,place=scatter",
+    "NPROC": "export NPROC=6",
+    "NPROCX": "export NPROCX=2",
+    "NPROCY": "export NPROCY=3",
+    "NPOOLS": "export NPOOLS=4",
+    "NPOOLS_CANARI": "export NPOOLS_CANARI=4",
+    "KILL": "qdel $PBS_JOB_ID",
+    "tasks": [
+      "Forecast",
+      "Screening",
+      "Minim",
+      "Canari",
+      "Bator"
+    ]
+  },
+  "ppi": {
+    "VMEM": "#$ -l h_vmem 6GB",
+    "INTERPRETER":  "#!/usr/bin/env python",
+    "tasks": [
+      "Offline"
+    ]
+  },
+  "task_exceptions": {
+    "Forecast": {
+      "OMP_NUM_THREADS": "export OMP_NUM_THREADS=2",
+      "NODES": "#PBS -l select=1:ncpus=28:mpiprocs=14:ompthreads=2,place=scatter",
+      "NPROC": "export NPROC=14",
+      "NPROCX": "export NPROCX=2",
+      "NPROCY": "export NPROCY=7"
+    },
+    "Not_existing_task": {
+      "DR_HOOK": "export DR_HOOK=0",
+      "OMP_NUM_THREADS": ""
+    }
+  }
+}

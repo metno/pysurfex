@@ -1,0 +1,13 @@
+{
+  "complete": {
+    "task": {
+      "Prepare_ob": "is_coldstart"
+    },
+    "family": {
+      "Observations": "is_coldstart",
+      "Analysis": "is_coldstart",
+      "FirstGuess4gridpp": "is_coldstart",
+      "Obsmonitor": "is_coldstart"
+    }
+  }
+}

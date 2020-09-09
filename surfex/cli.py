@@ -6,7 +6,6 @@ import json
 import os
 import yaml
 import numpy as np
-import toml
 
 
 class LoadFromFile(Action):
@@ -29,9 +28,9 @@ def parse_args_create_forcing(argv):
     parser.add_argument('area', type=str, help="Configuration file describing the points or locations", nargs="?")
     parser.add_argument('-fb', type=str, help="First base time unless equal to dtg_start", default=None)
     parser.add_argument('--options', type=open, action=LoadFromFile)
-    parser.add_argument('-c', '--config', type=str,
+    parser.add_argument('-c', '--config', dest="user_config", type=str,
                         help="Configuration file in yaml format describing customized variable setup",
-                        default="", nargs="?")
+                        default=None, nargs="?")
     parser.add_argument('-t', '--timestep', type=int, help="Surfex time step", default=3600, nargs="?")
     parser.add_argument('-ci', '--cache_interval', type=int, help="clear cached fields after..", default=3600,
                         nargs="?")
@@ -137,7 +136,41 @@ def parse_args_create_forcing(argv):
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        # print
+        # arg, getattr(args, arg)
+        kwargs.update({arg: getattr(args, arg)})
+
+    user_config = {}
+    if "user_config" in kwargs and kwargs["user_config"] is not None:
+        user_config = yaml.load(open(kwargs["user_config"])) or {}
+    kwargs.update({"user_config": user_config})
+
+    # Read point/domain config
+    if "area" in kwargs:
+        geo_out = surfex.geo.get_geo_object(json.load(open(kwargs["area"], "r")))
+    else:
+        raise Exception("You must provide an json area file")
+    kwargs.update({"geo_out": geo_out})
+
+    # Find name of global config file
+    root = __file__
+    if os.path.islink(root):
+        root = os.path.realpath(root)
+    base = os.path.dirname(os.path.abspath(root))
+    yaml_config = base + "/cfg/config.yml"
+
+    default_conf = yaml.load(open(yaml_config)) or sys.exit(1)
+    kwargs.update({"config": default_conf})
+    return kwargs
+
+
+def run_create_forcing(**kwargs):
+
+    options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
+    surfex.forcing.run_time_loop(options, var_objs, att_objs)
 
 
 def parse_args_qc2obsmon(argv):
@@ -194,30 +227,40 @@ def parse_args_create_surfex_json_namelist(argv):
 def create_surfex_json_namelist(args):
 
     program = args.program
-    settings_file = args.config
     input_path = args.path
     indent = args.indent
     system_settings = args.system
     name_of_namelist = args.namelist
     name_of_input_files = args.files
     name_of_ecoclimap = args.ecoclimap
-    forc_zs = args.forc_zs
-    prep_file = args.prep_file
-    prep_filetype = args.prep_filetype
-    prep_pgdfile = args.prep_pgdfile
-    prep_pgdfiletype = args.prep_pgdfiletype
-    dtg = args.dtg
+    kwargs = {
+        "forc_zs": args.forc_zs,
+        "prep_file": args.prep_file,
+        "prep_filetype": args.prep_filetype,
+        "prep_pgdfile": args.prep_pgdfile,
+        "prep_pgdfiletype": args.prep_pgdfiletype
+    }
+    kwargs.update({"dtg": args.dtg})
+    if args.dtg is not None:
+        kwargs.update({"dtg": datetime.strptime(args.dtg, "%Y%m%d%H")})
 
+    settings_file = args.config
     if os.path.exists(settings_file):
         print("Read toml settings from " + settings_file)
-        env = toml.load(open(settings_file, "r"))
-        print(env)
+        settings = surfex.toml_load(settings_file)
+        print(settings)
     else:
         raise FileNotFoundError("Input file does not exist: " + settings_file)
 
+    kwargs.update({"settings": settings})
+
+    if os.path.exists(system_settings):
+        system_file_paths = json.load(open(system_settings, "r"))
+    else:
+        raise FileNotFoundError("System settings not found " + system_settings)
+
     merged_json_settings, ecoclimap_json, input_for_surfex_json = \
-        surfex.set_json_namelist_from_toml_env(program, env, input_path, system_settings, forc_zs, prep_file,
-                                               prep_filetype, prep_pgdfile, prep_pgdfiletype, dtg)
+        surfex.set_json_namelist_from_toml_env(program, settings, input_path, system_file_paths, **kwargs)
 
     # Namelist settings
     print("\nNamelist: ")
@@ -591,6 +634,7 @@ def parse_args_surfex_binary(argv, mode):
 
 def run_surfex_binary(args, mode):
 
+    print("ARGS: ", args)
     pgd = False
     prep = False
     perturbed = False
@@ -838,7 +882,9 @@ def run_titan(args):
     an_time = datetime.strptime(args.dtg, "%Y%m%d%H")
     var = args.variable
 
-    data_set = surfex.TitanDataSet(var, settings[var], tests, test_flags, an_time, debug=True)
+    tests = surfex.titan.define_quality_control(tests, settings)
+    datasources = surfex.obs.get_datasources(an_time, settings["sets"])
+    data_set = surfex.TitanDataSet(var, settings[var], tests, test_flags, datasources, an_time, debug=True)
     data_set.perform_tests()
 
     data_set.write_output(args.output_file, indent=args.indent)
