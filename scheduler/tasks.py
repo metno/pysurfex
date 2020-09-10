@@ -12,8 +12,7 @@ class AbstractTask(object):
         self.exp = exp
         self.config = self.exp.conf
         self.dtg = self.exp.progress.dtg
-        self.domain = self.exp.domain
-        self.geo = self.exp.domain.geo
+        self.geo = self.exp.geo
         self.task = task
         self.task_settings = None
         print(kwargs)
@@ -489,7 +488,7 @@ class QualityControl(AbstractTask):
 
     def execute(self, **kwargs):
 
-        geo = self.exp.domain.geo
+        geo = self.exp.geo
         an_time = self.exp.progress.dtg
 
         translation = {
@@ -635,7 +634,7 @@ class Forcing(AbstractTask):
             user_config = yaml.load(open(kwargs["user_config"]))
             kwargs.update({"user_config": user_config})
 
-        kwargs.update({"geo_out": self.exp.domain.geo})
+        kwargs.update({"geo_out": self.exp.geo})
 
         global_config = self.get_setting("global_config")
         global_config = yaml.load(open(global_config, "r"))
@@ -793,7 +792,7 @@ class FirstGuess4OI(AbstractTask):
 
     def execute(self, **kwargs):
 
-        geo = self.exp.domain.geo
+        geo = self.exp.geo
         validtime = self.exp.progress.dtg
 
         translation = {

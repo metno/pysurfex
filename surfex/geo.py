@@ -547,7 +547,7 @@ def set_domain(settings, domain, hm_mode=False):
             return domain_dict
         else:
             print("Domain not found: " + domain)
-            raise Exception
+            raise Exception("Domain not found: " + domain)
     else:
         print("Settings should be a dict")
-        raise Exception
+        raise Exception("Settings should be a dict")

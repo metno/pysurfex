@@ -195,8 +195,6 @@ def surfex_script(argv):
     suite = args.suite
     ecf_port = args.ecf_port
     ecf_port_offset = args.ecf_port_offset
-    # ecf_logport = args.ecf_logport
-    # ecf_logport_offset = args.ecf_logport_offset
     stream = args.stream
 
     # Find experiment
@@ -218,8 +216,15 @@ def surfex_script(argv):
             conf = rev
 
         experiment_is_locked = False
-        sfx_exp = surfex.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config, domain=domain)
+        sfx_exp = surfex.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config)
         sfx_exp.setup_files(host, ecf_port=ecf_port, ecf_port_offset=ecf_port_offset)
+
+        if domain is not None:
+            print(domain)
+            domain_json = surfex.set_domain(json.load(open(wd + "/config/domains/Harmonie_domains.json", "r")),
+                                            domain, hm_mode=True)
+            domain_file = sfx_exp.get_file_name(wd, "domain", full_path=True)
+            json.dump(domain_json, open(domain_file, "w"), indent=2)
 
     elif "action" == "mon":
         # TODO

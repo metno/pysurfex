@@ -7,8 +7,11 @@ Welcome to SURFEX Python API's documentation!
 =============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
+
+.. include::  docs/example.rst
+.. include::  README.rst
 
 .. autoclass:: surfex.Converter
 .. autoclass:: surfex.Assimilation
@@ -44,11 +47,9 @@ Welcome to SURFEX Python API's documentation!
 .. autoclass:: surfex.NetCDFFileVariable
 .. autoclass:: surfex.Observation
 .. autoclass:: surfex.ObservationSet 
-.. autoclass:: surfex.AsciiObservationSet
 .. autoclass:: surfex.NetatmoObservationSet
 .. autoclass:: surfex.MetKlappObservations
 .. autoclass:: surfex.MetFrostObservations
-.. autoclass:: surfex.ObservationFromASCIIFile
 .. autoclass:: surfex.ConvertedInput   
 .. autoclass:: surfex.ConstantValue   
 .. autoclass:: surfex.BatchJob   
@@ -68,6 +69,48 @@ Welcome to SURFEX Python API's documentation!
 .. autoclass:: surfex.GribVariable
 .. autoclass:: surfex.SurfexVariable
 .. autoclass:: surfex.FaVariable
+.. autoclass:: scheduler.Server
+.. autoclass:: scheduler.EcflowServer
+.. autoclass:: scheduler.EcflowServerFromFile
+.. autoclass:: scheduler.EcflowLogServer
+.. autoclass:: scheduler.Task
+.. autoclass:: scheduler.Client
+.. autoclass:: scheduler.EcflowSubmitTask
+.. autoclass:: scheduler.SubmitException
+.. autoclass:: scheduler.KillException
+.. autoclass:: scheduler.SubmissionBaseClass
+.. autoclass:: scheduler.BackgroundSubmission
+.. autoclass:: scheduler.PBSSubmission
+.. autoclass:: scheduler.SlurmSubmission
+.. autoclass:: scheduler.EcflowSuite
+.. autoclass:: scheduler.Node
+.. autoclass:: scheduler.EcfSuite
+.. autoclass:: scheduler.EcfTriggers
+.. autoclass:: scheduler.EcfTrigger
+.. autoclass:: scheduler.EcfVariable
+.. autoclass:: scheduler.EcfFamily
+.. autoclass:: scheduler.EcfTask
+.. autoclass:: scheduler.AbstractTask
+.. autoclass:: scheduler.SurfexBinaryTask
+.. autoclass:: scheduler.Pgd
+.. autoclass:: scheduler.Prep
+.. autoclass:: scheduler.Forecast
+.. autoclass:: scheduler.Soda
+.. autoclass:: scheduler.PrepareCycle
+.. autoclass:: scheduler.QualityControl
+.. autoclass:: scheduler.OptimalInterpolation
+.. autoclass:: scheduler.Forcing
+.. autoclass:: scheduler.FirstGuess
+.. autoclass:: scheduler.CycleFirstGuess
+.. autoclass:: scheduler.Oi2soda
+.. autoclass:: scheduler.Qc2obsmon
+.. autoclass:: scheduler.FirstGuess4OI
+.. autoclass:: scheduler.MakeOfflineBinaries
+.. autoclass:: scheduler.LogProgress
+.. autoclass:: scheduler.LogProgressPP
+
+
+* :ref: `README`
 
 Indices and tables
 ==================
@@ -75,3 +118,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+

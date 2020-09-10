@@ -133,7 +133,7 @@ class SystemFromFile(System):
 
 class Exp(object):
     def __init__(self, name, wdir, rev, conf, experiment_is_locked, system=None, server=None, configuration=None,
-                 domain=None, env_submit=None,  write_config_files=False, progress=None, host="0"):
+                 geo=None, env_submit=None,  write_config_files=False, progress=None, host="0"):
 
         self.name = name
         self.wd = wdir
@@ -184,7 +184,8 @@ class Exp(object):
         if do_merge:
             self.merge_to_toml_config_files(configuration=configuration, write_config_files=write_config_files)
 
-        self.domain = domain
+        self.geo = geo
+
 
         # Merge config
         all_merged_settings = self.merge_toml_env_from_config_dicts()
@@ -235,9 +236,7 @@ class Exp(object):
 
         for key in system_files:
 
-            print(key)
             target = self.wd + "/" + key
-            print(target)
             lfile = self.wd + "/" + system_files[key]
             rfile = self.conf + "/" + system_files[key]
             dirname = os.path.dirname(lfile)
@@ -588,6 +587,8 @@ class Exp(object):
             f = "progressPP.toml"
             if stream is not None:
                 f = "progressPP" + stream + ".toml"
+        elif ftype == "domain":
+            f = "domain.json"
         else:
             raise Exception
         if full_path:
@@ -671,15 +672,15 @@ class ExpFromFiles(Exp):
         logfile = system.get_var("SFX_EXP_DATA", "0") + "/ECF.log"
         server = scheduler.EcflowServerFromFile(Exp.get_file_name(wdir, "server", full_path=True), logfile)
 
-        # TODO
-        domain = Domain(wdir + "/config/domains/Harmonie_domains.json", "TRYGVE_TEST")
+        domain_file = self.get_file_name(wdir, "domain", full_path=True)
+        geo = surfex.geo.get_geo_object(json.load(open(domain_file, "r")))
 
         if progress is None:
             progress = ProgressFromFile(self.get_file_name(wdir, "progress", full_path=True),
                                         self.get_file_name(wdir, "progressPP", full_path=True))
 
         Exp.__init__(self, name, wdir, rev, conf, experiment_is_locked, system=system, server=server,
-                     env_submit=env_submit, domain=domain, progress=progress, host=host)
+                     env_submit=env_submit, geo=geo, progress=progress, host=host)
 
     def set_experiment_is_locked(self, stream=None):
         experiment_is_locked_file = Exp.get_experiment_is_locked_file(self.wd, stream=stream, full_path=True)
@@ -816,132 +817,135 @@ class ProgressFromFile(Progress):
             toml_dump(updated_progress, self.progress_file)
 
 
-class Domain(object):
-    def __init__(self, domain_file, domain, vlev=None, grid_type="LINEAR", check_prime_factors=False):
-        self.name = domain
+class Domain(surfex.ConfProj):
+    def __init__(self, domain_json, **kwargs):
+        vlev = None
+        if "vlev" in kwargs:
+            vlev = kwargs["vlev"]
+        grid_type = "LINEAR"
+        if "grid_type" in kwargs:
+            grid_type = kwargs["grid_type"]
+        check_prime_factors = False
+        if "check_prime_factors" in kwargs:
+            check_prime_factors = kwargs["check_prime_factors"]
+        name = "name_not_set"
+        if "name" in domain_json:
+            name = domain_json["name"]
+        self.name = name
         self.vlev = vlev
         self.grid_type = grid_type
-        if os.path.exists(domain_file):
-            domain_json = self.set_domain(json.load(open(domain_file, "r")), domain)
+        self.trunc = 2
+        if grid_type == "LINEAR":
             self.trunc = 2
-            if grid_type == "LINEAR":
-                self.trunc = 2
-            elif grid_type == "QUADRATIC":
-                self.trunc = 3
-            elif grid_type == "CUBIC":
-                self.trunc = 4
-            elif grid_type == "CUSTOM":
-                self.trunc = 2.4
-            if domain_json is not None:
-                if "NMSMAX" not in domain_json:
-                    if "NLON" in domain_json:
-                        self.nmsmax = math.floor((int(domain_json["NLON"]) - 2) / float(self.trunc))
-                        domain_json.update({"NMSMAX": self.nmsmax})
-                    else:
-                        raise Exception("NLON not found for domain")
-                if "NSMAX" not in domain_json:
-                    if "NLAT" in domain_json:
-                        self.nsmax = math.floor((int(domain_json["NLAT"]) - 2) / float(self.trunc))
-                        domain_json.update({"NSMAX": self.nsmax})
-                    else:
-                        raise Exception("NLAT not found for domain")
-                if "NNOEXTZX" not in domain_json:
-                    domain_json.update({"NNOEXTZX": 0})
-                if "NNOEXTZY" not in domain_json:
-                    domain_json.update({"NNOEXTZY": 0})
-                if "EZONE" not in domain_json:
-                    domain_json.update({"EZONE": 11})
-                    self.ezone = int(domain_json["EZONE"])
-                if "NLON" in domain_json:
-                    self.nlon = int(domain_json["NLON"])
-                else:
-                    raise Exception("NLON not found for domain")
-                if "LON0" in domain_json:
-                    self.lon0 = int(domain_json["LON0"])
-                else:
-                    raise Exception("LON0 not found for domain")
-                if "LONC" in domain_json:
-                    self.lonc = int(domain_json["LONC"])
-                else:
-                    raise Exception("LONC not found for domain")
-                if "NLAT" in domain_json:
-                    self.nlat = int(domain_json["NLAT"])
-                else:
-                    raise Exception("NLAT not found for domain")
-                if "LAT0" in domain_json:
-                    self.lat0 = int(domain_json["LAT0"])
-                else:
-                    raise Exception("LAT0 not found for domain")
-                if "LATC" in domain_json:
-                    self.latc = int(domain_json["LATC"])
-                else:
-                    raise Exception("LATC not found for domain")
-                if "GSIZE" in domain_json:
-                    self.gsize = domain_json["GSIZE"]
-                else:
-                    raise Exception("No GSIZE found for domain!")
-                if "TSTEP" in domain_json:
-                    self.tstep = domain_json["TSTEP"]
-                else:
-                    raise Exception("No TSTEP found for domain!")
-                self.jbcv = None
-                self.jbbal = None
-                self.jbdir_ecfs = None
-                domain_json.update({"JBCV": "undefined"})
-                domain_json.update({"JBBAL": "undefined"})
-                # print(domain_json)
-                if "JB" in domain_json:
-                    if self.vlev is not None:
-                        vlev = self.vlev.name
-                        if vlev in domain_json["JB"]:
-                            if grid_type in domain_json["JB"][vlev]:
-                                if "f_JBCV" in domain_json["JB"][vlev][grid_type]:
-                                    self.jbcv = domain_json["JB"][vlev][grid_type]["f_JBCV"]
-                                    domain_json.update({"f_JBCV": self.jbcv})
-                                if "f_JBBAL" in domain_json["JB"][vlev][grid_type]:
-                                    self.jbbal = domain_json["JB"][vlev][grid_type]["f_JBBAL"]
-                                    domain_json.update({"f_JBBAL": self.jbbal})
-                                if "JBDIR_ECFS" in domain_json["JB"][vlev][grid_type]:
-                                    self.jbdir_ecfs = domain_json["JB"][vlev][grid_type]["JBDIR_ECFS"]
-                                    domain_json.update({"JBDIR_ECFS": self.jbdir_ecfs})
+        elif grid_type == "QUADRATIC":
+            self.trunc = 3
+        elif grid_type == "CUBIC":
+            self.trunc = 4
+        elif grid_type == "CUSTOM":
+            self.trunc = 2.4
 
-                self.rednmc = None
-                self.redzone = None
-                if "REDZONE" in domain_json:
-                    self.redzone = domain_json["REDZONE"]
-                if "REDNMC" in domain_json:
-                    self.rednmc = domain_json["REDNMC"]
-
-                self.domain_json = domain_json
-                if check_prime_factors:
-                    self.has_ok_prime_factors()
-
-                conf_proj_json = {
-                    "nam_pgd_grid": {
-                        "cgrid": "CONF PROJ"
-                    },
-                    "nam_conf_proj": {
-                        "xlon0": self.lon0,
-                        "xlat0": self.lat0,
-                        "xrpk": math.sin(math.radians(self.lat0)),
-                        "xbeta": 0},
-                    "nam_conf_proj_grid": {
-                        "xlatcen": self.latc,
-                        "xloncen": self.lonc,
-                        "nimax": self.nlon,
-                        "njmax": self.nlat,
-                        "xdx": self.gsize,
-                        "xdy": self.gsize
-                    }
-                }
-                self.geo = surfex.ConfProj(conf_proj_json)
-                # print(domain)
-                # print(domain_json)
+        if "NMSMAX" not in domain_json:
+            if "NLON" in domain_json:
+                self.nmsmax = math.floor((int(domain_json["NLON"]) - 2) / float(self.trunc))
+                domain_json.update({"NMSMAX": self.nmsmax})
             else:
-                raise Exception("Domain " + domain + " not found!")
-
+                raise Exception("NLON not found for domain")
+        if "NSMAX" not in domain_json:
+            if "NLAT" in domain_json:
+                self.nsmax = math.floor((int(domain_json["NLAT"]) - 2) / float(self.trunc))
+                domain_json.update({"NSMAX": self.nsmax})
+            else:
+                raise Exception("NLAT not found for domain")
+        if "NNOEXTZX" not in domain_json:
+            domain_json.update({"NNOEXTZX": 0})
+        if "NNOEXTZY" not in domain_json:
+            domain_json.update({"NNOEXTZY": 0})
+        if "EZONE" not in domain_json:
+            domain_json.update({"EZONE": 11})
+            self.ezone = int(domain_json["EZONE"])
+        if "NLON" in domain_json:
+            self.nlon = int(domain_json["NLON"])
         else:
-            raise FileNotFoundError("File not found " + domain_file)
+            raise Exception("NLON not found for domain")
+        if "LON0" in domain_json:
+            self.lon0 = int(domain_json["LON0"])
+        else:
+            raise Exception("LON0 not found for domain")
+        if "LONC" in domain_json:
+            self.lonc = int(domain_json["LONC"])
+        else:
+            raise Exception("LONC not found for domain")
+        if "NLAT" in domain_json:
+            self.nlat = int(domain_json["NLAT"])
+        else:
+            raise Exception("NLAT not found for domain")
+        if "LAT0" in domain_json:
+            self.lat0 = int(domain_json["LAT0"])
+        else:
+            raise Exception("LAT0 not found for domain")
+        if "LATC" in domain_json:
+            self.latc = int(domain_json["LATC"])
+        else:
+            raise Exception("LATC not found for domain")
+        if "GSIZE" in domain_json:
+            self.gsize = domain_json["GSIZE"]
+        else:
+            raise Exception("No GSIZE found for domain!")
+        if "TSTEP" in domain_json:
+            self.tstep = domain_json["TSTEP"]
+        else:
+            raise Exception("No TSTEP found for domain!")
+        self.jbcv = None
+        self.jbbal = None
+        self.jbdir_ecfs = None
+        domain_json.update({"JBCV": "undefined"})
+        domain_json.update({"JBBAL": "undefined"})
+        # print(domain_json)
+        if "JB" in domain_json:
+            if self.vlev is not None:
+                vlev = self.vlev.name
+                if vlev in domain_json["JB"]:
+                    if grid_type in domain_json["JB"][vlev]:
+                        if "f_JBCV" in domain_json["JB"][vlev][grid_type]:
+                            self.jbcv = domain_json["JB"][vlev][grid_type]["f_JBCV"]
+                            domain_json.update({"f_JBCV": self.jbcv})
+                        if "f_JBBAL" in domain_json["JB"][vlev][grid_type]:
+                            self.jbbal = domain_json["JB"][vlev][grid_type]["f_JBBAL"]
+                            domain_json.update({"f_JBBAL": self.jbbal})
+                        if "JBDIR_ECFS" in domain_json["JB"][vlev][grid_type]:
+                            self.jbdir_ecfs = domain_json["JB"][vlev][grid_type]["JBDIR_ECFS"]
+                            domain_json.update({"JBDIR_ECFS": self.jbdir_ecfs})
+
+        self.rednmc = None
+        self.redzone = None
+        if "REDZONE" in domain_json:
+            self.redzone = domain_json["REDZONE"]
+        if "REDNMC" in domain_json:
+            self.rednmc = domain_json["REDNMC"]
+
+        self.domain_json = domain_json
+        if check_prime_factors:
+            self.has_ok_prime_factors()
+
+        conf_proj_json = {
+            "nam_pgd_grid": {
+                "cgrid": "CONF PROJ"
+            },
+            "nam_conf_proj": {
+                "xlon0": self.lon0,
+                "xlat0": self.lat0,
+                "xrpk": math.sin(math.radians(self.lat0)),
+                "xbeta": 0},
+            "nam_conf_proj_grid": {
+                "xlatcen": self.latc,
+                "xloncen": self.lonc,
+                "nimax": self.nlon,
+                "njmax": self.nlat,
+                "xdx": self.gsize,
+                "xdy": self.gsize
+            }
+        }
+        surfex.ConfProj.__init__(self, conf_proj_json)
 
     def has_ok_prime_factors(self):
         if self.largest_prime_factor(self.nlon) > 5:
