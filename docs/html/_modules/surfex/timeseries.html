@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>surfex.timeseries &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.timeseries</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for surfex.timeseries</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<div class="viewcode-block" id="TimeSeries"><a class="viewcode-back" href="../../index.html#surfex.TimeSeries">[docs]</a><span class="k">class</span> <span class="nc">TimeSeries</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">stids_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s2">&quot;NA&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">times</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="n">lons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">lats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stids</span> <span class="o">=</span> <span class="n">stids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">varname</span> <span class="o">=</span> <span class="n">varname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)):</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pos</span><span class="p">:</span> <span class="n">i</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">stids_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_stids_from_file</span><span class="p">(</span><span class="n">stids_file</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_stids_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">stids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stids</span>
+        <span class="n">ids_from_file</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">stid</span> <span class="ow">in</span> <span class="n">ids_from_file</span><span class="p">:</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">ids_from_file</span><span class="p">[</span><span class="n">stid</span><span class="p">][</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">ids_from_file</span><span class="p">[</span><span class="n">stid</span><span class="p">][</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">:</span>
+                <span class="n">stids</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">]]</span> <span class="o">=</span> <span class="n">stid</span>
+        <span class="k">return</span> <span class="n">stids</span>
+
+    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">)):</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">):</span> <span class="p">{</span>
+                    <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lons&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;lats&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;stids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stids</span><span class="p">,</span>
+            <span class="s2">&quot;varname&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">varname</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span>
+        <span class="p">}</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">TimeSeriesFromJson</span><span class="p">(</span><span class="n">TimeSeries</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lons</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ts_lons</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">]</span>
+        <span class="n">ts_lats</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;lats&quot;</span><span class="p">]</span>
+        <span class="n">ts_stids</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;stids&quot;</span><span class="p">]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lons1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">stids1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts_lons</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">lons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lon1</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ts_lons</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">lat1</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ts_lats</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Mismach in longitudes and latitudes&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+                    <span class="n">lon</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lons</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                    <span class="n">lat</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lats</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="n">lon</span> <span class="o">==</span> <span class="n">lon1</span> <span class="ow">and</span> <span class="n">lat</span> <span class="o">==</span> <span class="n">lat1</span><span class="p">:</span>
+                        <span class="n">mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="n">lons1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_lons</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">lats1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">stids1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_stids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">lons1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_lons</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">lats1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">stids1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_stids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">lons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">ts_lons</span><span class="p">,</span> <span class="n">ts_lats</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You asked for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; position(s) not in the file&quot;</span><span class="p">)</span>
+
+        <span class="n">varname</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
+        <span class="n">validtime</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">starttime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">validtime</span> <span class="o">=</span> <span class="n">starttime</span>
+
+        <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]:</span>
+            <span class="n">add</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">this_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">starttime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">this_time</span> <span class="o">&lt;</span> <span class="n">starttime</span><span class="p">:</span>
+                <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">endtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">this_time</span> <span class="o">&gt;</span> <span class="n">endtime</span><span class="p">:</span>
+                <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">this_time</span> <span class="o">!=</span> <span class="n">validtime</span><span class="p">:</span>
+                <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
+                <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+                <span class="n">this_values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                    <span class="n">this_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="n">dt</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_values</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skip this time &quot;</span><span class="p">,</span> <span class="n">this_time</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">validtime</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+        <span class="n">TimeSeries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">lons1</span><span class="p">,</span> <span class="n">lats1</span><span class="p">,</span> <span class="n">stids1</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">varname</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TimeSeriesFromConverter</span><span class="p">(</span><span class="n">TimeSeries</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time-Series object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">converter</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">stids_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">validtime</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">basetime</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">defs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Converter</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">fileformat</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">],</span> <span class="n">fileformat</span><span class="p">,</span>
+                                     <span class="n">basetime</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Loop output time steps</span>
+        <span class="n">this_time</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
+            <span class="c1"># Write for each time step</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating time series for: &quot;</span> <span class="o">+</span> <span class="n">this_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; time_step:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">this_time</span><span class="p">))</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">=</span><span class="n">geo_in</span><span class="p">))</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+
+            <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stids_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stids</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">get_stid_from_stationlist</span><span class="p">(</span><span class="n">stids_file</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lonlist</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">latlist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NA&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span>
+
+        <span class="n">TimeSeries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lonlist</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">latlist</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">stids_file</span><span class="o">=</span><span class="n">stids_file</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.timeseries</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

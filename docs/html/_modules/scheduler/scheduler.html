@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scheduler.scheduler &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.scheduler</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for scheduler.scheduler</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">ecflow</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">scheduler</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<span class="c1"># Base class</span>
+<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../../index.html#scheduler.Server">[docs]</a><span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">create_suite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">suite_name</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">start_server</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">def_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">start_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">suite_type</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_suite</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">suite_type</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_server</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">def_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EcflowServer"><a class="viewcode-back" href="../../index.html#scheduler.EcflowServer">[docs]</a><span class="k">class</span> <span class="nc">EcflowServer</span><span class="p">(</span><span class="n">Server</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_host</span><span class="p">,</span> <span class="n">ecf_port</span><span class="p">,</span> <span class="n">logfile</span><span class="p">):</span>
+        <span class="n">Server</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_host</span> <span class="o">=</span> <span class="n">ecf_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_port</span> <span class="o">=</span> <span class="n">ecf_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="n">logfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span> <span class="o">=</span> <span class="n">ecflow</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">create_suite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">suite_type</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">hh_list</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_total_unique_hh_list</span><span class="p">()</span>
+        <span class="n">dtgstart</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+        <span class="n">dtgbeg</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgbeg</span>
+        <span class="n">dtgend</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span>
+        <span class="k">if</span> <span class="n">dtgbeg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dtgbeg</span> <span class="o">=</span> <span class="n">dtgstart</span>
+        <span class="k">if</span> <span class="n">suite_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">SurfexSuite</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">suite_type</span> <span class="o">==</span> <span class="s2">&quot;sandbox&quot;</span><span class="p">:</span>
+            <span class="n">dtgs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">dtg</span> <span class="o">=</span> <span class="n">dtgstart</span>
+            <span class="k">while</span> <span class="n">dtg</span> <span class="o">&lt;=</span> <span class="n">dtgend</span><span class="p">:</span>
+                <span class="n">dtgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span>
+                <span class="n">hh</span> <span class="o">=</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+                <span class="n">fcint</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">fcint</span> <span class="o">=</span> <span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="mi">24</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">%</span> <span class="mi">24</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">h</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">fcint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="n">dtg</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">fcint</span><span class="p">)</span>
+
+            <span class="n">suite</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">Sandbox</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">dtgs</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">dtgbeg</span><span class="o">=</span><span class="n">dtgbeg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">suite_type</span> <span class="o">==</span> <span class="s2">&quot;testbed&quot;</span><span class="p">:</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">SurfexTestbedSuite</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Suite &quot;</span> <span class="o">+</span> <span class="n">suite_type</span> <span class="o">+</span> <span class="s2">&quot; is not defined&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">suite_name</span>
+        <span class="k">if</span> <span class="n">suite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">suite</span><span class="o">.</span><span class="n">save_as_defs</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The suite is not constructed&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">start_server</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start EcFlow server&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">ping</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EcFlow server is already running&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Re-Start EcFlow server&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Start server</span>
+                <span class="c1"># self.ecf_client.restart_server()</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;ecflow_start.sh -p &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_port</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">cmd</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">ret</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Could not restart server!&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">force_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">force_state</span><span class="p">(</span><span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecflow</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="n">complete</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">force_aborted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">force_state</span><span class="p">(</span><span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecflow</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="n">aborted</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_submission_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_log</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_log</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">submission_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">alter</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="s2">&quot;SUBMISSION_ID&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">submission_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">def_file</span><span class="p">):</span>
+        <span class="n">suite_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">suite_name</span><span class="p">,</span> <span class="n">def_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">suite_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ecf_client</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">suite_name</span><span class="p">,</span> <span class="n">def_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Could not replace suite &quot;</span> <span class="o">+</span> <span class="n">suite_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">utcnow</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;[%H:%M:%S </span><span class="si">%d</span><span class="s2">.%m.%Y]&quot;</span><span class="p">)</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">utcnow</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EcflowServerFromFile"><a class="viewcode-back" href="../../index.html#scheduler.EcflowServerFromFile">[docs]</a><span class="k">class</span> <span class="nc">EcflowServerFromFile</span><span class="p">(</span><span class="n">EcflowServer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecflow_server_file</span><span class="p">,</span> <span class="n">logfile</span><span class="p">,</span> <span class="n">ecf_port_offset</span><span class="o">=</span><span class="mi">1500</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ecflow_server_file</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">toml_load</span><span class="p">(</span><span class="n">ecflow_server_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not find &quot;</span> <span class="o">+</span> <span class="n">ecflow_server_file</span><span class="p">)</span>
+
+        <span class="n">ecf_host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;ECF_HOST&quot;</span><span class="p">)</span>
+        <span class="n">ecf_port_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;ECF_PORT_OFFSET&quot;</span><span class="p">,</span> <span class="n">ecf_port_offset</span><span class="p">)</span>
+        <span class="n">ecf_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;ECF_PORT&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ecf_port_offset</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()))</span>
+
+        <span class="c1"># logfile = self.get_var(&quot;SERVER_LOG&quot;)</span>
+        <span class="n">EcflowServer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_host</span><span class="p">,</span> <span class="n">ecf_port</span><span class="p">,</span> <span class="n">logfile</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">default</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Variable &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; not found!&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save_as_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wdir</span><span class="p">):</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_name</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">toml_dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_file_name</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">full_path</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="s2">&quot;Env_server&quot;</span>
+        <span class="k">if</span> <span class="n">full_path</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">wdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">f</span>
+        <span class="k">return</span> <span class="n">f</span></div>
+
+
+<div class="viewcode-block" id="EcflowLogServer"><a class="viewcode-back" href="../../index.html#scheduler.EcflowLogServer">[docs]</a><span class="k">class</span> <span class="nc">EcflowLogServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_loghost</span><span class="p">,</span> <span class="n">ecf_logport</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_loghost</span> <span class="o">=</span> <span class="n">ecf_loghost</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_logport</span> <span class="o">=</span> <span class="n">ecf_logport</span></div>
+
+
+<div class="viewcode-block" id="Task"><a class="viewcode-back" href="../../index.html#scheduler.Task">[docs]</a><span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecf_tryno</span><span class="p">,</span> <span class="n">ecf_pass</span><span class="p">,</span> <span class="n">ecf_rid</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">,</span> <span class="n">ecf_timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">=</span> <span class="n">ecf_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ecf_tryno</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_pass</span> <span class="o">=</span> <span class="n">ecf_pass</span>
+        <span class="k">if</span> <span class="n">ecf_rid</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">ecf_rid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_rid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ecf_rid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_timeout</span> <span class="o">=</span> <span class="n">ecf_timeout</span>
+        <span class="n">ecf_name_parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_task</span> <span class="o">=</span> <span class="n">ecf_name_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ecf_families</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ecf_name_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ecf_families</span> <span class="o">=</span> <span class="n">ecf_name_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_families</span> <span class="o">=</span> <span class="n">ecf_families</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">family1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_families</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">family1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_families</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">submission_id</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">submission_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submission_id</span> <span class="o">=</span> <span class="n">submission_id</span>
+
+    <span class="k">def</span> <span class="nf">create_sumbission_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joboutdir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot;.job&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.sub&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_kill_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joboutdir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot;.job&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.kill&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_status_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joboutdir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot;.job&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.stat&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_ecf_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joboutdir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot;.job&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_ecf_jobout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joboutdir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../index.html#scheduler.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encapsulate communication with the ecflow server. This will automatically call</span>
+<span class="sd">       the child command init()/complete(), for job start/finish. It will also</span>
+<span class="sd">       handle exceptions and signals, by calling the abort child command.</span>
+<span class="sd">       *ONLY* one instance of this class, should be used. Otherwise zombies will be created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating Client&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">ecf_client</span>
+        <span class="c1"># self.ci.set_host_port(&quot;%ECF_HOST%&quot;, &quot;%ECF_PORT%&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">set_child_pid</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_rid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">set_child_path</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">set_child_password</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_pass</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">set_child_try_no</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_tryno</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Only wait &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_timeout</span><span class="p">)</span> <span class="o">+</span>
+              <span class="s2">&quot; seconds, if the server cannot be contacted (note default is 24 hours) before failing&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">set_child_timeout</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_timeout</span><span class="p">)</span>
+        <span class="c1"># self.ci.set_zombie_child_timeout(10)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+
+        <span class="c1"># Abort the task for the following signals</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGHUP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGQUIT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGILL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTRAP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGIOT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGBUS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGFPE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGXCPU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">:</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGPWR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">at_time</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signum</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   Aborting: Signal handler called with signal &#39;</span><span class="p">,</span> <span class="n">signum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">child_abort</span><span class="p">(</span><span class="s2">&quot;Signal handler called with signal &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">signum</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calling init at: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_time</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">update_log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot; init&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">child_init</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Client:__exit__: ex_type:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; value:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">ex_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calling abort &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_time</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">child_abort</span><span class="p">(</span><span class="s2">&quot;Aborted with exception type &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_tb</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** print_exception:&quot;</span><span class="p">)</span>
+            <span class="c1"># exc_type below is ignored on 3.5 and later</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** print_exc:&quot;</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** format_exc, first and last line:&quot;</span><span class="p">)</span>
+            <span class="n">formatted_lines</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">formatted_lines</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">formatted_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** format_exception:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** extract_tb:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">extract_tb</span><span class="p">(</span><span class="n">tb</span><span class="p">)))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** format_tb:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_tb</span><span class="p">(</span><span class="n">tb</span><span class="p">)))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** tb_lineno:&quot;</span><span class="p">,</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_lineno</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">update_log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot; abort&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Calling complete at: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_time</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">update_log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_name</span> <span class="o">+</span> <span class="s2">&quot; complete&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">child_complete</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.scheduler</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
