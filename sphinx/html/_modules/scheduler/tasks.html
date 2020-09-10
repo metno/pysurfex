@@ -1,0 +1,993 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scheduler.tasks &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.tasks</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for scheduler.tasks</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+
+<div class="viewcode-block" id="AbstractTask"><a class="viewcode-back" href="../../index.html#scheduler.AbstractTask">[docs]</a><span class="k">class</span> <span class="nc">AbstractTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="n">exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">conf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">geo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;task_settings&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;task_settings&quot;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Init: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">)</span>
+
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;mbr&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">mbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mbr&quot;</span><span class="p">]</span>
+
+        <span class="n">wrk_pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM#WRK_PATTERN&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">wrk_pattern</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">wdir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getppid</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrk</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">wdir</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WDIR=&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wdir</span><span class="p">)</span>
+
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;mbr&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">mbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mbr&quot;</span><span class="p">]</span>
+
+        <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM#ARCHIVE_PATTERN&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bindir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM#BINDIR&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">check_parsing</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Check on arguments</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span>
+            <span class="k">if</span> <span class="s2">&quot;dtg&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">]</span>
+
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@YMD@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@YYYY@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@YY@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@MM@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@DD@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@HH@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">))</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@mm@&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%M&quot;</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="s2">&quot;mbr&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">mbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mbr&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">mbr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@EE@&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mbr</span><span class="p">)))</span>
+                    <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@EEE@&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{:03d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mbr</span><span class="p">)))</span>
+
+            <span class="c1"># CSURF_FILETYPE</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">)</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@CSURF_FILETYPE@&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;check_parsing&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">check_parsing</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;check_parsing&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">check_parsing</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">setting</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Setting was not substituted properly? &quot;</span> <span class="o">+</span> <span class="n">setting</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">setting</span>
+
+    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;kwargs&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="s2">&quot; task: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">,</span> <span class="s2">&quot; get: &quot;</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">)</span>
+
+        <span class="c1"># TODO</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;kw&quot;</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">])</span>
+                <span class="n">parse</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">setting</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">if</span> <span class="n">kw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">]:</span>
+                    <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">][</span><span class="n">kw</span><span class="p">]</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;subsection&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subsection&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subsection&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">kw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">][</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subsection&quot;</span><span class="p">]]:</span>
+                            <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_settings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">ecf_task</span><span class="p">][</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subsection&quot;</span><span class="p">]][</span><span class="n">kw</span><span class="p">]</span>
+                            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;default&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                        <span class="n">setting</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: setting &quot;</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="s2">&quot; not found with kwargs: &quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span>
+
+                <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;parse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">parse</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;parse&quot;</span><span class="p">]</span>
+
+                <span class="c1"># Substitution of string variables</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">env_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USER&quot;</span><span class="p">,</span> <span class="s2">&quot;HOME&quot;</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">env_val</span> <span class="ow">in</span> <span class="n">env_vals</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">env_val</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                            <span class="n">setting</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">env_val</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">env_val</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">env_val</span> <span class="o">+</span> <span class="s2">&quot; not found in environment&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Substitute system settings</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;SYSTEM&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+                        <span class="n">sys_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM&quot;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">sys_var</span> <span class="ow">in</span> <span class="n">sys_vars</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TRYGVE &quot;</span><span class="p">,</span> <span class="n">sys_var</span><span class="p">,</span> <span class="s2">&quot; host: &quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM#&quot;</span> <span class="o">+</span> <span class="n">sys_var</span><span class="p">))</span>
+                            <span class="n">setting</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">sys_var</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SYSTEM#&quot;</span> <span class="o">+</span> <span class="n">sys_var</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">parse</span><span class="p">:</span>
+                        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Please define task in task settings&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Return setting</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting: &quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">setting</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    def prepare(self, **kwargs):</span>
+<span class="sd">        mbr = None</span>
+<span class="sd">        if &quot;mbr&quot; in kwargs:</span>
+<span class="sd">            mbr = kwargs[&quot;mbr&quot;]</span>
+
+<span class="sd">        wrk_pattern = self.exp.config.get_setting(&quot;SYSTEM#WRK_PATTERN&quot;, mbr=mbr)</span>
+<span class="sd">        self.wrk = self.parse_setting(wrk_pattern, mbr=mbr, dtg=self.exp.progress.dtg)</span>
+<span class="sd">        wdir = str(os.getppid())</span>
+<span class="sd">        self.wdir = self.wrk + &quot;/&quot; + wdir</span>
+<span class="sd">        print(&quot;WDIR=&quot; + self.wdir)</span>
+<span class="sd">        os.makedirs(self.wdir, exist_ok=True)</span>
+<span class="sd">        os.chdir(self.wdir)</span>
+
+<span class="sd">        mbr = None</span>
+<span class="sd">        if &quot;mbr&quot; in kwargs:</span>
+<span class="sd">            mbr = kwargs[&quot;mbr&quot;]</span>
+
+<span class="sd">        archive = self.exp.config.get_setting(&quot;SYSTEM#ARCHIVE_PATTERN&quot;, mbr=mbr, )</span>
+<span class="sd">        self.archive = self.parse_setting(archive, mbr=mbr, dtg=self.exp.progress.dtg)</span>
+<span class="sd">        os.makedirs(self.archive, exist_ok=True)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># self.prepare(**kwargs)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">postfix</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">postfix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrk</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wdir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurfexBinaryTask"><a class="viewcode-back" href="../../index.html#scheduler.SurfexBinaryTask">[docs]</a><span class="k">class</span> <span class="nc">SurfexBinaryTask</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_prep</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgd</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prep</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perturbed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">soda</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/nam&quot;</span>  <span class="c1"># kwargs[&quot;input_path&quot;]</span>
+        <span class="n">system_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/system_paths.json&quot;</span>  <span class="c1"># kwargs[&quot;system_settings&quot;]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">settings</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">system_settings</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">system_settings</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;System settings not found &quot;</span> <span class="o">+</span> <span class="n">system_settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">rte</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+        <span class="n">wrapper</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;wrapper&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">wrapper</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;wrapper&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;pgd&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pgd</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">need_prep</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;prep&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prep</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">need_prep</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">soda</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perturbed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">+</span> <span class="s2">&quot; is not implemented!&quot;</span><span class="p">)</span>
+
+        <span class="n">pgd_file_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;pgd_file_path&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">pgd_file_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pgd_file_path&quot;</span><span class="p">]</span>
+        <span class="n">prep_file_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;prep_file_path&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">prep_file_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep_file_path&quot;</span><span class="p">]</span>
+
+        <span class="n">input_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;input_data&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_data&quot;</span><span class="p">]</span>
+
+        <span class="n">ecoclimap</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;ecoclimap&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecoclimap&quot;</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">print_namelist</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s2">&quot;print_namelist&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">print_namelist</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;print_namelist&quot;</span><span class="p">]</span>
+
+        <span class="n">assim_input</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;assim_input&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">assim_input</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;assim_input&quot;</span><span class="p">]</span>
+        <span class="n">assim_output</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;assim_output&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">assim_input</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;assim_output&quot;</span><span class="p">]</span>
+        <span class="n">pert</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;pert&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">pert</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pert&quot;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rte&quot;</span><span class="p">,</span> <span class="n">rte</span><span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BatchJob</span><span class="p">(</span><span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">wrapper</span><span class="p">)</span>
+
+        <span class="n">archive_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;archive_data&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">archive_data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;archive_data&quot;</span><span class="p">]</span>
+
+        <span class="n">assim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">assim_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">assim_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">assim</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Assimilation</span><span class="p">(</span><span class="n">ass_input</span><span class="o">=</span><span class="n">assim_input</span><span class="p">,</span> <span class="n">ass_output</span><span class="o">=</span><span class="n">assim_output</span><span class="p">)</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ascii2nml</span><span class="p">(</span><span class="n">json_settings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">update_namelist</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+
+        <span class="c1"># Create input</span>
+        <span class="c1"># my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)</span>
+        <span class="n">filetype</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;csurf_filetype&quot;</span><span class="p">]</span>
+        <span class="n">pgdfile</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;cpgdfile&quot;</span><span class="p">]</span>
+        <span class="n">prepfile</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;cprepfile&quot;</span><span class="p">]</span>
+        <span class="n">surffile</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;csurffile&quot;</span><span class="p">]</span>
+        <span class="n">lfagmap</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LFAGMAP&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">]:</span>
+            <span class="n">lfagmap</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">][</span><span class="s2">&quot;LFAGMAP&quot;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">pgdfile</span><span class="p">,</span> <span class="n">lfagmap</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">input_data</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span><span class="p">:</span>
+            <span class="n">pgdfile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">PGDFile</span><span class="p">(</span><span class="n">filetype</span><span class="p">,</span> <span class="n">pgdfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">,</span>
+                                          <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_prep</span><span class="p">:</span>
+            <span class="n">prepfile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">PREPFile</span><span class="p">(</span><span class="n">filetype</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="n">prep_file_path</span><span class="p">,</span>
+                                       <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_prep</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span><span class="p">:</span>
+            <span class="n">surffile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SURFFile</span><span class="p">(</span><span class="n">filetype</span><span class="p">,</span> <span class="n">surffile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">surffile</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbed</span><span class="p">:</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">PerturbedOffline</span><span class="p">(</span><span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="n">pert</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span>
+                                    <span class="n">pgdfile</span><span class="o">=</span><span class="n">pgdfile</span><span class="p">,</span> <span class="n">surfout</span><span class="o">=</span><span class="n">surffile</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                                    <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span>
+                                    <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgd</span><span class="p">:</span>
+            <span class="n">pgdfile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">PGDFile</span><span class="p">(</span><span class="n">filetype</span><span class="p">,</span> <span class="n">pgdfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">,</span>
+                                          <span class="n">archive_file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">input_data</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">SURFEXBinary</span><span class="p">(</span><span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">pgdfile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span>
+                                <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span> <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">prep</span><span class="p">:</span>
+            <span class="n">prepfile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">PREPFile</span><span class="p">(</span><span class="n">filetype</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span>
+                                       <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">)</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">SURFEXBinary</span><span class="p">(</span><span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">pgdfile</span><span class="o">=</span><span class="n">pgdfile</span><span class="p">,</span>
+                                <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span> <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">SURFEXBinary</span><span class="p">(</span><span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">pgdfile</span><span class="o">=</span><span class="n">pgdfile</span><span class="p">,</span>
+                                <span class="n">assim</span><span class="o">=</span><span class="n">assim</span><span class="p">,</span> <span class="n">surfout</span><span class="o">=</span><span class="n">surffile</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span>
+                                <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Pgd"><a class="viewcode-back" href="../../index.html#scheduler.Pgd">[docs]</a><span class="k">class</span> <span class="nc">Pgd</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+        <span class="n">binary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindir</span> <span class="o">+</span> <span class="s2">&quot;/PGD.exe&quot;</span>
+
+        <span class="n">force</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;force&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span> <span class="o">=</span> \
+                <span class="n">surfex</span><span class="o">.</span><span class="n">set_json_namelist_from_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span>
+                                     <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                                     <span class="n">ecoclimap</span><span class="o">=</span><span class="n">ecoclimap</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Prep"><a class="viewcode-back" href="../../index.html#scheduler.Prep">[docs]</a><span class="k">class</span> <span class="nc">Prep</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;prep&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">pgd_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;pgd_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">prep_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_input_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">prep_filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_input_format&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">prep_pgdfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_pgdfile&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">prep_pgdfiletype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_pgdfiletype&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">binary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindir</span> <span class="o">+</span> <span class="s2">&quot;/PREP.exe&quot;</span>
+
+        <span class="n">force</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;force&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;prep_file&quot;</span><span class="p">:</span> <span class="n">prep_file</span><span class="p">,</span>
+                <span class="s2">&quot;prep_filetype&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">prep_filetype</span><span class="p">),</span>
+                <span class="s2">&quot;prep_pgdfile&quot;</span><span class="p">:</span> <span class="n">prep_pgdfile</span><span class="p">,</span>
+                <span class="s2">&quot;prep_pgdfiletype&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">prep_pgdfiletype</span><span class="p">),</span>
+                <span class="s2">&quot;dtg&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span>
+            <span class="p">}</span>
+            <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span> <span class="o">=</span> \
+                <span class="n">surfex</span><span class="o">.</span><span class="n">set_json_namelist_from_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="o">=</span><span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                                     <span class="n">pgd_file_path</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
+        <span class="c1"># PREP should prepare for forecast</span>
+        <span class="n">fc_start_sfx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fc_start_sfx&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fc_start_sfx</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">fc_start_sfx</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">fc_start_sfx</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Forecast"><a class="viewcode-back" href="../../index.html#scheduler.Forecast">[docs]</a><span class="k">class</span> <span class="nc">Forecast</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;offline&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">forcing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;forcing&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">forc_zs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;forc_zs&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">binary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindir</span> <span class="o">+</span> <span class="s2">&quot;/OFFLINE.exe&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">pgd_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;pgd_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">prep_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+
+        <span class="n">force</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;force&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span> <span class="o">=</span> \
+                <span class="n">surfex</span><span class="o">.</span><span class="n">set_json_namelist_from_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">,</span>
+                                                       <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">)</span>
+
+            <span class="c1"># Add forcing</span>
+            <span class="c1"># TODO Handle format. Use object</span>
+            <span class="n">input_data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;FORCING.nc&quot;</span><span class="p">:</span> <span class="n">forcing</span><span class="p">})</span>
+            <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="o">=</span><span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                                     <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">,</span> <span class="n">pgd_file_path</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">,</span> <span class="n">prep_file_path</span><span class="o">=</span><span class="n">prep_file_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Soda"><a class="viewcode-back" href="../../index.html#scheduler.Soda">[docs]</a><span class="k">class</span> <span class="nc">Soda</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;soda&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">binary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindir</span> <span class="o">+</span> <span class="s2">&quot;/SODA.exe&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">pgd_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;pgd_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">prep_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;prep_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+
+        <span class="c1"># Set assimilation input</span>
+
+        <span class="n">sstfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;sstfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">ua_first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;ua_first_guess&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">perturbed_runs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;perturbed_runs&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;lsmfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">obsfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;obsfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">check_existence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;check_existence&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">oi_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;oi_coeffs&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">climfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;climfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">sfx_first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;sfx_first_guess&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">ascatfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;ascatfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">force</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;force&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">json_settings</span><span class="p">,</span> <span class="n">ecoclimap</span><span class="p">,</span> <span class="n">input_data</span> <span class="o">=</span> \
+                <span class="n">surfex</span><span class="o">.</span><span class="n">set_json_namelist_from_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
+
+            <span class="n">assim_input</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">set_assimilation_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span> <span class="n">sstfile</span><span class="o">=</span><span class="n">sstfile</span><span class="p">,</span>
+                                                        <span class="n">ua_first_guess</span><span class="o">=</span><span class="n">ua_first_guess</span><span class="p">,</span>
+                                                        <span class="n">perturbed_runs</span><span class="o">=</span><span class="n">perturbed_runs</span><span class="p">,</span> <span class="n">lsmfile</span><span class="o">=</span><span class="n">lsmfile</span><span class="p">,</span>
+                                                        <span class="n">obsfile</span><span class="o">=</span><span class="n">obsfile</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                                                        <span class="n">oi_coeffs</span><span class="o">=</span><span class="n">oi_coeffs</span><span class="p">,</span> <span class="n">climfile</span><span class="o">=</span><span class="n">climfile</span><span class="p">,</span>
+                                                        <span class="n">sfx_first_guess</span><span class="o">=</span><span class="n">sfx_first_guess</span><span class="p">,</span>
+                                                        <span class="n">ascatfile</span><span class="o">=</span><span class="n">ascatfile</span><span class="p">)</span>
+            <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">json_settings</span><span class="p">,</span>
+                                     <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                                     <span class="n">ecoclimap</span><span class="o">=</span><span class="n">ecoclimap</span><span class="p">,</span>
+                                     <span class="n">pgd_file_path</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">,</span>
+                                     <span class="n">prep_file_path</span><span class="o">=</span><span class="n">prep_file_path</span><span class="p">,</span>
+                                     <span class="n">assim_input</span><span class="o">=</span><span class="n">assim_input</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
+        <span class="c1"># SODA should prepare for forecast</span>
+        <span class="n">fc_start_sfx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fc_start_sfx&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fc_start_sfx</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">fc_start_sfx</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">fc_start_sfx</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PrepareCycle"><a class="viewcode-back" href="../../index.html#scheduler.PrepareCycle">[docs]</a><span class="k">class</span> <span class="nc">PrepareCycle</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrk</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrk</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#scheduler.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">geo</span>
+        <span class="n">an_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+
+        <span class="n">translation</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="s2">&quot;air_temperature_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rh2m&quot;</span><span class="p">:</span> <span class="s2">&quot;relative_humidity_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="s2">&quot;surface_snow_thickness&quot;</span>
+        <span class="p">}</span>
+
+        <span class="n">subsection</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">translation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="n">subsection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span>
+
+        <span class="c1"># archive_root = self.get_setting(&quot;archive_root&quot;)</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;qc_config&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+            <span class="n">settings_var</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="n">settings_var</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not find input file &quot;</span> <span class="o">+</span> <span class="n">input_file</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">subsection</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">)</span>
+        <span class="n">qc_codes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;qc_codes&quot;</span><span class="p">)</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;tests&quot;</span><span class="p">)</span>
+        <span class="n">indent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;indent&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">test_flags</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">qc_codes</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">titan</span><span class="o">.</span><span class="n">define_quality_control</span><span class="p">(</span><span class="n">tests</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;netatmo&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">]:</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="mi">20</span>
+            <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">dtg_start</span> <span class="o">=</span> <span class="n">an_time</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+            <span class="n">dtg_end</span> <span class="o">=</span> <span class="n">an_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+            <span class="n">dtg</span> <span class="o">=</span> <span class="n">dtg_start</span>
+            <span class="k">while</span> <span class="n">dtg</span> <span class="o">&lt;=</span> <span class="n">dtg_end</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;netatmo_filepattern&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dtg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+                    <span class="n">filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="n">dtg</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="s2">&quot;netatmo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;filenames&quot;</span><span class="p">:</span> <span class="n">filenames</span><span class="p">})</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: no ntatmo files found&quot;</span><span class="p">)</span>
+
+        <span class="n">datasources</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">get_datasources</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">])</span>
+        <span class="n">data_set</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">TitanDataSet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">test_flags</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span>
+                                       <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data_set</span><span class="o">.</span><span class="n">perform_tests</span><span class="p">()</span>
+
+        <span class="n">data_set</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OptimalInterpolation"><a class="viewcode-back" href="../../index.html#scheduler.OptimalInterpolation">[docs]</a><span class="k">class</span> <span class="nc">OptimalInterpolation</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+        <span class="n">validtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+
+        <span class="n">translation</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="s2">&quot;air_temperature_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rh2m&quot;</span><span class="p">:</span> <span class="s2">&quot;relative_humidity_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="s2">&quot;surface_snow_thickness&quot;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">translation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span>
+            <span class="c1"># variables = [var]</span>
+            <span class="n">subsection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+
+        <span class="n">min_rho</span> <span class="o">=</span> <span class="mf">0.0013</span>
+        <span class="n">hlength</span> <span class="o">=</span> <span class="mi">30000</span>
+        <span class="n">vlength</span> <span class="o">=</span> <span class="mi">100000</span>
+        <span class="n">wmin</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">max_elev_diff</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="n">land_only</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">max_locations</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="n">elev_gradient</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+        <span class="n">input_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">)</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">)</span>
+        <span class="n">min_rho</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;min_rho&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">min_rho</span><span class="p">)</span>
+        <span class="n">hlength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;hlength&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">hlength</span><span class="p">)</span>
+        <span class="n">vlength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;vlength&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">vlength</span><span class="p">)</span>
+        <span class="n">wmin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;wmin&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">wmin</span><span class="p">)</span>
+        <span class="n">max_elev_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;max_elev_diff&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">max_elev_diff</span><span class="p">)</span>
+        <span class="n">land_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;land_only&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">land_only</span><span class="p">)</span>
+        <span class="n">max_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;max_locations&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">max_locations</span><span class="p">)</span>
+        <span class="n">elev_gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;elev_gradient&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">elev_gradient</span><span class="p">)</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span>
+        <span class="n">minvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;minvalue&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">maxvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;maxvalue&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Get input fields</span>
+        <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+        <span class="n">an_time</span> <span class="o">=</span> <span class="n">validtime</span>
+        <span class="c1"># Read OK observations</span>
+        <span class="n">obs_file</span> <span class="o">=</span> <span class="s2">&quot;/home/trygveasp/scratch/sfx_home/sandbox/20200821_00/qc_t2m&quot;</span>
+        <span class="n">observations</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">obs_file</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">field</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">horizontal_oi</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">gelevs</span><span class="o">=</span><span class="n">gelevs</span><span class="p">,</span> <span class="n">glafs</span><span class="o">=</span><span class="n">glafs</span><span class="p">,</span> <span class="n">min_rho</span><span class="o">=</span><span class="n">min_rho</span><span class="p">,</span>
+                                     <span class="n">hlength</span><span class="o">=</span><span class="n">hlength</span><span class="p">,</span> <span class="n">vlength</span><span class="o">=</span><span class="n">vlength</span><span class="p">,</span> <span class="n">wmin</span><span class="o">=</span><span class="n">wmin</span><span class="p">,</span> <span class="n">max_elev_diff</span><span class="o">=</span><span class="n">max_elev_diff</span><span class="p">,</span>
+                                     <span class="n">land_only</span><span class="o">=</span><span class="n">land_only</span><span class="p">,</span> <span class="n">max_locations</span><span class="o">=</span><span class="n">max_locations</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="n">elev_gradient</span><span class="p">,</span>
+                                     <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">minvalue</span><span class="o">=</span><span class="n">minvalue</span><span class="p">,</span> <span class="n">maxvalue</span><span class="o">=</span><span class="n">maxvalue</span><span class="p">)</span>
+
+        <span class="n">surfex</span><span class="o">.</span><span class="n">write_analysis_netcdf_file</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">gelevs</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Forcing"><a class="viewcode-back" href="../../index.html#scheduler.Forcing">[docs]</a><span class="k">class</span> <span class="nc">Forcing</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+        <span class="n">hh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_fcint</span><span class="p">(</span><span class="n">hh</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+
+        <span class="n">user_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;user_config&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">user_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;user_config&quot;</span><span class="p">]))</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;user_config&quot;</span><span class="p">:</span> <span class="n">user_config</span><span class="p">})</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;geo_out&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">geo</span><span class="p">})</span>
+
+        <span class="n">global_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;global_config&quot;</span><span class="p">)</span>
+        <span class="n">global_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">global_config</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">global_config</span><span class="p">})</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dtg_start&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dtg_stop&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">dtg</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">fcint</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;input_format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;pattern&quot;</span><span class="p">:</span>
+                           <span class="s2">&quot;https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc&quot;</span><span class="p">})</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;of&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">})</span>
+        <span class="n">output_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output_format&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;netcdf&quot;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;output_format&quot;</span><span class="p">:</span> <span class="n">output_format</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;zref&quot;</span><span class="p">:</span> <span class="s2">&quot;ml&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;zval&quot;</span><span class="p">:</span> <span class="s2">&quot;constant&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;uref&quot;</span><span class="p">:</span> <span class="s2">&quot;ml&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;uval&quot;</span><span class="p">:</span> <span class="s2">&quot;constant&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;zsoro_converter&quot;</span><span class="p">:</span> <span class="s2">&quot;phi2m&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;sca_sw&quot;</span><span class="p">:</span> <span class="s2">&quot;constant&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;co2&quot;</span><span class="p">:</span> <span class="s2">&quot;constant&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;wind_converter&quot;</span><span class="p">:</span> <span class="s2">&quot;windspeed&quot;</span><span class="p">})</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;wind_dir_converter&quot;</span><span class="p">:</span> <span class="s2">&quot;winddir&quot;</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span> <span class="o">+</span> <span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">set_forcing_config</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+        <span class="n">fg_pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fg_pattern&quot;</span><span class="p">,</span> <span class="n">parse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">fg_sfx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fg_sfx&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+
+        <span class="n">hh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_fcint</span><span class="p">(</span><span class="n">hh</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">fcint</span><span class="p">)</span>
+        <span class="n">fg_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">fg_pattern</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">fg_sfx</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CycleFirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.CycleFirstGuess">[docs]</a><span class="k">class</span> <span class="nc">CycleFirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+        <span class="n">fg_pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fg_pattern&quot;</span><span class="p">,</span> <span class="n">parse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">fc_start_sfx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fc_start_sfx&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+
+        <span class="n">hh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_fcint</span><span class="p">(</span><span class="n">hh</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+
+        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">fcint</span><span class="p">)</span>
+        <span class="n">fg_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">fg_pattern</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">fc_start_sfx</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Oi2soda"><a class="viewcode-back" href="../../index.html#scheduler.Oi2soda">[docs]</a><span class="k">class</span> <span class="nc">Oi2soda</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+
+        <span class="n">t2m</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">rh2m</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sd</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">an_variables</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;rh2m&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ivar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nnco</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">nnco</span><span class="p">[</span><span class="n">ivar</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">an_variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+                <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">an_variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;rh2m&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+                <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">an_variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">an_variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">an_variables</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;t2m&quot;</span><span class="p">:</span>
+                    <span class="n">t2m</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">),</span>
+                        <span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;ncvar&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;rh2m&quot;</span><span class="p">:</span>
+                    <span class="n">rh2m</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">),</span>
+                        <span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;ncvar&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;sd&quot;</span><span class="p">:</span>
+                    <span class="n">sd</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">),</span>
+                        <span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;ncvar&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+                    <span class="p">}</span>
+
+        <span class="n">surfex</span><span class="o">.</span><span class="n">oi2soda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="n">t2m</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="n">rh2m</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span></div>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+
+<div class="viewcode-block" id="Qc2obsmon"><a class="viewcode-back" href="../../index.html#scheduler.Qc2obsmon">[docs]</a><span class="k">class</span> <span class="nc">Qc2obsmon</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+
+<div class="viewcode-block" id="FirstGuess4OI"><a class="viewcode-back" href="../../index.html#scheduler.FirstGuess4OI">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess4OI</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">geo</span>
+        <span class="n">validtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span>
+
+        <span class="n">translation</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="s2">&quot;air_temperature_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rh2m&quot;</span><span class="p">:</span> <span class="s2">&quot;relative_humidity_2m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="s2">&quot;surface_snow_thickness&quot;</span>
+        <span class="p">}</span>
+
+        <span class="n">subsection</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">translation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="n">subsection</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">var_in</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">ivar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nnco</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">nnco</span><span class="p">[</span><span class="n">ivar</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">var_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;t2m&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">var_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;rh2m&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                        <span class="n">var_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;sd&quot;</span><span class="p">)</span>
+
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_in</span><span class="p">:</span>
+                    <span class="n">variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">translation</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Variables could not be translated&quot;</span><span class="p">)</span>
+
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">,</span> <span class="s2">&quot;land_area_fraction&quot;</span><span class="p">]</span>
+
+        <span class="c1"># archive_root = self.get_setting(&quot;archive_root&quot;)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">subsection</span><span class="p">)</span>
+
+        <span class="n">cache_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;cache_time&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">fg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+
+            <span class="n">inputfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;inputfile&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+            <span class="n">fileformat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;fileformat&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+            <span class="n">config_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;config_file&quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
+            <span class="n">converter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;converter&quot;</span><span class="p">,</span> <span class="n">subsection</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+
+            <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+            <span class="n">defs</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">fileformat</span><span class="p">]</span>
+            <span class="n">defs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">inputfile</span><span class="p">})</span>
+
+            <span class="n">converter_conf</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">fileformat</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">converter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">fileformat</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No converter &quot;</span> <span class="o">+</span> <span class="n">converter</span> <span class="o">+</span> <span class="s2">&quot; definition found in &quot;</span> <span class="o">+</span> <span class="n">config_file</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+            <span class="n">converter</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">Converter</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">converter_conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">])</span>
+
+            <span class="c1"># Create file</span>
+            <span class="k">if</span> <span class="n">fg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">nx</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span>
+                <span class="n">ny</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span>
+                <span class="n">fg</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+                <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">))</span>
+                <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+                <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+                <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="p">)]</span>
+                <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ny</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;altitude&quot;</span><span class="p">:</span>
+                <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fg</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MakeOfflineBinaries"><a class="viewcode-back" href="../../index.html#scheduler.MakeOfflineBinaries">[docs]</a><span class="k">class</span> <span class="nc">MakeOfflineBinaries</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+
+<div class="viewcode-block" id="LogProgress"><a class="viewcode-back" href="../../index.html#scheduler.LogProgress">[docs]</a><span class="k">class</span> <span class="nc">LogProgress</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+
+
+<div class="viewcode-block" id="LogProgressPP"><a class="viewcode-back" href="../../index.html#scheduler.LogProgressPP">[docs]</a><span class="k">class</span> <span class="nc">LogProgressPP</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
+        <span class="c1"># self.binary = self.config.</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
+        <span class="c1"># surfex.run_surfex_binary(binary)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.tasks</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

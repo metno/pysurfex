@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline SURFEX Forcing and Visualization of SURFEX data &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Offline SURFEX Forcing and Visualization of SURFEX data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <img alt="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" />
+<div class="section" id="offline-surfex-forcing-and-visualization-of-surfex-data">
+<h1>Offline SURFEX Forcing and Visualization of SURFEX data<a class="headerlink" href="#offline-surfex-forcing-and-visualization-of-surfex-data" title="Permalink to this headline">¶</a></h1>
+<p>Tool to create offline SURFEX forcing and plotting and verification of results</p>
+<div class="section" id="installation-on-debian-based-linux-system">
+<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
+<p>Install the required pacakges:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt-get install python-setuptools python-pip
+</pre></div>
+</div>
+<p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
+</div>
+<div class="section" id="general-dependencies">
+<h2>General dependencies<a class="headerlink" href="#general-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
+scipy
+cfunits
+pyproj
+pyyaml
+toml
+jsonmerge
+datetime
+f90nml
+cfunits
+enum34
+requests
+python-dateutil
+json<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
+StringIO<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
+eccodes
+python-csv
+db-sqlite3
+configParser
+</pre></div>
+</div>
+<p>To read NetCDF files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NetCDF4
+</pre></div>
+</div>
+<p>To read grib files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>eccodes from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with <span class="nv">ENABLE_PYTHON</span><span class="o">=</span>ON
+</pre></div>
+</div>
+<p>To plot:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>matplotlib
+cartopy
+</pre></div>
+</div>
+<p>To get observations from frost.met.no API:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>requests
+</pre></div>
+</div>
+<p>For testing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
+Testdata from https://drive.google.com/open?id<span class="o">=</span>1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
+</pre></div>
+</div>
+<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">offline-surfex-forcing</span></code> by executing the following inside the extracted
+folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
+</pre></div>
+</div>
+<p>Create documentation</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> sphinx
+<span class="c1"># Create html documentation</span>
+make html
+<span class="c1"># Create latex documentation</span>
+make latex
+<span class="c1"># Create a pdf documentation</span>
+make latexpdf
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Offline SURFEX Forcing and Visualization of SURFEX data</a><ul>
+<li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
+<li><a class="reference internal" href="#general-dependencies">General dependencies</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/README.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Offline SURFEX Forcing and Visualization of SURFEX data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

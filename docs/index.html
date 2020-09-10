@@ -1,1 +1,694 @@
-html/index.html
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to SURFEX Python API’s documentation! &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Welcome to SURFEX Python API’s documentation!</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-surfex-python-api-s-documentation">
+<h1>Welcome to SURFEX Python API’s documentation!<a class="headerlink" href="#welcome-to-surfex-python-api-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="running-an-experiment-in-ecflow">
+<h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
+<p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
+<span class="nb">cd</span> sfx_home
+mkdir sandbox
+<span class="nb">cd</span> sandbox
+PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-label --domain your-domain
+PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
+</pre></div>
+</div>
+<img alt="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" />
+</div>
+<div class="section" id="offline-surfex-forcing-and-visualization-of-surfex-data">
+<h1>Offline SURFEX Forcing and Visualization of SURFEX data<a class="headerlink" href="#offline-surfex-forcing-and-visualization-of-surfex-data" title="Permalink to this headline">¶</a></h1>
+<p>Tool to create offline SURFEX forcing and plotting and verification of results</p>
+<div class="section" id="installation-on-debian-based-linux-system">
+<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
+<p>Install the required pacakges:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt-get install python-setuptools python-pip
+</pre></div>
+</div>
+<p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
+</div>
+<div class="section" id="general-dependencies">
+<h2>General dependencies<a class="headerlink" href="#general-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
+scipy
+cfunits
+pyproj
+pyyaml
+toml
+jsonmerge
+datetime
+f90nml
+cfunits
+enum34
+requests
+python-dateutil
+json<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
+StringIO<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
+eccodes
+python-csv
+db-sqlite3
+configParser
+</pre></div>
+</div>
+<p>To read NetCDF files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NetCDF4
+</pre></div>
+</div>
+<p>To read grib files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>eccodes from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with <span class="nv">ENABLE_PYTHON</span><span class="o">=</span>ON
+</pre></div>
+</div>
+<p>To plot:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>matplotlib
+cartopy
+</pre></div>
+</div>
+<p>To get observations from frost.met.no API:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>requests
+</pre></div>
+</div>
+<p>For testing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
+Testdata from https://drive.google.com/open?id<span class="o">=</span>1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
+</pre></div>
+</div>
+<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">offline-surfex-forcing</span></code> by executing the following inside the extracted
+folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
+</pre></div>
+</div>
+<p>Create documentation</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> sphinx
+<span class="c1"># Create html documentation</span>
+make html
+<span class="c1"># Create latex documentation</span>
+make latex
+<span class="c1"># Create a pdf documentation</span>
+make latexpdf
+</pre></div>
+</div>
+<dl class="py class">
+<dt id="surfex.Converter">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Converter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">defs</span></em>, <em class="sig-param"><span class="n">conf</span></em>, <em class="sig-param"><span class="n">fileformat</span></em>, <em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#Converter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main interface to read a field is done through a converter
+The converter is default “None” to read a plain field</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Assimilation">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Assimilation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ass_input</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ass_output</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/assim.html#Assimilation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Assimilation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SurfexSurfIO">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SurfexSurfIO</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">surfexfile</span></em>, <em class="sig-param"><span class="n">csurf_filetype</span></em>, <em class="sig-param"><span class="n">input_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">symlink</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">archive_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#SurfexSurfIO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SurfexSurfIO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.PGDFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">PGDFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csurf_filetype</span></em>, <em class="sig-param"><span class="n">cpgdfile</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">input_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">symlink</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">archive_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lfagmap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">masterodb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#PGDFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.PGDFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.PREPFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">PREPFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csurf_filetype</span></em>, <em class="sig-param"><span class="n">cprepfile</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">input_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">symlink</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">archive_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lfagmap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">masterodb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#PREPFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.PREPFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SURFFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SURFFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csurf_filetype</span></em>, <em class="sig-param"><span class="n">csurffile</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">archive_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">input_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lfagmap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">masterodb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#SURFFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SURFFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SurfexFileVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SurfexFileVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varname</span></em>, <em class="sig-param"><span class="n">validtime</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">patches</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">basetime</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">datatype</span><span class="o">=</span><span class="default_value">'float'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#SurfexFileVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SurfexFileVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Surfex Variable</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.AsciiSurfexFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">AsciiSurfexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">geo</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#AsciiSurfexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.AsciiSurfexFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NCSurfexFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NCSurfexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">geo</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#NCSurfexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NCSurfexFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.FaSurfexFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">FaSurfexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">geo</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lfagmap</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">masterodb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#FaSurfexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.FaSurfexFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NetCDFSurfexFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NetCDFSurfexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">geo</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#NetCDFSurfexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NetCDFSurfexFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reading surfex NetCDF output</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.TexteSurfexFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">TexteSurfexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">geo</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#TexteSurfexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.TexteSurfexFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reading surfex TEXTE output</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.ForcingFileNetCDF">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">ForcingFileNetCDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">geo</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#ForcingFileNetCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.ForcingFileNetCDF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SurfexForcing">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SurfexForcing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_time</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">ntimes</span></em>, <em class="sig-param"><span class="n">var_objs</span></em>, <em class="sig-param"><span class="n">debug</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/forcing.html#SurfexForcing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SurfexForcing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main output class for SURFEX forcing</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NetCDFOutput">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NetCDFOutput</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_time</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">ntimes</span></em>, <em class="sig-param"><span class="n">var_objs</span></em>, <em class="sig-param"><span class="n">att_objs</span></em>, <em class="sig-param"><span class="n">att_time</span></em>, <em class="sig-param"><span class="n">cache</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/forcing.html#NetCDFOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NetCDFOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forcing in NetCDF format</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.AsciiOutput">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">AsciiOutput</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_time</span></em>, <em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">ntimes</span></em>, <em class="sig-param"><span class="n">var_objs</span></em>, <em class="sig-param"><span class="n">att_objs</span></em>, <em class="sig-param"><span class="n">att_time</span></em>, <em class="sig-param"><span class="n">cache</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/forcing.html#AsciiOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.AsciiOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forcing in ASCII format</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Geo">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Geo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">npoints</span></em>, <em class="sig-param"><span class="n">nlons</span></em>, <em class="sig-param"><span class="n">nlats</span></em>, <em class="sig-param"><span class="n">lons</span></em>, <em class="sig-param"><span class="n">lats</span></em>, <em class="sig-param"><span class="n">proj</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Geo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Geo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SurfexGeo">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SurfexGeo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">proj</span></em>, <em class="sig-param"><span class="n">npoints</span></em>, <em class="sig-param"><span class="n">nlons</span></em>, <em class="sig-param"><span class="n">nlats</span></em>, <em class="sig-param"><span class="n">lons</span></em>, <em class="sig-param"><span class="n">lats</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#SurfexGeo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SurfexGeo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.ConfProj">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">ConfProj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_json</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#ConfProj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.ConfProj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.LonLatVal">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">LonLatVal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_json</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#LonLatVal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.LonLatVal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Cartesian">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Cartesian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_json</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Cartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Cartesian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.LonLatReg">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">LonLatReg</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_json</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#LonLatReg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.LonLatReg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.IGN">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">IGN</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_json</span></em>, <em class="sig-param"><span class="n">recreate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#IGN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.IGN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Grib">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Grib</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/grib.html#Grib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Grib" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Grib1Variable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Grib1Variable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">par</span></em>, <em class="sig-param"><span class="n">typ</span></em>, <em class="sig-param"><span class="n">level</span></em>, <em class="sig-param"><span class="n">tri</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/grib.html#Grib1Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Grib1Variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Grib2Variable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Grib2Variable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">discipline</span></em>, <em class="sig-param"><span class="n">pc</span></em>, <em class="sig-param"><span class="n">pn</span></em>, <em class="sig-param"><span class="n">lt</span></em>, <em class="sig-param"><span class="n">lev</span></em>, <em class="sig-param"><span class="n">tsp</span><span class="o">=</span><span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/grib.html#Grib2Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Grib2Variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NearestNeighbour">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NearestNeighbour</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo_in</span></em>, <em class="sig-param"><span class="n">geo_out</span></em>, <em class="sig-param"><span class="n">cache</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">distance_check</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">distance_limit</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#NearestNeighbour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NearestNeighbour" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Linear">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Linear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo_in</span></em>, <em class="sig-param"><span class="n">geo_out</span></em>, <em class="sig-param"><span class="n">cache</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#Linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Linear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NoInterpolation">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NoInterpolation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo_in</span></em>, <em class="sig-param"><span class="n">geo_out</span></em>, <em class="sig-param"><span class="n">cache</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#NoInterpolation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NoInterpolation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Netcdf">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Netcdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#Netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Netcdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Axis">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Axis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#Axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NetCDFFileVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NetCDFFileVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fh</span></em>, <em class="sig-param"><span class="n">var_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#NetCDFFileVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NetCDFFileVariable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Observation">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Observation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obstime</span></em>, <em class="sig-param"><span class="n">lon</span></em>, <em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">elev</span><span class="o">=</span><span class="default_value">nan</span></em>, <em class="sig-param"><span class="n">stid</span><span class="o">=</span><span class="default_value">'NA'</span></em>, <em class="sig-param"><span class="n">varname</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/obs.html#Observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Observation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.ObservationSet">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">ObservationSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">observations</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/obs.html#ObservationSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.ObservationSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NetatmoObservationSet">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NetatmoObservationSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filenames</span></em>, <em class="sig-param"><span class="n">variable</span></em>, <em class="sig-param"><span class="n">target_time</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">3600</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">re</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">lonrange</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">latrange</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/obs.html#NetatmoObservationSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NetatmoObservationSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.MetKlappObservations">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">MetKlappObservations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span></em>, <em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">station</span></em>, <em class="sig-param"><span class="n">varname</span></em>, <em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">utc</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">nob</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">nod</span><span class="o">=</span><span class="default_value">nan</span></em>, <em class="sig-param"><span class="n">elev</span><span class="o">=</span><span class="default_value">nan</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/obs.html#MetKlappObservations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.MetKlappObservations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.MetFrostObservations">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">MetFrostObservations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varname</span></em>, <em class="sig-param"><span class="n">stations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_tries</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">wmo</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">providers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xproviders</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">blacklist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">validtime</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">3600</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/obs.html#MetFrostObservations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.MetFrostObservations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.ConvertedInput">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">ConvertedInput</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">var_name</span></em>, <em class="sig-param"><span class="n">converter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#ConvertedInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.ConvertedInput" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.ConstantValue">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">ConstantValue</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo</span></em>, <em class="sig-param"><span class="n">var_name</span></em>, <em class="sig-param"><span class="n">var_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#ConstantValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.ConstantValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.BatchJob">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">BatchJob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rte</span></em>, <em class="sig-param"><span class="n">wrapper</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#BatchJob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.BatchJob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SURFEXBinary">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SURFEXBinary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binary</span></em>, <em class="sig-param"><span class="n">batch</span></em>, <em class="sig-param"><span class="n">iofile</span></em>, <em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">ecoclimap</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#SURFEXBinary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SURFEXBinary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.PerturbedOffline">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">PerturbedOffline</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binary</span></em>, <em class="sig-param"><span class="n">batch</span></em>, <em class="sig-param"><span class="n">io</span></em>, <em class="sig-param"><span class="n">pert_number</span></em>, <em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">ecoclimap</span></em>, <em class="sig-param"><span class="n">surfout</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">input_data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">archive_data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pgdfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">print_namelist</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#PerturbedOffline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.PerturbedOffline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Masterodb">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Masterodb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">batch</span></em>, <em class="sig-param"><span class="n">pgdfile</span></em>, <em class="sig-param"><span class="n">prepfile</span></em>, <em class="sig-param"><span class="n">surfout</span></em>, <em class="sig-param"><span class="n">ecoclimap</span></em>, <em class="sig-param"><span class="n">binary</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">assim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">input_data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">archive_data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">print_namelist</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#Masterodb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Masterodb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.InputDataToSurfexBinaries">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">InputDataToSurfexBinaries</code><a class="reference internal" href="_modules/surfex/run.html#InputDataToSurfexBinaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.InputDataToSurfexBinaries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.OutputDataFromSurfexBinaries">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">OutputDataFromSurfexBinaries</code><a class="reference internal" href="_modules/surfex/run.html#OutputDataFromSurfexBinaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.OutputDataFromSurfexBinaries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.JsonOutputData">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">JsonOutputData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#JsonOutputData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.JsonOutputData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.JsonOutputDataFromFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">JsonOutputDataFromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#JsonOutputDataFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.JsonOutputDataFromFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.JsonInputData">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">JsonInputData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#JsonInputData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.JsonInputData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.JsonInputDataFromFile">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">JsonInputDataFromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#JsonInputDataFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.JsonInputDataFromFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.TimeSeries">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">TimeSeries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">times</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">lons</span></em>, <em class="sig-param"><span class="n">lats</span></em>, <em class="sig-param"><span class="n">stids</span></em>, <em class="sig-param"><span class="n">stids_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">varname</span><span class="o">=</span><span class="default_value">'NA'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/timeseries.html#TimeSeries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.TimeSeries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.TitanDataSet">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">TitanDataSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var</span></em>, <em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">tests</span></em>, <em class="sig-param"><span class="n">test_flags</span></em>, <em class="sig-param"><span class="n">datasources</span></em>, <em class="sig-param"><span class="n">an_time</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">corep</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/titan.html#TitanDataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.TitanDataSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.Variable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">Variable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">var_dict</span></em>, <em class="sig-param"><span class="n">debug</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.Variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.NetcdfVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">NetcdfVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_dict</span></em>, <em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">debug</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#NetcdfVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.NetcdfVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>NetCDF variable</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.GribVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">GribVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_dict</span></em>, <em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">debug</span></em>, <em class="sig-param"><span class="n">grib_type</span><span class="o">=</span><span class="default_value">'grib2'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#GribVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.GribVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grib variable</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="surfex.SurfexVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">SurfexVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_dict</span></em>, <em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">debug</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#SurfexVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.SurfexVariable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="surfex.FaVariable">
+<em class="property">class </em><code class="sig-prename descclassname">surfex.</code><code class="sig-name descname">FaVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_dict</span></em>, <em class="sig-param"><span class="n">basetime</span></em>, <em class="sig-param"><span class="n">validtime</span></em>, <em class="sig-param"><span class="n">debug</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#FaVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#surfex.FaVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>FA variable</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Server">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Server</code><a class="reference internal" href="_modules/scheduler/scheduler.html#Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcflowServer">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcflowServer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ecf_host</span></em>, <em class="sig-param"><span class="n">ecf_port</span></em>, <em class="sig-param"><span class="n">logfile</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/scheduler.html#EcflowServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcflowServer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcflowServerFromFile">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcflowServerFromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ecflow_server_file</span></em>, <em class="sig-param"><span class="n">logfile</span></em>, <em class="sig-param"><span class="n">ecf_port_offset</span><span class="o">=</span><span class="default_value">1500</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/scheduler.html#EcflowServerFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcflowServerFromFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcflowLogServer">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcflowLogServer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ecf_loghost</span></em>, <em class="sig-param"><span class="n">ecf_logport</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/scheduler.html#EcflowLogServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcflowLogServer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Task">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Task</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ecf_name</span></em>, <em class="sig-param"><span class="n">ecf_tryno</span></em>, <em class="sig-param"><span class="n">ecf_pass</span></em>, <em class="sig-param"><span class="n">ecf_rid</span></em>, <em class="sig-param"><span class="n">submission_id</span></em>, <em class="sig-param"><span class="n">ecf_timeout</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/scheduler.html#Task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Task" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Client">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Client</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server</span></em>, <em class="sig-param"><span class="n">task</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/scheduler.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encapsulate communication with the ecflow server. This will automatically call
+the child command init()/complete(), for job start/finish. It will also
+handle exceptions and signals, by calling the abort child command.
+<em>ONLY</em> one instance of this class, should be used. Otherwise zombies will be created.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcflowSubmitTask">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcflowSubmitTask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">submission_defs</span></em>, <em class="sig-param"><span class="n">stream</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dbfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interpreter</span><span class="o">=</span><span class="default_value">'#!/usr/bin/env python3'</span></em>, <em class="sig-param"><span class="n">ensmbr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">submit_exceptions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">coldstart</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#EcflowSubmitTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcflowSubmitTask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.SubmitException">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">SubmitException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em>, <em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#SubmitException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.SubmitException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.KillException">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">KillException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em>, <em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#KillException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.KillException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.SubmissionBaseClass">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">SubmissionBaseClass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em>, <em class="sig-param"><span class="n">joboutdir_at_host</span></em>, <em class="sig-param"><span class="n">db</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sub</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">delete</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#SubmissionBaseClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.SubmissionBaseClass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.BackgroundSubmission">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">BackgroundSubmission</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em>, <em class="sig-param"><span class="n">joboutdir_at_host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#BackgroundSubmission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.BackgroundSubmission" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.PBSSubmission">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">PBSSubmission</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em>, <em class="sig-param"><span class="n">joboutdir_at_host</span></em>, <em class="sig-param"><span class="n">db</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sub</span><span class="o">=</span><span class="default_value">'qsub'</span></em>, <em class="sig-param"><span class="n">stat</span><span class="o">=</span><span class="default_value">'qstat -f'</span></em>, <em class="sig-param"><span class="n">delete</span><span class="o">=</span><span class="default_value">'qdel'</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">'#PBS'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#PBSSubmission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.PBSSubmission" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.SlurmSubmission">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">SlurmSubmission</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">joboutdir</span></em>, <em class="sig-param"><span class="n">joboutdir_at_host</span></em>, <em class="sig-param"><span class="n">db</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sub</span><span class="o">=</span><span class="default_value">'sbatch'</span></em>, <em class="sig-param"><span class="n">stat</span><span class="o">=</span><span class="default_value">'squeue -j'</span></em>, <em class="sig-param"><span class="n">delete</span><span class="o">=</span><span class="default_value">'scancel'</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">'#SBATCH'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/submission.html#SlurmSubmission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.SlurmSubmission" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcflowSuite">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcflowSuite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="n">def_file</span></em>, <em class="sig-param"><span class="n">host</span><span class="o">=</span><span class="default_value">'0'</span></em>, <em class="sig-param"><span class="n">stream</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcflowSuite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcflowSuite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Node">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">node_type</span></em>, <em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Node class is the abstract base class for Suite, Family and Task</p>
+<p>Every Node instance has a name, and a path relative to a suite</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfSuite">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfSuite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfSuite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfSuite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfTriggers">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfTriggers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">triggers</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfTriggers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfTriggers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfTrigger">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfTrigger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'complete'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfTrigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfTrigger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfVariable">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfVariable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfFamily">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfFamily</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfFamily" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.EcfTask">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">EcfTask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/suites.html#EcfTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.EcfTask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.AbstractTask">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">AbstractTask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#AbstractTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.AbstractTask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.SurfexBinaryTask">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">SurfexBinaryTask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="n">mode</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#SurfexBinaryTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.SurfexBinaryTask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Pgd">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Pgd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Pgd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Pgd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Prep">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Prep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Prep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Prep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Forecast">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Forecast</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Forecast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Soda">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Soda</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Soda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Soda" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.PrepareCycle">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">PrepareCycle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#PrepareCycle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.PrepareCycle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.QualityControl">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">QualityControl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#QualityControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.QualityControl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.OptimalInterpolation">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">OptimalInterpolation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#OptimalInterpolation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.OptimalInterpolation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Forcing">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Forcing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Forcing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Forcing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.FirstGuess">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">FirstGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#FirstGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.FirstGuess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.CycleFirstGuess">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">CycleFirstGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#CycleFirstGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.CycleFirstGuess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Oi2soda">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Oi2soda</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Oi2soda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Oi2soda" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.Qc2obsmon">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">Qc2obsmon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#Qc2obsmon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.Qc2obsmon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.FirstGuess4OI">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">FirstGuess4OI</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#FirstGuess4OI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.FirstGuess4OI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.MakeOfflineBinaries">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">MakeOfflineBinaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#MakeOfflineBinaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.MakeOfflineBinaries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.LogProgress">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">LogProgress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#LogProgress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.LogProgress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="scheduler.LogProgressPP">
+<em class="property">class </em><code class="sig-prename descclassname">scheduler.</code><code class="sig-name descname">LogProgressPP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">exp</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scheduler/tasks.html#LogProgressPP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scheduler.LogProgressPP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<ul class="simple">
+<li><dl class="field-list simple">
+<dt class="field-odd">ref</dt>
+<dd class="field-odd"><p><cite>README</cite></p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to SURFEX Python API’s documentation!</a></li>
+<li><a class="reference internal" href="#running-an-experiment-in-ecflow">Running an experiment in EcFlow</a></li>
+<li><a class="reference internal" href="#offline-surfex-forcing-and-visualization-of-surfex-data">Offline SURFEX Forcing and Visualization of SURFEX data</a><ul>
+<li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
+<li><a class="reference internal" href="#general-dependencies">General dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Welcome to SURFEX Python API’s documentation!</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

@@ -734,11 +734,11 @@ class Sandbox(object):
         comp_trigger = EcfTriggers(init_run_complete)
         comp = EcfFamily("Compilation", self.suite, triggers=comp_trigger)
 
-        EcfTask("MakeOfflineBinaries", comp)
+        EcfTask("MakeOfflineBinaries", comp, ecf_files=ecf_files)
 
         comp_complete = EcfTrigger(comp, mode="complete")
         static = EcfFamily("StaticData", self.suite, triggers=EcfTriggers([init_run_complete, comp_complete]))
-        EcfTask("Pgd", static)
+        EcfTask("Pgd", static, ecf_files=ecf_files)
 
         static_complete = EcfTrigger(static)
 
@@ -770,14 +770,14 @@ class Sandbox(object):
             else:
                 triggers = EcfTriggers([init_run_complete, static_complete, ahead_trigger])
 
-            prepare_cycle = EcfTask("PrepareCycle", dtg_node, triggers=triggers)
+            prepare_cycle = EcfTask("PrepareCycle", dtg_node, triggers=triggers, ecf_files=ecf_files)
 
             triggers.add_triggers(EcfTrigger(prepare_cycle))
 
             cycle_input = EcfFamily("CycleInput", dtg_node, triggers=triggers)
             cycle_input_dtg_node.update({dtg_str: cycle_input})
 
-            EcfTask("Forcing", cycle_input)
+            EcfTask("Forcing", cycle_input, ecf_files=ecf_files)
 
             triggers = EcfTriggers([init_run_complete, static_complete])
             if prev_dtg is not None:
@@ -789,7 +789,7 @@ class Sandbox(object):
             analysis = None
             if dtg == dtgbeg:
 
-                prep = EcfTask("Prep", initialization)
+                prep = EcfTask("Prep", initialization, ecf_files=ecf_files)
                 prep_complete = EcfTrigger(prep)
                 # Might need an extra trigger for input
 
@@ -809,9 +809,9 @@ class Sandbox(object):
 
                 triggers = EcfTriggers(prep_complete)
                 if not do_soda:
-                    EcfTask("CycleFirstGuess", initialization, triggers=triggers)
+                    EcfTask("CycleFirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
                 else:
-                    fg = EcfTask("FirstGuess", initialization, triggers=triggers)
+                    fg = EcfTask("FirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
 
                     an_variables = {"t2m": False, "rh2m": False, "sd": False}
                     nnco = exp.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
@@ -825,7 +825,7 @@ class Sandbox(object):
                                 an_variables.update({"sd": True})
 
                     analysis = EcfFamily("Analysis", initialization)
-                    fg4oi = EcfTask("FirstGuess4OI", analysis)
+                    fg4oi = EcfTask("FirstGuess4OI", analysis, ecf_files=ecf_files)
 
                     triggers = []
                     for var in an_variables:
@@ -833,7 +833,7 @@ class Sandbox(object):
                             v = EcfFamily(var, analysis)
                             qc = EcfTask("QualityControl", v)
                             oi_triggers = EcfTriggers([EcfTrigger(qc), EcfTrigger(fg4oi)])
-                            EcfTask("OptimalInterpolation", v, triggers=oi_triggers)
+                            EcfTask("OptimalInterpolation", v, triggers=oi_triggers, ecf_files=ecf_files)
                             triggers.append(EcfTrigger(v))
 
                     oi2soda_complete = None
@@ -843,24 +843,24 @@ class Sandbox(object):
                         oi2soda_complete = EcfTrigger(oi2soda)
 
                     triggers = EcfTriggers([EcfTrigger(fg), oi2soda_complete])
-                    EcfTask("Soda", analysis, triggers=triggers)
+                    EcfTask("Soda", analysis, triggers=triggers, ecf_files=ecf_files)
 
             triggers = EcfTriggers([EcfTrigger(cycle_input), EcfTrigger(initialization)])
             prediction = EcfFamily("Prediction", dtg_node, triggers=triggers)
             prediction_dtg_node.update({dtg_str: prediction})
 
-            forecast = EcfTask("Forecast", prediction)
-            EcfTask("LogProgress", prediction, triggers=EcfTriggers(EcfTrigger(forecast)))
+            forecast = EcfTask("Forecast", prediction, ecf_files=ecf_files)
+            EcfTask("LogProgress", prediction, triggers=EcfTriggers(EcfTrigger(forecast)), ecf_files=ecf_files)
 
             pp = EcfFamily("PostProcessing", dtg_node, triggers=EcfTriggers(EcfTrigger(prediction)))
             post_processing_dtg_node.update({dtg_str: pp})
 
             log_pp_trigger = None
             if analysis is not None:
-                qc2obsmon = EcfTask("Qc2obsmon", pp)
+                qc2obsmon = EcfTask("Qc2obsmon", pp, ecf_files=ecf_files)
                 log_pp_trigger = EcfTriggers(EcfTrigger(qc2obsmon))
 
-            EcfTask("LogProgressPP", pp, triggers=log_pp_trigger)
+            EcfTask("LogProgressPP", pp, triggers=log_pp_trigger, ecf_files=ecf_files)
             prev_dtg = dtg
 
         hours_behind = 24
@@ -870,36 +870,6 @@ class Sandbox(object):
             if pp_dtg_str in post_processing_dtg_node:
                 triggers = EcfTriggers(EcfTrigger(post_processing_dtg_node[pp_dtg_str]))
                 cycle_input_dtg_node[dtg_str].add_part_trigger(triggers)
-
-    def save_as_defs(self):
-        self.suite.save_as_defs()
-
-
-class Sandbox3(object):
-
-    def __init__(self, exp, dtgs, dtgbeg=None, def_file=None):
-
-        suite_name = exp.name
-        self.def_file = suite_name + ".def"
-        self.defs = ecflow.Defs()
-        # suite = self.defs.add_suite(suite_name)
-
-        self.suite = Suite(suite_name, def_file=def_file)
-        node1 = Family("family1", self.suite)
-        task1 = Task("task1", node1)
-        # node1.add_variable("var1", "val1")
-        node2 = Family("family2", node1)
-        task2 = Task("task2", node2)
-        variables = [Variable("var1", "value1"), Variable("var2", "val2")]
-        t11 = Trigger(node1)
-        t12 = Trigger(node1, mode="aborted")
-        triggers1 = Triggers([t11, t12], mode="or")
-        t1 = Trigger(node1)
-        t2 = Trigger(task1)
-        t3 = Trigger(task2)
-        triggers = Triggers([triggers1, t1, t2])
-        triggers.add_triggers([t3], mode="or")
-        Task("task3", self.suite, triggers=triggers, variables=variables)
 
     def save_as_defs(self):
         self.suite.save_as_defs()
@@ -1054,4 +1024,17 @@ class EcfTask(Node):
     def __init__(self, name, parent, **kwargs):
         Node.__init__(self, name, "task", parent, **kwargs)
 
-        print(name + ".py")
+        ecf_files = None
+        if "ecf_files" in kwargs:
+            ecf_files = kwargs["ecf_files"]
+
+        if ecf_files is not None:
+
+            if name == "default":
+                raise Exception("Job should not be called default")
+            else:
+                default_job = ecf_files + "/default.py"
+                task_job = ecf_files + "/" + name + ".py"
+                if not os.path.exists(task_job) and not os.path.islink(task_job):
+                    print(default_job + " - > " + task_job)
+                    os.symlink(default_job, task_job)
