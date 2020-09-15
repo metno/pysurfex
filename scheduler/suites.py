@@ -45,7 +45,7 @@ class EcflowSuite(object):
                       "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% " + \
                       ">> %DATA%/ECF.log 2>&1"
 
-        self.defs = ecflow.Defs()
+        self.defs = ecflow.Defs({})
         suite_name = self.exp.name
         if self.stream is not None:
             stream = self.stream
@@ -123,584 +123,7 @@ class EcflowSuite(object):
         print("def filed saved to " + self.def_file)
 
 
-class SurfexTemplateSuite(EcflowSuite):
-    def __init__(self, config, exp, def_file, stream=None):
-        EcflowSuite.__init__(self, config, exp, def_file, stream=stream)
-
-        self.init_run = None
-        self.supervisor = None
-        self.build_fam = None
-        self.cycle_input_fam = None
-        self.ci_hour = None
-        self.ci_cycle_fam = None
-        self.prepare_cycle_fam = None
-        self.prepare_cycle_task = None
-        self.climate_fam = None
-        self.observations_fam = None
-        self.date_fam = None
-        self.date_fam_hour = None
-        self.date_cycle_fam = None
-        self.start_data_fam = None
-        self.first_guess_task = None
-        self.bufr2json_task = None
-        self.fg_gridpp_fam = None
-        self.analysis_fam = None
-        self.add_surf_task = None
-        self.an_sfc_fam = None
-        self.perturbations_fam = None
-        self.forecasting_fam = None
-        self.pp_fam = None
-        self.pp_fam_hour = None
-        self.pp_cycle_fam = None
-        self.obsmonitor_fam = None
-
-    def create_init_run(self):
-        self.init_run = self.suite.add_task("InitRun")
-        self.init_run.add_variable("ECF_JOB_CMD", "export PYTHONPATH=" +
-                                   os.path.expandvars(os.environ["PYTHONPATH"]) + "; " +
-                                   "%ECF_JOB% > %ECF_JOBOUT%")
-        self.init_run.add_variable("SYSTEM", self.exp.wd + "/system.toml")
-        self.init_run.add_variable("STREAM", "")
-        self.init_run.add_variable("LIB", self.exp.wd)
-        self.init_run.add_variable("ECF_INCLUDE", self.ecf_wd)
-        self.init_run.add_variable("ECF_FILES", self.ecf_wd)
-
-    # Build family
-    def create_build_family(self):
-
-        # Build
-        if self.config.do_build:
-            self.build_fam = self.suite.add_family("Build")
-            self.build_fam.add_trigger(self.init_run.get_abs_node_path() + " == complete")
-            utilities = self.build_fam.add_family("Utilities")
-            utilities.add_task("Make_offline")
-
-            collect_logs = self.suite.add_task("CollectLogs")
-            collect_logs.add_trigger(self.init_run.get_abs_node_path() + " == complete")
-            collect_logs.add_part_trigger("(" + self.build_fam.get_abs_node_path() + " == complete or " +
-                                          self.build_fam.get_abs_node_path() + " == aborted)", True)
-            collect_logs.add_variable("ENVT", 'FROM=Build')
-
-    # MakeCycleInput family
-    def create_make_cycle_input_loop(self, days_ahead=2):
-
-        cycle_input_fam = self.suite.add_family("MakeCycleInput")
-        cycle_input_fam.add_repeat(ecflow.RepeatDate("YMD", int(self.startdate), int(self.enddate)))
-
-        # NB! self.pp_fam is not known yet. Must use Postprocessing as trigger
-        # Maybe set triggers later when families are defined?
-        cycle_input_fam.add_trigger(cycle_input_fam.get_abs_node_path() + ":YMD < ( Postprocessing:YMD + " +
-                                    str(days_ahead + 1) +
-                                    " ) and " + self.init_run.get_abs_node_path() + " == complete")
-
-        if self.config.task_limit is not None:
-            if self.config.task_limit > 0:
-                cycle_input_fam.add_limit("MCI", self.config.task_limit)
-                cycle_input_fam.add_inlimit("MCI")
-
-        ci_hour = cycle_input_fam.add_family("Hour")
-        if self.build_fam is not None:
-            ci_hour.add_trigger(self.build_fam.get_abs_node_path() + " == complete")
-
-        ci_hour.add_repeat(ecflow.RepeatEnumerated("HH", self.hh_list))
-        ci_hour.add_complete("((" + cycle_input_fam.get_abs_node_path() + ":YMD <= " + self.startdate +
-                             " and  (Hour:HH < " + self.starthour + ")) or  ((" +
-                             cycle_input_fam.get_abs_node_path() + ":YMD >= " +
-                             self.enddate + ") and (Hour:HH > " + self.endhour + ")))")
-
-        ci_cycle_fam = ci_hour.add_family("Cycle")
-        ci_cycle_fam.add_variable("ENSMBR", -1)
-        self.cycle_input_fam = cycle_input_fam
-        self.ci_hour = ci_hour
-        self.ci_cycle_fam = ci_cycle_fam
-
-    def make_cycle_input_finalize(self):
-        t = self.ci_hour.add_task("CollectLogs")
-        t.add_trigger(self.ci_hour.get_abs_node_path() + " == complete")
-        t.add_variable("ENVT", 'FROM=MakeCycleInput')
-
-    # Date family
-    def create_date_loop(self):
-
-        date_fam = self.suite.add_family("Date")
-        date_fam.add_trigger(self.init_run.get_abs_node_path() + " == complete")
-        date_fam.add_repeat(ecflow.RepeatDate("YMD", int(self.startdate), int(self.enddate)))
-        date_fam_hour = date_fam.add_family("Hour")
-        date_fam_hour.add_repeat(ecflow.RepeatEnumerated("HH", self.hh_list))
-        date_fam_hour.add_complete("((../Date:YMD <= " + self.startdate +
-                                   " and  (Hour:HH < " + self.starthour + ")) or  ((../Date:YMD >= " +
-                                   self.enddate + ") and (Hour:HH > " + self.endhour + ")))")
-        date_cycle_fam = date_fam_hour.add_family("Cycle")
-
-        # Start Date if MakeCycleInput is complete
-        date_cycle_fam.add_trigger(self.cycle_input_fam.get_abs_node_path() + " == complete")
-        # or if MakeCycleInput YMD is ahead of Date YMD
-        date_cycle_fam.add_part_trigger(self.cycle_input_fam.get_abs_node_path() + ":YMD > " +
-                                        date_fam.get_abs_node_path() + ":YMD", False)
-        # or if MakeCycleInput YMD is the same as Date YMD but MakeCycleInput HH is ahead of Date HH
-        date_cycle_fam.add_part_trigger("(" + self.cycle_input_fam.get_abs_node_path() + ":YMD == " +
-                                        date_fam.get_abs_node_path() + ":YMD " +
-                                        "and " + self.ci_hour.get_abs_node_path() + ":HH > " +
-                                        date_fam_hour.get_abs_node_path() + ":HH)", False)
-        # or if MakeCycleInput YMD is the same as Date YMD, and MakeCycleInput HH is the same as Date HH,
-        # but we have met the needed dependencies
-        trigger = "(" + self.cycle_input_fam.get_abs_node_path() + ":YMD == " + \
-                  date_fam.get_abs_node_path() + ":YMD " + \
-                  "and " + self.ci_hour.get_abs_node_path() + ":HH == " + \
-                  date_fam_hour.get_abs_node_path() + ":HH)"
-
-        if self.observations_fam is not None:
-            trigger = trigger + " and " + self.observations_fam.get_abs_node_path() + " == complete "
-        date_cycle_fam.add_part_trigger(trigger, False)
-        date_cycle_fam.add_variable("ENSMBR", -1)
-
-        return date_fam, date_fam_hour, date_cycle_fam
-
-    def date_loop_finalize(self):
-
-        log_progress = self.date_fam_hour.add_task("LogProgress")
-        log_progress.add_trigger(self.date_cycle_fam.get_abs_node_path() + " == complete")
-
-        collect_logs = self.date_fam_hour.add_task("CollectLogs")
-        collect_logs.add_variable("ENVT", 'FROM=Date')
-        collect_logs.add_trigger(self.date_cycle_fam.get_abs_node_path() + " == aborted")
-        collect_logs.add_part_trigger(log_progress.get_abs_node_path() + " == complete", False)
-
-    # Postprocessing family
-    def create_post_processing_loop(self):
-
-        pp_fam = self.suite.add_family("Postprocessing")
-        pp_fam.add_trigger(self.init_run.get_abs_node_path() + " == complete")
-        pp_fam.add_repeat(ecflow.RepeatDate("YMD", int(self.startdate), int(self.enddate)))
-        pp_fam_hour = pp_fam.add_family("Hour")
-        pp_fam_hour.add_repeat(ecflow.RepeatEnumerated("HH", self.hh_list))
-
-        pp_fam_hour.add_complete("((" + pp_fam.get_abs_node_path() + ":YMD <= " + self.startdate +
-                                 " and  (Hour:HH < " + self.starthour + ")) or  ((" +
-                                 pp_fam.get_abs_node_path() + ":YMD >= " +
-                                 self.enddate + ") and (Hour:HH > " + self.endhour + ")))")
-        pp_cycle_fam = pp_fam_hour.add_family("Cycle")
-        pp_cycle_fam.add_variable("ENSMBR", -1)
-
-        # Start PP cycle if Date is complete
-        pp_cycle_fam.add_trigger(self.date_fam.get_abs_node_path() + " == complete")
-        # Start PP cycle if Date YMD is ahead of PP YMD
-        pp_cycle_fam.add_part_trigger(self.date_fam.get_abs_node_path() + ":YMD >  " +
-                                      pp_fam.get_abs_node_path() + ":YMD", False)
-        # Start PP cycle if Date YMD is the same but HH is ahead of PP HH
-        pp_cycle_fam.add_part_trigger("(" + self.date_fam.get_abs_node_path() + ":YMD == " +
-                                      pp_fam.get_abs_node_path() + ":YMD and " +
-                                      self.date_fam_hour.get_abs_node_path() + ":HH > " +
-                                      pp_fam_hour.get_abs_node_path() + ":HH)", False)
-        # Start PP cycle if Date YMD is the same and date HH is the same but Forecasting is finished
-        if self.forecasting_fam is not None:
-            pp_cycle_fam.add_part_trigger("(" + self.date_fam.get_abs_node_path() + ":YMD == " +
-                                          pp_fam.get_abs_node_path() + ":YMD and " +
-                                          self.date_fam_hour.get_abs_node_path() + ":HH == " +
-                                          pp_fam_hour.get_abs_node_path() + ":HH  and " +
-                                          self.forecasting_fam.get_abs_node_path() + " == complete)", False)
-
-        # Set families in object
-        return pp_fam, pp_fam_hour, pp_cycle_fam
-
-    def post_processing_finalize(self):
-
-        disk_cleaning = self.pp_fam_hour.add_family("Disk_cleaning")
-        disk_cleaning.add_trigger(self.pp_cycle_fam.get_abs_node_path() + " == complete")
-        disk_cleaning.add_task("SaniDisk")
-        if "HOST1" in os.environ:
-            disk_cleaning.add_task("SaniDisk_host1")
-
-        log_progress = self.pp_fam_hour.add_task("LogProgress")
-        log_progress.add_variable("PP", "PP")
-        log_progress.add_trigger(self.pp_cycle_fam.get_abs_node_path() + " == complete")
-        log_progress.add_part_trigger(disk_cleaning.get_abs_node_path() + " == complete", True)
-
-        collect_logs = self.pp_fam_hour.add_task("CollectLogs")
-        collect_logs.add_trigger(log_progress.get_abs_node_path() + " == complete")
-        collect_logs.add_part_trigger(self.pp_cycle_fam.get_abs_node_path() + " == aborted", False)
-        collect_logs.add_part_trigger(disk_cleaning.get_abs_node_path() + " == aborted", False)
-        collect_logs.add_variable("ENVT", 'FROM=Postprocessing')
-
-    #  Family Prepare_cycle
-    def create_prepare_cycle_family(self):
-
-        self.prepare_cycle_fam = self.ci_cycle_fam.add_family("Prepare_cycle")
-        check_member_options = None
-        if self.config.members is not None:
-            check_member_options = self.prepare_cycle_fam.add_task("CheckMemberOptions")
-
-        self.prepare_cycle_task = self.prepare_cycle_fam.add_task("Prepare_cycle")
-        if check_member_options is not None:
-            self.prepare_cycle_task.add_trigger(check_member_options.get_abs_node_path() + " == complete")
-
-        if not self.config.ecoclimap_sg:
-            prepare_param_bin = self.prepare_cycle_fam.add_task("Prepare_param_bin")
-            prepare_param_bin.add_trigger(self.prepare_cycle_task.get_abs_node_path() + " == complete")
-
-        if self.config.members is not None:
-            for member in range(0, len(self.config.members)):
-                mbr = "{:03}".format(self.config.members[member])
-                fam = self.prepare_cycle_fam.add_family("Mbr" + mbr)
-                fam.add_trigger(self.prepare_cycle_task.get_abs_node_path() + " == complete")
-                fam.add_task("Prepare_cycle")
-                fam.add_variable("ENSMBR", self.config.members[member])
-                fam.add_variable("ENSMBR_STRING", "_mbr" + mbr)
-
-    # Climate family
-    def create_climate_family(self):
-        if self.config.create_climate:
-            climate = self.ci_cycle_fam.add_family("Climate")
-            climate.add_trigger(self.prepare_cycle_fam.get_abs_node_path() + " == complete")
-            self.climate_fam = climate
-
-            gmted_task = None
-            if self.config.gmted:
-                gmted_task = climate.add_task("Prepare_gmted")
-
-            fams = []
-            if self.config.members is not None:
-                for member in range(0, len(self.config.members)):
-                    mbr = "{:03}".format(self.config.members[member])
-                    fam = climate.add_family("Mbr" + mbr)
-                    fam.add_variable("ENSMBR", self.config.members[member])
-                    fam.add_variable("ENSMBR_STRING", "_mbr" + mbr)
-                    fams.append(fam)
-
-            else:
-                fams.append(climate)
-
-            for fam in fams:
-                pgd_fam = fam.add_family("PGD")
-
-                pgd_fam.add_task("Pgd")
-                if gmted_task is not None:
-                    pgd_fam.add_trigger(gmted_task.get_abs_node_path() + " == complete")
-
-    # Observations family
-    def create_observations_family(self):
-
-        if self.config.need_obs():
-            self.observations_fam = self.ci_cycle_fam.add_family("Observations")
-            self.observations_fam.add_trigger(self.prepare_cycle_task.get_abs_node_path() + " == complete")
-
-            fams = []
-            if self.config.members is not None:
-                for member in range(0, len(self.config.members)):
-                    mbr = "{:03}".format(self.config.members[member])
-                    fam = self.observations_fam.add_family("Mbr" + mbr)
-                    fam.add_variable("ENSMBR", self.config.members[member])
-                    fam.add_variable("ENSMBR_STRING", "_mbr" + mbr)
-                    fams.append(fam)
-            else:
-                fams.append(self.observations_fam)
-
-            for fam in fams:
-                prepare_ob = fam.add_task("Prepare_ob")
-                prepare_ob.add_trigger(self.prepare_cycle_task.get_abs_node_path() + " == complete")
-
-    # Startdata family
-    def create_startdata_family(self):
-
-        self.start_data_fam = self.date_cycle_fam.add_family("StartData")
-
-        if self.config.gridpp:
-            self.fg_gridpp_fam = self.start_data_fam.add_family("FirstGuess4gridpp")
-            fg_gridpp_fa2grib = self.fg_gridpp_fam.add_task("FirstGuessFA2grib")
-            fg_gridpp_fa2grib.add_variable("ARGS", "his")
-            fg_gridpp_sfx_fa2grib = self.fg_gridpp_fam.add_task("FirstGuessSfxFA2grib")
-            fg_gridpp_sfx_fa2grib.add_variable("ARGS", "sfx")
-            fg_gridpp_oi = self.fg_gridpp_fam.add_task("FirstGuessOI")
-            fg_gridpp_oi.add_trigger(fg_gridpp_fa2grib.get_abs_node_path() + " == complete")
-            fg_gridpp_oi.add_part_trigger(fg_gridpp_sfx_fa2grib.get_abs_node_path() + " == complete", True)
-
-            self.bufr2json_task = self.start_data_fam.add_task("Bufr2json")
-
-        self.start_data_fam.add_task("Prep")
-        # prep.add_trigger(self.first_guess_task.get_abs_node_path() + " == complete")
-
-    # Analysis family
-    def create_analysis_family(self, mbr=None):
-        self.analysis_fam = self.date_cycle_fam.add_family("Analysis")
-
-        # self.analysis_fam.add_trigger(self.first_guess_task.get_abs_node_path() + " == complete")
-        self.create_ansfc_fam(mbr=mbr)
-
-    # Surface assimilation
-    def create_ansfc_fam(self, mbr=None):
-
-        self.an_sfc_fam = self.analysis_fam.add_family("AnSFC")
-        an_prep = None
-        if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF", mbr=mbr):
-            an_prep = self.an_sfc_fam.add_family("AnSFC_prep")
-            forcing = an_prep.add_task("OFFLINE_SURFEX_forcing")
-            hh_list = self.config.get_hh_list(mbr=mbr)
-            fcint = self.config.get_fcint(hh_list)
-            forcing.add_variable("ARGS", str(fcint) + " 0")
-            offline = an_prep.add_task("OFFLINE_SURFEX")
-            offline.add_trigger(forcing.get_abs_node_path() + " == complete")
-            perturbations = an_prep.add_family("EKF_SURFEX_perturbations")
-            for pert in self.config.perts:
-                fam = perturbations.add_family("EKF_SURFEX_pert" + str(pert))
-                offline_pert = fam.add_task("OFFLINE_SURFEX")
-                offline_pert.add_variable("ARGS", str(fcint) + " " + str(pert))
-
-        interpol_ec_sst = None
-        if self.config.sst_from_ifs:
-            interpol_ec_sst = self.an_sfc_fam.add_task("Interpol_ec_sst")
-
-        variables = ["t2m", "rh2m", "sd"]
-        oi_tasks = []
-        if self.config.gridpp:
-            for var in variables:
-                fam = self.an_sfc_fam.add_family(var)
-                qc = fam.add_task("QualityControl")
-                qc.add_variable("ARGS", var)
-                qc.add_trigger(self.bufr2json_task.get_abs_node_path() + " == complete")
-                if var == "sd":
-                    qc.add_part_trigger(self.fg_gridpp_fam.get_abs_node_path() + " == complete", True)
-                oi = fam.add_task("OptimalInterpolation")
-                oi.add_trigger(qc.get_abs_node_path() + " == complete")
-                oi.add_part_trigger(self.fg_gridpp_fam.get_abs_node_path() + " == complete", True)
-                oi.add_variable("ARGS", var)
-                oi_tasks.append(oi)
-
-            oi2soda = self.an_sfc_fam.add_task("Oi2soda")
-            for oi in oi_tasks:
-                if oi2soda.get_trigger():
-                    oi2soda.add_part_trigger(oi.get_abs_node_path() + " == complete", True)
-                else:
-                    oi2soda.add_trigger(oi.get_abs_node_path() + " == complete")
-
-            soda = self.an_sfc_fam.add_task("Soda")
-            soda.add_trigger(oi2soda.get_abs_node_path() + " == complete")
-            if interpol_ec_sst is not None:
-                soda.add_part_trigger(interpol_ec_sst.get_abs_node_path() + " == complete", True)
-            if an_prep is not None:
-                soda.add_part_trigger(an_prep.get_abs_node_path() + " == complete", True)
-
-    # Perturbations family
-    def create_pertubations_family(self):
-
-        # Perturbations
-        if self.config.members is not None:
-            self.perturbations_fam = self.date_cycle_fam.add_family("Perturbations")
-
-    # Forecasting family
-    def create_forecasting_family(self):
-
-        self.forecasting_fam = self.date_cycle_fam.add_family("Forecasting")
-        # Build trigger
-        # StarData complete
-        trigger = "("
-        trigger = trigger + self.start_data_fam.get_abs_node_path() + " == complete "
-        # Analysis complete
-        trigger = trigger + " and " + self.analysis_fam.get_abs_node_path() + " == complete "
-        # Trigger on perturbations
-        if self.perturbations_fam is not None:
-            trigger = trigger + " and " + self.perturbations_fam.get_abs_node_path() + " == complete "
-        trigger = trigger + ")"
-
-        # Trigger on boundaries (This cycle or if MakeCycleInput is ahead)
-        trigger = trigger + " and ("
-        trigger = trigger + "(" + self.cycle_input_fam.get_abs_node_path() + " == complete)"
-        trigger = trigger + " or ("
-
-        # MakeCycleInput YMD is ahead of Date YMD
-        trigger = trigger + "(" + self.cycle_input_fam.get_abs_node_path() + ":YMD > " + \
-                            self.date_fam.get_abs_node_path() + ":YMD)"
-
-        # MakeCycleInput YMD is the same as Date YMD but MakeCycleInput HH is ahead of Date HH
-        trigger = trigger + " or (" + self.cycle_input_fam.get_abs_node_path() + ":YMD == " + \
-                            self.date_fam.get_abs_node_path() + ":YMD " + "and " + \
-                            self.ci_hour.get_abs_node_path() + ":HH > " + \
-                            self.date_fam_hour.get_abs_node_path() + ":HH)"
-
-        trigger = trigger + "))"
-        self.forecasting_fam.add_trigger(trigger)
-
-        self.forecasting_fam.add_task("Forecast")
-
-    # Obsmonitor family
-    def create_obsmonitor_family(self, mbr=None):
-        obsmon = self.pp_cycle_fam.add_family("Obsmonitor")
-        obsmon_statistics = obsmon.add_family("obsmon_statistics")
-        if self.config.multitask:
-            if self.config.has_sfc_analysis(self.config.get_setting("INITIAL_CONDITIONS#ANASURF", mbr=mbr)):
-                if self.config.setting_is("INITIAL_CONDITIONS#ANASURF", "CANARI", mbr=mbr):
-                    t = obsmon_statistics.add_task("obsmon_stat_sfc")
-                    t.add_variable("ODB_TYPE", "ECMA")
-                    t.add_variable("ARGS", "sfc")
-                if self.config.setting_is("INITIAL_CONDITIONS#ANASURF", "gridpp", mbr=mbr):
-                    obsmon_statistics.add_task("QC2Obsmon")
-
-    def create_wrapup(self):
-        wrapup = self.suite.add_task("Wrapup")
-        wrapup.add_trigger(self.cycle_input_fam.get_abs_node_path() + " == complete")
-        wrapup.add_part_trigger(self.date_fam.get_abs_node_path() + " == complete", True)
-        wrapup.add_part_trigger(self.pp_fam.get_abs_node_path() + " == complete", True)
-
-
-class SurfexSuite(SurfexTemplateSuite):
-    def __init__(self, config, exp, def_file, stream=None):
-        SurfexTemplateSuite.__init__(self, config, exp, def_file, stream=stream)
-
-        # Init run
-        self.create_init_run()
-
-        #####################################################
-        # Build
-        #####################################################
-        self.create_build_family()
-
-        #####################################################
-        # Start MakeCycleInput
-        #####################################################
-        self.create_make_cycle_input_loop(days_ahead=2)
-
-        # Prepare_cycle
-        self.create_prepare_cycle_family()
-
-        # Create climate
-        self.create_climate_family()
-
-        # Observations
-        self.create_observations_family()
-
-        ##################################################
-        # Start Date
-        ##################################################
-        self.date_fam, self.date_fam_hour, self.date_cycle_fam = self.create_date_loop()
-
-        old_fam = self.date_cycle_fam
-        # or ensemble dimension here
-        size = 1
-        if self.config.members is not None:
-            size = len(self.config.members)
-        for mbr in range(0, size):
-            if self.config.members is not None:
-                member = self.config.members[mbr]
-                member3 = "{:03d}".format(int(member))
-                self.date_cycle_fam = old_fam.add_family("Mbr" + str(member3))
-                self.date_cycle_fam.add_variable("ENSMBR", member)
-                self.date_cycle_fam.add_variable("ENSMBR_STRING", "_mbr" + member3)
-            else:
-                member = None
-
-            # StartData
-            self.create_startdata_family()
-
-            # Analysis
-            self.create_analysis_family(mbr=member)
-
-            # Pertubations
-            self.create_pertubations_family()
-
-            # Forecasting
-            self.create_forecasting_family()
-
-        self.date_loop_finalize()
-
-        ##################################################
-        # Start Postprocessing
-        ##################################################
-        self.pp_fam, self.pp_fam_hour, self.pp_cycle_fam = self.create_post_processing_loop()
-
-        old_fam = self.pp_cycle_fam
-        # or ensemble dimension here
-        size = 1
-        if self.config.members is not None:
-            size = len(self.config.members)
-        for mbr in range(0, size):
-            if self.config.members is not None:
-                member = self.config.members[mbr]
-                member3 = "{:03d}".format(int(member))
-                self.pp_cycle_fam = old_fam.add_family("Mbr" + str(member3))
-                self.pp_cycle_fam.add_variable("ENSMBR", member)
-                self.pp_cycle_fam.add_variable("ENSMBR_STRING", "_mbr" + member3)
-
-            self.create_obsmonitor_family()
-
-        self.post_processing_finalize()
-
-        ###################################################
-        # Wrapup
-        self.create_wrapup()
-
-
-class SurfexTestbedSuite(SurfexTemplateSuite):
-    def __init__(self, config, exp, def_file):
-        SurfexTemplateSuite.__init__(self, config, exp, def_file)
-
-        testbed_configurations = self.config.get_setting("SYSTEM#TESTBED_LIST")
-
-        # Init run
-        self.create_init_run()
-
-        #####################################################
-        # Build
-        #####################################################
-        self.create_build_family()
-
-        # Testbed
-        testbed_container = self.suite.add_family("Testbed")
-        testbed_fam = testbed_container.add_family("Testbed_cases")
-        testbed_fam.add_variable("SYSTEM", "%LIB%/system.toml")
-        ecf_job_cmd = "export PYTHONPATH=" + os.path.expandvars(os.environ["PYTHONPATH"]) + \
-                      ":%LIB%/python-lib/; echo PYTHONPATH=$PYTHONPATH; " + \
-                      "ECF_submit -c %COMPLETE% -e %ENSMBR% -ymd %YMD% -hh %HH% -python" + \
-                      "%LIB%/system.toml %ECF_NAME% %ECF_TRYNO% " + \
-                      "%LIB%/Env_submit -ecf_rid %ECF_RID% -stream %STREAM% >> %DATA%/ECF.log 2>&1"
-        testbed_fam.add_variable("ECF_JOB_CMD", ecf_job_cmd)
-        if self.build_fam is not None:
-            testbed_fam.add_trigger(self.build_fam.get_abs_node_path() + " == complete")
-
-        started = []
-        for conf in testbed_configurations:
-            case_fam = testbed_fam.add_family(conf)
-            create_case = case_fam.add_task("Create_testbed_case")
-            case_fam.add_variable("TESTBED_CASE", conf)
-            start_case = case_fam.add_task("Start_testbed_case")
-            start_case.add_trigger(create_case.get_abs_node_path() + " == complete")
-            self.defs.add_extern("/" + self.exp + "_" + conf)
-            started.append("/" + self.exp + "_" + conf)
-
-        collectlogs = testbed_container.add_task("CollectLogs")
-        collectlogs.add_trigger(testbed_fam.get_abs_node_path() + " == complete")
-        collectlogs.add_variable("ENVT", "FROM=Testbed_cases")
-
-        ###################################################
-        # Compare testbeds
-        finalize = self.suite.add_family("Finalize_testbed")
-        finalize.add_trigger(testbed_fam.get_abs_node_path() + " == complete")
-        compare_exps = finalize.add_task("Testbed_comp")
-        for t in range(0, len(started)):
-            if t == 0:
-                compare_exps.add_trigger("(" + started[t] + " == complete or " + started[t] + " == aborted)")
-            else:
-                compare_exps.add_part_trigger("(" + started[t] + " == complete or " +
-                                              started[t] + " == aborted)", True)
-
-        # TODO can not have 2 collectlogs on the same suite levels (with build)
-        # collectlogs = self.suite.add_task("CollectLogs")
-        # collectlogs.add_trigger(compare_exps.get_abs_node_path() + " == complete")
-        # collectlogs.add_variable("ENVT", "FROM=Finalize_testbed")
-
-        # Wrapup
-        wrapup = self.suite.add_task("Wrapup")
-        wrapup.add_trigger(compare_exps.get_abs_node_path() + " == complete")
-
-
-class SurfexSuite2(SurfexSuite):
-    def __init__(self, config, exp, def_file):
-        SurfexSuite.__init__(self, config, exp, def_file)
-        self.forecasting_fam.add_task("Trygve")
-
-    def create_analysis_family(self, mbr=None):
-        self.analysis_fam = self.date_cycle_fam.add_family("Trygve_does_not_like_analysis")
-
-
-class Sandbox(object):
+class SurfexSuite(object):
 
     def __init__(self, exp, dtgs, def_file, dtgbeg=None):
 
@@ -710,19 +133,52 @@ class Sandbox(object):
             dtgbeg_str = dtgbeg.strftime("%Y%m%d%H")
 
         self.suite_name = exp.name
-        # self.defs = ecflow.Defs()
-        # suite = self.defs.add_suite(suite_name)
 
-        ecf_files = exp.wd + "/ecf"
+        # Scheduler settings
+        host = "0"
+        joboutdir = exp.system.get_var("JOBOUTDIR", host)
+        # ecf_loghost = exp.server.get_var("ECF_LOGHOST")
+        # ecf_logport = exp.server.get_var("ECF_LOGPORT")
+
+        # TODO use SFX_DATA
         lib = exp.wd + ""
-        variables = [EcfVariable("ECF_FILES", ecf_files),
-                     EcfVariable("LIB", lib),
+
+        ecf_include = lib + "/ecf"
+        ecf_files = lib + "/ecf"
+        ecf_home = joboutdir
+        ecf_out = joboutdir
+        ecf_jobout = joboutdir + "/%ECF_NAME%.%ECF_TRYNO%"
+        # server_log = exp.get_file_name(lib, "server_log", full_path=True)
+        pythonpath = ""
+        if "PYTHONPATH" in os.environ:
+            pythonpath = ":" + os.path.expandvars(os.environ["PYTHONPATH"])
+
+        ecf_job_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
+                      "%LIB%/python-lib/bin/ECF_submit -e %ENSMBR% -dtg %DTG% " + \
+                      "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID%"
+        ecf_kill_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
+                       "%LIB%/python-lib/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
+                       "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
+        ecf_status_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
+                         "%LIB%/python-lib/bin/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
+                         "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
+        variables = [EcfVariable("LIB", lib),
                      EcfVariable("EXP", exp.name),
                      EcfVariable("ECF_EXTN", ".py"),
-                     EcfVariable("SUBMISSION_ID", ""),
                      EcfVariable("DTG", dtgbeg_str),
                      EcfVariable("DTGBEG", dtgbeg_str),
-                     EcfVariable("STREAM", "")
+                     EcfVariable("STREAM", ""),
+                     EcfVariable("ENSMBR", ""),
+                     EcfVariable("ECF_FILES", ecf_files),
+                     EcfVariable("ECF_INCLUDE", ecf_include),
+                     EcfVariable("ECF_TRIES", 1),
+                     EcfVariable("SUBMISSION_ID", ""),
+                     EcfVariable("ECF_HOME", ecf_home),
+                     EcfVariable("ECF_KILL_CMD", ecf_kill_cmd),
+                     EcfVariable("ECF_JOB_CMD", ecf_job_cmd),
+                     EcfVariable("ECF_STATUS_CMD", ecf_status_cmd),
+                     EcfVariable("ECF_OUT", ecf_out),
+                     EcfVariable("ECF_JOBOUT", ecf_jobout)
                      ]
 
         self.suite = EcfSuite(self.suite_name, def_file=def_file, variables=variables)
@@ -877,12 +333,11 @@ class Sandbox(object):
 
 class Node(object):
 
-    '''
+    """
     A Node class is the abstract base class for Suite, Family and Task
 
     Every Node instance has a name, and a path relative to a suite
-
-    '''
+    """
 
     def __init__(self, name, node_type, parent, **kwargs):
         self.name = name
@@ -940,8 +395,7 @@ class NodeContainer(Node):
 
 class EcfSuite(NodeContainer):
     def __init__(self, name, **kwargs):
-        self.defs = ecflow.Defs()
-        # self.ecf_node = self.defs.add_suite(name)
+        self.defs = ecflow.Defs({})
 
         def_file = None
         if "def_file" in kwargs:
@@ -952,7 +406,6 @@ class EcfSuite(NodeContainer):
         NodeContainer.__init__(self, name, "suite", self.defs, **kwargs)
 
     def save_as_defs(self):
-        # self.defs.save_as_defs(self.def_file)
         self.defs.save_as_defs(self.def_file)
         print("def filed saved to " + self.def_file)
 

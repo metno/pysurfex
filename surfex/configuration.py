@@ -102,10 +102,11 @@ class System(object):
                 raise Exception("Variable " + var + " not found in system")
         else:
             # print(host)
+            print(self.exp_name)
             os.environ.update({"EXP": self.exp_name})
             # print(var)
             if var in self.system[str(host)]:
-                print(var, self.system[str(host)][var])
+                # (var, self.system[str(host)][var])
                 if self.system[str(host)][var] is None:
                     raise Exception(var + " is None!")
                 expanded_var = os.path.expandvars(self.system[str(host)][var])
@@ -121,13 +122,13 @@ class SystemFromFile(System):
     def __init__(self, env_system_file, exp_name):
 
         # system = System.get_file_name(wdir, full_path=True)
-        print(env_system_file)
+        # print(env_system_file)
         if os.path.exists(env_system_file):
             host_system = toml_load(env_system_file)
         else:
             raise FileNotFoundError(env_system_file)
 
-        print(host_system)
+        # print(host_system)
         System.__init__(self, host_system, exp_name)
 
 
@@ -185,7 +186,6 @@ class Exp(object):
             self.merge_to_toml_config_files(configuration=configuration, write_config_files=write_config_files)
 
         self.geo = geo
-
 
         # Merge config
         all_merged_settings = self.merge_toml_env_from_config_dicts()
@@ -275,7 +275,7 @@ class Exp(object):
             os.makedirs(self.wd + "/config", exist_ok=True)
             rfile = self.conf + "/config/" + f
             if not os.path.exists(lfile):
-                print(rfile, lfile)
+                # print(rfile, lfile)
                 shutil.copy2(rfile, lfile)
             else:
                 print("Config file " + lfile + " already exists, is not fetched again")
@@ -318,13 +318,14 @@ class Exp(object):
             shutil.copy2(rfname, fname)
 
         # Init run
-        f = "ecf/InitRun.py"
-        fname = self.wd + "/" + f
-        rfname = self.conf + "/" + f
-        os.makedirs(self.wd + "/ecf", exist_ok=True)
-        if not os.path.exists(fname):
-            print("Copy " + rfname + " -> " + fname)
-            shutil.copy2(rfname, fname)
+        files = ["ecf/InitRun.py", "ecf/default.py"]
+        for f in files:
+            fname = self.wd + "/" + f
+            rfname = self.conf + "/" + f
+            os.makedirs(self.wd + "/ecf", exist_ok=True)
+            if not os.path.exists(fname):
+                print("Copy " + rfname + " -> " + fname)
+                shutil.copy2(rfname, fname)
 
     def merge_testbed_submit(self, testbed_submit, decomposition="2D"):
         if os.path.exists(testbed_submit):
@@ -355,7 +356,7 @@ class Exp(object):
     def process_merged_settings(self, merged_settings, host, stream=None):
 
         # Set default system values if system has been defined
-        print(self.system)
+        # print(self.system)
         if self.system is not None:
             if "SYSTEM" not in merged_settings:
                 merged_settings.update({"SYSTEM": {}})
@@ -413,7 +414,7 @@ class Exp(object):
         merged_env = {}
         for toml_file in toml_files:
             if os.path.exists(toml_file):
-                print(toml_file)
+                # print(toml_file)
                 modification = toml_load(toml_file)
                 # print(modification)
                 merged_env = self.merge_toml_env(merged_env, modification)
@@ -628,7 +629,7 @@ class ExpFromFiles(Exp):
         conf_file = Exp.get_file_name(wdir, "conf", full_path=True)
         env_submit_file = Exp.get_file_name(wdir, "submit", full_path=True)
 
-        print(rev_file)
+        # print(rev_file)
         if os.path.exists(rev_file):
             rev = open(rev_file, "r").read().rstrip()
         else:
@@ -666,7 +667,9 @@ class ExpFromFiles(Exp):
         else:
             experiment_is_locked = False
 
-        system = SystemFromFile(Exp.get_file_name(wdir, "system", full_path=True), name)
+        env_system = Exp.get_file_name(wdir, "system", full_path=True)
+        # print(env_system, name)
+        system = SystemFromFile(env_system, name)
         env_submit = json.load(open(env_submit_file, "r"))
 
         logfile = system.get_var("SFX_EXP_DATA", "0") + "/ECF.log"
@@ -679,6 +682,7 @@ class ExpFromFiles(Exp):
             progress = ProgressFromFile(self.get_file_name(wdir, "progress", full_path=True),
                                         self.get_file_name(wdir, "progressPP", full_path=True))
 
+        # print("name", name)
         Exp.__init__(self, name, wdir, rev, conf, experiment_is_locked, system=system, server=server,
                      env_submit=env_submit, geo=geo, progress=progress, host=host)
 
@@ -987,6 +991,7 @@ class Domain(surfex.ConfProj):
 
 
 class Configuration(object):
+
     def __init__(self, system, conf_dict, member_conf_dict, config_dir=None, stream=None):
 
         self.system = system
@@ -1050,25 +1055,6 @@ class Configuration(object):
             return True
         else:
             return False
-
-    def need_obs(self):
-        need = False
-        size = 1
-        if self.members is not None:
-            size = len(self.members)
-
-        for m in range(0, size):
-            if self.members is not None:
-                mbr = self.members[m]
-            else:
-                mbr = None
-
-            # if self.setting_is_not_one_of("INITIAL_CONDITIONS#ANASURF", ["none", "fgcopy"], mbr=mbr):
-            #    need = True
-            # if self.setting_is_not_one_of("INITIAL_CONDITIONS#ANAATMO", ["none", "blending"], mbr=mbr):
-            #    need = True
-
-        return need
 
     def setting_is(self, setting, value, mbr=None):
         if self.get_setting(setting, mbr=mbr) == value:
@@ -1175,7 +1161,7 @@ class Configuration(object):
 
     def get_total_unique_hh_list(self):
         # Create a list of all unique HHs from all members
-        print(self.members, self.get_hh_list())
+        # print(self.members, self.get_hh_list())
         hh_list_all = []
         if self.members is not None:
             for mbr in self.members:
@@ -1191,7 +1177,7 @@ class Configuration(object):
                 if hh not in hh_list_all:
                     hh_list_all.append(hh)
 
-        print(hh_list_all)
+        # print(hh_list_all)
         # Sort this list
         hh_list = []
         for hh in sorted(hh_list_all):
@@ -1214,7 +1200,7 @@ class Configuration(object):
     def get_hh_list(self, mbr=None):
         hh_list = self.get_setting("GENERAL#HH_LIST", mbr=mbr)
         ll_list = self.get_setting("GENERAL#LL_LIST", mbr=mbr)
-        print(hh_list, ll_list)
+        # print(hh_list, ll_list)
         hh_list, ll_list = self.expand_hh_and_ll_list(hh_list, ll_list)
         return hh_list
 
@@ -1269,8 +1255,7 @@ class Configuration(object):
                         if (ll * 60) % tstep == 0:
                             ll = int(ll * 60 / tstep)
                         else:
-                            print(ll)
-                            raise Exception("Time step is not a minute!")
+                            raise Exception("Time step is not a minute! " + str(ll))
                     ll = fmt.format(ll)
                     expanded_list.append(ll)
 
@@ -1343,8 +1328,8 @@ def init_run(exp, stream=None):
     # Sync HM_REV to HM_LIB0
     if not exp.experiment_is_locked:
         if rev != wd:
-            print(host_name0)
-            print(lib0)
+            # print(host_name0)
+            # print(lib0)
             cmd = rsync + " " + rev + "/ " + host_name0 + lib0 + " --exclude=.git"
             print(cmd)
             ret = subprocess.call(cmd.split())

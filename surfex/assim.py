@@ -317,6 +317,7 @@ def set_output_vertical_soil_ekf(settings):
         data = "{}"
 
     print("WARNING: not implemented yet")
+
     '''
     Fromm SODA script
     mv ANAL_INCR*  $WRK/.
@@ -338,6 +339,4 @@ def set_output_vertical_soil_ekf(settings):
     mv BGROUNDout_ASSIM.* $ARCHIVE
 
     '''
-
-
     return data

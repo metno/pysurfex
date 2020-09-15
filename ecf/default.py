@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import surfex
 import scheduler
 # import os
@@ -36,7 +35,10 @@ submission_id = "%SUBMISSION_ID%"
 task_name = "%TASK%"
 wrapper = ""
 
-task = scheduler.Task(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
+task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
+
+print("%LIB%/python-lib/bin/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% -submission_id")
+print("%LIB%/python-lib/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% -submission_id")
 
 # This will also handle call to sys.exit(), i.e. Client.__exit__ will still be called.
 with scheduler.Client(server, task) as ci:

@@ -1,24 +1,15 @@
 import shutil
-from datetime import datetime
 import os
 import subprocess
 from abc import ABC, abstractmethod
 
 
 class EcflowSubmitTask(object):
-    def __init__(self, exp, task, submission_defs,
+    def __init__(self, exp, task,
                  stream=None, dbfile=None, interpreter="#!/usr/bin/env python3",
                  ensmbr=None, submit_exceptions=None, coldstart=False):
         self.task = task
         self.ecflow_server = exp.server
-        self.joboutdir = exp.system.get_var("JOBOUTDIR", "0")
-        self.submission_defs = submission_defs
-        self.header = {}
-        self.trailer = {}
-        self.remote_command = None
-        self.job_type = "background"
-        self.interpreter = interpreter
-        self.task_settings = None
         self.coldstart = coldstart
 
         self.ensmbr = ensmbr
@@ -31,26 +22,102 @@ class EcflowSubmitTask(object):
         self.complete = False
 
         # Parse Env_submit
-        self.parse_submission_defs(self.task.ecf_task)
-        self.host = None
+        self.task_settings = TaskSettings(self.task, exp.env_submit, exp.system, interpreter=interpreter,
+                                          submit_exceptions=submit_exceptions, coldstart=False)
 
-        # Process settings to get i.e. the HOST settings
+        self.sub = get_submission_object(self.task, self.task_settings, db_file=self.db_file)
+
+    def write_header(self, fh):
+        fh.write(self.task_settings.interpreter + "\n")
+        if self.task_settings.header is not None:
+            fh.write("\n# Batch commands\n")
+            # Loop twice, first comments (likely to be batch commands)
+            for setting in self.task_settings.header:
+                value = str(self.task_settings.header[setting])
+                if value.find("#") >= 0:
+                    # print(str(self.header[setting]))
+                    fh.write(str(self.task_settings.header[setting]) + "\n")
+
+        # fh.write("\n#Python script:\n")
+
+    def write_trailer(self, fh):
+        if self.task_settings.trailer is not None:
+            for setting in self.task_settings.trailer:
+                fh.write(str(self.task_settings.trailer[setting]) + "\n")
+
+    def write_job(self):
+        ecf_job = self.task_settings.ecf_job_at_host
+        fname = ecf_job + ".tmp"
+        shutil.move(ecf_job, fname)
+        fh = open(ecf_job, "w")
+        self.write_header(fh)
+        job_fh = open(fname, "r")
+        for line in job_fh.readlines():
+            fh.write(line)
+        job_fh.close()
+        self.write_trailer(fh)
+        fh.close()
+        os.system("chmod u+x " + ecf_job)
+
+    def submit(self):
+        try:
+            if "OUTPUT" not in self.task_settings.header:
+                self.task_settings.header.update({"OUTPUT": self.sub.set_output()})
+            if "NAME" not in self.task_settings.header:
+                self.task_settings.header.update({"NAME": self.sub.set_job_name()})
+            self.write_job()
+
+            if self.complete:
+                self.ecflow_server.force_complete(self.task)
+            else:
+                self.sub.set_submit_cmd()
+                self.sub.submit_job()
+                self.sub.set_jobid()
+                self.task.submission_id = self.sub.job_id
+                print(self.task.submission_id)
+                self.ecflow_server.update_submission_id(self.task)
+                # self.sub.wait_for_process()
+
+        except RuntimeError:
+            # Supposed to handle abort it self unless killed
+            pass
+        except Exception as error:
+            raise SubmitException("Submission failed " + repr(error), self.task, self.task_settings)
+
+
+class TaskSettings(object):
+
+    def __init__(self, task, submission_defs, system, submit_exceptions=None, interpreter="#!/usr/bin/env python3",
+                 complete=False, coldstart=False, host="0"):
+        self.task = task
+        self.submission_defs = submission_defs
+        self.header = {}
+        self.trailer = {}
+        self.submit_type = "background"
+        self.interpreter = interpreter
+        self.complete = complete
+        self.remote_submit_cmd = None
+        self.remote_status_cmd = None
+        self.remote_kill_cmd = None
+        self.coldstart = coldstart
+        self.host = host
+        if submit_exceptions is not None:
+            self.check_exceptions(submit_exceptions)
+        self.task_settings = self.parse_submission_defs()
         self.process_settings()
 
-        # We now have task specific settings
-        # First let us modify hosts specific settings in case we are not on host0
-
-        self.joboutdir_at_host = self.joboutdir
+        joboutdir = system.get_var("JOBOUTDIR", "0")
+        joboutdir_at_host = joboutdir
         if self.host is not None:
             if self.host != "0":
-                joboutdir = exp.system.get_var("JOBOUTDIR", self.host)
-                self.joboutdir_at_host = joboutdir
+                joboutdir_at_host = system.get_var("JOBOUTDIR", self.host)
 
-        self.check_exceptions(submit_exceptions)
-
-        self.sub = get_submission_object(self.job_type, self.task, self.joboutdir, self.joboutdir_at_host,
-                                         db_file=self.db_file)
-        self.process_settings()
+        self.joboutdir = joboutdir
+        self.joboutdir_at_host = joboutdir_at_host
+        self.ecf_job = self.task.create_ecf_job(joboutdir)
+        self.ecf_job_at_host = self.task.create_ecf_job(joboutdir_at_host)
+        self.ecf_jobout = self.task.create_ecf_jobout(joboutdir)
+        self.ecf_jobout_at_host = self.task.create_ecf_jobout(joboutdir_at_host)
 
     def check_exceptions(self, submit_exceptions):
         # Check exceptions
@@ -74,15 +141,17 @@ class EcflowSubmitTask(object):
     def process_settings(self):
         for key in self.task_settings:
             value = self.task_settings[key]
-
+            # print("key=", key, " value=", value)
             if key == "TRAILER":
                 self.trailer.update({key: value})
             else:
-                if key == "JOB_TYPE":
+                if key == "SUBMIT_TYPE":
                     if value != "":
-                        self.job_type = value
+                        self.submit_type = value
                 elif key == "SSH":
-                    self.remote_command = value
+                    self.remote_submit_cmd = value
+                    self.remote_status_cmd = value
+                    self.remote_kill_cmd = value
                 elif key == "INTERPRETER":
                     self.interpreter = value
                 elif key == "HOST":
@@ -92,8 +161,11 @@ class EcflowSubmitTask(object):
                 else:
                     self.header.update({key: value})
 
-    def parse_submission_defs(self, ecf_task):
+    def parse_submission_defs(self):
+        ecf_task = self.task.ecf_task
         task_settings = {}
+        # print("parse", ecf_task)
+        # print(self.submission_defs)
         all_defs = self.submission_defs
         submit_types = all_defs["submit_types"]
         default_submit_type = all_defs["default_submit_type"]
@@ -118,143 +190,84 @@ class EcflowSubmitTask(object):
                     for setting in all_defs[ex][t]:
                         task_settings.update({setting: all_defs[ex][t][setting]})
 
-        self.task_settings = task_settings
-
-    def write_header(self, fh):
-        fh.write(self.interpreter + "\n")
-        if self.header is not None:
-            fh.write("\n# Batch commands\n")
-            # Loop twice, first comments (likely to be batch commands)
-            for setting in self.header:
-                value = str(self.header[setting])
-                if value.find("#") >= 0:
-                    # print(str(self.header[setting]))
-                    fh.write(str(self.header[setting]) + "\n")
-
-        # fh.write("\n#Python script:\n")
-
-    def write_trailer(self, fh):
-        if self.trailer is not None:
-            for setting in self.trailer:
-                fh.write(str(self.trailer[setting]) + "\n")
-
-    def write_job(self):
-        ecf_job = self.task.create_ecf_job(self.joboutdir)
-        fname = ecf_job + ".tmp"
-        shutil.move(ecf_job, fname)
-        fh = open(ecf_job, "w")
-        self.write_header(fh)
-        job_fh = open(fname, "r")
-        for line in job_fh.readlines():
-            fh.write(line)
-        job_fh.close()
-        self.write_trailer(fh)
-        fh.close()
-        os.system("chmod u+x " + ecf_job)
-
-    def submit(self):
-        try:
-            if "OUTPUT" not in self.header:
-                self.header.update({"OUTPUT": self.sub.set_output()})
-            if "NAME" not in self.header:
-                self.header.update({"NAME": self.sub.set_job_name()})
-            self.write_job()
-
-            if self.complete:
-                self.ecflow_server.force_complete(self.task.ecf_name)
-            else:
-                self.sub.submit_task(remote_cmd=self.remote_command)
-                self.task.submission_id = self.sub.job_id
-                self.ecflow_server.update_submission_id(self.task)
-                self.sub.wait_for_process()
-
-        except RuntimeError:
-            # Supposed to handle abort it self unless killed
-            pass
-        except Exception as error:
-            raise SubmitException("Submission failed " + repr(error), self.task, self.joboutdir)
-
-    def kill(self, job_id):
-        self.sub.job_id = job_id
-        print("trygve is killing")
-        try:
-            self.sub.kill_job(remote_cmd=self.remote_command)
-            self.ecflow_server.force_aborted(self.task.ecf_name)
-
-        except Exception as error:
-            raise KillException("Kill failed " + repr(error), self.task, self.joboutdir)
-
-    def status(self):
-        try:
-            self.sub.job_status(remote_cmd=self.remote_command)
-        except Exception as error:
-            raise Exception("Status failed " + repr(error))
+        # print(task_settings)
+        return task_settings
 
 
 class SubmitException(Exception):
-    def __init__(self, msg, task, joboutdir):
-        # joboutdir = task.joboutdir
-        logfile = task.create_sumbission_log(joboutdir)
+    def __init__(self, msg, task, task_settings):
+        logfile = task.create_submission_log(task_settings.joboutdir_at_host)
         fh = open(logfile, "a")
         fh.write(msg)
         fh.flush()
         fh.close()
         print(msg)
+        exit(0)
 
 
 class KillException(Exception):
-    def __init__(self, msg, task, joboutdir):
-        # joboutdir = task.joboutdir
-        logfile = task.create_kill_log(joboutdir)
+    def __init__(self, msg, task, task_settings):
+        logfile = task.create_kill_log(task_settings.joboutdir_at_host)
         fh = open(logfile, "a")
         fh.write(msg)
         fh.flush()
         fh.close()
         print(msg)
+        exit(0)
 
 
-def get_submission_object(job_type, task, joboutdir, joboutdir_at_host, db_file=None):
+class StatusException(Exception):
+    def __init__(self, msg, task, task_settings):
+        # joboutdir = task.joboutdir
+        logfile = task.create_status_log(task_settings.joboutdir_at_host)
+        fh = open(logfile, "a")
+        fh.write(msg)
+        fh.flush()
+        fh.close()
+        print(msg)
+        exit(0)
 
-    # Task should have submit type????
 
-    if job_type.lower() == "pbs":
-        sub = PBSSubmission(task, joboutdir, joboutdir_at_host, db=db_file)
-    elif job_type.lower() == "slurm":
-        sub = SlurmSubmission(task, joboutdir, joboutdir_at_host, db=db_file)
-    elif job_type == "background":
-        sub = BackgroundSubmission(task, joboutdir, joboutdir_at_host)
+def get_submission_object(task, task_settings, db_file=None):
+
+    submit_type = task_settings.submit_type
+    print(submit_type)
+    if submit_type.lower() == "pbs":
+        sub = PBSSubmission(task, task_settings, db=db_file)
+    elif submit_type.lower() == "slurm":
+        sub = SlurmSubmission(task, task_settings, db=db_file)
+    elif submit_type.lower() == "grid_engine":
+        sub = GridEngineSubmission(task, task_settings, db=db_file)
+    elif submit_type == "background":
+        sub = BackgroundSubmission(task, task_settings, db=db_file)
     else:
         raise NotImplementedError
     return sub
 
 
 class SubmissionBaseClass(ABC):
-    def __init__(self, task, joboutdir, joboutdir_at_host, db=None, sub=None, stat=None, delete=None, prefix=None):
+    def __init__(self, task, task_settings, db=None, remote_submit_cmd=None, remote_kill_cmd=None,
+                 remote_status_cmd=None):
         self.task = task
-        self.joboutdir = joboutdir
-        self.joboutdir_at_host = joboutdir_at_host
+        self.task_settings = task_settings
+        # self.sub_logfile = sub_logfile
         self.db = db
+        self.process = None
         self.job_id = None
+        if task.submission_id is not None:
+            self.job_id = task.submission_id
+        self.submit_cmd = None
         self.kill_job_cmd = None
         self.job_status_cmd = None
-        self.sub = sub
-        self.stat = stat
-        self.delete = delete
-        self.prefix = prefix
-        self.sub_logfile = self.task.create_sumbission_log(self.joboutdir)
 
-    def to_submit(self, cmd, output):
-        utcnow = datetime.utcnow().strftime("[%H:%M:%S %d.%m.%Y]")
-        text = utcnow + " To submit: \"" + cmd + "\" Output: " + output + "\n"
-        fh = open(self.sub_logfile, "a")
-        fh.write(text)
-        fh.flush()
-        fh.close()
+        self.remote_submit_cmd = remote_submit_cmd
+        self.remote_kill_cmd = remote_kill_cmd
+        self.remote_status_cmd = remote_status_cmd
 
     def update_db(self, job_id):
         if self.db is not None:
             fh = open(self.db, "a")
-            fh.write(job_id)
+            fh.write(job_id + "\n")
             fh.close()
 
     def clear_db(self):
@@ -263,48 +276,109 @@ class SubmissionBaseClass(ABC):
                 os.unlink(self.db)
 
     @abstractmethod
-    def submit_task(self):
+    def set_submit_cmd(self):
         raise NotImplementedError
 
-    def kill_job(self, remote_cmd=None):
-        self.set_kill_cmd(self.job_id)
+    @abstractmethod
+    def set_jobid(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_logfile(self):
+        raise NotImplementedError
+
+    def submit_job(self):
+        if self.submit_cmd is not None:
+            cmd = self.set_remote_cmd(self.submit_cmd, self.remote_submit_cmd)
+            logfile = self.get_logfile()
+            if logfile is None:
+                self.process = subprocess.Popen(cmd.split())
+            else:
+                self.process = subprocess.Popen(cmd.split(), stdout=logfile, stderr=logfile)
+            # print(self.submit_cmd)
+            self.job_id = self.set_jobid()
+            # print(self.job_id)
+            if self.db is not None:
+                SubmissionBaseClass.update_db(self, self.job_id)
+
+    def kill_job(self):
+
         if self.kill_job_cmd is not None:
-            logfile = self.task.create_kill_log(self.joboutdir)
-            cmd = self.set_remote_cmd(self.kill_job_cmd, remote_cmd)
-            process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            fh = open(logfile, "w")
-            for line in process.stdout:
-                # sys.stdout.write(line)
-                fh.write(line.decode('utf-8'))
-                fh.flush()
+            killfile = self.task.create_kill_log(self.task_settings.joboutdir_at_host)
+            # print(self.kill_job_cmd)
+            cmd = self.set_remote_cmd(self.kill_job_cmd, self.remote_kill_cmd)
+            fh = open(killfile, "w")
+            fh.write("Kill job " + self.task_settings.ecf_job_at_host + " with command:\n")
+            fh.write(cmd + "\n")
+            fh.flush()
             fh.close()
-            print(self.kill_job_cmd)
+
+            stdout = open(killfile, "a")
+            process = subprocess.Popen(cmd.split(), stdout=stdout, stderr=stdout)
+            process.wait()
+            ret = process.returncode
+            if ret != 0:
+                raise RuntimeError("Kill command failed with error code " + str(ret))
+
+            logfile = self.task_settings.ecf_jobout
+            fh = open(logfile, "a")
+            fh.write("\n\n*** KILLED BY ECF_kill ****")
+            fh.flush()
+            fh.close()
 
     @abstractmethod
-    def set_job_status(self, job_id):
+    def set_job_status(self,):
         raise NotImplementedError
 
-    def job_status(self, remote_cmd=None):
+    def status(self):
+        if self.job_id is None:
+            StatusException("No job ID was provided!", self.task, self.task_settings)
+        try:
+            self.set_job_status()
+        except Exception as error:
+            raise StatusException("Setting of status command failed " + repr(error), self.task, self.task_settings)
+        if self.job_status_cmd is None:
+            raise StatusException("No status command set for " + self.task_settings.submit_type,
+                                  self.task, self.task_settings)
+        try:
+            self.job_status()
+        except Exception as error:
+            StatusException("Status command failed " + repr(error), self.task, self.task_settings)
+
+    def job_status(self):
         if self.job_status_cmd is not None:
-            logfile = self.task.create_status_log(self.joboutdir)
-            cmd = self.set_remote_cmd(self.kill_job_cmd, remote_cmd)
-            process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            fh = open(logfile, "w")
-            for line in process.stdout:
-                # sys.stdout.write(line)
-                fh.write(line.decode('utf-8'))
-                fh.flush()
-            fh.close()
-            print(self.job_status_cmd)
+            statusfile = self.task.create_status_log(self.task_settings.joboutdir_at_host)
+            cmd = self.set_remote_cmd(self.job_status_cmd, self.remote_status_cmd)
+            stdout = open(statusfile, "w")
+            process = subprocess.Popen(cmd.split(), stdout=stdout, stderr=stdout)
+            process.wait()
+            ret = process.returncode
+            if ret != 0:
+                raise RuntimeError("Status command failed with error code " + str(ret))
+
+    def kill(self):
+        if self.job_id is None:
+            raise KillException("No job ID was provided!", self.task, self.task_settings)
+        try:
+            self.set_kill_cmd()
+        except Exception as error:
+            raise KillException("Setting of kill command failed " + repr(error), self.task, self.task_settings)
+        if self.kill_job_cmd is None:
+            raise KillException("No kill command set for " + self.task_settings.submit_type, self.task,
+                                self.task_settings)
+        try:
+            self.kill_job()
+        except Exception as error:
+            raise KillException("Kill failed " + repr(error), self.task, self.task_settings)
 
     @abstractmethod
-    def set_kill_cmd(self, job_id):
+    def set_kill_cmd(self):
         raise NotImplementedError
 
     @staticmethod
-    def set_remote_cmd(cmd, remote_cmd=None):
+    def set_remote_cmd(cmd, remote_cmd):
         if remote_cmd is not None:
-            cmd = remote_cmd + " \"" + cmd + "\""
+            cmd = remote_cmd + " \"" + str(cmd) + "\""
         return cmd
 
     @abstractmethod
@@ -315,56 +389,37 @@ class SubmissionBaseClass(ABC):
     def set_job_name(self):
         raise NotImplementedError
 
-    def update_sub_log(self, text):
-        utcnow = datetime.utcnow().strftime("[%H:%M:%S %d.%m.%Y]")
-        fh = open(self.sub_logfile, "a")
-        fh.write(utcnow + " " + text + "\n")
-        fh.flush()
-        fh.close()
-
-    def wait_for_process(self):
-        raise NotImplementedError
-
 
 class BackgroundSubmission(SubmissionBaseClass):
-    def __init__(self, task, joboutdir, joboutdir_at_host):
-        SubmissionBaseClass.__init__(self, task, joboutdir, joboutdir_at_host)
-        self.process = None
+    def __init__(self, task, task_settings, db=None):
+        SubmissionBaseClass.__init__(self, task, task_settings, db=db)
 
-    def submit_task(self, remote_cmd=None):
-        ecf_jobout = self.task.create_ecf_jobout(self.joboutdir)
-        ecf_job = self.task.create_ecf_job(self.joboutdir)
-        cmd = self.set_remote_cmd(ecf_job, remote_cmd)
-        self.to_submit(cmd, ecf_jobout)
-        self.process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        self.job_id = str(self.process.pid)
+    def set_submit_cmd(self):
+        ecf_job = self.task_settings.ecf_job_at_host
+        self.submit_cmd = self.set_remote_cmd(ecf_job, self.remote_submit_cmd)
 
-    def wait_for_process(self):
-        ecf_jobout = self.task.create_ecf_jobout(self.joboutdir)
-        fh = open(ecf_jobout, "w")
-        for line in self.process.stdout:
-            # sys.stdout.write(line)
-            fh.write(line.decode('utf-8'))
-            fh.flush()
-        fh.close()
+    def set_jobid(self):
+        return str(self.process.pid)
 
-        self.process.wait()
-        ret = self.process.returncode
-        if ret != 0:
-            raise RuntimeError("Process failed with error code " + str(ret))
+    def get_logfile(self):
+        ecf_jobout = self.task_settings.ecf_jobout_at_host
+        return open(ecf_jobout, "w")
 
-    def set_kill_cmd(self, job_id):
-        print("trygve ", job_id)
-        if job_id is not None:
-            # self.kill_job_cmd = "kill -2 " + str(job_id) + " && kill -15 " + str(job_id)
-            self.kill_job_cmd = "kill -15 " + str(job_id)
+    def set_kill_cmd(self):
+        print("trygve ", self.job_id)
+        if self.job_id is not None:
+            cmd = "kill -9 " + str(self.job_id)
+            self.kill_job_cmd = self.set_remote_cmd(cmd, self.remote_kill_cmd)
 
-    def set_job_status(self, job_id):
-        if job_id is not None:
-            self.job_status_cmd = "ps -aux " + str(job_id)
+    def set_job_status(self):
+        print("set_job_status ", self.job_id)
+        print(self.job_status_cmd )
+        if self.job_id is not None:
+            self.job_status_cmd = "ps -auxq " + str(self.job_id)
+        print(self.job_status_cmd)
 
     def set_output(self):
-        string = "# Background jobs use stadard output/error\n"
+        string = "# Background jobs use standard output/error\n"
         return string
 
     def set_job_name(self):
@@ -372,95 +427,139 @@ class BackgroundSubmission(SubmissionBaseClass):
         return string
 
 
-class PBSSubmission(SubmissionBaseClass):
-    def __init__(self, task, joboutdir, joboutdir_at_host, db=None, sub="qsub", stat="qstat -f",
-                 delete="qdel", prefix="#PBS"):
-        SubmissionBaseClass.__init__(self, task, joboutdir, joboutdir_at_host, db=db,  sub=sub, stat=stat,
-                                     delete=delete, prefix=prefix)
+class BatchSubmission(SubmissionBaseClass):
+    def __init__(self, task, task_settings, db=None, sub=None, stat=None, kill=None, prefix="#"):
+        SubmissionBaseClass.__init__(self, task, task_settings, db=db)
         name = self.task.ecf_name.split("/")
+        self.batch_sub = sub
+        self.batch_stat = stat
+        self.batch_kill = kill
+        self.batch_prefix = prefix
         self.name = name[-1]
 
-    def submit_task(self, remote_cmd=None):
-        cmd = self.sub + " " + self.task.ecf_job_at_host
-        cmd = self.set_remote_cmd(cmd, remote_cmd)
-        self.to_submit(cmd, self.task.ecf_jobout_at_host)
-        # Run command and pipe output
-        ret = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-        # Get answer
-        answer = ret.communicate()[0].decode('ascii')
+    def set_submit_cmd(self, remote_cmd=None):
+        cmd = self.batch_sub + " " + self.task_settings.ecf_job_at_host
+        cmd = self.set_remote_cmd(cmd, self.task_settings.remote_submit_cmd)
+        self.submit_cmd = cmd
 
-        # Print answer to log
-        self.update_sub_log(answer)
-        # Set job id as last element in answer
-        self.job_id = answer.replace('\n', "").split(" ")[-1]
-        SubmissionBaseClass.update_db(self, self.job_id)
+    def set_jobid(self):
+        raise NotImplementedError
 
-    def set_kill_cmd(self, job_id):
-        if job_id is not None:
-            self.kill_job_cmd = self.delete + " " + str(job_id)
+    def get_logfile(self):
+        return None
 
-    def set_job_status(self, job_id):
-        if job_id is not None:
-            self.job_status_cmd = self.stat + " " + str(job_id)
+    def set_kill_cmd(self):
+        if self.job_id is not None:
+            self.kill_job_cmd = self.batch_kill + " " + str(self.job_id)
+
+    def set_job_status(self):
+        if self.job_id is not None:
+            self.job_status_cmd = self.batch_stat + " " + str(self.job_id)
 
     def set_output(self):
-        logfile = self.task.create_ecf_jobout(self.joboutdir_at_host)
-        string = self.prefix + " -o " + logfile + "\n"
-        string += self.prefix + " -e " + logfile + "\n"
-        string += self.prefix + " -j oe\n"
+        logfile = self.task_settings.ecf_jobout_at_host
+        string = self.batch_prefix + " -o " + logfile + "\n"
+        string += self.batch_prefix + " -e " + logfile + "\n"
+        string += self.batch_prefix + " -j oe\n"
         return string
 
     def set_job_name(self):
-        string = self.prefix + " -N " + self.name + "\n"
+        string = self.batch_prefix + " -N " + self.name + "\n"
         return string
 
-    def wait_for_process(self):
-        pass
+
+class PBSSubmission(BatchSubmission):
+    def __init__(self, task, task_settings, db=None):
+        sub = "/home/trygveasp/hm_home/sandbox2/qsub"
+        stat = "qacct -j"
+        kill = "qdel"
+        prefix = "#PBS"
+        BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
+        self.name = self.name[0:15]
+
+    def set_jobid(self):
+        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+        print("logfile", logfile)
+        # Get answer
+        answer = open(logfile, "r").read()
+
+        print(answer)
+        expected_len = 5
+        words = answer.replace('\n', "").split(" ")
+        print("words", words)
+        if len(words) == expected_len:
+            # Set job id as last element in answer
+            self.job_id = str(words[-1])
+        else:
+            raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
+        print(self.job_id)
+
+    def set_job_name(self):
+        string = self.batch_prefix + " -N " + self.name + "\n"
+        return string
 
 
-class SlurmSubmission(SubmissionBaseClass):
-    def __init__(self, task, joboutdir, joboutdir_at_host, db=None, sub="sbatch", stat="squeue -j", delete="scancel",
-                 prefix="#SBATCH"):
-        SubmissionBaseClass.__init__(self, task, joboutdir, joboutdir_at_host, db=db, sub=sub, stat=stat, delete=delete,
-                                     prefix=prefix)
+class SlurmSubmission(BatchSubmission):
+    def __init__(self, task, task_settings, db=None):
+        sub = "qsub"
+        stat = "qacct -j"
+        kill = "qdel"
+        prefix = "#PBS"
+        BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
         name = self.task.ecf_name.split("/")
         self.name = name[-1]
 
-    def submit_task(self, remote_cmd=None):
-        cmd = self.sub + " " + self.task.ecf_job_at_host
-        cmd = self.set_remote_cmd(cmd, remote_cmd)
-        self.to_submit(cmd, self.task.ecf_jobout_at_host)
-
-        # Run command and pipe output
-        ret = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+    def set_jobid(self):
+        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
         # Get answer
-        answer = ret.communicate()[0].decode('ascii')
+        answer = open(logfile, "r").read()
 
-        # Print answer to log
-        self.update_sub_log(answer)
-
-        # Set job id
-        self.job_id = answer.replace('\n', "").split(" ")[-1]
-        SubmissionBaseClass.update_db(self, self.job_id)
-
-    def set_kill_cmd(self, job_id):
-        if job_id is not None:
-            self.kill_job_cmd = self.delete + " " + str(job_id)
-
-    def set_job_status(self, job_id):
-        if job_id is not None:
-            self.job_status_cmd = self.stat + " " + str(job_id)
-
-    def set_output(self):
-        logfile = self.task.create_ecf_jobout(self.joboutdir_at_host)
-        string = self.prefix + " -o " + logfile + "\n"
-        string += self.prefix + " -e " + logfile + "\n"
-        string += self.prefix + " -j oe\n"
-        return string
+        expected_len = 5
+        words = answer.replace('\n', "").split(" ")
+        print("words", words)
+        if len(words) == expected_len:
+            # Set job id as last element in answer
+            self.job_id = str(words[-1])
+        else:
+            raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
 
     def set_job_name(self):
-        string = self.prefix + " -N " + self.name + "\n"
+        string = self.batch_prefix + " -N " + self.name + "\n"
         return string
 
-    def wait_for_process(self):
-        pass
+
+class GridEngineSubmission(BatchSubmission):
+    def __init__(self, task, task_settings, db=None):
+        sub = "qsub"
+        stat = "qacct -j"
+        kill = "qdel"
+        prefix = "#$"
+        BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
+        name = self.task.ecf_name.split("/")
+        self.name = name[-1]
+
+    def set_output(self):
+        logfile = self.task_settings.ecf_jobout_at_host
+        string = self.batch_prefix + " -o " + logfile + "\n"
+        string += self.batch_prefix + " -e " + logfile + "\n"
+        return string
+
+    def set_jobid(self):
+
+        # Your job XXXXXX ("name") has been submitted
+        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+        # Get answer
+        answer = open(logfile, "r").read()
+
+        expected_len = 7
+        words = answer.replace('\n', "").split(" ")
+        print("words", words)
+        if len(words) == expected_len:
+            # Set job id as the second element in answer
+            self.job_id = str(words[2])
+        else:
+            raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
+
+    def set_job_name(self):
+        string = self.batch_prefix + " -N " + self.name + "\n"
+        return string

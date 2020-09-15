@@ -16,35 +16,39 @@ def parse_submit_cmd(argv):
     parser.add_argument('ecf_name', type=str, help="Name of ECF Task")
     parser.add_argument('ecf_tryno', type=str, help="ECF try number")
     parser.add_argument('ecf_pass', type=str, help="Name of ECF password")
-    parser.add_argument('-ymd', dest="ymd", type=str, help="YMD", required=True)
-    parser.add_argument('-hh', dest="hh", type=str, help="HH", required=True)
+    parser.add_argument('-dtg', dest="dtg", type=str, help="DTG", default=None, required=False)
     parser.add_argument('-stream', type=str, nargs="?", help="Stream", required=False, default=None)
     parser.add_argument('-ecf_rid', nargs='?', type=str, default=None, required=False, help="ECF remote id")
-    parser.add_argument('-e', dest="ensmbr", type=int, help="Ensemble member", required=False, default=None)
+    parser.add_argument('-e', dest="ensmbr", nargs="?", type=int, help="Ensemble member", required=False, default=None)
+    parser.add_argument('--db', type=str, nargs="?", help="Database", required=False, default=None)
 
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
 def submit_cmd(argv):
 
-    print([str(argv[i]) + " " for i in range(0, len(argv))])
-    args = parse_submit_cmd(argv)
-    exp = args.exp
-    lib = args.lib
-    ecf_name = args.ecf_name
-    ensmbr = args.ensmbr
-    ymd = args.ymd
-    hh = args.hh
-    ecf_tryno = args.ecf_tryno
-    ecf_pass = args.ecf_pass
-    ecf_rid = args.ecf_rid
-    submission_id = ""
-    dtg = datetime.strptime(ymd, "%Y%m%d") + timedelta(hours=int(hh))
-    stream = args.stream
+    kwargs = parse_submit_cmd(argv)
+    exp = kwargs["exp"]
+    lib = kwargs["lib"]
+    ecf_name = kwargs["ecf_name"]
+    ensmbr = kwargs["ensmbr"]
+    dtg = kwargs["dtg"]
+    if dtg is not None:
+        dtg = datetime.strptime(dtg, "%Y%m%d%H")
+    ecf_tryno = kwargs["ecf_tryno"]
+    ecf_pass = kwargs["ecf_pass"]
+    ecf_rid = kwargs["ecf_rid"]
+    submission_id = None
+    stream = kwargs["stream"]
+    db = kwargs["db"]
 
     try:
         if stream is not None:
@@ -60,26 +64,6 @@ def submit_cmd(argv):
         system = exp.system
         wd = exp.wd
 
-        progress_file = wd + "/progress.toml"
-        progress_pp_file = wd + "/progressPP.toml"
-        if stream is not None:
-            progress_file = wd + "/progress" + stream + ".toml"
-            progress_pp_file = wd + "/progressPP" + stream + ".toml"
-
-        progress = surfex.ProgressFromFile(progress_file, progress_pp_file)
-        updated_progress = {
-            "DTG": dtg.strftime("%Y%m%d%H"),
-            "DTGEND": progress.dtgend.strftime("%Y%m%d%H"),
-            "DTGBEG": progress.dtgbeg.strftime("%Y%m%d%H")
-        }
-        updated_progress_pp = {
-            "DTGPP": dtg.strftime("%Y%m%d%H"),
-        }
-
-        progress = surfex.Progress(updated_progress, updated_progress_pp)
-        progress.save(progress_file, progress_pp_file)
-        exp = surfex.ExpFromFiles(exp, lib)
-
         # Merge config
         all_merged_settings = exp.merge_toml_env_from_config_dicts()
         host = "0"
@@ -93,9 +77,9 @@ def submit_cmd(argv):
         coldstart = config.is_coldstart(dtg)
         submit_exceptions = wd + "/config//submit/submission.json"
         submit_exceptions = json.load(open(submit_exceptions, "r"))
-        task = scheduler.Task(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
-        sub = scheduler.EcflowSubmitTask(exp, task, exp.env_submit, submit_exceptions=submit_exceptions,
-                                         ensmbr=ensmbr, coldstart=coldstart)
+        task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
+        sub = scheduler.EcflowSubmitTask(exp, task, submit_exceptions=submit_exceptions,
+                                         ensmbr=ensmbr, coldstart=coldstart, dbfile=db)
         sub.submit()
     except Exception as e:
         raise e
@@ -104,6 +88,54 @@ def submit_cmd(argv):
 def parse_kill_cmd(argv):
     """Parse the command line input arguments."""
     parser = ArgumentParser("Kill EcFlow task and handle abort")
+    parser.add_argument('exp', type=str, help="Name of experiment")
+    parser.add_argument('lib', type=str, help="Library path")
+    parser.add_argument('submit_type', type=str, help="submit type")
+    parser.add_argument('ecf_name', type=str, help="ECF_NAME")
+    parser.add_argument('ecf_tryno', type=str, help="ECF_TRYNO")
+    parser.add_argument('ecf_pass', type=str, help="ECF_PASS")
+    parser.add_argument('-ecf_rid', type=str, help="ECF_RID", required=False, nargs="?", default=None)
+    parser.add_argument('-submission_id', type=str, help="SUBMISSION_ID")
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def kill_cmd(argv):
+
+    kwargs = parse_status_cmd(argv)
+    exp = kwargs["exp"]
+    lib = kwargs["lib"]
+    ecf_name = kwargs["ecf_name"]
+    ecf_tryno = kwargs["ecf_tryno"]
+    ecf_pass = kwargs["ecf_pass"]
+    ecf_rid = kwargs["ecf_rid"]
+    submission_id = ""
+    if "submission_id" in kwargs:
+        submission_id = kwargs["submission_id"]
+    if submission_id == "":
+        submission_id = None
+
+    exp = surfex.ExpFromFiles(exp, lib)
+    task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
+    task_settings = scheduler.TaskSettings(task, exp.env_submit, exp.system)
+    print(task.submission_id)
+    sub = scheduler.get_submission_object(task, task_settings)
+    print(sub)
+    sub.kill()
+    exp.server.force_aborted(task)
+
+
+def parse_status_cmd(argv):
+    """Parse the command line input arguments."""
+    parser = ArgumentParser("Status of EcFlow task")
     parser.add_argument('exp', type=str, help="Name of experiment")
     parser.add_argument('lib', type=str, help="Library path")
     parser.add_argument('ecf_name', type=str, help="ECF_NAME")
@@ -116,25 +148,30 @@ def parse_kill_cmd(argv):
         parser.print_help()
         sys.exit()
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def kill_cmd(argv):
-    args = parse_kill_cmd(argv)
-    exp = args.exp
-    lib = args.lib
-    ecf_name = args.ecf_name
-    ecf_pass = args.ecf_pass
-    ecf_tryno = args.ecf_tryno
-    ecf_rid = args.ecf_rid
-    submission_id = args.submission_id
-    if submission_id == "":
-        submission_id = None
+def status_cmd(argv):
+
+    kwargs = parse_status_cmd(argv)
+    exp = kwargs["exp"]
+    lib = kwargs["lib"]
+    ecf_name = kwargs["ecf_name"]
+    ecf_tryno = kwargs["ecf_tryno"]
+    ecf_pass = kwargs["ecf_pass"]
+    ecf_rid = kwargs["ecf_rid"]
+    submission_id = kwargs["submission_id"]
 
     exp = surfex.ExpFromFiles(exp, lib)
-    task = scheduler.Task(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
-    sub = scheduler.EcflowSubmitTask(exp, task, exp.env_submit)
-    sub.kill(submission_id)
+    task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
+    task_settings = scheduler.TaskSettings(task, exp.env_submit, exp.system)
+
+    sub = scheduler.get_submission_object(task, task_settings)
+    sub.status()
 
 
 def parse_surfex_script(argv):
@@ -311,7 +348,6 @@ def surfex_script(argv):
 
         # Create the scheduler
         my_scheduler = scheduler.EcflowServerFromFile("Env_server", logfile)
-        # my_scheduler = scheduler.EcflowScheduler(ecf_host, ecf_loghost, ecf_port, ecf_logport, logfile)
 
         # Create and start the suite
         def_file = data0 + "/" + suite + ".def"

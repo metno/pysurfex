@@ -1,0 +1,24 @@
+{
+  "submit_types": ["background", "ppi_research_queue"],
+  "default_submit_type": "ppi_research_queue",
+  "background": {
+    "HOST": "0",
+    "SUBMIT": "",
+    "tasks": [
+      "InitRun"
+    ]
+  },
+  "ppi_research_queue": {
+    "SUBMIT_TYPE": "grid_engine",
+    "VMEM": "#$ -l h_vmem=500M",
+    "PE": "#$ -pe shmem-1 1",
+    "QUEUE": "#$ -q research-el7.q",
+    "WALLTIME": "#$ -l h_rt=00:01:00",
+    "INTERPRETER":  "#!/usr/bin/env python3",
+    "tasks": [
+    ]
+  },
+  "task_exceptions": {
+  }
+}
+

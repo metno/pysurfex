@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import surfex
+import scheduler
 
-args = surfex.submit_cmd(sys.argv[1:])
+args = scheduler.submit_cmd(sys.argv[1:])

@@ -53,9 +53,6 @@ class EcflowServer(Server):
         if dtgbeg is None:
             dtgbeg = dtgstart
         if suite_type == "surfex":
-            suite = scheduler.SurfexSuite(config, exp, def_file, stream=stream)
-
-        elif suite_type == "sandbox":
             dtgs = []
             dtg = dtgstart
             while dtg <= dtgend:
@@ -72,10 +69,11 @@ class EcflowServer(Server):
                     raise Exception
                 dtg = dtg + timedelta(hours=fcint)
 
-            suite = scheduler.Sandbox(exp, dtgs, def_file, dtgbeg=dtgbeg)
+            suite = scheduler.SurfexSuite(exp, dtgs, def_file, dtgbeg=dtgbeg)
 
         elif suite_type == "testbed":
-            suite = scheduler.SurfexTestbedSuite(config, exp, def_file)
+            raise NotImplementedError
+            # suite = scheduler.SurfexTestbedSuite(config, exp, def_file)
         else:
             raise Exception("Suite " + suite_type + " is not defined")
 
@@ -103,15 +101,18 @@ class EcflowServer(Server):
             except RuntimeError:
                 raise Exception("Could not restart server!")
 
-    def force_complete(self, ecf_name):
+    def force_complete(self, task):
+        ecf_name = task.ecf_name
         self.ecf_client.force_state(ecf_name, ecflow.State.complete)
 
-    def force_aborted(self, ecf_name):
+    def force_aborted(self, task):
+        ecf_name = task.ecf_name
         self.ecf_client.force_state(ecf_name, ecflow.State.aborted)
 
     def update_submission_id(self, task):
         self.update_log(task.ecf_name)
         self.update_log(task.submission_id)
+        print(task.ecf_name, "add", "variable", "SUBMISSION_ID", task.submission_id)
         self.ecf_client.alter(task.ecf_name, "add", "variable", "SUBMISSION_ID", task.submission_id)
 
     def replace(self, def_file):
@@ -126,9 +127,10 @@ class EcflowServer(Server):
                 raise Exception("Could not replace suite " + suite_name)
 
     def update_log(self, text):
+        print(self.logfile)
         utcnow = datetime.utcnow().strftime("[%H:%M:%S %d.%m.%Y]")
         fh = open(self.logfile, "a")
-        fh.write(utcnow + " " + text + "\n")
+        fh.write(utcnow + " " + str(text) + "\n")
         fh.flush()
         fh.close()
 
@@ -174,8 +176,8 @@ class EcflowLogServer(object):
         self.ecf_logport = ecf_logport
 
 
-class Task(object):
-    def __init__(self, ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id, ecf_timeout=20, ):
+class EcflowTask(object):
+    def __init__(self, ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id=None, ecf_timeout=60):
         self.ecf_name = ecf_name
         self.ecf_tryno = int(ecf_tryno)
         self.ecf_pass = ecf_pass
@@ -197,7 +199,7 @@ class Task(object):
             submission_id = None
         self.submission_id = submission_id
 
-    def create_sumbission_log(self, joboutdir):
+    def create_submission_log(self, joboutdir):
         return joboutdir + "/" + self.ecf_name + ".job" + str(self.ecf_tryno) + ".sub"
 
     def create_kill_log(self, joboutdir):
@@ -258,11 +260,12 @@ class Client(object):
 
     def signal_handler(self, signum, extra=None):
         print('   Aborting: Signal handler called with signal ', signum)
-        self.ci.child_abort("Signal handler called with signal " + str(signum))
+        # self.ci.child_abort("Signal handler called with signal " + str(signum))
+        self.__exit__(Exception, "Signal handler called with signal " + str(signum), None)
 
     def __enter__(self):
         print('Calling init at: ' + self.at_time())
-        self.server.update_log(self.task.ecf_name + " init")
+        # self.server.update_log(self.task.ecf_name + " init")
         self.ci.child_init()
         return self.ci
 
@@ -271,25 +274,26 @@ class Client(object):
         if ex_type is not None:
             print('Calling abort ' + self.at_time())
             self.ci.child_abort("Aborted with exception type " + str(ex_type) + ":" + str(value))
-            print(tb)
-            traceback.print_tb(tb, limit=1, file=sys.stdout)
-            print("*** print_exception:")
-            # exc_type below is ignored on 3.5 and later
-            print("*** print_exc:")
-            traceback.print_exc(limit=2, file=sys.stdout)
-            print("*** format_exc, first and last line:")
-            formatted_lines = traceback.format_exc().splitlines()
-            print(formatted_lines[0])
-            print(formatted_lines[-1])
-            print("*** format_exception:")
-            print("*** extract_tb:")
-            print(repr(traceback.extract_tb(tb)))
-            print("*** format_tb:")
-            print(repr(traceback.format_tb(tb)))
-            print("*** tb_lineno:", tb.tb_lineno)
-            self.server.update_log(self.task.ecf_name + " abort")
+            if tb is not None:
+                print(tb)
+                traceback.print_tb(tb, limit=1, file=sys.stdout)
+                print("*** print_exception:")
+                # exc_type below is ignored on 3.5 and later
+                print("*** print_exc:")
+                traceback.print_exc(limit=2, file=sys.stdout)
+                print("*** format_exc, first and last line:")
+                formatted_lines = traceback.format_exc().splitlines()
+                print(formatted_lines[0])
+                print(formatted_lines[-1])
+                print("*** format_exception:")
+                print("*** extract_tb:")
+                print(repr(traceback.extract_tb(tb)))
+                print("*** format_tb:")
+                print(repr(traceback.format_tb(tb)))
+                print("*** tb_lineno:", tb.tb_lineno)
+                self.server.update_log(self.task.ecf_name + " abort")
             return False
         print('Calling complete at: ' + self.at_time())
-        self.server.update_log(self.task.ecf_name + " complete")
+        # self.server.update_log(self.task.ecf_name + " complete")
         self.ci.child_complete()
         return False
