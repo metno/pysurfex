@@ -292,7 +292,10 @@ class SubmissionBaseClass(ABC):
             cmd = self.set_remote_cmd(self.submit_cmd, self.remote_submit_cmd)
             logfile = self.get_logfile()
             if logfile is None:
-                self.process = subprocess.Popen(cmd.split())
+                logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+                logfile = open(logfile, "w")
+                self.process = subprocess.Popen(cmd.split(), stdout=logfile, stderr=logfile)
+                logfile.close()
             else:
                 self.process = subprocess.Popen(cmd.split(), stdout=logfile, stderr=logfile)
             # print(self.submit_cmd)
@@ -478,21 +481,24 @@ class PBSSubmission(BatchSubmission):
         self.name = self.name[0:15]
 
     def set_jobid(self):
-        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
-        print("logfile", logfile)
-        # Get answer
-        answer = open(logfile, "r").read()
 
-        print(answer)
+        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+        fh = open(logfile, "r")
+        lines = fh.readlines()
+        fh.close()
+
+        answer = None
+        for line in lines:
+            answer = line
+
         expected_len = 5
-        words = answer.replace('\n', "").split(" ")
-        print("words", words)
+        answer = answer.replace("\n", "")
+        words = answer.split(" ")
         if len(words) == expected_len:
-            # Set job id as last element in answer
+            # Set job id as the second element in answer
             self.job_id = str(words[-1])
         else:
             raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
-        print(self.job_id)
 
     def set_job_name(self):
         string = self.batch_prefix + " -N " + self.name + "\n"
@@ -501,24 +507,30 @@ class PBSSubmission(BatchSubmission):
 
 class SlurmSubmission(BatchSubmission):
     def __init__(self, task, task_settings, db=None):
-        sub = "qsub"
-        stat = "qacct -j"
-        kill = "qdel"
-        prefix = "#PBS"
+        sub = "sbatch"
+        stat = "sacct -j"
+        kill = "scancel"
+        prefix = "#SBATCH"
         BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
         name = self.task.ecf_name.split("/")
         self.name = name[-1]
 
     def set_jobid(self):
-        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
-        # Get answer
-        answer = open(logfile, "r").read()
 
-        expected_len = 5
-        words = answer.replace('\n', "").split(" ")
-        print("words", words)
+        logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+        fh = open(logfile, "r")
+        lines = fh.readlines()
+        fh.close()
+
+        answer = None
+        for line in lines:
+            answer = line
+
+        expected_len = 4
+        answer = answer.replace("\n", "")
+        words = answer.split(" ")
         if len(words) == expected_len:
-            # Set job id as last element in answer
+            # Set job id as the second element in answer
             self.job_id = str(words[-1])
         else:
             raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
@@ -548,12 +560,17 @@ class GridEngineSubmission(BatchSubmission):
 
         # Your job XXXXXX ("name") has been submitted
         logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
-        # Get answer
-        answer = open(logfile, "r").read()
+        fh = open(logfile, "r")
+        lines = fh.readlines()
+        fh.close()
+
+        answer = None
+        for line in lines:
+            answer = line
 
         expected_len = 7
-        words = answer.replace('\n', "").split(" ")
-        print("words", words)
+        answer = answer.replace("\n", "")
+        words = answer.split(" ")
         if len(words) == expected_len:
             # Set job id as the second element in answer
             self.job_id = str(words[2])

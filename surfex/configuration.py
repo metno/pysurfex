@@ -102,7 +102,7 @@ class System(object):
                 raise Exception("Variable " + var + " not found in system")
         else:
             # print(host)
-            print(self.exp_name)
+            # print(self.exp_name)
             os.environ.update({"EXP": self.exp_name})
             # print(var)
             if var in self.system[str(host)]:
@@ -302,13 +302,6 @@ class Exp(object):
             else:
                 print(cdir + " already exists in " + self.wd + "/python-lib")
 
-        os.makedirs(self.wd + "/ecf", exist_ok=True)
-        if not os.path.exists(self.wd + "/ecf/InitRun.py"):
-            print("Copy " + self.conf + "/ecf/InitRun.py")
-            shutil.copy2(self.conf + "/ecf/InitRun.py", self.wd + "/ecf/InitRun.py")
-        else:
-            print("File " + self.wd + "/ecf/InitRun.py already exists, is not fetched again")
-
         # ECF_submit exceptions
         f = "config/submit/submission.json"
         fname = self.wd + "/" + f
@@ -319,10 +312,10 @@ class Exp(object):
 
         # Init run
         files = ["ecf/InitRun.py", "ecf/default.py"]
+        os.makedirs(self.wd + "/ecf", exist_ok=True)
         for f in files:
             fname = self.wd + "/" + f
             rfname = self.conf + "/" + f
-            os.makedirs(self.wd + "/ecf", exist_ok=True)
             if not os.path.exists(fname):
                 print("Copy " + rfname + " -> " + fname)
                 shutil.copy2(rfname, fname)

@@ -15,10 +15,10 @@ class AbstractTask(object):
         self.geo = self.exp.geo
         self.task = task
         self.task_settings = None
-        print(kwargs)
+        # print(kwargs)
         if kwargs is not None and "task_settings" in kwargs:
             self.task_settings = kwargs["task_settings"]
-        print("Init: ", self.task_settings)
+        # print("Init: ", self.task_settings)
 
         mbr = None
         if "mbr" in kwargs:
@@ -119,13 +119,13 @@ class AbstractTask(object):
                             print(env_val + " not found in environment")
 
                     # Substitute system settings
-                    print(self.exp.config.settings)
+                    # print(self.exp.config.settings)
                     if "SYSTEM" in self.exp.config.settings:
                         sys_vars = self.exp.config.get_setting("SYSTEM")
                         for sys_var in sys_vars:
-                            print(setting)
-                            print("TRYGVE ", sys_var, " host: ", host)
-                            print(self.exp.config.get_setting("SYSTEM#" + sys_var))
+                            # print(setting)
+                            # print("TRYGVE ", sys_var, " host: ", host)
+                            # print(self.exp.config.get_setting("SYSTEM#" + sys_var))
                             setting = setting.replace("@" + sys_var + "@",
                                                       self.exp.config.get_setting("SYSTEM#" + sys_var))
 
@@ -236,7 +236,7 @@ class SurfexBinaryTask(AbstractTask):
         ecoclimap = None
         if "ecoclimap" in kwargs:
             ecoclimap = kwargs["ecoclimap"]
-            print(ecoclimap.data)
+            # print(ecoclimap.data)
 
         print_namelist = True
         if "print_namelist" in kwargs:
@@ -276,9 +276,9 @@ class SurfexBinaryTask(AbstractTask):
         if "LFAGMAP" in settings["NAM_IO_OFFLINE"]:
             lfagmap = settings["NAM_IO_OFFLINE"]["LFAGMAP"]
 
-        print(pgdfile, lfagmap)
-        if input_data is not None:
-            print(input_data.data)
+        # print(pgdfile, lfagmap)
+        # if input_data is not None:
+        #    print(input_data.data)
 
         if self.need_pgd:
             pgdfile = surfex.file.PGDFile(filetype, pgdfile, self.geo, input_file=pgd_file_path,
@@ -301,7 +301,7 @@ class SurfexBinaryTask(AbstractTask):
         elif self.pgd:
             pgdfile = surfex.file.PGDFile(filetype, pgdfile, self.geo, input_file=pgd_file_path,
                                           archive_file=output, lfagmap=lfagmap)
-            print(input_data.data)
+            # print(input_data.data)
             surfex.SURFEXBinary(binary, batch, pgdfile, settings, ecoclimap,
                                 input_data=input_data, archive_data=archive_data, print_namelist=print_namelist)
         elif self.prep:
