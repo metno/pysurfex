@@ -1,0 +1,22 @@
+[HOST_SYSTEM]
+
+# Define computer centre.
+COMPCENTRE="LOCAL"
+
+# Define hosts
+HOSTS = ["nebula"]
+
+# Location of working data, fast and large system
+# Experiment identifier and directories
+# EXP is defined when an experiment is started by "Harmonie start ..."
+SFX_EXP_DATA = "/nobackup/forsk/$USER/sfx_data/$EXP"        # HM_DATA on main HIRLAM host
+# directory for scripts, compiled objects, executables
+SFX_EXP_LIB = "/nobackup/forsk//$USER/sfx_data/$EXP/lib"
+HOST_NAME = ""
+JOBOUTDIR = "/nobackup/forsk/$USER/sfx_data/$EXP/job"
+HM_CS = "gfortran"
+PARCH = ""
+MKDIR = "mkdir -p"
+RSYNC = "rsync -avh"
+SURFEX_CONFIG = "my_surfex_config"
+

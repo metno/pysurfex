@@ -192,12 +192,12 @@ class SurfexBinaryTask(AbstractTask):
         self.soda = False
 
         self.input_path = self.exp.wd + "/nam"  # kwargs["input_path"]
-        system_settings = self.exp.wd + "/system_paths.json"  # kwargs["system_settings"]
+        input_paths = self.exp.get_file_name(self.exp.wd, "input_paths", full_path=True)
         self.settings = self.exp.config.settings
-        if os.path.exists(system_settings):
-            self.system_file_paths = json.load(open(system_settings, "r"))
+        if os.path.exists(input_paths):
+            self.system_file_paths = json.load(open(input_paths, "r"))
         else:
-            raise FileNotFoundError("System settings not found " + system_settings)
+            raise FileNotFoundError("System setting input paths not found " + input_paths)
 
     def execute(self, binary, output, json_settings, **kwargs):
 
@@ -432,7 +432,7 @@ class Soda(SurfexBinaryTask):
         obsfile = self.get_setting("obsfile", default=None)
         check_existence = self.get_setting("check_existence", default=False)
 
-        oi_coeffs = self.get_setting("oi_coeffs", default=None)
+        oi_coeffs = self.exp.wd + "/nam/POLYNOMES_ISBA"
         climfile = self.get_setting("climfile", default=None)
         sfx_first_guess = self.get_setting("sfx_first_guess", default=None)
         ascatfile = self.get_setting("ascatfile", default=None)
@@ -504,22 +504,20 @@ class QualityControl(AbstractTask):
             subsection = self.var_name
 
         # archive_root = self.get_setting("archive_root")
-        input_file = self.get_setting("qc_config")
+        input_file = self.exp.wd + "/toml/qc_config.json"
         if os.path.exists(input_file):
             settings_var = json.load(open(input_file, "r"))
             settings = settings_var[self.var_name]
         else:
             raise FileNotFoundError("Could not find input file " + input_file)
 
-        print(subsection)
         output = self.get_setting("output", dtg=self.exp.progress.dtg, subsection=subsection)
-        qc_codes = self.get_setting("qc_codes")
+        qc_codes = self.exp.wd + "/pysurfex/surfex/cfg/qc_codes.json"
         tests = self.get_setting("tests")
         indent = self.get_setting("indent", default=2)
 
         test_flags = json.load(open(qc_codes, "r"))
 
-        print(settings)
         tests = surfex.titan.define_quality_control(tests, settings)
 
         if "netatmo" in settings["sets"]:
@@ -636,7 +634,7 @@ class Forcing(AbstractTask):
 
         kwargs.update({"geo_out": self.exp.geo})
 
-        global_config = self.get_setting("global_config")
+        global_config = self.exp.wd + "/pysurfex/surfex/cfg/config.yml"
         global_config = yaml.load(open(global_config, "r"))
         kwargs.update({"config": global_config})
 
@@ -842,7 +840,7 @@ class FirstGuess4OI(AbstractTask):
 
             inputfile = self.get_setting("inputfile", dtg=self.exp.progress.dtg)
             fileformat = self.get_setting("fileformat", subsection=var)
-            config_file = self.get_setting("config_file", dtg=self.exp.progress.dtg)
+            config_file = self.exp.wd + "/pysurfex/surfex/cfg/first_guess.yml"
             converter = self.get_setting("converter", subsection=var)
 
             config = yaml.load(open(config_file, "r"))
@@ -900,7 +898,17 @@ class LogProgress(AbstractTask):
 
         print(kwargs)
         print(self.var_name)
-        # surfex.run_surfex_binary(binary)
+
+        stream = None
+        progress_file = self.exp.get_file_name(self.exp.wd, "progress", stream=stream, full_path=True)
+        progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
+
+        # Update progress
+        mbr = None
+        cycle = self.exp.progress.dtg.strftime("%H")
+        fcint = self.exp.config.get_fcint(cycle, mbr=mbr)
+        self.exp.progress.increment_progress(fcint, pp=False)
+        self.exp.progress.save(progress_file, progress_pp_file, log_pp=False)
 
 
 class LogProgressPP(AbstractTask):
@@ -914,3 +922,15 @@ class LogProgressPP(AbstractTask):
         print(kwargs)
         print(self.var_name)
         # surfex.run_surfex_binary(binary)
+
+        stream = None
+        progress_file = self.exp.get_file_name(self.exp.wd, "progress", stream=stream, full_path=True)
+        progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
+
+        # Update progress
+        mbr = None
+        cycle = self.exp.progress.dtg.strftime("%H")
+        fcint = self.exp.config.get_fcint(cycle, mbr=mbr)
+        self.exp.progress.increment_progress(fcint, pp=True)
+        self.exp.progress.save(progress_file, progress_pp_file, log=False)
+

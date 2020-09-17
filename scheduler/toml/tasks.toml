@@ -4,7 +4,8 @@ output = "@CLIMDIR@/PGD.@CSURF_FILETYPE@"
 
 [Prep]
 pgd_file = "@CLIMDIR@/PGD.nc"
-prep_input_file = "/home/trygveasp/scratch/hm_home/ecmwf_bd_archive/fc@YYYY@@MM@@DD@@HH@"
+#prep_input_file = "/nobackup/prod2/cooper/BD_archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@"
+prep_input_file = "/nobackup/prod2/cooper/BD_archive/2020/09/16/00/fc20200916_00+003"
 prep_input_format = "GRIB"
 output = "@ARCHIVE_PATTERN@/PREP.CSURF_FILETYPE"
 fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
@@ -35,7 +36,6 @@ ua_first_guess = "@WRK_PATTERN@/fg_ua"
 # perturbed_runs
 lsmfile = "lsmfile"
 check_existence = false
-oi_coeffs = "/home/trygveasp/revision_control/MNWC/const/sa_const/POLYNOMES_ISBA"
 climfile = "climfile"
 sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
 # ascatfile = "ascatfile"
@@ -47,7 +47,6 @@ sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
 [FirstGuess4OI]
 # inputfile = "https://thredds.met.no/thredds/dodsC/mepslatest/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.ncml"
 inputfile = "https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
-config_file = "@HOME@/revision_control/pysurfex/surfex/cfg/first_guess.yml"
 fileformat = "netcdf"
 variables = ["t2m", "rh2m", "sd"]
 output = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
@@ -105,7 +104,6 @@ input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
 output = "@ARCHIVE_PATTERN@/an_sd.nc"
 
 [Forcing]
-global_config = "/home/trygveasp/revision_control/pysurfex/surfex/cfg/config.yml"
 output = "@ARCHIVE_PATTERN@/FORCING.nc"
 
 [Oi2soda]

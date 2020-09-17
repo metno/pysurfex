@@ -410,7 +410,7 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
         if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
             # Set NetCDF input for FLAKE
             input_for_surfex_json.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", system_file_paths))
-            input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE,": env["SURFEX"]["FLAKE"]["LCLIM"]}}})
+            input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE": env["SURFEX"]["FLAKE"]["LCLIM"]}}})
 
         # ISBA CANOPY
         input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY": env["SURFEX"]["ISBA"]["CANOPY"]}}})

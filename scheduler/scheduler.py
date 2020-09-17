@@ -50,6 +50,7 @@ class EcflowServer(Server):
         dtgstart = exp.progress.dtg
         dtgbeg = exp.progress.dtgbeg
         dtgend = exp.progress.dtgend
+        print(dtgstart, dtgbeg, dtgend)
         if dtgbeg is None:
             dtgbeg = dtgstart
         if suite_type == "surfex":

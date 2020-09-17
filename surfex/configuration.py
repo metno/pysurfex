@@ -147,12 +147,13 @@ class Exp(object):
         self.progress = progress
 
         # Check existence of needed config files
+        print(self.wd, self.conf)
         config = Exp.get_config(self.wd, self.conf)
         c_files = config["config_files"]
         config_files = {}
         for f in c_files:
             lfile = self.wd + "/config/" + f
-            rfile = self.conf + "/config/" + f
+            rfile = self.conf + "/scheduler/config/" + f
 
             if os.path.exists(lfile):
                 # print("lfile", lfile)
@@ -177,7 +178,7 @@ class Exp(object):
             do_merge = True
             conf = self.wd + "/config/configurations/" + configuration.lower() + ".toml"
             if not os.path.exists(conf):
-                conf = self.conf + "/config/configurations/" + configuration.lower() + ".toml"
+                conf = self.conf + "/scheduler/config/configurations/" + configuration.lower() + ".toml"
                 if not os.path.exists(conf):
                     raise Exception("Can not find configuration " + configuration + " in: " + conf)
             configuration = toml_load(conf)
@@ -204,7 +205,7 @@ class Exp(object):
             if os.path.exists(self.rev + "/" + file):
                 dirname = os.path.dirname(self.wd + "/" + file)
                 os.makedirs(dirname, exist_ok=True)
-                shutil.copy2(self.rev + "/" + file, self.wd + "/" + file)
+                shutil.copy2(self.rev + "/scheduler/" + file, self.wd + "/" + file)
                 print("Checked out file: " + file)
             else:
                 print("File was not found: " + self.rev + "/" + file)
@@ -220,25 +221,28 @@ class Exp(object):
         env = Exp.get_file_name(self.wd, "env", full_path=False)
         env_submit = Exp.get_file_name(self.wd, "submit", full_path=False)
         env_server = Exp.get_file_name(self.wd, "server", full_path=False)
+        input_paths = Exp.get_file_name(self.wd, "input_paths", full_path=False)
         # Create needed system files
         system_files = {
             env_system: "",
             env: "",
             env_submit: "",
             env_server: "",
+            input_paths: "",
         }
         system_files.update({
             env_system: "config/system/" + host + ".toml",
             env: "config/env/" + host + ".h",
             env_submit: "config/submit/" + host + ".json",
             env_server: "config/server/" + host + ".toml",
+            input_paths: "config/input_paths/" + host + ".json",
         })
 
         for key in system_files:
 
             target = self.wd + "/" + key
             lfile = self.wd + "/" + system_files[key]
-            rfile = self.conf + "/" + system_files[key]
+            rfile = self.conf + "/scheduler/" + system_files[key]
             dirname = os.path.dirname(lfile)
             os.makedirs(dirname, exist_ok=True)
             if os.path.exists(lfile):
@@ -259,9 +263,18 @@ class Exp(object):
 
         self.env_submit = json.load(open(self.wd + "/Env_submit", "r"))
 
+        plib = self.wd + "/pysurfex"
+        config_dirs = ["surfex", "scheduler", "bin"]
+        for cdir in config_dirs:
+            if not os.path.exists(plib + "/" + cdir):
+                print("Copy " + cdir + " from " + self.conf)
+                shutil.copytree(self.conf + "/" + cdir, plib + "/" + cdir, ignore=shutil.ignore_patterns("config", "ecf", "nam", "toml"))
+            else:
+                print(cdir + " already exists in " + self.wd + "/pysurfex")
+
         # Check existence of needed config files
         local_config = self.wd + "/config/config.toml"
-        rev_config = self.conf + "/config/config.toml"
+        rev_config = self.conf + "/scheduler/config/config.toml"
         config = toml_load(rev_config)
         c_files = config["config_files"]
         if os.path.exists(local_config):
@@ -273,7 +286,7 @@ class Exp(object):
             lfile = self.wd + "/config/" + f
             config_files.append(lfile)
             os.makedirs(self.wd + "/config", exist_ok=True)
-            rfile = self.conf + "/config/" + f
+            rfile = self.conf + "/scheduler/config/" + f
             if not os.path.exists(lfile):
                 # print(rfile, lfile)
                 shutil.copy2(rfile, lfile)
@@ -284,28 +297,20 @@ class Exp(object):
         # Copy dirs
         for dir_path in dirs:
             os.makedirs(self.wd + "/" + dir_path, exist_ok=True)
-            files = [f for f in os.listdir(self.conf + "/" + dir_path)
-                     if os.path.isfile(os.path.join(self.conf + "/" + dir_path, f))]
+            files = [f for f in os.listdir(self.conf + "/scheduler/" + dir_path)
+                     if os.path.isfile(os.path.join(self.conf + "/scheduler/" + dir_path, f))]
             for f in files:
+                print("f", f)
                 fname = self.wd + "/" + dir_path + "/" + f
-                rfname = self.conf + "/" + dir_path + "/" + f
+                rfname = self.conf + "/scheduler/" + dir_path + "/" + f
                 if not os.path.exists(fname):
                     print("Copy " + rfname + " -> " + fname)
                     shutil.copy2(rfname, fname)
 
-        plib = self.wd + "/python-lib"
-        config_dirs = ["surfex", "scheduler", "bin"]
-        for cdir in config_dirs:
-            if not os.path.exists(plib + "/" + cdir):
-                print("Copy " + cdir + " from " + self.conf)
-                shutil.copytree(self.conf + "/" + cdir, plib + "/" + cdir)
-            else:
-                print(cdir + " already exists in " + self.wd + "/python-lib")
-
         # ECF_submit exceptions
         f = "config/submit/submission.json"
         fname = self.wd + "/" + f
-        rfname = self.conf + "/" + f
+        rfname = self.conf + "/scheduler/" + f
         if not os.path.exists(fname):
             print("Copy " + rfname + " -> " + fname)
             shutil.copy2(rfname, fname)
@@ -315,10 +320,17 @@ class Exp(object):
         os.makedirs(self.wd + "/ecf", exist_ok=True)
         for f in files:
             fname = self.wd + "/" + f
-            rfname = self.conf + "/" + f
+            rfname = self.conf + "/scheduler/" + f
             if not os.path.exists(fname):
                 print("Copy " + rfname + " -> " + fname)
                 shutil.copy2(rfname, fname)
+
+        exp_dirs = ["nam", "toml"]
+        for exp_dir in exp_dirs:
+            rdir = self.conf + "/scheduler/" + exp_dir
+            ldir = self.wd + "/" + exp_dir
+            print("Copy " + rdir + " -> " + ldir)
+            shutil.copytree(rdir, ldir)
 
     def merge_testbed_submit(self, testbed_submit, decomposition="2D"):
         if os.path.exists(testbed_submit):
@@ -573,6 +585,8 @@ class Exp(object):
             f = "Env"
         elif ftype == "server":
             f = "Env_server"
+        elif ftype == "input_paths":
+            f = "Env_input_paths"
         elif ftype == "progress":
             f = "progress.toml"
             if stream is not None:
@@ -594,7 +608,7 @@ class Exp(object):
     def get_config(wdir, conf):
         # Check existence of needed config files
         local_config = wdir + "/config/config.toml"
-        rev_config = conf + "/config/config.toml"
+        rev_config = conf + "/scheduler/config/config.toml"
         if os.path.exists(local_config):
             c_files = toml_load(local_config)
         elif os.path.exists(rev_config):
@@ -704,11 +718,11 @@ class Progress(object):
 
             if "DTGBEG" in progress:
                 dtgbeg = progress["DTGBEG"]
-            elif "DTG" in progress:
-                dtgbeg = progress["DTG"]
             else:
-                raise Exception("Can not set DTGBEG")
-
+                if "DTG" in progress:
+                    dtgbeg = progress["DTG"]
+                else:
+                    raise Exception("Can not set DTGBEG")
             if dtgbeg is not None:
                 self.dtgbeg = datetime.strptime(dtgbeg, "%Y%m%d%H")
             else:
@@ -731,7 +745,7 @@ class Progress(object):
         elif "DTG" in progress:
             dtgpp = progress["DTG"]
         if dtgpp is not None:
-            self.dtgpp = self.dtgbeg = datetime.strptime(dtgpp, "%Y%m%d%H")
+            self.dtgpp = datetime.strptime(dtgpp, "%Y%m%d%H")
 
     def export_to_file(self, fname):
         fh = open(fname, "w")
@@ -763,7 +777,7 @@ class Progress(object):
             if self.dtgend < self.dtg:
                 self.dtgend = self.dtg
 
-    def save(self, progress_file, progress_pp_file):
+    def save(self, progress_file, progress_pp_file, log=True, log_pp=True):
         progress = {
             "DTGBEG": self.dtgbeg.strftime("%Y%m%d%H"),
             "DTG": self.dtg.strftime("%Y%m%d%H"),
@@ -772,8 +786,10 @@ class Progress(object):
         progress_pp = {
             "DTGPP": self.dtgpp.strftime("%Y%m%d%H"),
         }
-        toml_dump(progress, progress_file)
-        toml_dump(progress_pp, progress_pp_file)
+        if log:
+            toml_dump(progress, progress_file)
+        if log_pp:
+            toml_dump(progress_pp, progress_pp_file)
 
 
 class ProgressFromFile(Progress):

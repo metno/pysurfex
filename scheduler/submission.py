@@ -20,6 +20,7 @@ class EcflowSubmitTask(object):
         self.db_file = dbfile
         self.stream = stream
         self.complete = False
+        self.env_file = exp.get_file_name(exp.wd, "env", full_path=True)
 
         # Parse Env_submit
         self.task_settings = TaskSettings(self.task, exp.env_submit, exp.system, interpreter=interpreter,
@@ -37,8 +38,27 @@ class EcflowSubmitTask(object):
                 if value.find("#") >= 0:
                     # print(str(self.header[setting]))
                     fh.write(str(self.task_settings.header[setting]) + "\n")
+            
+            # Host environment
+            fh.write("\n# Host specific environment settings in python syntax:\n")
+            fh_env = open(self.env_file, "r")
+            for line in fh_env.readlines():
+                fh.write(line)
+            fh_env.close()
 
-        # fh.write("\n#Python script:\n")
+            fh.write("\n# Task specific settings:\n")
+            for setting in self.task_settings.header:
+                value = str(self.task_settings.header[setting])
+                if value.find("#") < 0:
+                    # print(str(self.header[setting]))
+                    fh.write(str(self.task_settings.header[setting]) + "\n")
+             
+            wrapper = ""
+            if self.task_settings.wrapper is not None:
+                wrapper = str(self.task_settings.wrapper)
+            fh.write("wrapper = \"" + wrapper + "\"")
+
+            fh.write("\n#Python script:\n")
 
     def write_trailer(self, fh):
         if self.task_settings.trailer is not None:
@@ -74,9 +94,7 @@ class EcflowSubmitTask(object):
                 self.sub.submit_job()
                 self.sub.set_jobid()
                 self.task.submission_id = self.sub.job_id
-                print(self.task.submission_id)
                 self.ecflow_server.update_submission_id(self.task)
-                # self.sub.wait_for_process()
 
         except RuntimeError:
             # Supposed to handle abort it self unless killed
@@ -93,6 +111,7 @@ class TaskSettings(object):
         self.submission_defs = submission_defs
         self.header = {}
         self.trailer = {}
+        self.wrapper = None
         self.submit_type = "background"
         self.interpreter = interpreter
         self.complete = complete
@@ -154,6 +173,8 @@ class TaskSettings(object):
                     self.remote_kill_cmd = value
                 elif key == "INTERPRETER":
                     self.interpreter = value
+                elif key == "WRAPPER":
+                    self.wrapper = value
                 elif key == "HOST":
                     self.host = str(value)
                     if self.host != "0" and self.host != "1":
@@ -292,12 +313,18 @@ class SubmissionBaseClass(ABC):
             cmd = self.set_remote_cmd(self.submit_cmd, self.remote_submit_cmd)
             logfile = self.get_logfile()
             if logfile is None:
-                logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
-                logfile = open(logfile, "w")
-                self.process = subprocess.Popen(cmd.split(), stdout=logfile, stderr=logfile)
-                logfile.close()
+                subfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
+                subfile = open(subfile, "w")
+                process = subprocess.Popen(cmd.split(), stdout=subfile, stderr=subfile)
+                process.wait()
+                subfile.close()
+                ret = process.returncode
+                if ret != 0:
+                    raise RuntimeError("Submit command failed with error code " + str(ret))
             else:
+                logfile = open(logfile, "w") 
                 self.process = subprocess.Popen(cmd.split(), stdout=logfile, stderr=logfile)
+                
             # print(self.submit_cmd)
             self.job_id = self.set_jobid()
             # print(self.job_id)
@@ -406,10 +433,9 @@ class BackgroundSubmission(SubmissionBaseClass):
 
     def get_logfile(self):
         ecf_jobout = self.task_settings.ecf_jobout_at_host
-        return open(ecf_jobout, "w")
+        return ecf_jobout
 
     def set_kill_cmd(self):
-        print("trygve ", self.job_id)
         if self.job_id is not None:
             cmd = "kill -9 " + str(self.job_id)
             self.kill_job_cmd = self.set_remote_cmd(cmd, self.remote_kill_cmd)
@@ -515,6 +541,12 @@ class SlurmSubmission(BatchSubmission):
         name = self.task.ecf_name.split("/")
         self.name = name[-1]
 
+    def set_output(self):
+        logfile = self.task_settings.ecf_jobout_at_host
+        string = self.batch_prefix + " -o " + logfile + "\n"
+        string += self.batch_prefix + " -e " + logfile 
+        return string
+
     def set_jobid(self):
 
         logfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
@@ -526,6 +558,9 @@ class SlurmSubmission(BatchSubmission):
         for line in lines:
             answer = line
 
+        if answer is None:
+            raise Exception("No answer found " + str(lines) + " " + logfile)
+
         expected_len = 4
         answer = answer.replace("\n", "")
         words = answer.split(" ")
@@ -536,7 +571,7 @@ class SlurmSubmission(BatchSubmission):
             raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
 
     def set_job_name(self):
-        string = self.batch_prefix + " -N " + self.name + "\n"
+        string = self.batch_prefix + " -J " + self.name + "\n"
         return string
 
 
@@ -553,7 +588,7 @@ class GridEngineSubmission(BatchSubmission):
     def set_output(self):
         logfile = self.task_settings.ecf_jobout_at_host
         string = self.batch_prefix + " -o " + logfile + "\n"
-        string += self.batch_prefix + " -e " + logfile + "\n"
+        string += self.batch_prefix + " -e " + logfile
         return string
 
     def set_jobid(self):

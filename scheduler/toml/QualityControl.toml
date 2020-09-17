@@ -5,8 +5,6 @@
 
 [QualityControl]
 tests = ["Plausibility"]
-qc_codes = "@HOME@/revision_control/pysurfex/surfex/cfg/qc_codes.json"
-qc_config = "@HOME@/hm_home/sandbox/toml/qc_config.json"
 
 [QualityControl.t2m]
 output = "@ARCHIVE_PATTERN@/qc_t2m.json"

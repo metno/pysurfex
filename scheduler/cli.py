@@ -292,10 +292,6 @@ def surfex_script(argv):
                 dtg = "2008061600"
             suite = "Makeup"
 
-        # Set experiment from files. Should be existing now after setup
-        sfx_exp = surfex.ExpFromFiles(exp, wd)
-        system = sfx_exp.system
-
         updated_progress = {}
         updated_progress_pp = {}
         if dtg is not None:
@@ -305,18 +301,27 @@ def surfex_script(argv):
         if action == "start":
             if dtg is None:
                 raise Exception("No DTG was provided!")
+            updated_progress.update({"DTG": dtg})
             updated_progress.update({"DTGBEG": dtg})
-            updated_progress.update({"DTGPP": dtg})
+            updated_progress.update({"DTGEND": dtg})
+            updated_progress_pp.update({"DTGPP": dtg})
 
-        progress_file = sfx_exp.get_file_name(wd, "progress", stream=stream, full_path=True)
-        progress_pp_file = sfx_exp.get_file_name(wd, "progressPP", stream=stream, full_path=True)
+        progress_file = surfex.Exp.get_file_name(wd, "progress", stream=stream, full_path=True)
+        progress_pp_file = surfex.Exp.get_file_name(wd, "progressPP", stream=stream, full_path=True)
 
         if action == "prod" or action == "continue":
             progress = surfex.ProgressFromFile(progress_file, progress_pp_file)
+            if dtgend is not None:
+                progress.dtgend = datetime.strptime(dtgend, "%Y%m%d%H")
         else:
             progress = surfex.Progress(updated_progress, updated_progress_pp)
+
         # Update progress
         progress.save(progress_file, progress_pp_file)
+
+        # Set experiment from files. Should be existing now after setup
+        sfx_exp = surfex.ExpFromFiles(exp, wd)
+        system = sfx_exp.system
 
         # Merge config
         all_merged_settings = sfx_exp.merge_toml_env_from_config_dicts()

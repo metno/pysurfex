@@ -1,0 +1,13 @@
+{
+  "scratch": "/home/$USER/surfex-tests",
+  "oi_coeff_dir": "/home/$USER/surfex-tests/oi_coeff",
+  "climdir": "/home/harmonie/climate/PGD/",
+  "sand_dir": "/home/harmonie/climate/PGD/",
+  "clay_dir": "/home/harmonie/climate/PGD/",
+  "oro_dir": "/nobackup/forsk/sm_tryas/harmonie/develop/climate/METCOOP25D/",
+  "soc_top_dir": "/home/harmonie/climate/PGD/",
+  "soc_sub_dir": "/home/harmonie/climate/PGD/",
+  "flake_dir": "/home/harmonie/climate/PGD/",
+  "ecoclimap_dir": "/home/harmonie/climate/PGD/",
+  "ecoclimap_bin_dir": "/nobackup/forsk/sm_tryas/harmonie/develop/climate/"
+}

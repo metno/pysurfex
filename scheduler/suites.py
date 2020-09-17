@@ -35,13 +35,13 @@ class EcflowSuite(object):
         # ecf_loghost = self.exp.server.get_var("ECF_LOGHOST")
         # ecf_logport = self.exp.server.get_var("ECF_LOGPORT")
 
-        ecf_include = lib + "/ecf"
-        ecf_files = lib + "/ecf"
+        ecf_include = lib + "/scheduler/ecf"
+        ecf_files = lib + "/scheduler/ecf"
         ecf_home = joboutdir
         ecf_out = joboutdir
         ecf_jobout = joboutdir + "/%ECF_NAME%.%ECF_TRYNO%"
-        ecf_job_cmd = "export PYTHONPATH=%LIB%/python-lib/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
-                      "%LIB%/python-lib/bin/ECF_submit -e %ENSMBR% -ymd %YMD% -hh %HH% " + \
+        ecf_job_cmd = "export PYTHONPATH=%LIB%/pysurfex/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
+                      "%LIB%/pysurfex/scheduler/bin/ECF_submit -e %ENSMBR% -ymd %YMD% -hh %HH% " + \
                       "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% " + \
                       ">> %DATA%/ECF.log 2>&1"
 
@@ -86,8 +86,8 @@ class EcflowSuite(object):
         suite.add_variable("ECF_FILES", ecf_files)
         suite.add_variable("ECF_TRIES", 1)
         suite.add_variable("ECF_HOME", ecf_home)
-        ecf_kill_cmd = "export PYTHONPATH=%LIB%/python-lib/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
-                       "%LIB%/python-lib/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_PASS% %ECF_TRYNO% " \
+        ecf_kill_cmd = "export PYTHONPATH=%LIB%/pysurfex/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
+                       "%LIB%/pysurfex/scheduler/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_PASS% %ECF_TRYNO% " \
                        "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
         suite.add_variable("ECF_KILL_CMD", ecf_kill_cmd)
         suite.add_variable("ECF_OUT", ecf_out)
@@ -153,14 +153,14 @@ class SurfexSuite(object):
         if "PYTHONPATH" in os.environ:
             pythonpath = ":" + os.path.expandvars(os.environ["PYTHONPATH"])
 
-        ecf_job_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
-                      "%LIB%/python-lib/bin/ECF_submit -e %ENSMBR% -dtg %DTG% " + \
+        ecf_job_cmd = "export PYTHONPATH=%LIB%/pysurfex/" + pythonpath + "; " \
+                      "%LIB%/pysurfex/scheduler/bin/ECF_submit -e %ENSMBR% -dtg %DTG% " + \
                       "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID%"
-        ecf_kill_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
-                       "%LIB%/python-lib/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
+        ecf_kill_cmd = "export PYTHONPATH=%LIB%/pysurfex/" + pythonpath + "; " \
+                       "%LIB%/pysurfex/scheduler/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
                        "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
-        ecf_status_cmd = "export PYTHONPATH=%LIB%/python-lib/" + pythonpath + "; " \
-                         "%LIB%/python-lib/bin/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
+        ecf_status_cmd = "export PYTHONPATH=%LIB%/pysurfex/" + pythonpath + "; " \
+                         "%LIB%/pysurfex/scheduler/bin/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
                          "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
         variables = [EcfVariable("LIB", lib),
                      EcfVariable("EXP", exp.name),
