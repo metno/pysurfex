@@ -2,7 +2,7 @@ import sys
 import surfex
 import scheduler
 from argparse import ArgumentParser
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import os
 import shutil
@@ -60,26 +60,15 @@ def submit_cmd(argv):
         else:
             ecf_rid = os.getpid()
 
-        exp = surfex.ExpFromFiles(exp, lib)
-        system = exp.system
+        exp = scheduler.ExpFromFiles(exp, lib)
         wd = exp.wd
 
-        # Merge config
-        all_merged_settings = exp.merge_toml_env_from_config_dicts()
-        host = "0"
-        merged_config, member_merged_config = exp.process_merged_settings(all_merged_settings, host)
-
-        # Create configuration
-        config = surfex.Configuration(system, merged_config, member_merged_config, config_dir=wd)
-
-        # ecflow_scheduler = scheduler.EcflowSch(ecf_host, ecf_loghost, ecf_port, ecf_logport, logfile)
-
-        coldstart = config.is_coldstart(dtg)
+        # coldstart = config.is_coldstart(dtg)
         submit_exceptions = wd + "/config//submit/submission.json"
         submit_exceptions = json.load(open(submit_exceptions, "r"))
         task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
         sub = scheduler.EcflowSubmitTask(exp, task, submit_exceptions=submit_exceptions,
-                                         ensmbr=ensmbr, coldstart=coldstart, dbfile=db)
+                                         ensmbr=ensmbr, dbfile=db)
         sub.submit()
     except Exception as e:
         raise e
@@ -123,7 +112,7 @@ def kill_cmd(argv):
     if submission_id == "":
         submission_id = None
 
-    exp = surfex.ExpFromFiles(exp, lib)
+    exp = scheduler.ExpFromFiles(exp, lib)
     task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
     task_settings = scheduler.TaskSettings(task, exp.env_submit, exp.system)
     print(task.submission_id)
@@ -166,7 +155,7 @@ def status_cmd(argv):
     ecf_rid = kwargs["ecf_rid"]
     submission_id = kwargs["submission_id"]
 
-    exp = surfex.ExpFromFiles(exp, lib)
+    exp = scheduler.ExpFromFiles(exp, lib)
     task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
     task_settings = scheduler.TaskSettings(task, exp.env_submit, exp.system)
 
@@ -253,11 +242,10 @@ def surfex_script(argv):
             conf = rev
 
         experiment_is_locked = False
-        sfx_exp = surfex.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config)
+        sfx_exp = scheduler.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config)
         sfx_exp.setup_files(host, ecf_port=ecf_port, ecf_port_offset=ecf_port_offset)
 
         if domain is not None:
-            print(domain)
             domain_json = surfex.set_domain(json.load(open(wd + "/config/domains/Harmonie_domains.json", "r")),
                                             domain, hm_mode=True)
             domain_file = sfx_exp.get_file_name(wd, "domain", full_path=True)
@@ -270,7 +258,7 @@ def surfex_script(argv):
     elif action == "co":
         if file is None:
             raise Exception("Checkout requires a file (--file)")
-        surfex.ExpFromFiles(exp, wd).checkout(file)
+        scheduler.ExpFromFiles(exp, wd).checkout(file)
     else:
         # Some kind of start
         if action == "start" and dtg is None:
@@ -306,21 +294,21 @@ def surfex_script(argv):
             updated_progress.update({"DTGEND": dtg})
             updated_progress_pp.update({"DTGPP": dtg})
 
-        progress_file = surfex.Exp.get_file_name(wd, "progress", stream=stream, full_path=True)
-        progress_pp_file = surfex.Exp.get_file_name(wd, "progressPP", stream=stream, full_path=True)
+        progress_file = scheduler.Exp.get_file_name(wd, "progress", stream=stream, full_path=True)
+        progress_pp_file = scheduler.Exp.get_file_name(wd, "progressPP", stream=stream, full_path=True)
 
         if action == "prod" or action == "continue":
-            progress = surfex.ProgressFromFile(progress_file, progress_pp_file)
+            progress = scheduler.ProgressFromFile(progress_file, progress_pp_file)
             if dtgend is not None:
                 progress.dtgend = datetime.strptime(dtgend, "%Y%m%d%H")
         else:
-            progress = surfex.Progress(updated_progress, updated_progress_pp)
+            progress = scheduler.Progress(updated_progress, updated_progress_pp)
 
         # Update progress
         progress.save(progress_file, progress_pp_file)
 
         # Set experiment from files. Should be existing now after setup
-        sfx_exp = surfex.ExpFromFiles(exp, wd)
+        sfx_exp = scheduler.ExpFromFiles(exp, wd)
         system = sfx_exp.system
 
         # Merge config
@@ -329,8 +317,7 @@ def surfex_script(argv):
         merged_config, member_merged_config = sfx_exp.process_merged_settings(all_merged_settings, host)
 
         # Create configuration
-        config = surfex.Configuration(system, merged_config, member_merged_config,
-                                      config_dir=sfx_exp.conf, stream=stream)
+        config = surfex.Configuration(merged_config, member_merged_config)
 
         data0 = system.get_var("SFX_EXP_DATA", "0")
         lib0 = system.get_var("SFX_EXP_LIB", "0")

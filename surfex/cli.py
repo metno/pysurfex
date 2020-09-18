@@ -248,7 +248,7 @@ def create_surfex_json_namelist(args):
     if os.path.exists(settings_file):
         print("Read toml settings from " + settings_file)
         settings = surfex.toml_load(settings_file)
-        print(settings)
+        # print(settings)
     else:
         raise FileNotFoundError("Input file does not exist: " + settings_file)
 

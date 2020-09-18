@@ -36,11 +36,12 @@ task_name = "%TASK%"
 
 task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
 
+# Dummy commands to try out your self
 print("%LIB%/pysurfex/scheduler/in/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% -submission_id")
 print("%LIB%/pysurfex/scheduler/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% -submission_id")
 
 # This will also handle call to sys.exit(), i.e. Client.__exit__ will still be called.
-with scheduler.Client(server, task) as ci:
+with scheduler.EcflowClient(server, task) as ci:
     print("Running task " + task_name)
     print(scheduler.__file__)
     task_class = getattr(scheduler.tasks, task_name)

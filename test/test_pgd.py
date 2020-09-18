@@ -38,7 +38,7 @@ class RunTestNC(unittest.TestCase):
 
         argv = [
             "-c", config_file,
-            "-p", "examples/settings/",
+            "-p", "scheduler/nam/",
             "-e", "ecoclimap.json",
             "-s", system,
             task
@@ -73,9 +73,9 @@ class RunTestNC(unittest.TestCase):
 
         argv = [
             "-c", config_file,
-            "-p", "examples/settings/",
+            "-p", "scheduler/nam/",
             "-e", "ecoclimap.json",
-            "--prep.file", "examples/settings/prep_from_namelist_values.json",
+            "--prep.file", "scheduler/nam/prep_from_namelist_values.json",
             "--prep.filetype", "json",
             "--dtg", "2020022000",
             "-s", system,
@@ -113,7 +113,7 @@ class RunTestNC(unittest.TestCase):
 
         argv = [
             "-c", config_file,
-            "-p", "examples/settings/",
+            "-p", "scheduler/nam/",
             "-e", "ecoclimap.json",
             "--forc_zs",
             "-s", system,

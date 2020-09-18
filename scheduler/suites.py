@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta
 
 
-class EcflowSuite(object):
+class SuiteDefinition(object):
     def __init__(self, config, exp, def_file, host="0", stream=None):
 
         self.config = config
@@ -162,41 +162,41 @@ class SurfexSuite(object):
         ecf_status_cmd = "export PYTHONPATH=%LIB%/pysurfex/" + pythonpath + "; " \
                          "%LIB%/pysurfex/scheduler/bin/ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
                          "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
-        variables = [EcfVariable("LIB", lib),
-                     EcfVariable("EXP", exp.name),
-                     EcfVariable("ECF_EXTN", ".py"),
-                     EcfVariable("DTG", dtgbeg_str),
-                     EcfVariable("DTGBEG", dtgbeg_str),
-                     EcfVariable("STREAM", ""),
-                     EcfVariable("ENSMBR", ""),
-                     EcfVariable("ECF_FILES", ecf_files),
-                     EcfVariable("ECF_INCLUDE", ecf_include),
-                     EcfVariable("ECF_TRIES", 1),
-                     EcfVariable("SUBMISSION_ID", ""),
-                     EcfVariable("ECF_HOME", ecf_home),
-                     EcfVariable("ECF_KILL_CMD", ecf_kill_cmd),
-                     EcfVariable("ECF_JOB_CMD", ecf_job_cmd),
-                     EcfVariable("ECF_STATUS_CMD", ecf_status_cmd),
-                     EcfVariable("ECF_OUT", ecf_out),
-                     EcfVariable("ECF_JOBOUT", ecf_jobout)
+        variables = [EcflowVariable("LIB", lib),
+                     EcflowVariable("EXP", exp.name),
+                     EcflowVariable("ECF_EXTN", ".py"),
+                     EcflowVariable("DTG", dtgbeg_str),
+                     EcflowVariable("DTGBEG", dtgbeg_str),
+                     EcflowVariable("STREAM", ""),
+                     EcflowVariable("ENSMBR", ""),
+                     EcflowVariable("ECF_FILES", ecf_files),
+                     EcflowVariable("ECF_INCLUDE", ecf_include),
+                     EcflowVariable("ECF_TRIES", 1),
+                     EcflowVariable("SUBMISSION_ID", ""),
+                     EcflowVariable("ECF_HOME", ecf_home),
+                     EcflowVariable("ECF_KILL_CMD", ecf_kill_cmd),
+                     EcflowVariable("ECF_JOB_CMD", ecf_job_cmd),
+                     EcflowVariable("ECF_STATUS_CMD", ecf_status_cmd),
+                     EcflowVariable("ECF_OUT", ecf_out),
+                     EcflowVariable("ECF_JOBOUT", ecf_jobout)
                      ]
 
-        self.suite = EcfSuite(self.suite_name, def_file=def_file, variables=variables)
+        self.suite = EcflowSuite(self.suite_name, def_file=def_file, variables=variables)
         # suite = self.suite.ecf_node
 
-        init_run = EcfTask("InitRun", self.suite)
-        init_run_complete = EcfTrigger(init_run)
+        init_run = EcflowTask("InitRun", self.suite)
+        init_run_complete = EcflowTrigger(init_run)
 
-        comp_trigger = EcfTriggers(init_run_complete)
-        comp = EcfFamily("Compilation", self.suite, triggers=comp_trigger)
+        comp_trigger = EcflowTriggers(init_run_complete)
+        comp = EcflowFamily("Compilation", self.suite, triggers=comp_trigger)
 
-        EcfTask("MakeOfflineBinaries", comp, ecf_files=ecf_files)
+        EcflowTask("MakeOfflineBinaries", comp, ecf_files=ecf_files)
 
-        comp_complete = EcfTrigger(comp, mode="complete")
-        static = EcfFamily("StaticData", self.suite, triggers=EcfTriggers([init_run_complete, comp_complete]))
-        EcfTask("Pgd", static, ecf_files=ecf_files)
+        comp_complete = EcflowTrigger(comp, mode="complete")
+        static = EcflowFamily("StaticData", self.suite, triggers=EcflowTriggers([init_run_complete, comp_complete]))
+        EcflowTask("Pgd", static, ecf_files=ecf_files)
 
-        static_complete = EcfTrigger(static)
+        static_complete = EcflowTrigger(static)
 
         prep_complete = None
         hours_ahead = 24
@@ -207,46 +207,47 @@ class SurfexSuite(object):
         for dtg in dtgs:
             dtg_str = dtg.strftime("%Y%m%d%H")
             variables = [
-                EcfVariable("DTG", dtg_str),
-                EcfVariable("DTGBEG", dtg_str)
+                EcflowVariable("DTG", dtg_str),
+                EcflowVariable("DTGBEG", dtg_str)
             ]
-            triggers = EcfTriggers([init_run_complete, static_complete])
+            triggers = EcflowTriggers([init_run_complete, static_complete])
 
-            dtg_node = EcfFamily(dtg_str, self.suite, variables=variables, triggers=triggers)
+            dtg_node = EcflowFamily(dtg_str, self.suite, variables=variables, triggers=triggers)
 
             ahead_trigger = None
             for dtg_str2 in prediction_dtg_node:
                 validtime = datetime.strptime(dtg_str2, "%Y%m%d%H")
                 if validtime < dtg:
                     if validtime + timedelta(hours=hours_ahead) <= dtg:
-                        ahead_trigger = EcfTrigger(prediction_dtg_node[dtg_str2])
+                        ahead_trigger = EcflowTrigger(prediction_dtg_node[dtg_str2])
 
             if ahead_trigger is None:
-                triggers = EcfTriggers([init_run_complete, static_complete])
+                triggers = EcflowTriggers([init_run_complete, static_complete])
             else:
-                triggers = EcfTriggers([init_run_complete, static_complete, ahead_trigger])
+                triggers = EcflowTriggers([init_run_complete, static_complete, ahead_trigger])
 
-            prepare_cycle = EcfTask("PrepareCycle", dtg_node, triggers=triggers, ecf_files=ecf_files)
+            prepare_cycle = EcflowTask("PrepareCycle", dtg_node, triggers=triggers, ecf_files=ecf_files)
+            prepare_cycle_complete = EcflowTrigger(prepare_cycle)
 
-            triggers.add_triggers(EcfTrigger(prepare_cycle))
+            triggers.add_triggers(EcflowTrigger(prepare_cycle))
 
-            cycle_input = EcfFamily("CycleInput", dtg_node, triggers=triggers)
+            cycle_input = EcflowFamily("CycleInput", dtg_node, triggers=triggers)
             cycle_input_dtg_node.update({dtg_str: cycle_input})
 
-            EcfTask("Forcing", cycle_input, ecf_files=ecf_files)
+            EcflowTask("Forcing", cycle_input, ecf_files=ecf_files)
 
-            triggers = EcfTriggers([init_run_complete, static_complete])
+            triggers = EcflowTriggers([init_run_complete, static_complete, prepare_cycle_complete])
             if prev_dtg is not None:
                 prev_dtg_str = prev_dtg.strftime("%Y%m%d%H")
-                triggers.add_triggers(EcfTrigger(prediction_dtg_node[prev_dtg_str]))
+                triggers.add_triggers(EcflowTrigger(prediction_dtg_node[prev_dtg_str]))
 
-            initialization = EcfFamily("Initialization", dtg_node, triggers=triggers)
+            initialization = EcflowFamily("Initialization", dtg_node, triggers=triggers)
 
             analysis = None
             if dtg == dtgbeg:
 
-                prep = EcfTask("Prep", initialization, ecf_files=ecf_files)
-                prep_complete = EcfTrigger(prep)
+                prep = EcflowTask("Prep", initialization, ecf_files=ecf_files)
+                prep_complete = EcflowTrigger(prep)
                 # Might need an extra trigger for input
 
             else:
@@ -263,11 +264,11 @@ class SurfexSuite(object):
                             print("Do snow assimilation for ", dtg)
                             do_soda = True
 
-                triggers = EcfTriggers(prep_complete)
+                triggers = EcflowTriggers(prep_complete)
                 if not do_soda:
-                    EcfTask("CycleFirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
+                    EcflowTask("CycleFirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
                 else:
-                    fg = EcfTask("FirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
+                    fg = EcflowTask("FirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
 
                     an_variables = {"t2m": False, "rh2m": False, "sd": False}
                     nnco = exp.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
@@ -280,43 +281,43 @@ class SurfexSuite(object):
                             elif ivar == 4:
                                 an_variables.update({"sd": True})
 
-                    analysis = EcfFamily("Analysis", initialization)
-                    fg4oi = EcfTask("FirstGuess4OI", analysis, ecf_files=ecf_files)
+                    analysis = EcflowFamily("Analysis", initialization)
+                    fg4oi = EcflowTask("FirstGuess4OI", analysis, ecf_files=ecf_files)
 
                     triggers = []
                     for var in an_variables:
                         if an_variables[var]:
-                            v = EcfFamily(var, analysis)
-                            qc = EcfTask("QualityControl", v)
-                            oi_triggers = EcfTriggers([EcfTrigger(qc), EcfTrigger(fg4oi)])
-                            EcfTask("OptimalInterpolation", v, triggers=oi_triggers, ecf_files=ecf_files)
-                            triggers.append(EcfTrigger(v))
+                            v = EcflowFamily(var, analysis)
+                            qc = EcflowTask("QualityControl", v)
+                            oi_triggers = EcflowTriggers([EcflowTrigger(qc), EcflowTrigger(fg4oi)])
+                            EcflowTask("OptimalInterpolation", v, triggers=oi_triggers, ecf_files=ecf_files)
+                            triggers.append(EcflowTrigger(v))
 
                     oi2soda_complete = None
                     if len(triggers) > 0:
-                        triggers = EcfTriggers(triggers)
-                        oi2soda = EcfTask("Oi2soda", analysis, triggers=triggers)
-                        oi2soda_complete = EcfTrigger(oi2soda)
+                        triggers = EcflowTriggers(triggers)
+                        oi2soda = EcflowTask("Oi2soda", analysis, triggers=triggers)
+                        oi2soda_complete = EcflowTrigger(oi2soda)
 
-                    triggers = EcfTriggers([EcfTrigger(fg), oi2soda_complete])
-                    EcfTask("Soda", analysis, triggers=triggers, ecf_files=ecf_files)
+                    triggers = EcflowTriggers([EcflowTrigger(fg), oi2soda_complete])
+                    EcflowTask("Soda", analysis, triggers=triggers, ecf_files=ecf_files)
 
-            triggers = EcfTriggers([EcfTrigger(cycle_input), EcfTrigger(initialization)])
-            prediction = EcfFamily("Prediction", dtg_node, triggers=triggers)
+            triggers = EcflowTriggers([EcflowTrigger(cycle_input), EcflowTrigger(initialization)])
+            prediction = EcflowFamily("Prediction", dtg_node, triggers=triggers)
             prediction_dtg_node.update({dtg_str: prediction})
 
-            forecast = EcfTask("Forecast", prediction, ecf_files=ecf_files)
-            EcfTask("LogProgress", prediction, triggers=EcfTriggers(EcfTrigger(forecast)), ecf_files=ecf_files)
+            forecast = EcflowTask("Forecast", prediction, ecf_files=ecf_files)
+            EcflowTask("LogProgress", prediction, triggers=EcflowTriggers(EcflowTrigger(forecast)), ecf_files=ecf_files)
 
-            pp = EcfFamily("PostProcessing", dtg_node, triggers=EcfTriggers(EcfTrigger(prediction)))
+            pp = EcflowFamily("PostProcessing", dtg_node, triggers=EcflowTriggers(EcflowTrigger(prediction)))
             post_processing_dtg_node.update({dtg_str: pp})
 
             log_pp_trigger = None
             if analysis is not None:
-                qc2obsmon = EcfTask("Qc2obsmon", pp, ecf_files=ecf_files)
-                log_pp_trigger = EcfTriggers(EcfTrigger(qc2obsmon))
+                qc2obsmon = EcflowTask("Qc2obsmon", pp, ecf_files=ecf_files)
+                log_pp_trigger = EcflowTriggers(EcflowTrigger(qc2obsmon))
 
-            EcfTask("LogProgressPP", pp, triggers=log_pp_trigger, ecf_files=ecf_files)
+            EcflowTask("LogProgressPP", pp, triggers=log_pp_trigger, ecf_files=ecf_files)
             prev_dtg = dtg
 
         hours_behind = 24
@@ -324,14 +325,14 @@ class SurfexSuite(object):
             dtg_str = dtg.strftime("%Y%m%d%H")
             pp_dtg_str = (dtg - timedelta(hours=hours_behind)).strftime("%Y%m%d%H")
             if pp_dtg_str in post_processing_dtg_node:
-                triggers = EcfTriggers(EcfTrigger(post_processing_dtg_node[pp_dtg_str]))
+                triggers = EcflowTriggers(EcflowTrigger(post_processing_dtg_node[pp_dtg_str]))
                 cycle_input_dtg_node[dtg_str].add_part_trigger(triggers)
 
     def save_as_defs(self):
         self.suite.save_as_defs()
 
 
-class Node(object):
+class EcflowNode(object):
 
     """
     A Node class is the abstract base class for Suite, Family and Task
@@ -369,7 +370,7 @@ class Node(object):
                 self.ecf_node.add_variable(v.name, v.value)
 
         if triggers is not None:
-            if isinstance(triggers, EcfTriggers):
+            if isinstance(triggers, EcflowTriggers):
                 if triggers.trigger_string is not None:
                     self.ecf_node.add_trigger(triggers.trigger_string)
                 else:
@@ -379,7 +380,7 @@ class Node(object):
         self.triggers = triggers
 
     def add_part_trigger(self, triggers, mode=True):
-        if isinstance(triggers, EcfTriggers):
+        if isinstance(triggers, EcflowTriggers):
             if triggers.trigger_string is not None:
                 self.ecf_node.add_part_trigger(triggers.trigger_string, mode)
             else:
@@ -388,12 +389,12 @@ class Node(object):
             raise Exception("Triggers must be a Triggers object")
 
 
-class NodeContainer(Node):
+class EcflowNodeContainer(EcflowNode):
     def __init__(self, name, node_type, parent, **kwargs):
-        Node.__init__(self, name, node_type, parent, **kwargs)
+        EcflowNode.__init__(self, name, node_type, parent, **kwargs)
 
 
-class EcfSuite(NodeContainer):
+class EcflowSuite(EcflowNodeContainer):
     def __init__(self, name, **kwargs):
         self.defs = ecflow.Defs({})
 
@@ -403,14 +404,14 @@ class EcfSuite(NodeContainer):
         self.def_file = def_file
         if def_file is None:
             self.def_file = name + ".def"
-        NodeContainer.__init__(self, name, "suite", self.defs, **kwargs)
+        EcflowNodeContainer.__init__(self, name, "suite", self.defs, **kwargs)
 
     def save_as_defs(self):
         self.defs.save_as_defs(self.def_file)
         print("def filed saved to " + self.def_file)
 
 
-class EcfTriggers(object):
+class EcflowTriggers(object):
     def __init__(self, triggers, **kwargs):
         mode = "AND"
         if "mode" in kwargs:
@@ -434,10 +435,10 @@ class EcfTriggers(object):
                 a = ""
                 if not first:
                     a = " " + mode + " "
-                if isinstance(t, EcfTriggers):
+                if isinstance(t, EcflowTriggers):
                     trigger = trigger + a + t.trigger_string
                 else:
-                    if isinstance(t, EcfTrigger):
+                    if isinstance(t, EcflowTrigger):
                         trigger = trigger + a + t.node.path + " == " + t.mode
                     else:
                         raise Exception("Trigger must be a Trigger object")
@@ -455,27 +456,27 @@ class EcfTriggers(object):
             self.trigger_string = self.trigger_string + a + trigger_string
 
 
-class EcfTrigger(object):
+class EcflowTrigger(object):
     def __init__(self, node, mode="complete"):
         self.node = node
         self.mode = mode
         # self.path = self.node.ecf_node.get_abs_path()
 
 
-class EcfVariable(object):
+class EcflowVariable(object):
     def __init__(self, name, value):
         self.name = name
         self.value = value
 
 
-class EcfFamily(NodeContainer):
+class EcflowFamily(EcflowNodeContainer):
     def __init__(self, name, parent, **kwargs):
-        NodeContainer.__init__(self, name, "family", parent, **kwargs)
+        EcflowNodeContainer.__init__(self, name, "family", parent, **kwargs)
 
 
-class EcfTask(Node):
+class EcflowTask(EcflowNode):
     def __init__(self, name, parent, **kwargs):
-        Node.__init__(self, name, "task", parent, **kwargs)
+        EcflowNode.__init__(self, name, "task", parent, **kwargs)
 
         ecf_files = None
         if "ecf_files" in kwargs:
