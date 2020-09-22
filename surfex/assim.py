@@ -3,16 +3,17 @@ import surfex
 import jsonmerge
 import numpy as np
 try:
-    import gridppOI
+    import gridpp
 except ImportError:
-    gridppOI = None
+    gridpp = None
 
 
-def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, hlength=10000.,
-                  vlength=10000., wmin=0, max_elev_diff=100.,
-                  land_only=False, max_locations=20, elev_gradient=-0.0065, epsilon=0.5, minvalue=None, maxvalue=None):
+def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
+                  vlength=10000., max_elev_diff=100., elev_gradient=0, structure_function="Barnes",
+                  land_only=False, max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None, interpol="bilinear"):
 
-    if gridppOI is None:
+    # elev_gradient=-0.0065
+    if gridpp is None:
         raise Exception("You need gridpp to perform OI")
 
     glats = geo.lats
@@ -31,16 +32,32 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, min_rho=0.0013, 
     gelevs = np.transpose(gelevs)
     glafs = np.transpose(glafs)
 
-    rstat, field = gridppOI.optimal_interpolation(background, glats, glons, gelevs, glafs,
-                                                  values, pci, lats, lons, elevs, lafs,
-                                                  min_rho, hlength, vlength, wmin,
-                                                  max_elev_diff, land_only, max_locations,
-                                                  elev_gradient, epsilon)
+    bgrid = gridpp.Grid(glats, glons, gelevs)
+
+    points = gridpp.Points(lats, lons, elevs)
+    if interpol == "bilinear":
+        pbackground = gridpp.bilinear(bgrid, points, background, elev_gradient)
+    elif interpol == "nearest":
+        pbackground = gridpp.nearest(bgrid, points, background, elev_gradient)
+    else:
+        raise NotImplementedError
+    variance_ratios = np.full(points.size(), epsilon)
+
+    if structure_function == "Barnes":
+        structure = gridpp.BarnesStructure(hlength, vlength)
+    else:
+        raise NotImplementedError
+
+    field = gridpp.optimal_interpolation(bgrid, background, points, values, variance_ratios, pbackground, structure,
+                                         max_locations)
     field = np.asarray(field)
     if minvalue is not None:
         field[field < minvalue] = minvalue
     if maxvalue is not None:
         field[field > maxvalue] = maxvalue
+    if land_only:
+        sea = np.where(glafs == 0)
+        field[sea] = background[sea]
     return np.transpose(field)
 
 

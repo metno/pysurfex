@@ -20,27 +20,23 @@ class AbstractTask(object):
             self.task_settings = kwargs["task_settings"]
         # print("Init: ", self.task_settings)
 
-        mbr = None
+        self.mbr = None
         if "mbr" in kwargs:
-            mbr = kwargs["mbr"]
+            self.mbr = kwargs["mbr"]
 
-        wrk_pattern = self.exp.config.get_setting("SYSTEM#WRK_PATTERN", mbr=mbr)
-        self.wrk = self.parse_setting(wrk_pattern, mbr=mbr, dtg=self.dtg)
-        wdir = str(os.getppid())
+        wrk_pattern = self.exp.config.get_setting("SYSTEM#WRK_PATTERN", mbr=self.mbr)
+        self.wrk = self.parse_setting(wrk_pattern, mbr=self.mbr, dtg=self.dtg)
+        wdir = str(os.getpid())
         self.wdir = self.wrk + "/" + wdir
         print("WDIR=" + self.wdir)
         os.makedirs(self.wdir, exist_ok=True)
         os.chdir(self.wdir)
 
-        mbr = None
-        if "mbr" in kwargs:
-            mbr = kwargs["mbr"]
-
-        archive = self.exp.config.get_setting("SYSTEM#ARCHIVE_PATTERN", mbr=mbr, )
-        self.archive = self.parse_setting(archive, mbr=mbr, dtg=self.dtg)
+        archive = self.exp.config.get_setting("SYSTEM#ARCHIVE_PATTERN", mbr=self.mbr, )
+        self.archive = self.parse_setting(archive, mbr=self.mbr, dtg=self.dtg)
         os.makedirs(self.archive, exist_ok=True)
 
-        self.bindir = self.exp.config.get_setting("SYSTEM#BINDIR", mbr=mbr)
+        self.bindir = self.exp.config.get_setting("SYSTEM#BINDIR", mbr=self.mbr)
 
     def parse_setting(self, setting, **kwargs):
 
@@ -59,11 +55,9 @@ class AbstractTask(object):
             setting = str(setting).replace("@HH@", dtg.strftime("%H"))
             setting = str(setting).replace("@mm@", dtg.strftime("%M"))
 
-            if "mbr" in kwargs:
-                mbr = kwargs["mbr"]
-                if mbr is not None:
-                    setting = str(setting).replace("@EE@", "{:02d}".format(int(mbr)))
-                    setting = str(setting).replace("@EEE@", "{:03d}".format(int(mbr)))
+            if self.mbr is not None:
+                setting = str(setting).replace("@EE@", "{:02d}".format(int(self.mbr)))
+                setting = str(setting).replace("@EEE@", "{:03d}".format(int(self.mbr)))
 
             # CSURF_FILETYPE
             suffix = self.exp.config.get_setting("SURFEX#IO#CSURF_FILETYPE")
@@ -79,11 +73,41 @@ class AbstractTask(object):
 
         return setting
 
+    def substitute_string(self, setting, **kwargs):
+        stream = None
+        if kwargs is not None and "stream" in kwargs:
+            stream = kwargs["stream"]
+
+        host = "0"
+        if kwargs is not None and "host" in kwargs:
+            host = kwargs["host"]
+
+        env_vals = ["USER", "HOME"]
+        for env_val in env_vals:
+            if env_val in os.environ:
+                setting = setting.replace("@" + env_val + "@", os.environ[env_val])
+            else:
+                print(env_val + " not found in environment")
+
+        # Substitute system settings
+        for sys_var in self.exp.system.system_variables:
+            sys_setting = self.exp.system.get_var(sys_var, host=host, stream=stream)
+            if isinstance(sys_setting, str):
+                setting = setting.replace("@" + sys_var + "@", sys_setting)
+
+        # Substitute system settings
+        if "SYSTEM" in self.exp.config.settings:
+            sys_vars = self.exp.config.get_setting("SYSTEM")
+            for sys_var in sys_vars:
+                setting = setting.replace("@" + sys_var + "@",
+                                          self.exp.config.get_setting("SYSTEM#" + sys_var))
+        return setting
+
     def get_setting(self, kw, **kwargs):
         print("kwargs", kwargs, " task: ", self.task.ecf_task, " get: ", kw, " -> ", self.task_settings)
 
         # TODO
-        host = "0"
+        # host = "0"
         if self.task_settings is not None:
             if self.task.ecf_task in self.task_settings:
                 print("kw", kw, self.task_settings[self.task.ecf_task])
@@ -111,24 +135,7 @@ class AbstractTask(object):
 
                 # Substitution of string variables
                 if isinstance(setting, str):
-                    env_vals = ["USER", "HOME"]
-                    for env_val in env_vals:
-                        if env_val in os.environ:
-                            setting = setting.replace("@" + env_val + "@", os.environ[env_val])
-                        else:
-                            print(env_val + " not found in environment")
-
-                    # Substitute system settings
-                    # print(self.exp.config.settings)
-                    if "SYSTEM" in self.exp.config.settings:
-                        sys_vars = self.exp.config.get_setting("SYSTEM")
-                        for sys_var in sys_vars:
-                            # print(setting)
-                            # print("TRYGVE ", sys_var, " host: ", host)
-                            # print(self.exp.config.get_setting("SYSTEM#" + sys_var))
-                            setting = setting.replace("@" + sys_var + "@",
-                                                      self.exp.config.get_setting("SYSTEM#" + sys_var))
-
+                    setting = self.substitute_string(setting)
                     if parse:
                         setting = self.parse_setting(setting, **kwargs)
 
@@ -141,38 +148,16 @@ class AbstractTask(object):
         print("Setting: ", setting)
         return setting
 
-    '''
-    def prepare(self, **kwargs):
-        mbr = None
-        if "mbr" in kwargs:
-            mbr = kwargs["mbr"]
-
-        wrk_pattern = self.exp.config.get_setting("SYSTEM#WRK_PATTERN", mbr=mbr)
-        self.wrk = self.parse_setting(wrk_pattern, mbr=mbr, dtg=self.exp.progress.dtg)
-        wdir = str(os.getppid())
-        self.wdir = self.wrk + "/" + wdir
-        print("WDIR=" + self.wdir)
-        os.makedirs(self.wdir, exist_ok=True)
-        os.chdir(self.wdir)
-
-        mbr = None
-        if "mbr" in kwargs:
-            mbr = kwargs["mbr"]
-
-        archive = self.exp.config.get_setting("SYSTEM#ARCHIVE_PATTERN", mbr=mbr, )
-        self.archive = self.parse_setting(archive, mbr=mbr, dtg=self.exp.progress.dtg)
-        os.makedirs(self.archive, exist_ok=True)
-    '''
-
     def run(self, **kwargs):
         # self.prepare(**kwargs)
         self.execute(**kwargs)
         self.postfix(**kwargs)
 
     def execute(self, **kwargs):
-        pass
+        print("WARNING: Using empty base class execute " + str(kwargs))
 
     def postfix(self, **kwargs):
+        print("Base class postfix " + str(kwargs))
         if self.wrk is not None:
             os.chdir(self.wrk)
 
@@ -321,7 +306,8 @@ class Pgd(SurfexBinaryTask):
 
     def execute(self, **kwargs):
         output = self.get_setting("output")
-        binary = self.bindir + "/PGD.exe"
+        xyz = self.exp.config.get_setting("COMPILE#XYZ")
+        binary = self.bindir + "/PGD" + xyz
 
         force = False
         if "force" in kwargs:
@@ -329,8 +315,8 @@ class Pgd(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path, self.system_file_paths,
-                                                       **kwargs)
+                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                                                       self.system_file_paths, **kwargs)
 
             SurfexBinaryTask.execute(self, binary, output, json_settings,
                                      input_data=input_data,
@@ -347,12 +333,13 @@ class Prep(SurfexBinaryTask):
         
         output = self.get_setting("output", dtg=self.dtg)
         pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
-        prep_file = self.get_setting("prep_input_file", dtg=self.dtg, default=None)
-        prep_filetype = self.get_setting("prep_input_format", default=None)
+        prep_file = self.substitute_string(self.exp.config.get_setting("INITIAL_CONDITIONS#PREP_INPUT_FILE"))
+        prep_filetype = self.exp.config.get_setting("INITIAL_CONDITIONS#PREP_INPUT_FILETYPE")
         prep_pgdfile = self.get_setting("prep_pgdfile", dtg=self.dtg, default=None)
         prep_pgdfiletype = self.get_setting("prep_pgdfiletype", default=None)
+        xyz = self.exp.config.get_setting("COMPILE#XYZ")
 
-        binary = self.bindir + "/PREP.exe"
+        binary = self.bindir + "PREP" + xyz
 
         force = False
         if "force" in kwargs:
@@ -368,8 +355,8 @@ class Prep(SurfexBinaryTask):
                 "dtg": self.dtg
             }
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path, self.system_file_paths,
-                                                       **kwargs)
+                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                                                       self.system_file_paths, **kwargs)
 
             SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
                                      pgd_file_path=pgd_file_path)
@@ -390,7 +377,8 @@ class Forecast(SurfexBinaryTask):
     def execute(self, **kwargs):
         forcing = self.get_setting("forcing", dtg=self.dtg, default=None)
         forc_zs = self.get_setting("forc_zs", default=False)
-        binary = self.bindir + "/OFFLINE.exe"
+        xyz = self.exp.config.get_setting("COMPILE#XYZ")
+        binary = self.bindir + "/OFFLINE" + xyz
         output = self.get_setting("output", dtg=self.dtg)
         pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
         prep_file_path = self.get_setting("prep_file", dtg=self.dtg)
@@ -401,8 +389,8 @@ class Forecast(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path, self.system_file_paths,
-                                                       forc_zs=forc_zs)
+                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                                                       self.system_file_paths, forc_zs=forc_zs)
 
             # Add forcing
             # TODO Handle format. Use object
@@ -418,7 +406,8 @@ class Soda(SurfexBinaryTask):
         SurfexBinaryTask.__init__(self, task, exp, "soda", **kwargs)
 
     def execute(self, **kwargs):
-        binary = self.bindir + "/SODA.exe"
+        xyz = self.exp.config.get_setting("COMPILE#XYZ")
+        binary = self.bindir + "/SODA" + xyz
         output = self.get_setting("output", dtg=self.dtg)
         pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
         prep_file_path = self.get_setting("prep_file", dtg=self.dtg)
@@ -443,7 +432,8 @@ class Soda(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path, self.system_file_paths)
+                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                                                       self.system_file_paths)
 
             assim_input = surfex.set_assimilation_input(self.dtg, json_settings, sstfile=sstfile,
                                                         ua_first_guess=ua_first_guess,
@@ -488,7 +478,7 @@ class QualityControl(AbstractTask):
 
     def execute(self, **kwargs):
 
-        geo = self.exp.geo
+        # geo = self.exp.geo
         an_time = self.exp.progress.dtg
 
         translation = {
@@ -499,8 +489,8 @@ class QualityControl(AbstractTask):
 
         subsection = None
         if self.var_name in translation:
-            var = translation[self.var_name]
-            variables = [var]
+            # var = translation[self.var_name]
+            # variables = [var]
             subsection = self.var_name
 
         # archive_root = self.get_setting("archive_root")
@@ -571,10 +561,8 @@ class OptimalInterpolation(AbstractTask):
         else:
             raise Exception
 
-        min_rho = 0.0013
         hlength = 30000
         vlength = 100000
-        wmin = 0.0
         max_elev_diff = 100.0
         land_only = True
         max_locations = 20
@@ -583,10 +571,8 @@ class OptimalInterpolation(AbstractTask):
 
         input_file = self.get_setting("input", dtg=validtime, subsection=subsection)
         output_file = self.get_setting("output", dtg=validtime, subsection=subsection)
-        min_rho = self.get_setting("min_rho", subsection=subsection, default=min_rho)
         hlength = self.get_setting("hlength", subsection=subsection, default=hlength)
         vlength = self.get_setting("vlength", subsection=subsection, default=vlength)
-        wmin = self.get_setting("wmin", subsection=subsection, default=wmin)
         max_elev_diff = self.get_setting("max_elev_diff", subsection=subsection, default=max_elev_diff)
         land_only = self.get_setting("land_only", subsection=subsection, default=land_only)
         max_locations = self.get_setting("max_locations", subsection=subsection, default=max_locations)
@@ -600,14 +586,16 @@ class OptimalInterpolation(AbstractTask):
 
         an_time = validtime
         # Read OK observations
-        obs_file = "/home/trygveasp/scratch/sfx_home/sandbox/20200821_00/qc_t2m"
+        obs_file = self.get_setting("obsfile", subsection=subsection)
         observations = surfex.dataset_from_file(an_time, obs_file, qc_flag=0)
 
-        field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs, min_rho=min_rho,
-                                     hlength=hlength, vlength=vlength, wmin=wmin, max_elev_diff=max_elev_diff,
+        field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,
+                                     hlength=hlength, vlength=vlength, max_elev_diff=max_elev_diff,
                                      land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
                                      epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue)
 
+        if os.path.exists(output_file):
+            os.unlink(output_file)
         surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
 
 
@@ -641,8 +629,8 @@ class Forcing(AbstractTask):
         kwargs.update({"dtg_start": dtg.strftime("%Y%m%d%H")})
         kwargs.update({"dtg_stop": (dtg + timedelta(hours=fcint)).strftime("%Y%m%d%H")})
         kwargs.update({"input_format": "netcdf"})
-        kwargs.update({"pattern":
-                           "https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
+        kwargs.update({"pattern": "https://thredds.met.no/thredds/dodsC/meps25epsarchive/" +
+                                  "@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
         output = self.get_setting("output", dtg=dtg)
         kwargs.update({"of": output})
         output_format = self.get_setting("output_format", default="netcdf")
@@ -672,7 +660,6 @@ class FirstGuess(AbstractTask):
 
     def execute(self, **kwargs):
 
-        mbr = None
         print(kwargs)
         print(self.var_name)
         # surfex.run_surfex_binary(binary)
@@ -681,7 +668,7 @@ class FirstGuess(AbstractTask):
         fg_sfx = self.get_setting("fg_sfx", dtg=self.dtg)
 
         hh = self.exp.progress.dtg.strftime("%H")
-        fcint = self.exp.config.get_fcint(hh, mbr=mbr)
+        fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
         fg_dtg = self.dtg - timedelta(hours=fcint)
         fg_file = self.parse_setting(fg_pattern, dtg=fg_dtg)
         files = [fg_sfx]
@@ -699,7 +686,6 @@ class CycleFirstGuess(AbstractTask):
 
     def execute(self, **kwargs):
 
-        mbr = None
         print(kwargs)
         print(self.var_name)
         # surfex.run_surfex_binary(binary)
@@ -708,7 +694,7 @@ class CycleFirstGuess(AbstractTask):
         fc_start_sfx = self.get_setting("fc_start_sfx", dtg=self.dtg)
 
         hh = self.exp.progress.dtg.strftime("%H")
-        fcint = self.exp.config.get_fcint(hh, mbr=mbr)
+        fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
 
         fg_dtg = self.dtg - timedelta(hours=fcint)
         fg_file = self.parse_setting(fg_pattern, dtg=fg_dtg)
@@ -838,7 +824,10 @@ class FirstGuess4OI(AbstractTask):
         fg = None
         for var in variables:
 
-            inputfile = self.get_setting("inputfile", dtg=self.exp.progress.dtg)
+            hh = self.exp.progress.dtg.strftime("%H")
+            fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
+            fg_dtg = self.exp.progress.dtg - timedelta(hours=fcint)
+            inputfile = self.get_setting("inputfile", dtg=fg_dtg)
             fileformat = self.get_setting("fileformat", subsection=var)
             config_file = self.exp.wd + "/pysurfex/surfex/cfg/first_guess.yml"
             converter = self.get_setting("converter", subsection=var)
@@ -904,9 +893,8 @@ class LogProgress(AbstractTask):
         progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
 
         # Update progress
-        mbr = None
         cycle = self.exp.progress.dtg.strftime("%H")
-        fcint = self.exp.config.get_fcint(cycle, mbr=mbr)
+        fcint = self.exp.config.get_fcint(cycle, mbr=self.mbr)
         self.exp.progress.increment_progress(fcint, pp=False)
         self.exp.progress.save(progress_file, progress_pp_file, log_pp=False)
 
@@ -928,9 +916,7 @@ class LogProgressPP(AbstractTask):
         progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
 
         # Update progress
-        mbr = None
         cycle = self.exp.progress.dtg.strftime("%H")
-        fcint = self.exp.config.get_fcint(cycle, mbr=mbr)
+        fcint = self.exp.config.get_fcint(cycle, mbr=self.mbr)
         self.exp.progress.increment_progress(fcint, pp=True)
         self.exp.progress.save(progress_file, progress_pp_file, log=False)
-

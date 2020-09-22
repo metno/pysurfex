@@ -3,6 +3,7 @@ import netCDF4
 import numpy as np
 import time
 import copy
+import shutil
 import os
 import sys
 import surfex
@@ -94,7 +95,9 @@ class NetCDFOutput(SurfexForcing):
         self.forcing_file = {}
         if fname is None:
             fname = "FORCING.nc"
-        self.file_handler = netCDF4.Dataset(fname, 'w', format=self.output_format)
+        self.fname = fname
+        self.tmp_fname = self.fname + ".tmp"
+        self.file_handler = netCDF4.Dataset(self.tmp_fname, 'w', format=self.output_format)
         self._define_forcing(geo, att_objs, att_time, cache)
 
     def write_forcing(self, var_objs, this_time, cache):
@@ -224,6 +227,7 @@ class NetCDFOutput(SurfexForcing):
     def finalize(self):
         print("Close file")
         self.file_handler.close()
+        shutil.move(self.tmp_fname, self.fname)
 
 
 class AsciiOutput(SurfexForcing):

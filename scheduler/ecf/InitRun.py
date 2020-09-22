@@ -9,7 +9,7 @@ if stream == "":
     stream = None
 
 # InitRun always runs from HOST0
-exp = surfex.ExpFromFiles(exp, lib)
+exp = scheduler.ExpFromFiles(exp, lib)
 server = exp.server
 
 ecf_name = "%ECF_NAME%"
@@ -21,4 +21,4 @@ task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_i
 
 # This will also handle call to sys.exit(), i.e. Client.__exit__ will still be called.
 with scheduler.EcflowClient(server, task) as ci:
-    surfex.init_run(exp, stream=stream)
+    scheduler.init_run(exp, stream=stream)

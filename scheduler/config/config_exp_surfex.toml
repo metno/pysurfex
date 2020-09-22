@@ -114,9 +114,7 @@ LTOWN_TO_ROCK = false               # Switch to set town as rock. Only used if s
 #########################
 
 [SURFEX.ASSIM]
-SPATIALIZATION_TOOL = "CANARI"       # Program which does horizontal analysis: "gridpp"|"CANARI"
-ASSIMILATION_TOOL = "CANARI"         # Program which updates the soil: "SODA"|"CANARI".
-CFILE_FORMAT_LSM = "FA"              # File format for land sea mask when using SODA: "ASCII"|"FA"
+CFILE_FORMAT_LSM = "ASCII"              # File format for land sea mask when using SODA: "ASCII"|"FA"
 
 [SURFEX.ASSIM.SCHEMES]
 SEA = "INPUT"                        # Assimilation method for sea tile: "INPUT"|"NONE"

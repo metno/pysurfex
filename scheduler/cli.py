@@ -174,12 +174,6 @@ def parse_surfex_script(argv):
     parser.add_argument('-dtg', help="DateTimeGroup (YYYYMMDDHH)", type=str, required=False, default=None)
     parser.add_argument('-dtgend', help="DateTimeGroup (YYYYMMDDHH)", type=str, required=False, default=None)
     parser.add_argument('--suite', type=str, default="surfex", required=False, help="Type of suite definition")
-    parser.add_argument('--ecf_port', type=str, default=None, required=False, help="ECF_PORT")
-    parser.add_argument('--ecf_port_offset', type=int, default=1500, required=False,
-                        help="Offset for ECF_PORT and user id")
-    parser.add_argument('--ecf_logport', type=str, default=None, required=False, help="ECF_LOGPORT")
-    parser.add_argument('--ecf_logport_offset', type=int, default=35000, required=False,
-                        help="Offset for ECF_LOGPORT and user id")
     parser.add_argument('--stream', type=str, default=None, required=False, help="Stream")
 
     # co
@@ -200,7 +194,6 @@ def parse_surfex_script(argv):
 def surfex_script(argv):
 
     args = parse_surfex_script(argv)
-    print(args)
     action = args.action
     exp = args.exp
 
@@ -219,8 +212,6 @@ def surfex_script(argv):
     dtg = args.dtg
     dtgend = args.dtgend
     suite = args.suite
-    ecf_port = args.ecf_port
-    ecf_port_offset = args.ecf_port_offset
     stream = args.stream
 
     # Find experiment
@@ -243,7 +234,7 @@ def surfex_script(argv):
 
         experiment_is_locked = False
         sfx_exp = scheduler.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config)
-        sfx_exp.setup_files(host, ecf_port=ecf_port, ecf_port_offset=ecf_port_offset)
+        sfx_exp.setup_files(host)
 
         if domain is not None:
             domain_json = surfex.set_domain(json.load(open(wd + "/config/domains/Harmonie_domains.json", "r")),
@@ -323,20 +314,21 @@ def surfex_script(argv):
         lib0 = system.get_var("SFX_EXP_LIB", "0")
         logfile = data0 + "/ECF.log"
 
-        # Create LIB0 and copy init run
-        ecf_init_run = lib0 + "/ecf/InitRun.py"
-        dirname = os.path.dirname(ecf_init_run)
-        # print(dirname)
-        dirs = dirname.split("/")
-        # print(dirs)
-        if len(dirs) > 1:
-            p = "/"
-            for d in dirs[1:]:
-                p = p + d
-                # print(p)
-                os.makedirs(p, exist_ok=True)
-                p = p + "/"
-        shutil.copy2(wd + "/ecf/InitRun.py", ecf_init_run)
+        # Create LIB0 and copy init run if WD != lib0
+        if wd.rstrip("/") != lib0.rstrip("/"):
+            ecf_init_run = lib0 + "/ecf/InitRun.py"
+            dirname = os.path.dirname(ecf_init_run)
+            # print(dirname)
+            dirs = dirname.split("/")
+            # print(dirs)
+            if len(dirs) > 1:
+                p = "/"
+                for d in dirs[1:]:
+                    p = p + d
+                    # print(p)
+                    os.makedirs(p, exist_ok=True)
+                    p = p + "/"
+            shutil.copy2(wd + "/ecf/InitRun.py", ecf_init_run)
 
         # Create the scheduler
         my_scheduler = scheduler.EcflowServerFromFile("Env_server", logfile)

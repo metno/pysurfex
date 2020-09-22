@@ -23,8 +23,8 @@ if host == "":
 # InitRun always runs from HOST0
 progress = {"DTG": dtg, "DTGBEG": dtgbeg}
 progress_pp = {"DTGPP": dtg}
-progress = surfex.Progress(progress, progress_pp)
-exp = surfex.ExpFromFiles(exp, lib, host=host, progress=progress)
+progress = scheduler.Progress(progress, progress_pp)
+exp = scheduler.ExpFromFiles(exp, lib, host=host, progress=progress)
 server = exp.server
 
 ecf_name = "%ECF_NAME%"

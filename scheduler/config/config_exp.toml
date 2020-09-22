@@ -14,8 +14,8 @@ LL_LIST="48,3,3,3,3,3,3,3"              # Forecast lengths for the cycles [h], r
 ####################################################################################################
 # Compilation settings
 #####################################################################################################
-BUILD = "yes"                           # Turn on or off the compilation and binary build ( yes|no)
-
+BUILD = "no"                           # Turn on or off the compilation and binary build ( yes|no)
+XYZ = ".exe"
 
 [GEOMETRY]
 #####################################################################################################
@@ -25,6 +25,9 @@ DOMAIN = "DKCOEXP"                  # See definitions in config/Harmonie_domains
 
 [INITIAL_CONDITIONS]
 ANASURF = "gridpp"
+# "/nobackup/prod2/cooper/BD_archive/2020/09/16/00/fc20200916_00+003
+PREP_INPUT_FILE = "@SFX_EXP_LIB@/nam/prep_from_namelist_values.json"
+PREP_INPUT_FILETYPE = "json"
 
 [FORECAST]
 #####################################################################################################

@@ -4,9 +4,6 @@ output = "@CLIMDIR@/PGD.@CSURF_FILETYPE@"
 
 [Prep]
 pgd_file = "@CLIMDIR@/PGD.nc"
-#prep_input_file = "/nobackup/prod2/cooper/BD_archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@"
-prep_input_file = "/nobackup/prod2/cooper/BD_archive/2020/09/16/00/fc20200916_00+003"
-prep_input_format = "GRIB"
 output = "@ARCHIVE_PATTERN@/PREP.CSURF_FILETYPE"
 fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 
@@ -89,16 +86,18 @@ elev_gradient = 0
 epsilon = 0.5
 
 [OptimalInterpolation.t2m]
+obsfile = "@ARCHIVE_PATTERN@/qc_t2m.json"
 input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
 output = "@ARCHIVE_PATTERN@/an_t2m.nc"
 elev_gradient = 0.0065
 
 [OptimalInterpolation.rh2m]
+obsfile = "@ARCHIVE_PATTERN@/qc_rh2m.json"
 input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
 output = "@ARCHIVE_PATTERN@/an_rh2m.nc"
 
-
 [OptimalInterpolation.sd]
+obsfile = "@ARCHIVE_PATTERN@/qc_sd.json"
 tests = "Plausibility FirstGuess"
 input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
 output = "@ARCHIVE_PATTERN@/an_sd.nc"
@@ -121,3 +120,23 @@ ncvar = "relative_humidity_2m"
 [Oi2soda.sd]
 input = "@ARCHIVE_PATTERN@/an_sd.nc"
 ncvar = "surface_snow_thickness"
+
+###################
+# Quality Control #
+###################
+
+[QualityControl]
+tests = ["Plausibility"]
+
+[QualityControl.t2m]
+output = "@ARCHIVE_PATTERN@/qc_t2m.json"
+netatmo_filepattern = "@HOME@/hm_home/sandbox/netatmo/@YYYY@/@MM@/@DD@/@YYYY@@MM@@DD@T@HH@@mm@01Z.json"
+
+[QualityControl.rh2m]
+output = "@ARCHIVE_PATTERN@/qc_rh2m.json"
+netatmo_filepattern = "@HOME@/hm_home/sandbox/netatmo/@YYYY@/@MM@/@DD@/@YYYY@@MM@@DD@T@HH@@mm@01Z.json"
+
+[QualityControl.sd]
+# tests = "Plausibility FirstGuess"
+output = "@ARCHIVE_PATTERN@/qc_sd.json"
+tests = ""

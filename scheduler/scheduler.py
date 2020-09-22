@@ -18,7 +18,7 @@ import copy
 import math
 
 
-# Base class
+# Base Scheduler server class
 class Server(ABC):
     def __init__(self):
         pass
@@ -143,15 +143,16 @@ class EcflowServer(Server):
 
 
 class EcflowServerFromFile(EcflowServer):
-    def __init__(self, ecflow_server_file, logfile, ecf_port_offset=1500):
+    def __init__(self, ecflow_server_file, logfile):
         if os.path.exists(ecflow_server_file):
             self.settings = surfex.toml_load(ecflow_server_file)
         else:
             raise FileNotFoundError("Could not find " + ecflow_server_file)
 
         ecf_host = self.get_var("ECF_HOST")
-        ecf_port_offset = self.get_var("ECF_PORT_OFFSET", ecf_port_offset)
-        ecf_port = self.get_var("ECF_PORT", int(ecf_port_offset) + int(os.getpid()))
+        ecf_port_offset = int(self.get_var("ECF_PORT_OFFSET", default=1500))
+        ecf_port = int(self.get_var("ECF_PORT", default=int(os.getuid())))
+        ecf_port = ecf_port + ecf_port_offset
 
         # logfile = self.get_var("SERVER_LOG")
         EcflowServer.__init__(self, ecf_host, ecf_port, logfile)
@@ -184,7 +185,7 @@ class EcflowLogServer(object):
 
 
 class EcflowTask(object):
-    def __init__(self, ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id=None, ecf_timeout=60):
+    def __init__(self, ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id=None, ecf_timeout=20):
         self.ecf_name = ecf_name
         self.ecf_tryno = int(ecf_tryno)
         self.ecf_pass = ecf_pass
@@ -491,7 +492,7 @@ class Exp(object):
             else:
                 print("File was not found: " + self.rev + "/" + file)
 
-    def setup_files(self, host, ecf_port=None, ecf_port_offset=None):
+    def setup_files(self, host):
 
         rev_file = Exp.get_file_name(self.wd, "rev")
         conf_file = Exp.get_file_name(self.wd, "conf")
@@ -513,7 +514,7 @@ class Exp(object):
         }
         system_files.update({
             env_system: "config/system/" + host + ".toml",
-            env: "config/env/" + host + ".h",
+            env: "config/env/" + host + ".py",
             env_submit: "config/submit/" + host + ".json",
             env_server: "config/server/" + host + ".toml",
             input_paths: "config/input_paths/" + host + ".json",
@@ -535,13 +536,6 @@ class Exp(object):
             else:
                 os.symlink(system_files[key], target)
 
-        server_settings = surfex.toml_load(env_server)
-        if ecf_port is not None:
-            server_settings.update({"ECF_PORT": ecf_port})
-        if ecf_port_offset is not None:
-            server_settings.update({"ECF_PORT_OFFSET": ecf_port_offset})
-        surfex.toml_dump(server_settings, env_server)
-
         self.env_submit = json.load(open(self.wd + "/Env_submit", "r"))
 
         plib = self.wd + "/pysurfex"
@@ -549,7 +543,8 @@ class Exp(object):
         for cdir in config_dirs:
             if not os.path.exists(plib + "/" + cdir):
                 print("Copy " + cdir + " from " + self.conf)
-                shutil.copytree(self.conf + "/" + cdir, plib + "/" + cdir, ignore=shutil.ignore_patterns("config", "ecf", "nam", "toml"))
+                shutil.copytree(self.conf + "/" + cdir, plib + "/" + cdir,
+                                ignore=shutil.ignore_patterns("config", "ecf", "nam", "toml"))
             else:
                 print(cdir + " already exists in " + self.wd + "/pysurfex")
 
@@ -1297,7 +1292,31 @@ def init_run(exp, stream=None):
     if host_name0 != "":
         host_name0 = host_name0 + ":"
 
-    # Sync HM_REV to HM_LIB0
+    # Sync CONF to LIB0
+    if not exp.experiment_is_locked:
+        os.makedirs(lib0 + "/pysurfex", exist_ok=True)
+        dirs = ["surfex", "scheduler", "bin"]
+        for d in dirs:
+            cmd = rsync + " " + exp.conf + "/" + d + "/ " + host_name0 + lib0 + "/pysurfex/" + d + \
+                  " --exclude=.git --exclude=nam --exclude=toml --exclude=config --exclude=ecf " + \
+                  "--exclude=__pycache__ --exclude='*.pyc'"
+            print(cmd)
+            ret = subprocess.call(cmd.split())
+            if ret != 0:
+                raise Exception
+
+        dirs = ["nam", "toml", "config", "ecf"]
+        for d in dirs:
+            cmd = rsync + " " + exp.conf + "/scheduler/" + d + "/ " + host_name0 + lib0 + "/" + d + \
+                  " --exclude=.git --exclude=__pycache__ --exclude='*.pyc'"
+            print(cmd)
+            ret = subprocess.call(cmd.split())
+            if ret != 0:
+                raise Exception
+    else:
+        print("Not resyncing CONF as experiment is locked")
+
+    # Sync REV to LIB0
     if not exp.experiment_is_locked:
         if rev != wd:
             # print(host_name0)
@@ -1312,13 +1331,14 @@ def init_run(exp, stream=None):
     else:
         print("Not resyncing REV as experiment is locked")
 
-    # Always sync WD
     # Sync WD to LIB
-    cmd = rsync + " " + wd + "/ " + host_name0 + lib0 + " --exclude=.git"
-    print(cmd)
-    ret = subprocess.call(cmd.split())
-    if ret != 0:
-        raise Exception
+    # Always sync WD unless it is not same as SFX_EXP_LIB
+    if wd != lib0:
+        cmd = rsync + " " + wd + "/ " + host_name0 + lib0 + " --exclude=.git"
+        print(cmd)
+        ret = subprocess.call(cmd.split())
+        if ret != 0:
+            raise Exception
 
     # Sync HM_LIB beween hosts
     if len(hosts) > 1:

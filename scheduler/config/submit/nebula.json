@@ -5,7 +5,11 @@
     "HOST": "0",
     "SUBMIT": "",
     "tasks": [
-      "InitRun"
+      "InitRun",
+      "LogProgress",
+      "LogProgressPP",
+      "PrepareCycle",
+      "FirstGuess"
     ]
   },
   "nebula": {
