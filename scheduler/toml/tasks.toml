@@ -75,21 +75,20 @@ converter = "none"
 input = "input"
 tests = "Plausibility"
 
-min_rho = 0.0013
 hlength = 30000
 vlength = 100000
-wmin = 0.0
+wlength = 0
 max_elev_diff = 100.0
 land_only = true
 max_locations = 20
 elev_gradient = 0
-epsilon = 0.5
+epsilon = 0.25
 
 [OptimalInterpolation.t2m]
 obsfile = "@ARCHIVE_PATTERN@/qc_t2m.json"
 input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
 output = "@ARCHIVE_PATTERN@/an_t2m.nc"
-elev_gradient = 0.0065
+elev_gradient = -0.0065
 
 [OptimalInterpolation.rh2m]
 obsfile = "@ARCHIVE_PATTERN@/qc_rh2m.json"

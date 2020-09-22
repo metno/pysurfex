@@ -56,7 +56,8 @@ class EcflowSubmitTask(object):
             wrapper = ""
             if self.task_settings.wrapper is not None:
                 wrapper = str(self.task_settings.wrapper)
-            fh.write("wrapper = \"" + wrapper + "\"")
+            fh.write("wrapper = \"" + wrapper + "\"\n")
+            fh.write("host = \"" + self.task_settings.host + "\"\n")
 
             fh.write("\n#Python script:\n")
 

@@ -9,16 +9,14 @@ import os
 lib = "%LIB%"
 exp = "%EXP%"
 stream = "%STREAM%"
+mbr = "%ENSMBR%"
 dtg = "%DTG%"
 dtgbeg = "%DTGBEG%"
 
 if stream == "":
     stream = None
-
-# TODO host = "%%HOST%%"
-host = ""
-if host == "":
-    host = "0"
+if mbr == "" or int(mbr) < 0:
+    mbr = None
 
 # InitRun always runs from HOST0
 progress = {"DTG": dtg, "DTGBEG": dtgbeg}
@@ -63,4 +61,4 @@ with scheduler.EcflowClient(server, task) as ci:
         print("No settings found for task: " + task_name)
         task_settings = None
 
-    task_class(task, exp, task_settings=task_settings).run(wrapper=wrapper)
+    task_class(task, exp, task_settings=task_settings, host=host, mbr=mbr, stream=stream).run(wrapper=wrapper)

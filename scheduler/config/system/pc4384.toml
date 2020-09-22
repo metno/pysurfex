@@ -17,7 +17,7 @@ SFX_EXP_DATA = "$HOME/scratch/sfx_home/$EXP"	# HM_DATA on main HIRLAM host
 # experiment archive directory in LPFS
 SFX_EXP_EXP = "$HOME/scratch/sfx_home/$EXP/$EXP"
 # directory for scripts, compiled objects, executables
-SFX_EXP_LIB = "$HOME/scratch/sfx_home/$EXP/lib"
+SFX_EXP_LIB = "$HOME/sfx_home/$EXP"
 
 HOST_NAME = ""
 ECF_HOST = "pc4384"
@@ -27,6 +27,6 @@ HOST_INSTALL = "0"
 
 JOBOUTDIR = "$HOME/ecflow"
 MKDIR = "mkdir -p"
-RSYNC = "rsync"
+RSYNC = "rsync -avh"
 
 SURFEX_CONFIG = ""

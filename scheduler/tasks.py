@@ -15,14 +15,21 @@ class AbstractTask(object):
         self.geo = self.exp.geo
         self.task = task
         self.task_settings = None
-        # print(kwargs)
+
         if kwargs is not None and "task_settings" in kwargs:
             self.task_settings = kwargs["task_settings"]
-        # print("Init: ", self.task_settings)
 
         self.mbr = None
         if "mbr" in kwargs:
             self.mbr = kwargs["mbr"]
+
+        self.stream = None
+        if "stream" in kwargs:
+            self.stream = kwargs["stream"]
+
+        self.host = "0"
+        if kwargs is not None and "host" in kwargs:
+            self.host = kwargs["host"]
 
         wrk_pattern = self.exp.config.get_setting("SYSTEM#WRK_PATTERN", mbr=self.mbr)
         self.wrk = self.parse_setting(wrk_pattern, mbr=self.mbr, dtg=self.dtg)
@@ -73,14 +80,7 @@ class AbstractTask(object):
 
         return setting
 
-    def substitute_string(self, setting, **kwargs):
-        stream = None
-        if kwargs is not None and "stream" in kwargs:
-            stream = kwargs["stream"]
-
-        host = "0"
-        if kwargs is not None and "host" in kwargs:
-            host = kwargs["host"]
+    def substitute_string(self, setting):
 
         env_vals = ["USER", "HOME"]
         for env_val in env_vals:
@@ -91,7 +91,7 @@ class AbstractTask(object):
 
         # Substitute system settings
         for sys_var in self.exp.system.system_variables:
-            sys_setting = self.exp.system.get_var(sys_var, host=host, stream=stream)
+            sys_setting = self.exp.system.get_var(sys_var, host=self.host, stream=self.stream)
             if isinstance(sys_setting, str):
                 setting = setting.replace("@" + sys_var + "@", sys_setting)
 
@@ -104,13 +104,11 @@ class AbstractTask(object):
         return setting
 
     def get_setting(self, kw, **kwargs):
-        print("kwargs", kwargs, " task: ", self.task.ecf_task, " get: ", kw, " -> ", self.task_settings)
+        # print("kwargs", kwargs, " task: ", self.task.ecf_task, " get: ", kw, " -> ", self.task_settings)
 
-        # TODO
-        # host = "0"
         if self.task_settings is not None:
             if self.task.ecf_task in self.task_settings:
-                print("kw", kw, self.task_settings[self.task.ecf_task])
+                # print("kw", kw, self.task_settings[self.task.ecf_task])
                 parse = True
                 found = False
                 setting = ""
@@ -145,7 +143,7 @@ class AbstractTask(object):
             raise NotImplementedError("Please define task in task settings")
 
         # Return setting
-        print("Setting: ", setting)
+        print("Setting: ", kw, "=", setting)
         return setting
 
     def run(self, **kwargs):
@@ -538,13 +536,8 @@ class OptimalInterpolation(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
-
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
 
         validtime = self.exp.progress.dtg
 
@@ -563,7 +556,7 @@ class OptimalInterpolation(AbstractTask):
 
         hlength = 30000
         vlength = 100000
-        max_elev_diff = 100.0
+        wlength = 0.5
         land_only = True
         max_locations = 20
         elev_gradient = 0
@@ -573,7 +566,7 @@ class OptimalInterpolation(AbstractTask):
         output_file = self.get_setting("output", dtg=validtime, subsection=subsection)
         hlength = self.get_setting("hlength", subsection=subsection, default=hlength)
         vlength = self.get_setting("vlength", subsection=subsection, default=vlength)
-        max_elev_diff = self.get_setting("max_elev_diff", subsection=subsection, default=max_elev_diff)
+        wlength = self.get_setting("wlength", subsection=subsection, default=wlength)
         land_only = self.get_setting("land_only", subsection=subsection, default=land_only)
         max_locations = self.get_setting("max_locations", subsection=subsection, default=max_locations)
         elev_gradient = self.get_setting("elev_gradient", subsection=subsection, default=elev_gradient)
@@ -590,7 +583,7 @@ class OptimalInterpolation(AbstractTask):
         observations = surfex.dataset_from_file(an_time, obs_file, qc_flag=0)
 
         field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,
-                                     hlength=hlength, vlength=vlength, max_elev_diff=max_elev_diff,
+                                     hlength=hlength, vlength=vlength, wlength=wlength,
                                      land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
                                      epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue)
 
@@ -607,13 +600,9 @@ class Forcing(AbstractTask):
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-
-        mbr = None
         dtg = self.exp.progress.dtg
         hh = self.exp.progress.dtg.strftime("%H")
-        fcint = self.exp.config.get_fcint(hh, mbr=mbr)
+        fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
 
         user_config = self.get_setting("user_config", default=None)
         if user_config is not None:
@@ -660,10 +649,6 @@ class FirstGuess(AbstractTask):
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
-
         fg_pattern = self.get_setting("fg_pattern", parse=False)
         fg_sfx = self.get_setting("fg_sfx", dtg=self.dtg)
 
@@ -682,13 +667,8 @@ class CycleFirstGuess(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
-
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
 
         fg_pattern = self.get_setting("fg_pattern", parse=False)
         fc_start_sfx = self.get_setting("fc_start_sfx", dtg=self.dtg)
@@ -709,12 +689,9 @@ class Oi2soda(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
         output = self.get_setting("output")
 
         t2m = None
@@ -759,13 +736,10 @@ class Qc2obsmon(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
+        print("Not impelemented yet")
 
 
 class FirstGuess4OI(AbstractTask):
@@ -868,27 +842,23 @@ class MakeOfflineBinaries(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
+        print("Not implemented yet")
 
 
 class LogProgress(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-
         stream = None
+        if "stream" in kwargs:
+            stream = kwargs["stream"]
+
         progress_file = self.exp.get_file_name(self.exp.wd, "progress", stream=stream, full_path=True)
         progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
 
@@ -903,17 +873,11 @@ class LogProgressPP(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
         self.var_name = task.family1
-        # self.binary = self.config.
 
     def execute(self, **kwargs):
 
-        print(kwargs)
-        print(self.var_name)
-        # surfex.run_surfex_binary(binary)
-
-        stream = None
-        progress_file = self.exp.get_file_name(self.exp.wd, "progress", stream=stream, full_path=True)
-        progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=stream, full_path=True)
+        progress_file = self.exp.get_file_name(self.exp.wd, "progress", stream=self.stream, full_path=True)
+        progress_pp_file = self.exp.get_file_name(self.exp.wd, "progressPP", stream=self.stream, full_path=True)
 
         # Update progress
         cycle = self.exp.progress.dtg.strftime("%H")
