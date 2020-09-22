@@ -153,7 +153,10 @@ class SurfexSuite(object):
         pythonpath = "export PYTHONPATH="
         pythonpath = pythonpath + "%LIB%/pysurfex/:"
         pythonpath = pythonpath + "" + exp.wd + "/pysurfex/:"
-        pythonpath = pythonpath + "" + exp.conf + ";"
+        pythonpath = pythonpath + "" + exp.conf
+        if "PYTHONPATH" in os.environ:
+            pythonpath = pythonpath + ":" +  os.path.expandvars(os.environ["PYTHONPATH"])
+        pythonpath = pythonpath + ";"
 
         path = "export PATH="
         path = path + "%LIB%/pysurfex/scheduler/bin:"
