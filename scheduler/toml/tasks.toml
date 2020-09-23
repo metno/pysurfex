@@ -4,7 +4,7 @@ output = "@CLIMDIR@/PGD.@CSURF_FILETYPE@"
 
 [Prep]
 pgd_file = "@CLIMDIR@/PGD.nc"
-output = "@ARCHIVE_PATTERN@/PREP.CSURF_FILETYPE"
+output = "@ARCHIVE_PATTERN@/PREP.@CSURF_FILETYPE@"
 fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 
 [FirstGuess]
@@ -18,7 +18,15 @@ fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 [Forecast]
 pgd_file = "@CLIMDIR@/PGD.nc"
 prep_file = "@WRK_PATTERN@/fc_start_sfx"
-output = "@ARCHIVE_PATTERN@/SURFOUT.nc"
+output = "@ARCHIVE_PATTERN@/SURFOUT.@CSURF_FILETYPE@"
+forcing = "@ARCHIVE_PATTERN@/FORCING.nc"
+forc_zs = true
+
+[PerturbedRun]
+pgd_file = "@CLIMDIR@/PGD.nc"
+prep_file = "@ARCHIVE_PATTERN@/PREP.@CSURF_FILETYPE@"
+analysis_file = "@ARCHIVE_PATTERN@/ANALYSIS.@CSURF_FILETYPE@"
+output = "@ARCHIVE_PATTERN@/PERT_@PERT@.@CSURF_FILETYPE@"
 forcing = "@ARCHIVE_PATTERN@/FORCING.nc"
 forc_zs = true
 
@@ -28,12 +36,12 @@ prep_file = "@WRK_PATTERN@/fg_sfx"
 fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 output = "@ARCHIVE_PATTERN@/ANALYSIS.@CSURF_FILETYPE@"
 obsfile = "@ARCHIVE_PATTERN@/OBSERVATIONS.txt"
-sstfile = "sstfile"
+sstfile = "@WRK_PATTERN@/sstfile"
 ua_first_guess = "@WRK_PATTERN@/fg_ua"
-# perturbed_runs
-lsmfile = "lsmfile"
+perturbed_runs = "@ARCHIVE_PATTERN@/PERT_@PERT@.@CSURF_FILETYPE@"
+lsmfile = "@WRK_PATTERN@/lsmfile"
 check_existence = false
-climfile = "climfile"
+climfile = "@WRK_PATTERN@/climfile"
 sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
 # ascatfile = "ascatfile"
 
@@ -139,3 +147,5 @@ netatmo_filepattern = "@HOME@/hm_home/sandbox/netatmo/@YYYY@/@MM@/@DD@/@YYYY@@MM
 # tests = "Plausibility FirstGuess"
 output = "@ARCHIVE_PATTERN@/qc_sd.json"
 tests = ""
+
+[PrepareOiSoilInput]

@@ -31,6 +31,19 @@ class AbstractTask(object):
         if kwargs is not None and "host" in kwargs:
             self.host = kwargs["host"]
 
+        args = None
+        if "args" in kwargs:
+            iargs = kwargs["args"]
+            if iargs != "" and iargs is not None:
+                args = {}
+                iargs = iargs.split(" ")
+                for a in iargs:
+                    var = str(a).split("=")
+                    key = var[0]
+                    value = var[1]
+                    args.update({key: value})
+        self.args = args
+
         wrk_pattern = self.exp.config.get_setting("SYSTEM#WRK_PATTERN", mbr=self.mbr)
         self.wrk = self.parse_setting(wrk_pattern, mbr=self.mbr, dtg=self.dtg)
         wdir = str(os.getpid())
@@ -70,6 +83,9 @@ class AbstractTask(object):
             suffix = self.exp.config.get_setting("SURFEX#IO#CSURF_FILETYPE")
             suffix = suffix.lower()
             setting = str(setting).replace("@CSURF_FILETYPE@", suffix)
+
+            if "pert" in kwargs:
+                setting = str(setting).replace("@PERT@", str(kwargs["pert"]))
 
             if "check_parsing" in kwargs:
                 check_parsing = kwargs["check_parsing"]
@@ -235,6 +251,8 @@ class SurfexBinaryTask(AbstractTask):
         if "pert" in kwargs:
             pert = kwargs["pert"]
 
+        print(self.perturbed, pert)
+
         print("rte", rte)
         batch = surfex.BatchJob(rte, wrapper=wrapper)
 
@@ -399,6 +417,50 @@ class Forecast(SurfexBinaryTask):
             print("Output already exists: ", output)
 
 
+class PerturbedRun(SurfexBinaryTask):
+    def __init__(self, task, exp, **kwargs):
+        SurfexBinaryTask.__init__(self, task, exp, "perturbed", **kwargs)
+        self.pert = self.args["pert"]
+        print(self.pert)
+
+    def execute(self, **kwargs):
+        hh = self.exp.progress.dtg.strftime("%H")
+        fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
+        fg_dtg = self.dtg - timedelta(hours=fcint)
+        forcing = self.get_setting("forcing", dtg=fg_dtg)
+        forc_zs = self.get_setting("forc_zs", default=False)
+        xyz = self.exp.config.get_setting("COMPILE#XYZ")
+        binary = self.bindir + "/OFFLINE" + xyz
+        output = self.get_setting("output", dtg=self.dtg, pert=self.pert)
+        pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
+        prep_file = self.get_setting("prep_file", dtg=fg_dtg)
+        analysis_file = self.get_setting("analysis_file", dtg=fg_dtg)
+
+        # print(self.dtg, fg_dtg, self.exp.progress.get_dtgbeg(fcint))
+        if fg_dtg == self.exp.progress.get_dtgbeg(fcint):
+            prep_file_path = prep_file
+        else:
+            prep_file_path = analysis_file
+
+        force = False
+        if "force" in kwargs:
+            force = kwargs["force"]
+
+        if not os.path.exists(output) or force:
+            json_settings, ecoclimap, input_data = \
+                surfex.set_json_namelist_from_toml_env("offline", self.settings, self.input_path,
+                                                       self.system_file_paths, forc_zs=forc_zs)
+
+            # Add forcing
+            # TODO Handle format. Use object
+            input_data.data.update({"FORCING.nc": forcing})
+            SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
+                                     forc_zs=forc_zs, pgd_file_path=pgd_file_path, prep_file_path=prep_file_path,
+                                     pert=self.pert)
+        else:
+            print("Output already exists: ", output)
+
+
 class Soda(SurfexBinaryTask):
     def __init__(self, task, exp, **kwargs):
         SurfexBinaryTask.__init__(self, task, exp, "soda", **kwargs)
@@ -410,11 +472,9 @@ class Soda(SurfexBinaryTask):
         pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
         prep_file_path = self.get_setting("prep_file", dtg=self.dtg)
 
-        # Set assimilation input
-
         sstfile = self.get_setting("sstfile", default=None)
         ua_first_guess = self.get_setting("ua_first_guess", default=None)
-        perturbed_runs = self.get_setting("perturbed_runs", default=None)
+        perturbed_runs_pattern = self.get_setting("perturbed_runs", default=None, check_parsing=False)
         lsmfile = self.get_setting("lsmfile", default=None)
         obsfile = self.get_setting("obsfile", default=None)
         check_existence = self.get_setting("check_existence", default=False)
@@ -423,6 +483,19 @@ class Soda(SurfexBinaryTask):
         climfile = self.get_setting("climfile", default=None)
         sfx_first_guess = self.get_setting("sfx_first_guess", default=None)
         ascatfile = self.get_setting("ascatfile", default=None)
+
+        perturbed_runs = None
+        if self.exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
+            perturbed_runs = []
+            nncv = self.exp.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+            fname = self.parse_setting(perturbed_runs_pattern, check_parsing=False)
+            fname = fname.replace("@PERT@", "0")
+            perturbed_runs.append(fname)
+            for ivar in range(0, len(nncv)):
+                if int(nncv[ivar]) == 1:
+                    fname = self.parse_setting(perturbed_runs_pattern, check_parsing=False)
+                    fname = fname.replace("@PERT@", str(ivar + 1))
+                    perturbed_runs.append(fname)
 
         force = False
         if "force" in kwargs:
@@ -456,6 +529,9 @@ class Soda(SurfexBinaryTask):
             os.unlink(fc_start_sfx)
         os.symlink(output, fc_start_sfx)
 
+    # Make sure we don't clean yet
+    def postfix(self, **kwargs):
+        pass
 
 class PrepareCycle(AbstractTask):
     def __init__(self, task, exp, **kwargs):
@@ -884,3 +960,15 @@ class LogProgressPP(AbstractTask):
         fcint = self.exp.config.get_fcint(cycle, mbr=self.mbr)
         self.exp.progress.increment_progress(fcint, pp=True)
         self.exp.progress.save(progress_file, progress_pp_file, log=False)
+
+
+class PrepareOiSoilInput(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+        self.var_name = task.family1
+
+    def execute(self, **kwargs):
+        pass
+        # Create FG
+        # Create LSM
+        # Create CLIMATE

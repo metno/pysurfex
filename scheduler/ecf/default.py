@@ -31,6 +31,9 @@ ecf_tryno = "%ECF_TRYNO%"
 ecf_rid = "%ECF_RID%"
 submission_id = "%SUBMISSION_ID%"
 task_name = "%TASK%"
+args = "%ARGS%"
+if args == "":
+    args = None
 
 task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
 
@@ -61,4 +64,4 @@ with scheduler.EcflowClient(server, task) as ci:
         print("No settings found for task: " + task_name)
         task_settings = None
 
-    task_class(task, exp, task_settings=task_settings, host=host, mbr=mbr, stream=stream).run(wrapper=wrapper)
+    task_class(task, exp, task_settings=task_settings, host=host, mbr=mbr, stream=stream, args=args).run(wrapper=wrapper)

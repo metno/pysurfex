@@ -12,7 +12,6 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
                   vlength=10000., wlength=0.5, elev_gradient=0, structure_function="Barnes",
                   land_only=False, max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None, interpol="bilinear"):
 
-    # elev_gradient=-0.0065
     if gridpp is None:
         raise Exception("You need gridpp to perform OI")
 
@@ -255,8 +254,7 @@ def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmf
 
     settings = surfex.capitalize_namelist_dict(settings)
     if first_guess is None or perturbed_runs is None:
-        print("You must set input files")
-        raise Exception
+        raise Exception("You must set input files (first_guess and/or perturbed_runs)")
 
     yy = dtg.strftime("%y")
     mm = dtg.strftime("%m")
@@ -359,3 +357,7 @@ def set_output_vertical_soil_ekf(settings):
 
     '''
     return data
+
+
+def create_lsm_ascii_file():
+    pass

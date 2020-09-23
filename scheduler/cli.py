@@ -288,7 +288,7 @@ def surfex_script(argv):
         progress_file = scheduler.Exp.get_file_name(wd, "progress", stream=stream, full_path=True)
         progress_pp_file = scheduler.Exp.get_file_name(wd, "progressPP", stream=stream, full_path=True)
 
-        if action == "prod" or action == "continue":
+        if action.lower() == "prod" or action.lower() == "continue":
             progress = scheduler.ProgressFromFile(progress_file, progress_pp_file)
             if dtgend is not None:
                 progress.dtgend = datetime.strptime(dtgend, "%Y%m%d%H")
@@ -333,6 +333,7 @@ def surfex_script(argv):
         # Create the scheduler
         my_scheduler = scheduler.EcflowServerFromFile("Env_server", logfile)
 
+        print(scheduler.__file__)
         # Create and start the suite
         def_file = data0 + "/" + suite + ".def"
 

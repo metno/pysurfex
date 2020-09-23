@@ -117,10 +117,10 @@ LTOWN_TO_ROCK = false               # Switch to set town as rock. Only used if s
 CFILE_FORMAT_LSM = "ASCII"              # File format for land sea mask when using SODA: "ASCII"|"FA"
 
 [SURFEX.ASSIM.SCHEMES]
-SEA = "INPUT"                        # Assimilation method for sea tile: "INPUT"|"NONE"
-INLAND_WATER = "INPUT"               # Assimilation method for water tile: "INPUT"|"NONE"
-ISBA = "OI"                          # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
-TEB = "ROADT"                        # Assimilation method for TEB tile: "NONE"|"ROADT"
+SEA = "NONE"                        # Assimilation method for sea tile: "INPUT"|"NONE"
+INLAND_WATER = "NONE"               # Assimilation method for water tile: "INPUT"|"NONE"
+ISBA = "EKF"                          # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
+TEB = "NONE"                        # Assimilation method for TEB tile: "NONE"|"ROADT"
 
 [SURFEX.ASSIM.OBS]
 LOBSHEADER = false                          # ASCII observation file has header

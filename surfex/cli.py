@@ -794,8 +794,7 @@ def parse_args_gridpp(argv):
     parser.add_argument('--minrho', dest='min_rho', type=float, default=0.0013, required=False)
     parser.add_argument('-hor', dest='hlength', type=float, required=True)
     parser.add_argument('-vert', dest='vlength', type=float, default=100000, required=False)
-    parser.add_argument('--wmin', dest='wmin', type=float, default=0., required=False)
-    parser.add_argument('--maxElevDiff', dest='max_elev_diff', type=float, default=100., required=False)
+    parser.add_argument('--wlength', dest='wlength', type=float, default=0., required=False)
     parser.add_argument('--landOnly', dest='land_only', action="store_true", default=False)
     parser.add_argument('--maxLocations', dest='max_locations', type=int, default=20, required=False)
     parser.add_argument('--elevGradient', dest='elev_gradient', type=float, default=-0.0065, required=False,
@@ -816,11 +815,9 @@ def run_gridpp(args):
     var = args.var
     input_file = args.input_file
     output_file = args.output_file
-    min_rho = args.min_rho
     hlength = args.hlength
     vlength = args.vlength
-    wmin = args.wmin
-    max_elev_diff = args.max_elev_diff
+    wlength = args.wlength
     land_only = args.land_only
     max_locations = args.max_locations
     elev_gradient = args.elev_gradient
@@ -835,10 +832,10 @@ def run_gridpp(args):
     # Read OK observations
     observations = surfex.dataset_from_file(an_time, args.obs_file,  qc_flag=0)
 
-    field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,  min_rho=min_rho,
-                                 hlength=hlength, vlength=vlength, wmin=wmin, max_elev_diff=max_elev_diff,
+    field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs, hlength=hlength,
+                                 vlength=vlength, wlength=wlength, structure_function="Barnes",
                                  land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
-                                 epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue)
+                                 epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue,  interpol="bilinear")
 
     surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
 
@@ -930,3 +927,101 @@ def run_oi2soda(args):
 
     dtg = datetime.strptime(args.dtg, "%Y%m%d%H")
     surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output)
+
+
+def lsm_file_assim(args):
+
+    if not os.path.exists(args.config):
+        raise FileNotFoundError(args.config)
+
+    if os.path.exists(args.domain):
+        geo = surfex.geo.get_geo_object(json.load(open(args.domain, "r")))
+    else:
+        raise FileNotFoundError(args.domain)
+
+    validtime = datetime.strptime(args.dtg, "%Y%m%d%H")
+    variables = args.variables
+    variables = variables + ["altitude", "land_area_fraction"]
+
+    cache = surfex.cache.Cache(True, 3600)
+    fg = None
+    for var in variables:
+
+        inputfile = args.inputfile
+        fileformat = args.inputformat
+        converter = "none"
+        if var == "air_temperature_2m":
+            if args.t2m_file is not None:
+                inputfile = args.t2m_file
+            if args.t2m_format is not None:
+                fileformat = args.t2m_format
+            if args.t2m_converter is not None:
+                converter = args.t2m_converter
+        elif var == "relative_humidity_2m":
+            if args.rh2m_file is not None:
+                inputfile = args.rh2m_file
+            if args.rh2m_format is not None:
+                fileformat = args.rh2m_format
+            if args.rh2m_converter is not None:
+                converter = args.rh2m_converter
+        elif var == "surface_snow_thickness":
+            if args.sd_file is not None:
+                inputfile = args.sd_file
+            if args.sd_format is not None:
+                fileformat = args.sd_format
+            if args.sd_converter is not None:
+                converter = args.sd_converter
+        elif var == "altitude":
+            if args.altitude_file is not None:
+                inputfile = args.altitude_file
+            if args.altitude_format is not None:
+                fileformat = args.altitude_format
+            if args.altitude_converter is not None:
+                converter = args.altitude_converter
+        elif var == "land_area_fraction":
+            if args.laf_file is not None:
+                inputfile = args.laf_file
+            if args.laf_format is not None:
+                fileformat = args.laf_format
+            if args.laf_converter is not None:
+                converter = args.laf_converter
+        else:
+            raise NotImplementedError("Variable not implemented " + var)
+
+        if inputfile is None:
+            raise Exception("You must set input file")
+
+        if fileformat is None:
+            raise Exception("You must set file format")
+
+        config = yaml.load(open(args.config, "r"))
+        defs = config[fileformat]
+        defs.update({"filepattern": inputfile})
+
+        print(var, fileformat)
+        converter_conf = config[var][fileformat]["converter"]
+        if converter not in config[var][fileformat]["converter"]:
+            raise Exception("No converter " + converter + " definition found in " + args.config + "!")
+
+        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+        field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+        field = np.reshape(field, [geo.nlons, geo.nlats])
+
+        # Create file
+        if fg is None:
+            nx = geo.nlons
+            ny = geo.nlats
+            fg = surfex.create_netcdf_first_guess_template(variables, nx, ny, args.output)
+            fg.variables["time"][:] = float(validtime.strftime("%s"))
+            fg.variables["longitude"][:] = np.transpose(geo.lons)
+            fg.variables["latitude"][:] = np.transpose(geo.lats)
+            fg.variables["x"][:] = [i for i in range(0, nx)]
+            fg.variables["y"][:] = [i for i in range(0, ny)]
+
+        if var == "altitude":
+            field[field < 0] = 0
+
+        fg.variables[var][:] = np.transpose(field)
+
+    if fg is not None:
+        fg.close()

@@ -155,7 +155,7 @@ class SurfexSuite(object):
         pythonpath = pythonpath + "" + exp.wd + "/pysurfex/:"
         pythonpath = pythonpath + "" + exp.conf
         if "PYTHONPATH" in os.environ:
-            pythonpath = pythonpath + ":" +  os.path.expandvars(os.environ["PYTHONPATH"])
+            pythonpath = pythonpath + ":" + os.path.expandvars(os.environ["PYTHONPATH"])
         pythonpath = pythonpath + ";"
 
         path = "export PATH="
@@ -189,7 +189,8 @@ class SurfexSuite(object):
                      EcflowSuiteVariable("ECF_JOB_CMD", ecf_job_cmd),
                      EcflowSuiteVariable("ECF_STATUS_CMD", ecf_status_cmd),
                      EcflowSuiteVariable("ECF_OUT", ecf_out),
-                     EcflowSuiteVariable("ECF_JOBOUT", ecf_jobout)
+                     EcflowSuiteVariable("ECF_JOBOUT", ecf_jobout),
+                     EcflowSuiteVariable("ARGS", "")
                      ]
 
         self.suite = EcflowSuite(self.suite_name, def_file=def_file, variables=variables)
@@ -223,7 +224,7 @@ class SurfexSuite(object):
             dtg_str = dtg.strftime("%Y%m%d%H")
             variables = [
                 EcflowSuiteVariable("DTG", dtg_str),
-                EcflowSuiteVariable("DTGBEG", dtg_str)
+                EcflowSuiteVariable("DTGBEG", dtgbeg_str)
             ]
             triggers = EcflowSuiteTriggers([init_run_complete, static_complete])
 
@@ -249,13 +250,15 @@ class SurfexSuite(object):
             cycle_input = EcflowSuiteFamily("CycleInput", dtg_node, triggers=triggers)
             cycle_input_dtg_node.update({dtg_str: cycle_input})
 
-            EcflowSuiteTask("Forcing", cycle_input, ecf_files=ecf_files)
+            forcing = EcflowSuiteTask("Forcing", cycle_input, ecf_files=ecf_files)
+            forcing_complete = EcflowSuiteTrigger(forcing)
 
             triggers = EcflowSuiteTriggers([init_run_complete, static_complete, prepare_cycle_complete])
             if prev_dtg is not None:
                 prev_dtg_str = prev_dtg.strftime("%Y%m%d%H")
                 triggers.add_triggers(EcflowSuiteTrigger(prediction_dtg_node[prev_dtg_str]))
 
+            ############################################################################################################
             initialization = EcflowSuiteFamily("Initialization", dtg_node, triggers=triggers)
 
             analysis = None
@@ -284,6 +287,58 @@ class SurfexSuite(object):
                     EcflowSuiteTask("CycleFirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
                 else:
                     fg = EcflowSuiteTask("FirstGuess", initialization, triggers=triggers, ecf_files=ecf_files)
+
+                    perturbations = None
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
+
+                        perturbations = EcflowSuiteFamily("Perturbations", initialization)
+                        nncv = exp.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+                        names = exp.config.get_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M")
+                        triggers = None
+                        hh = exp.progress.dtg.strftime("%H")
+                        mbr = None
+                        fcint = exp.config.get_fcint(hh, mbr=mbr)
+                        fg_dtg = (exp.progress.dtg - timedelta(hours=fcint)).strftime("%Y%m%d%H")
+                        if fg_dtg in cycle_input_dtg_node:
+                            triggers = EcflowSuiteTriggers(EcflowSuiteTrigger(cycle_input_dtg_node[fg_dtg]))
+                        for ivar in range(0, len(nncv)):
+                            print(nncv[ivar])
+                            if ivar == 0:
+                                name = "REF"
+                                args = "pert=" + str(ivar) + " name=" + name
+                                print(args)
+                                variables = EcflowSuiteVariable("ARGS", args)
+
+                                pert = EcflowSuiteFamily(name, perturbations, variables=variables)
+                                EcflowSuiteTask("PerturbedRun", pert, ecf_files=ecf_files,
+                                                triggers=triggers)
+                            if nncv[ivar] == 1:
+                                name = names[ivar]
+                                args = "pert=" + str(ivar + 1) + " name=" + name
+                                print(args)
+                                variables = EcflowSuiteVariable("ARGS", args)
+                                pert = EcflowSuiteFamily(name, perturbations, variables=variables)
+                                EcflowSuiteTask("PerturbedRun", pert, ecf_files=ecf_files,
+                                                triggers=triggers)
+
+                    prepare_oi_soil_input = None
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
+                        prepare_oi_soil_input = EcflowSuiteTask("PrepareOiSoilInput", initialization,
+                                                                ecf_files=ecf_files)
+
+                    prepare_lsm = None
+                    need_lsm = False
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
+                        need_lsm = True
+                    if exp.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
+                        need_lsm = True
+                    if need_lsm:
+                        prepare_lsm = EcflowSuiteTask("PrepareLSM", initialization, ecf_files=ecf_files)
+
+                    prepare_sst = None
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#SEA", "INPUT"):
+                        if exp.config.setting_is("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST", "ASCII"):
+                            prepare_sst = EcflowSuiteTask("PrepareSST", initialization, ecf_files=ecf_files)
 
                     an_variables = {"t2m": False, "rh2m": False, "sd": False}
                     nnco = exp.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
@@ -318,7 +373,17 @@ class SurfexSuite(object):
                         oi2soda = EcflowSuiteTask("Oi2soda", analysis, triggers=triggers, ecf_files=ecf_files)
                         oi2soda_complete = EcflowSuiteTrigger(oi2soda)
 
-                    triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(fg), oi2soda_complete])
+                    triggers = [EcflowSuiteTrigger(fg), oi2soda_complete]
+                    if perturbations is not None:
+                        triggers.append(EcflowSuiteTrigger(perturbations))
+                    if prepare_oi_soil_input is not None:
+                        triggers.append(EcflowSuiteTrigger(prepare_oi_soil_input))
+                    if prepare_sst is not None:
+                        triggers.append(EcflowSuiteTrigger(prepare_sst))
+                    if prepare_lsm is not None:
+                        triggers.append(EcflowSuiteTrigger(prepare_lsm))
+
+                    triggers = EcflowSuiteTriggers(triggers)
                     EcflowSuiteTask("Soda", analysis, triggers=triggers, ecf_files=ecf_files)
 
             triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(cycle_input), EcflowSuiteTrigger(initialization)])

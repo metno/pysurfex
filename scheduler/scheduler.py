@@ -1035,7 +1035,7 @@ class Progress(object):
     def get_dtgbeg(self, fcint):
         dtgbeg = self.dtgbeg
         if (self.dtg - timedelta(hours=int(fcint))) < self.dtgbeg:
-            self.dtgbeg = self.dtg
+            dtgbeg = self.dtg
         return dtgbeg
 
     # Members could potentially have different DTGENDs

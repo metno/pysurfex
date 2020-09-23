@@ -109,6 +109,15 @@ class SURFEXBinary(object):
         self.batch.run(cmd)
         print("Running " + cmd + " with settings OPTIONS.nam")
 
+        listings = ["LISTING_PGD0.txt", "LISTING_PREP0.txt", "LISTING_OFFLINE0.txt", "LISTING_SODA0.txt"]
+        for listing in listings:
+            if os.path.exists(listing):
+                fh = open(listing, "r")
+                content = fh.read()
+                fh.close()
+                print("Content of " + listing + ":")
+                print(content)
+
         # Archive output
         self.iofile.archive_output_file()
         if self.surfout is not None:
@@ -122,7 +131,7 @@ class PerturbedOffline(SURFEXBinary):
                  archive_data=None, pgdfile=None, print_namelist=False):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
-        settings['nam_var']['nivar'] = pert_number
+        settings['nam_var']['nivar'] = int(pert_number)
         SURFEXBinary.__init__(self, binary, batch, io, settings, ecoclimap, surfout=surfout, input_data=input_data,
                               archive_data=archive_data, pgdfile=pgdfile, print_namelist=print_namelist)
 
