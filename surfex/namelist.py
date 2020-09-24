@@ -75,6 +75,7 @@ def nml2ascii(input_data, output_file, output_fmt="json", indent=2):
 
 def merge_json_namelist_file(old_dict, my_file):
 
+    print(my_file)
     if os.path.exists(my_file):
         new_dict = json.load(open(my_file, "r"))
     else:
@@ -208,7 +209,7 @@ def merge_toml_env_from_files(toml_files):
     return merged_env
 
 
-def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths, **kwargs):
+def set_json_namelist_from_toml_env(program, config, input_path, system_file_paths, **kwargs):
 
     forc_zs = False
     if "forc_zs" in kwargs:
@@ -229,6 +230,10 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
     if "dtg" in kwargs:
         dtg = kwargs["dtg"]
 
+    fcint = 3
+    if "fcint" in kwargs:
+        fcint = kwargs["fcint"]
+
     if program == "prep":
         if prep_file is not None and prep_filetype is None:
             raise Exception("Filetype for input to PREP is not set!")
@@ -241,23 +246,24 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
 
     # IO
     input_list.append({"file": input_path + "/io.json"})
-    input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURF_FILETYPE": env["SURFEX"]["IO"]["CSURF_FILETYPE"]}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURF_FILETYPE": config.get_setting("SURFEX#IO#CSURF_FILETYPE")}}})
     input_list.append({"json": {"NAM_IO_OFFLINE": {"CTIMESERIES_FILETYPE":
-                                                   env["SURFEX"]["IO"]["CTIMESERIES_FILETYPE"]}}})
-    input_list.append({"json": {"NAM_IO_OFFLINE": {"CFORCING_FILETYPE": env["SURFEX"]["IO"]["CFORCING_FILETYPE"]}}})
-    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF": env["SURFEX"]["IO"]["XTSTEP"]}}})
-    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_OUTPUT": env["SURFEX"]["IO"]["XTSTEP_OUTPUT"]}}})
-    input_list.append({"json": {"NAM_WRITE_SURF_ATM": {"LSPLIT_PATCH": env["SURFEX"]["IO"]["LSPLIT_PATCH"]}}})
+                                                   config.get_setting("SURFEX#IO#CTIMESERIES_FILETYPE")}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"CFORCING_FILETYPE":
+                                                   config.get_setting("SURFEX#IO#CFORCING_FILETYPE")}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF": config.get_setting("SURFEX#IO#XTSTEP")}}})
+    input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_OUTPUT": config.get_setting("SURFEX#IO#XTSTEP_OUTPUT")}}})
+    input_list.append({"json": {"NAM_WRITE_SURF_ATM": {"LSPLIT_PATCH": config.get_setting("SURFEX#IO#LSPLIT_PATCH")}}})
 
     if forc_zs:
         input_list.append({"json": {"NAM_IO_OFFLINE": {"LSET_FORC_ZS": True}}})
 
     # Constants and parameters
     input_list.append({"file": input_path + "/constants.json"})
-    input_list.append({"json": {"NAM_SURF_ATM": {"XRIMAX": env["SURFEX"]["PARAMETERS"]["XRIMAX"]}}})
+    input_list.append({"json": {"NAM_SURF_ATM": {"XRIMAX": config.get_setting("SURFEX#PARAMETERS#XRIMAX")}}})
 
     # Ecoclimap settings
-    if not env["SURFEX"]["COVER"]["SG"]:
+    if not config.get_setting("SURFEX#COVER#SG"):
         ecoclimap_json = {}
         ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
                            "ecoclimapII_eu_covers_param.bin"]
@@ -275,30 +281,31 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
         # PGS schemes
         input_list.append({
             "json": {"NAM_PGD_SCHEMES": {
-                "CSEA": env["SURFEX"]["TILES"]["SEA"],
-                "CWATER": env["SURFEX"]["TILES"]["INLAND_WATER"],
-                "CNATURE": env["SURFEX"]["TILES"]["NATURE"],
-                "CTOWN": env["SURFEX"]["TILES"]["TOWN"]
+                "CSEA": config.get_setting("SURFEX#TILES#SEA"),
+                "CWATER": config.get_setting("SURFEX#TILES#INLAND_WATER"),
+                "CNATURE": config.get_setting("SURFEX#TILES#NATURE"),
+                "CTOWN": config.get_setting("SURFEX#TILES#TOWN")
                 }
             }})
 
         # Ecoclimap SG
-        input_list.append({"json": {"NAM_FRAC": {"LECOSG": env["SURFEX"]["COVER"]["SG"]}}})
-        if env["SURFEX"]["COVER"]["SG"]:
+        input_list.append({"json": {"NAM_FRAC": {"LECOSG": config.get_setting("SURFEX#COVER#SG")}}})
+        if config.get_setting("SURFEX#COVER#SG"):
             veg_types = 20
             decades = 36
 
             input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": decades}}})
             tree_height_dir = "tree_height_dir"
-            fname = env["SURFEX"]["COVER"]["H_TREE"]
-            input_for_surfex_json.update(set_input_data(tree_height_dir, fname, system_file_paths))
-            input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
+            fname = config.get_setting("SURFEX#COVER#H_TREE")
+            if fname != "" and fname is not None:
+                input_for_surfex_json.update(set_input_data(tree_height_dir, fname, system_file_paths))
+                input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
 
             decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
             for decadal_data_type in decadal_data_types:
                 for vt in range(1, veg_types + 1):
                     for decade in range(1, decades + 1):
-                        filepattern = env["SURFEX"]["COVER"][decadal_data_type]
+                        filepattern = config.get_setting("SURFEX#COVER#" + decadal_data_type)
                         fname = parse_eco_sg_fnames(filepattern, decade)
                         input_for_surfex_json.update(set_input_data(decadal_data_type.lower()+"_dir", fname,
                                                                     system_file_paths))
@@ -306,12 +313,16 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
                                                                    decade=decade))
 
         # Set direct input files
-        if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
-            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth.dir", system_file_paths))
-            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus.dir", system_file_paths))
+        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
+            version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
+
+            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth" + version + ".dir",
+                                                        system_file_paths))
+            input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus" + version + ".dir",
+                                                        system_file_paths))
 
         ecoclimap_dir = "ecoclimap_dir"
-        if env["SURFEX"]["COVER"]["SG"]:
+        if config.get_setting("SURFEX#COVER#SG"):
             ecoclimap_dir = "ecoclimap_sg_cover_dir"
 
         possible_direct_data = {
@@ -331,37 +342,43 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
         for namelist_section in possible_direct_data:
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
-                fname = env["SURFEX"][namelist_section][ftype]
+                fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
                 input_for_surfex_json.update(set_input_data(data_dir, fname, system_file_paths))
                 input_list.append(set_direct_data_namelist("NAM_" + namelist_section, ftype, fname, input_path))
 
         # Set ISBA properties
-        if env["SURFEX"]["ISBA"]["SCHEME"] == "DIF":
+        if config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
             input_list.append({"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}})
-        elif env["SURFEX"]["ISBA"]["SCHEME"] == "3-L":
+        elif config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
             input_list.append({"json": {"NAM_ISBA": {"CISBA": "3-L", "NGROUND_LAYER": 3}}})
-        elif env["SURFEX"]["ISBA"]["SCHEME"] == "2-L":
+        elif config.get_setting("SURFEX#ISBA#SCHEME") == "2-L":
             input_list.append({"json": {"NAM_ISBA": {"CISBA": "2-L", "NGROUND_LAYER": 2}}})
 
         # Set patches
-        input_list.append({"json": {"NAM_ISBA": {"NPATCH": env["SURFEX"]["ISBA"]["NPATCH"]}}})
+        input_list.append({"json": {"NAM_ISBA": {"NPATCH": config.get_setting("SURFEX#ISBA#NPATCH")}}})
 
         # Set MEB
-        input_list.append({"json": {"NAM_ISBA": {"LMEB": env["SURFEX"]["ISBA"]["MEB"]}}})
-        if env["SURFEX"]["ISBA"]["MEB"]:
+        input_list.append({"json": {"NAM_ISBA": {"LMEB": config.get_setting("SURFEX#ISBA#MEB")}}})
+        if config.get_setting("SURFEX#ISBA#MEB"):
             input_list.append({"file": input_path + "/meb_settings.json"})
 
         # RSMIN
-        if env["SURFEX"]["COVER"]["SG"]:
+        if config.get_setting("SURFEX#COVER#SG"):
             input_list.append({"file": input_path + "/rsmin_sg.json"})
             input_list.append({"file": input_path + "/rsmin_sg_mod.json"})
         else:
             input_list.append({"file": input_path + "/rsmin.json"})
             input_list.append({"file": input_path + "/rsmin_mod.json"})
 
+        # CV
+        if config.get_setting("SURFEX#COVER#SG"):
+            input_list.append({"file": input_path + "/cv_sg.json"})
+        else:
+            input_list.append({"file": input_path + "/cv.json"})
+
         # Treedrag
-        if env["SURFEX"]["TREEDRAG"]["TREEDATA_FILE"] != "":
-            treeheight = env["SURFEX"]["TREEDRAG"]["TREEDATA_FILE"]
+        if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
+            treeheight = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
             input_for_surfex_json.update(set_input_data("tree_height_dir", treeheight, system_file_paths))
             input_list.append({"json": {"NAM_DATA_ISBA":
                                         {"CFNAM_H_TREE(4)": treeheight,
@@ -371,8 +388,8 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
                                          "CFNAM_H_TREE(6)": treeheight,
                                          "CFTYP_H_TREE(6)": "ASCLLV"}}})
 
-        if env["SURFEX"]["TOWN"]["LTOWN_TO_ROCK"]:
-            if env["SURFEX"]["TILES"]["TOWN"] != "NONE":
+        if config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
+            if config.get_setting("SURFEX#TILES#TOWN") != "NONE":
                 print("WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. Setting it to NONE!")
             input_list.append({"json": {"NAM_PGD_ARRANGE_COVER": {"LTOWN_TO_ROCK": True}}})
             input_list.append({"json": {"NAM_PGD_SCHEMES": {"TOWN": "NONE"}}})
@@ -403,78 +420,74 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NDAY": int(prep_time.strftime("%d"))}}})
             input_list.append({"json": {"NAM_PREP_SURF_ATM": {"XTIME": float(prep_time.strftime("%H"))*3600.}}})
 
-        if env["SURFEX"]["SEA"]["ICE"] == "SICE":
+        if config.get_setting("SURFEX#SEA#ICE") == "SICE":
             input_list.append({"json": {"NAM_PREP_SEAFLUX": {"CSEAICE_SCHEME": "SICE"}}})
             input_list.append({"file": input_path + "/prep_sice.json"})
 
-        if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
+        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             # Set NetCDF input for FLAKE
             input_for_surfex_json.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", system_file_paths))
-            input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE": env["SURFEX"]["FLAKE"]["LCLIM"]}}})
+            input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE": config.get_setting("SURFEX#FLAKE#LCLIM")}}})
 
         # ISBA CANOPY
-        input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY": env["SURFEX"]["ISBA"]["CANOPY"]}}})
+        input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY": config.get_setting("SURFEX#ISBA#CANOPY")}}})
 
         # Snow
         input_list.append({"file": input_path + "/prep_snow.json"})
-        if env["SURFEX"]["ISBA"]["SNOW"] == "D95":
+        if config.get_setting("SURFEX#ISBA#SNOW") == "D95":
             input_list.append({"json": {"NAM_PREP_ISBA_SNOW": {"CSNOW": "D95"}}})
-        elif env["SURFEX"]["ISBA"]["SNOW"] == "3-L":
+        elif config.get_setting("SURFEX#ISBA#SNOW") == "3-L":
             input_list.append({"json": {"NAM_PREP_ISBA_SNOW": {"CSNOW": "3-L"}}})
-        if env["SURFEX"]["ISBA"]["SNOW"] == "CRO":
+        if config.get_setting("SURFEX#ISBA#SNOW") == "CRO":
             input_list.append({"file": input_path + "/snow_crocus.json"})
     elif program == "offline":
         input_list.append({"file": input_path + "/offline.json"})
 
         # SEAFLX settings
-        if env["SURFEX"]["TILES"]["SEA"] == "SEAFLX":
-
+        if config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
             # Surface perturbations
-            if env["SURFEX"]["SEA"]["PERTFLUX"] == "model":
-                input_list.append({"json": {"NAM_SEAFLUXn": {"LPERTFLUX": True}}})
-            else:
-                input_list.append({"json": {"NAM_SEAFLUXn": {"LPERTFLUX": False}}})
+            input_list.append({"json": {"NAM_SEAFLUXn": {"LPERTFLUX": config.get_setting("SURFEX#SEA#PERTFLUX")}}})
 
         # ISBA settings
-        if env["SURFEX"]["TILES"]["NATURE"] == "ISBA":
-            if env["SURFEX"]["ISBA"]["PERTSURF"] == "model":
-                input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF": True}}})
-            else:
-                input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF": False}}})
-            input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": env["SURFEX"]["ISBA"]["XCGMAX"]}}})
+        if config.get_setting("SURFEX#TILES#NATURE") == "ISBA":
+            input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF": config.get_setting("SURFEX#ISBA#PERTSURF")}}})
+            input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": config.get_setting("SURFEX#ISBA#XCGMAX")}}})
 
         # SSO
-        input_list.append({"json": {"NAM_SSON": {"CROUGH": env["SURFEX"]["SSO"]["SCHEME"]}}})
+        input_list.append({"json": {"NAM_SSON": {"CROUGH": config.get_setting("SURFEX#SSO#SCHEME")}}})
+        geo = config.get_setting("GEOMETRY#GEO")
+        if isinstance(geo, surfex.ConfProj):
+            input_list.append({"json": {"NAM_SSON": {"XSOROT": geo.xdx}}})
 
         # Perturbed offline settings
         input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
         input_list.append({"json": {"NAM_IO_VARASSIM": {"LPRT": False}}})
-        if env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"] == "EKF":
-            input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"]}}})
+        if config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
+            input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
             nvar = 0
-            for ob in range(0, len(env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["CVAR_M"])):
-                input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")":
-                                                        env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["CVAR_M"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")":
-                                                        env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["NNCV"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")":
-                                                        env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["XPRT_M"][ob]}}})
-                if env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["NNCV"][ob] == 1:
+            cvar_m = config.get_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M")
+            nncv = config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+            xprt_m = config.get_setting("SURFEX#ASSIM#ISBA#EKF#XPRT_M")
+            for ob in range(0, len(cvar_m)):
+                input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": cvar_m[ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": nncv[ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": xprt_m[ob]}}})
+                if nncv[ob] == 1:
                     nvar += 1
             input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
-        # TODO the need for this must be removed!
+        # TODO the need for this in forecast must be removed!
         nobstype = 0
-        for ob in range(0, len(env["SURFEX"]["ASSIM"]["OBS"]["NNCO"])):
-            input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")":
-                                                    env["SURFEX"]["ASSIM"]["OBS"]["NNCO"][ob]}}})
-            if env["SURFEX"]["ASSIM"]["OBS"]["NNCO"][ob] == 1:
+        nnco = config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        for ob in range(0, len(nnco)):
+            input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
+            if nnco[ob] == 1:
                 nobstype += 1
         input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
 
         # Climate setting
-        if env["SURFEX"]["SEA"]["LVOLATILE_SIC"]:
-            input_list.append({"json": {"NAM_SEAICEn ": {"LVOLATILE_SIC": env["SURFEX"]["SEA"]["LVOLATILE_SIC"],
+        if config.get_setting("SURFEX#SEA#LVOLATILE_SIC"):
+            input_list.append({"json": {"NAM_SEAICEn ": {"LVOLATILE_SIC": True,
                                                          "XSIC_EFOLDING_TIME": 1.0}}})
 
     elif program == "soda":
@@ -482,43 +495,50 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
 
         input_list.append({"json": {"NAM_ASSIM": {"LASSIM": True}}})
 
-        input_list.append({"json": {"NAM_OBS": {"LOBSHEADER": env["SURFEX"]["ASSIM"]["OBS"]["LOBSHEADER"]}}})
-        input_list.append({"json": {"NAM_OBS": {"LOBSNAT": env["SURFEX"]["ASSIM"]["OBS"]["LOBSNAT"]}}})
+        input_list.append({"json": {"NAM_OBS": {"LOBSHEADER": config.get_setting("SURFEX#ASSIM#OBS#LOBSHEADER")}}})
+        input_list.append({"json": {"NAM_OBS": {"LOBSNAT": config.get_setting("SURFEX#ASSIM#OBS#LOBSNAT")}}})
         input_list.append({"json": {"NAM_OBS": {"CFILE_FORMAT_OBS":
-                                                env["SURFEX"]["ASSIM"]["OBS"]["CFILE_FORMAT_OBS"]}}})
+                                                config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")}}})
         nobstype = 0
-        for ob in range(0, len(env["SURFEX"]["ASSIM"]["OBS"]["NNCO"])):
-            input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")":
-                                                    env["SURFEX"]["ASSIM"]["OBS"]["NNCO"][ob]}}})
-            if env["SURFEX"]["ASSIM"]["OBS"]["NNCO"][ob] == 1:
+        nnco = config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        for ob in range(0, len(nnco)):
+            input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
+            if nnco[ob] == 1:
                 nobstype += 1
         input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
-        input_list.append({"json": {"NAM_OBS": {"LSWE": env["SURFEX"]["ASSIM"]["OBS"]["LSWE"]}}})
+        input_list.append({"json": {"NAM_OBS": {"LSWE": config.get_setting("SURFEX#ASSIM#OBS#LSWE")}}})
+
+        # LSM
+        input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_LSM":
+                                                  config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")}}})
 
         # Sea
-        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_SEA": env["SURFEX"]["ASSIM"]["SCHEMES"]["SEA"]}}})
+        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_SEA": config.get_setting("SURFEX#ASSIM#SCHEMES#SEA")}}})
         input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_SST":
-                                                  env["SURFEX"]["ASSIM"]["SEA"]["CFILE_FORMAT_SST"]}}})
+                                                  config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")}}})
         input_list.append({"json": {"NAM_ASSIM": {"LREAD_SST_FROM_FILE":
-                                                  env["SURFEX"]["ASSIM"]["SEA"]["LREAD_SST_FROM_FILE"]}}})
+                                                  config.get_setting("SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE")}}})
         input_list.append({"json": {"NAM_ASSIM": {"LEXTRAP_SEA":
-                                                  env["SURFEX"]["ASSIM"]["SEA"]["LEXTRAP_SEA"]}}})
+                                                  config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA")}}})
 
         # Water
-        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_WATER": env["SURFEX"]["ASSIM"]["SCHEMES"]["INLAND_WATER"]}}})
-        input_list.append({"json": {"NAM_ASSIM": {"LWATERTG2": env["SURFEX"]["ASSIM"]["INLAND_WATER"]["LWATERTG2"]}}})
+        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_WATER":
+                                                  config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER")}}})
+        input_list.append({"json": {"NAM_ASSIM": {"LWATERTG2":
+                                                  config.get_setting("SURFEX#ASSIM#INLAND_WATER#LWATERTG2")}}})
         input_list.append({"json": {"NAM_ASSIM": {"LEXTRAP_WATER":
-                                                  env["SURFEX"]["ASSIM"]["INLAND_WATER"]["LEXTRAP_WATER"]}}})
+                                                  config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER")}}})
 
         # Nature
-        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"]}}})
+        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA": config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
 
         # Snow
         laesnm = False
-        if type(env["SURFEX"]["ASSIM"]["ISBA"]["UPDATE_SNOW_CYCLES"]) is list:
-            if len(env["SURFEX"]["ASSIM"]["ISBA"]["UPDATE_SNOW_CYCLES"]) > 0:
+        snow_cycles = config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
+        if type(snow_cycles) is list:
+            if len(snow_cycles) > 0:
                 if dtg is not None:
-                    for cycle in env["SURFEX"]["ASSIM"]["ISBA"]["UPDATE_SNOW_CYCLES"]:
+                    for cycle in snow_cycles:
                         if int(datetime.strptime(dtg, "%Y%m%d%H").strftime("%H")) == int(cycle):
                             print("true")
                             laesnm = True
@@ -527,68 +547,67 @@ def set_json_namelist_from_toml_env(program, env, input_path, system_file_paths,
         input_list.append({"json": {"NAM_ASSIM": {"LAESNM": laesnm}}})
 
         # Set OI polynoms
-        if env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"] == "OI":
-            if "PHYSICS" in os.environ:
-                if os.environ["PHYSICS"] == "arome":
-                    input_list.append({"json": {"NAM_ASSIM": {"LAROME": True}}})
-                elif os.environ["PHYSICS"] == "alaro":
-                    input_list.append({"json": {"NAM_ASSIM": {"LAROME": False}}})
+        if config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "OI":
+            ua_physics = config.get_setting("FORECAST#PHYSICS")
+            if ua_physics == "arome":
+                input_list.append({"json": {"NAM_ASSIM": {"LAROME": True}}})
+            elif ua_physics == "alaro":
+                input_list.append({"json": {"NAM_ASSIM": {"LAROME": False}}})
 
-            input_list.append({"json": {"NAM_NACVEG": {"XSIGT2MO": env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["XSIGT2MO"]}}})
-            input_list.append({"json": {"NAM_NACVEG": {"XSIGH2MO": env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["XSIGH2MO"]}}})
+            input_list.append({"json": {"NAM_NACVEG": {"XSIGT2MO":
+                                                       config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO")}}})
+            input_list.append({"json": {"NAM_NACVEG": {"XSIGH2MO":
+                                                       config.get_setting("SURFEX#ASSIM#ISBAOI#XSIGH2MO")}}})
             input_list.append({"json": {"NAM_NACVEG": {"XRCLIMCA": 0.0}}})
             input_list.append({"json": {"NAM_NACVEG": {"XRCLISST": 0.05}}})
-            fcint = 3
-            if "FCINT" in os.environ:
-                fcint = int(os.environ["FCINT"])
             input_list.append({"json": {"NAM_NACVEG": {"NECHGU": fcint}}})
             input_list.append({"json": {"NAM_NACVEG": {"LOBS2M": True}}})
             input_list.append({"json": {"NAM_NACVEG": {"LOBSWG": False}}})
             input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_CLIM":
-                                                      env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["CFILE_FORMAT_CLIM"]}}})
+                                                      config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM")}}})
             input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_FG":
-                                                      env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["CFILE_FORMAT_FG"]}}})
+                                                      config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")}}})
             input_for_surfex_json.update({"fort.61": set_input_file_name("oi_coeff_dir",
-                                                                         env["SURFEX"]["ASSIM"]["ISBA"]["OI"]["COEFFS"],
+                                                                         config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS"),
                                                                          system_file_paths)})
 
-        if env["SURFEX"]["ASSIM"]["SCHEMES"]["ISBA"] == "EKF":
+        if config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
             nvar = 0
-            for ob in range(0, len(env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["CVAR_M"])):
+            cvar_m = config.get_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M")
+            xsigma_m = config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
+            xprt_m = config.get_setting("SURFEX#ASSIM#ISBA#EKF#XPRT_M")
+            nncv = config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+            for ob in range(0, len(cvar_m)):
                 input_list.append(
-                    {"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")":
-                                          env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["CVAR_M"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(ob + 1) +
-                                                        ")": env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["XSIGMA_M"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) +
-                                                        ")": env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["XPRT_M"][ob]}}})
-                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) +
-                                                        ")": env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["NNCV"][ob]}}})
-                if env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["NNCV"][ob] == 1:
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": cvar_m[ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(ob + 1) + ")": xsigma_m[ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": xprt_m[ob]}}})
+                input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": nncv[ob]}}})
+                if nncv[ob] == 1:
                     nvar += 1
             input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
             input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
-            input_list.append({"json": {"NAM_VAR": {"XSCALE_Q": env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["XSCALE_Q"]}}})
+            input_list.append({"json": {"NAM_VAR": {"XSCALE_Q": config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSCALE_Q")}}})
             input_list.append({"json": {"NAM_IO_VARASSIM": {
                 "LPRT": False,
-                "LBEV": env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["EVOLVE_B"],
-                "LBFIXED": not env["SURFEX"]["ASSIM"]["ISBA"]["EKF"]["EVOLVE_B"]
+                "LBEV": config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
+                "LBFIXED": not config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B")
             }}})
 
         # Town
-        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_TEB": env["SURFEX"]["ASSIM"]["SCHEMES"]["TEB"]}}})
+        input_list.append({"json": {"NAM_ASSIM": {"CASSIM_TEB": config.get_setting("SURFEX#ASSIM#SCHEMES#TEB")}}})
 
     else:
         raise NotImplementedError
 
     # Always set these
-    if env["SURFEX"]["SEA"]["ICE"] == "SICE":
+    if config.get_setting("SURFEX#SEA#ICE") == "SICE":
         input_list.append({"file": input_path + "/sice.json"})
 
-    if env["SURFEX"]["TREEDRAG"]["TREEDATA_FILE"] != "":
+    if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
         input_list.append({"file": input_path + "/treedrag.json"})
 
-    if env["SURFEX"]["TILES"]["INLAND_WATER"] == "FLAKE":
+    if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
         input_list.append({"file": input_path + "/flake.json"})
 
     # Override posssibility

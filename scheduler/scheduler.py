@@ -11,10 +11,8 @@ import platform
 import traceback
 import sys
 import shutil
-import collections
 import tomlkit
 import json
-import copy
 import math
 
 
@@ -307,25 +305,6 @@ class EcflowClient(object):
         return False
 
 
-def deep_update(source, overrides):
-    """
-    Update a nested dictionary or similar mapping.
-    Modify ``source`` in place.
-    """
-    for key, value in overrides.items():
-        if isinstance(value, collections.Mapping) and value:
-            returned = deep_update(source.get(key, {}), value)
-            # print("Returned:", key, returned)
-            source[key] = returned
-        else:
-            override = overrides[key]
-            # print("Override:", key, override)
-
-            source[key] = override
-
-    return source
-
-
 class System(object):
     def __init__(self, host_system, exp_name):
 
@@ -469,14 +448,13 @@ class Exp(object):
         if do_merge:
             self.merge_to_toml_config_files(configuration=configuration, write_config_files=write_config_files)
 
-        self.geo = geo
-
         # Merge config
-        all_merged_settings = self.merge_toml_env_from_config_dicts()
-        merged_config, member_merged_config = self.process_merged_settings(all_merged_settings, host)
+        all_merged_settings = surfex.merge_toml_env_from_config_dicts(self.config_files)
+        merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings, host=host,
+                                                                             system=self.system)
 
         # Create configuration
-        self.config = surfex.Configuration(merged_config, member_merged_config)
+        self.config = surfex.Configuration(merged_config, member_merged_config, geo=geo)
 
     def checkout(self, file):
         if file is None:
@@ -613,7 +591,7 @@ class Exp(object):
             testbed_submit = json.load(open(testbed_submit, "r"))
         if decomposition not in testbed_submit:
             raise Exception("Decomposition " + decomposition + " not found in " + testbed_submit)
-        return self.merge_toml_env(self.env_submit, testbed_submit[decomposition])
+        return surfex.merge_toml_env(self.env_submit, testbed_submit[decomposition])
 
     def merge_testbed_configurations(self, testbed_confs):
         merged_conf = {}
@@ -630,195 +608,17 @@ class Exp(object):
                     raise Exception("Testbed configuration not existing: " + testbed_configuration)
 
             conf = surfex.toml_load(testbed_configuration)
-            merged_conf = self.merge_toml_env(merged_conf, conf)
+            merged_conf = surfex.merge_toml_env(merged_conf, conf)
 
         return merged_conf
-
-    def process_merged_settings(self, merged_settings, host, stream=None):
-
-        # Set default system values if system has been defined
-        # print(self.system)
-        if self.system is not None:
-            if "SYSTEM" not in merged_settings:
-                merged_settings.update({"SYSTEM": {}})
-            if "BINDIR" not in merged_settings["SYSTEM"]:
-                merged_settings["SYSTEM"].update({"BINDIR": self.system.get_var("SFX_EXP_DATA", host,
-                                                                                stream=stream) + "/bin"})
-            if "CLIMDIR" not in merged_settings["SYSTEM"]:
-                merged_settings["SYSTEM"].update({"CLIMDIR": self.system.get_var("SFX_EXP_DATA", host,
-                                                                                 stream=stream) + "/climate"})
-            if "ARCHIVE_ROOT" not in merged_settings["SYSTEM"]:
-                merged_settings["SYSTEM"].update({"ARCHIVE_ROOT": self.system.get_var("SFX_EXP_DATA", host,
-                                                                                      stream=stream) + "/archive/"})
-            if "ARCHIVE_PATTERN" not in merged_settings["SYSTEM"]:
-                merged_settings["SYSTEM"].update({"ARCHIVE_PATTERN":  merged_settings["SYSTEM"]["ARCHIVE_ROOT"] +
-                                                 "/@YYYY@/@MM@/@DD@/@HH@"})
-            if "WRK_PATTERN" not in merged_settings["SYSTEM"]:
-                merged_settings["SYSTEM"].update({"WRK_PATTERN": self.system.get_var("SFX_EXP_DATA", host,
-                                                                                     stream=stream) + "/@YMD@_@HH@"})
-
-        merged_member_settings = {}
-        # Write member settings
-        members = None
-        if "ENSMSEL" in merged_settings["FORECAST"]:
-            members = list(merged_settings["FORECAST"]["ENSMSEL"])
-
-        # print(members, type(members), len(members))
-        member_settings = {}
-        if members is not None:
-            for mbr in members:
-                member3 = "{:03d}".format(int(mbr))
-                toml_settings = copy.deepcopy(merged_settings)
-                member_dict = self.get_member_settings(merged_member_settings, mbr)
-                toml_settings = self.merge_toml_env(toml_settings, member_dict)
-
-                # Settings where member string is added to variable
-                toml_settings["SYSTEM"].update({"ARCHIVE_PATTERN":
-                                                merged_settings["SYSTEM"]["ARCHIVE_PATTERN"] + "/mbr" + member3})
-                toml_settings["SYSTEM"].update({"WRK_PATTERN":
-                                                merged_settings["SYSTEM"]["WRK_PATTERN"] + "/mbr" + member3})
-                toml_settings["SYSTEM"].update({"EXTRARCH":
-                                                merged_settings["SYSTEM"]["EXTRARCH"] + "/mbr" + member3})
-                toml_settings["SYSTEM"].update({"CLIMDIR":
-                                                merged_settings["SYSTEM"]["CLIMDIR"] + "/mbr" + member3})
-
-                member_settings.update({str(mbr): toml_settings})
-
-        return merged_settings, member_settings
-
-    @staticmethod
-    def merge_toml_env(old_env, mods):
-        # print(mods)
-        return deep_update(old_env, mods)
-
-    def merge_toml_env_from_files(self, toml_files):
-        merged_env = {}
-        for toml_file in toml_files:
-            if os.path.exists(toml_file):
-                # print(toml_file)
-                modification = surfex.toml_load(toml_file)
-                # print(modification)
-                merged_env = self.merge_toml_env(merged_env, modification)
-                # print(merged_env)
-            else:
-                print("WARNING: File not found " + toml_file)
-        return merged_env
-
-    @staticmethod
-    def flatten(d, sep="#"):
-
-        obj = collections.OrderedDict()
-
-        def recurse(t, parent_key=""):
-            if isinstance(t, list):
-                for i in range(len(t)):
-                    recurse(t[i], parent_key + sep + str(i) if parent_key else str(i))
-            elif isinstance(t, dict):
-                for k, v in t.items():
-                    recurse(v, parent_key + sep + k if parent_key else k)
-            else:
-                obj[parent_key] = t
-
-        recurse(d)
-        return obj
-
-    def get_member_settings(self, d, member, sep="#"):
-
-        member_settings = {}
-        settings = self.flatten(d)
-        for setting in settings:
-            # print(setting)
-            keys = setting.split(sep)
-            # print(keys)
-            if len(keys) == 1:
-                # print(member)
-                member3 = "{:03d}".format(int(member))
-                val = settings[setting]
-                if type(val) is str:
-                    val = val.replace("@EEE@", member3)
-
-                this_setting = {keys[0]: val}
-                # print("This setting", this_setting)
-                member_settings = self.merge_toml_env(member_settings, this_setting)
-            else:
-                this_member = int(keys[-1])
-                keys = keys[:-1]
-                # print(keys)
-                if this_member == member:
-                    # print("This is it")
-                    # print(setting, keys, this_member)
-
-                    this_setting = settings[setting]
-                    for key in reversed(keys):
-                        this_setting = {key: this_setting}
-
-                    # print(this_setting)
-                    member_settings = self.merge_toml_env(member_settings, this_setting)
-        return member_settings
-
-    def merge_toml_env_from_file(self, toml_file):
-        merged_env = {}
-        if os.path.exists(toml_file):
-            # print(toml_file)
-            modification = surfex.toml_load(toml_file)
-            merged_env = self.merge_toml_env(merged_env, modification)
-        else:
-            print("WARNING: File not found " + toml_file)
-        return merged_env
-
-    def merge_config_files_dict(self, configuration=None, testbed_configuration=None,
-                                user_settings=None):
-
-        for this_config_file in self.config_files:
-            hm_exp = self.config_files[this_config_file]["toml"].copy()
-
-            block_config = tomlkit.document()
-            if configuration is not None:
-                f = this_config_file.split("/")[-1]
-                if f == "config_exp.toml":
-                    block_config.add(tomlkit.comment("\n# HARMONIE experiment configuration file\n#" +
-                                                     "\n# Please read the documentation on " +
-                                                     "https://hirlam.org/trac/wiki/HarmonieSystemDocumentation " +
-                                                     "first\n#"))
-
-            for block in self.config_files[this_config_file]["blocks"]:
-                if configuration is not None:
-                    # print(configuration)
-                    if type(configuration) is not dict:
-                        raise Exception("Configuration should be a dict here!")
-                    if block in configuration:
-                        merged_config = self.merge_toml_env(hm_exp[block], configuration[block])
-                    else:
-                        merged_config = hm_exp[block]
-
-                    block_config.update({block: merged_config})
-
-                if testbed_configuration is not None:
-                    # print("testbed", testbed_configuration)
-                    if type(testbed_configuration) is not dict:
-                        raise Exception("Testbed configuration should be a dict here!")
-                    if block in testbed_configuration:
-                        hm_testbed = self.merge_toml_env(block_config[block], testbed_configuration[block])
-                    else:
-                        hm_testbed = block_config[block]
-                    block_config.update({block: hm_testbed})
-
-                if user_settings is not None:
-                    if type(user_settings) is not dict:
-                        raise Exception("User settings should be a dict here!")
-                    if block in user_settings:
-                        print("Merge user settings in block " + block)
-                        user = self.merge_toml_env(block_config[block], user_settings[block])
-                        block_config.update({block: user})
-
-            self.config_files.update({this_config_file: {"toml": block_config}})
 
     def merge_to_toml_config_files(self, configuration=None, testbed_configuration=None,
                                    user_settings=None,
                                    write_config_files=True):
 
-        self.merge_config_files_dict(configuration=configuration, testbed_configuration=testbed_configuration,
-                                     user_settings=user_settings)
+        self.config_files = surfex.merge_config_files_dict(self.config_files, configuration=configuration,
+                                                           testbed_configuration=testbed_configuration,
+                                                           user_settings=user_settings)
 
         for f in self.config_files:
             this_config_file = "config/" + f
@@ -839,15 +639,6 @@ class Exp(object):
                         p = p + "/"
                 f_out = open(f_out, "w")
                 f_out.write(tomlkit.dumps(block_config))
-
-    def merge_toml_env_from_config_dicts(self):
-
-        merged_env = {}
-        for f in self.config_files:
-            # print(f)
-            modification = self.config_files[f]["toml"]
-            merged_env = self.merge_toml_env(merged_env, modification)
-        return merged_env
 
     @staticmethod
     def get_file_name(wd, ftype, full_path=False, stream=None):

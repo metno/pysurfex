@@ -1,5 +1,8 @@
 import collections
 import tomlkit
+import copy
+import os
+import surfex
 
 
 def toml_load(fname):
@@ -17,9 +20,14 @@ def toml_dump(to_dump,  fname, mode="w"):
 
 class Configuration(object):
 
-    def __init__(self, conf_dict, member_conf_dict):
+    def __init__(self, conf_dict, member_conf_dict, geo=None):
 
         self.settings = conf_dict
+        if "GEOMETRY" not in self.settings:
+            self.settings.update({self.settings["GEOMETRY"]: {}})
+        if geo is None:
+            geo = "Not set"
+        self.settings["GEOMETRY"].update({"GEO": geo})
         self.members = self.get_setting("FORECAST#ENSMSEL")
         if len(self.members) == 0:
             self.members = None
@@ -40,15 +48,7 @@ class Configuration(object):
         self.do_build = self.setting_is("COMPILE#BUILD", "yes")
         self.ecoclimap_sg = self.setting_is("SURFEX#COVER#SG", True)
         self.gmted = self.setting_is("SURFEX#ZS#YZS", "gmted2010.dir")
-        # self.create_climate = self.setting_is("CLIMATE#CREATE_CLIMATE", "yes")
-        self.create_climate = True
-        self.multitask = True
-        self.gridpp = True
-        self.canari = False
-        self.lsmixbc = False
-        self.msg = False
 
-        self.sst_from_ifs = False
         self.ekf = self.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
         nncv = self.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
         perts = []
@@ -143,37 +143,36 @@ class Configuration(object):
             if len(keys) > 1:
                 for key in keys[1:]:
                     if key in this_setting:
+                        # print(type(this_setting[key]))
                         this_setting = this_setting[key]
                     else:
                         raise KeyError("Key not found " + key)
         else:
             raise KeyError("Key not found " + keys[0])
 
-        # print(setting, this_setting, mbr)
+        # print(setting, this_setting, mbr, type(this_setting))
         return this_setting
 
-    @staticmethod
-    def flatten(d, sep="#"):
+    def update_setting(self, setting, value, mbr=None, sep="#"):
 
-        obj = collections.OrderedDict()
+        if sep is None:
+            keys = [setting]
+        else:
+            keys = setting.split(sep)
 
-        def recurse(t, parent_key=""):
-            if isinstance(t, list):
-                for i in range(len(t)):
-                    recurse(t[i], parent_key + sep + str(i) if parent_key else str(i))
-            elif isinstance(t, dict):
-                for k, v in t.items():
-                    recurse(v, parent_key + sep + k if parent_key else k)
+        last_key = keys[-1]
+        dsetting = {last_key: value}
+        if len(keys) > 1:
+            for key in reversed(keys[0:-1]):
+                dsetting = {key: dsetting}
+
+        if mbr is None:
+            self.settings = merge_toml_env(self.settings, dsetting)
+        else:
+            if self.members is not None and str(mbr) in self.members:
+                self.member_settings[str(mbr)] = merge_toml_env(self.member_settings[str(mbr)], dsetting)
             else:
-                obj[parent_key] = t
-
-        recurse(d)
-        return obj
-
-    # @staticmethod
-    # def merge_toml_env(old_env, mods):
-    #    # print(mods)
-    #    return deep_update(old_env, mods)
+                raise Exception("Not a valid member: " + str(mbr))
 
     def get_total_unique_hh_list(self):
         # Create a list of all unique HHs from all members
@@ -325,3 +324,380 @@ class Configuration(object):
 
         # print(expanded_hh_list, expanded_ll_list)
         return expanded_hh_list, expanded_ll_list
+
+
+def process_merged_settings(merged_settings, host=None, stream=None, system=None):
+
+    # Set default system values if system has been defined
+    # print(self.system)
+    if system is not None:
+        if host is None:
+            raise Exception("You must set host")
+
+        if "SYSTEM" not in merged_settings:
+            merged_settings.update({"SYSTEM": {}})
+        if "BINDIR" not in merged_settings["SYSTEM"]:
+            merged_settings["SYSTEM"].update({"BINDIR": system.get_var("SFX_EXP_DATA", host,
+                                                                       stream=stream) + "/bin"})
+        if "CLIMDIR" not in merged_settings["SYSTEM"]:
+            merged_settings["SYSTEM"].update({"CLIMDIR": system.get_var("SFX_EXP_DATA", host,
+                                                                        stream=stream) + "/climate"})
+        if "ARCHIVE_ROOT" not in merged_settings["SYSTEM"]:
+            merged_settings["SYSTEM"].update({"ARCHIVE_ROOT": system.get_var("SFX_EXP_DATA", host,
+                                                                             stream=stream) + "/archive/"})
+        if "ARCHIVE_PATTERN" not in merged_settings["SYSTEM"]:
+            merged_settings["SYSTEM"].update({"ARCHIVE_PATTERN": merged_settings["SYSTEM"]["ARCHIVE_ROOT"] +
+                                              "/@YYYY@/@MM@/@DD@/@HH@"})
+        if "WRK_PATTERN" not in merged_settings["SYSTEM"]:
+            merged_settings["SYSTEM"].update({"WRK_PATTERN": system.get_var("SFX_EXP_DATA", host,
+                                                                            stream=stream) + "/@YMD@_@HH@"})
+
+    merged_member_settings = {}
+    # Write member settings
+    members = None
+    if "ENSMSEL" in merged_settings["FORECAST"]:
+        members = list(merged_settings["FORECAST"]["ENSMSEL"])
+
+    # print(members, type(members), len(members))
+    member_settings = {}
+    if members is not None:
+        for mbr in members:
+            member3 = "{:03d}".format(int(mbr))
+            toml_settings = copy.deepcopy(merged_settings)
+            member_dict = get_member_settings(merged_member_settings, mbr)
+            toml_settings = merge_toml_env(toml_settings, member_dict)
+
+            # Settings where member string is added to variable
+            toml_settings["SYSTEM"].update({"ARCHIVE_PATTERN":
+                                            merged_settings["SYSTEM"]["ARCHIVE_PATTERN"] + "/mbr" + member3})
+            toml_settings["SYSTEM"].update({"WRK_PATTERN":
+                                            merged_settings["SYSTEM"]["WRK_PATTERN"] + "/mbr" + member3})
+            toml_settings["SYSTEM"].update({"EXTRARCH":
+                                            merged_settings["SYSTEM"]["EXTRARCH"] + "/mbr" + member3})
+            toml_settings["SYSTEM"].update({"CLIMDIR":
+                                            merged_settings["SYSTEM"]["CLIMDIR"] + "/mbr" + member3})
+
+            member_settings.update({str(mbr): toml_settings})
+
+    return merged_settings, member_settings
+
+
+def merge_toml_env(old_env, mods):
+    # print(mods)
+    return deep_update(old_env, mods)
+
+
+def merge_toml_env_from_files(toml_files):
+    merged_env = {}
+    for toml_file in toml_files:
+        if os.path.exists(toml_file):
+            # print(toml_file)
+            modification = toml_load(toml_file)
+            # print(modification)
+            merged_env = merge_toml_env(merged_env, modification)
+            # print(merged_env)
+        else:
+            print("WARNING: File not found " + toml_file)
+    return merged_env
+
+
+def merge_toml_env_from_file(toml_file):
+    merged_env = {}
+    if os.path.exists(toml_file):
+        # print(toml_file)
+        modification = toml_load(toml_file)
+        merged_env = merge_toml_env(merged_env, modification)
+    else:
+        print("WARNING: File not found " + toml_file)
+    return merged_env
+
+
+def merge_config_files_dict(config_files, configuration=None, testbed_configuration=None,
+                            user_settings=None):
+
+    for this_config_file in config_files:
+        hm_exp = config_files[this_config_file]["toml"].copy()
+
+        block_config = tomlkit.document()
+        if configuration is not None:
+            f = this_config_file.split("/")[-1]
+            if f == "config_exp.toml":
+                block_config.add(tomlkit.comment("\n# HARMONIE experiment configuration file\n#" +
+                                                 "\n# Please read the documentation on " +
+                                                 "https://hirlam.org/trac/wiki/HarmonieSystemDocumentation " +
+                                                 "first\n#"))
+
+        for block in config_files[this_config_file]["blocks"]:
+            if configuration is not None:
+                # print(configuration)
+                if type(configuration) is not dict:
+                    raise Exception("Configuration should be a dict here!")
+                if block in configuration:
+                    merged_config = merge_toml_env(hm_exp[block], configuration[block])
+                else:
+                    merged_config = hm_exp[block]
+
+                block_config.update({block: merged_config})
+
+            if testbed_configuration is not None:
+                # print("testbed", testbed_configuration)
+                if type(testbed_configuration) is not dict:
+                    raise Exception("Testbed configuration should be a dict here!")
+                if block in testbed_configuration:
+                    hm_testbed = merge_toml_env(block_config[block], testbed_configuration[block])
+                else:
+                    hm_testbed = block_config[block]
+                block_config.update({block: hm_testbed})
+
+            if user_settings is not None:
+                if type(user_settings) is not dict:
+                    raise Exception("User settings should be a dict here!")
+                if block in user_settings:
+                    print("Merge user settings in block " + block)
+                    user = merge_toml_env(block_config[block], user_settings[block])
+                    block_config.update({block: user})
+
+        config_files.update({this_config_file: {"toml": block_config}})
+        return config_files
+
+
+def merge_toml_env_from_config_dicts(config_files):
+
+    merged_env = {}
+    for f in config_files:
+        # print(f)
+        modification = config_files[f]["toml"]
+        merged_env = merge_toml_env(merged_env, modification)
+    return merged_env
+
+
+def flatten(d, sep="#"):
+
+    obj = collections.OrderedDict()
+
+    def recurse(t, parent_key=""):
+        if isinstance(t, list):
+            for i in range(len(t)):
+                recurse(t[i], parent_key + sep + str(i) if parent_key else str(i))
+        elif isinstance(t, dict):
+            for k, v in t.items():
+                recurse(v, parent_key + sep + k if parent_key else k)
+        else:
+            obj[parent_key] = t
+
+    recurse(d)
+    return obj
+
+
+def get_member_settings(d, member, sep="#"):
+
+    member_settings = {}
+    settings = flatten(d)
+    for setting in settings:
+        # print(setting)
+        keys = setting.split(sep)
+        # print(keys)
+        if len(keys) == 1:
+            # print(member)
+            member3 = "{:03d}".format(int(member))
+            val = settings[setting]
+            if type(val) is str:
+                val = val.replace("@EEE@", member3)
+
+            this_setting = {keys[0]: val}
+            # print("This setting", this_setting)
+            member_settings = merge_toml_env(member_settings, this_setting)
+        else:
+            this_member = int(keys[-1])
+            keys = keys[:-1]
+            # print(keys)
+            if this_member == member:
+                # print("This is it")
+                # print(setting, keys, this_member)
+
+                this_setting = settings[setting]
+                for key in reversed(keys):
+                    this_setting = {key: this_setting}
+
+                # print(this_setting)
+                member_settings = merge_toml_env(member_settings, this_setting)
+    return member_settings
+
+
+def deep_update(source, overrides):
+    """
+    Update a nested dictionary or similar mapping.
+    Modify ``source`` in place.
+    """
+    for key, value in overrides.items():
+        if isinstance(value, collections.Mapping) and value:
+            returned = deep_update(source.get(key, {}), value)
+            # print("Returned:", key, returned)
+            source[key] = returned
+        else:
+            override = overrides[key]
+            # print("Override:", key, override)
+
+            source[key] = override
+
+    return source
+
+
+class ConfigurationFromHarmonie(Configuration):
+    """
+    This class sets up a SURFEX configuration from an environment based Harmonie run with it's
+    corresponding configuration.
+
+    Some settings imply several changes in SURFEX configuration
+
+    """
+    def __init__(self, env, conf_dict):
+
+        member_conf_dict = conf_dict
+        Configuration.__init__(self, conf_dict, member_conf_dict)
+
+        # Set domain from environment variables. Geo is alway conf proj
+        ezone = int(env["EZONE"])
+        domain_dict = {
+            "nam_pgd_grid": {
+                "cgrid": "CONF PROJ"
+            },
+            "nam_conf_proj": {
+                "xlat0": float(env["LAT0"]),
+                "xlon0": float(env["LON0"]),
+            },
+            "nam_conf_proj_grid": {
+                "ilone": ezone,
+                "ilate": ezone,
+                "xlatcen": float(env["LATC"]),
+                "xloncen": float(env["LONC"]),
+                "nimax": int(env["NLON"]) - ezone,
+                "njmax": int(env["NLAT"]) - ezone,
+                "xdx": float(env["GSIZE"]),
+                "xdy": float(env["GSIZE"]),
+            }
+        }
+        geo = surfex.ConfProj(domain_dict)
+        self.update_setting("GEOMETRY#GEO", geo)
+        print(self.get_setting("GEOMETRY#GEO"))
+
+        #  CISBA Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
+        self.update_setting("SURFEX#ISBA#SCHEME", env["CISBA"])
+
+        # CSNOW Type of snow scheme in SURFEX. Options: "D95" and "3-L"
+        self.update_setting("SURFEX#ISBA#SNOW", env["CSNOW"])
+
+        # NPATCH Number of patches over land in SURFEX (see also LISBA_CANOPY)
+        self.update_setting("SURFEX#ISBA#NPATCH", int(env["NPATCH"]))
+
+        # LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX (must be .FALSE. for NPATCH>1)
+        canopy = env["LISBA_CANOPY"]
+        if canopy.strip().lower() == ".true.":
+            canopy = True
+        else:
+            canopy = False
+        self.update_setting("SURFEX#ISBA#CANOPY", canopy)
+
+        # CROUGH SSO scheme used in SURFEX "NONE"|"Z01D"|"BE04"|"OROT"
+        self.update_setting("SURFEX#SSO#SCHEME", env["CROUGH"])
+
+        # SURFEX_SEA_ICE Treatment of sea ice in surfex (none|sice)
+        self.update_setting("SURFEX#SEA#ICE", env["SURFEX_SEA_ICE"].upper())
+
+        # SURFEX_LAKES Treatment of lakes in surfex (WATFLX|FLAKE)
+        self.update_setting("SURFEX#TILES#INLAND_WATER", env["SURFEX_LAKES"])
+
+        # TOPO_SOURCE Input source for orography. Available are (gmted2010|gtopo30)
+        self.update_setting("SURFEX#ZS#YZS", env["TOPO_SOURCE"] + ".dir")
+
+        # ECOCLIMAP
+        ecoclimap_version = env["ECOCLIMAP_VERSION"]
+        if ecoclimap_version == "SG":
+            self.update_setting("SURFEX#COVER#SG", True)
+            self.update_setting("SURFEX#COVER#YCOVER", "ecosg_final_map.dir")
+        else:
+            self.update_setting("SURFEX#COVER#SG", False)
+            version1 = ["1.0", "1.2", "1.3", "1.4", "1.5"]
+            version2 = ["2.0", "2.1", "2.2", "2.2.1", "2.5_plus"]
+            if ecoclimap_version in version1:
+                ycover = "ECOCLIMAP_I_GLOBAL"
+            elif ecoclimap_version in version2:
+                ycover = "ECOCLIMAP_II_EUROP"
+            else:
+                raise NotImplementedError
+            ycover_ver = ycover + "_V" + ecoclimap_version
+            self.update_setting("SURFEX#COVER#YCOVER", ycover_ver + ".dir")
+
+        # SOIL_TEXTURE_VERSION  # Soil texture input data FAO|HWSD_v2|SOILGRID
+        # Soil texture (sand/clay)
+        soil_texture = env["SOIL_TEXTURE_VERSION"]
+        if soil_texture == "FAO":
+            ysand = "sand_fao"
+            yclay = "clay_fao"
+        elif soil_texture == "HWSD_v2":
+            ysand = "SAND_HWSD_MOY_v2"
+            yclay = "CLAY_HWSD_MOY_v2"
+        elif soil_texture == "SOILGRID":
+            ysand = "SAND_SOILGRID"
+            yclay = "CLAY_SOILGRID"
+        else:
+            raise NotImplementedError
+        self.update_setting("SURFEX#ISBA#YSAND", ysand + ".dir")
+        self.update_setting("SURFEX#ISBA#YCLAY", yclay + ".dir")
+
+        # LDB_VERSION = 3.0  # Lake database version.
+        self.update_setting("SURFEX#FLAKE#LDB_VERSION", env["LDB_VERSION"])
+
+        # Treeheight
+        if "H_TREE_FILE" in env:
+            self.update_setting("SURFEX#COVER#H_TREE", env["H_TREE_FILE"])
+        else:
+            self.update_setting("SURFEX#COVER#H_TREE", "")
+
+        # XRIMAX Maximum allowed Richardson number in the surface layer (cy40h default was 0.0)
+        self.update_setting("SURFEX#PARAMETERS#XRIMAX", float(env["XRIMAX"]))
+
+        # XSCALE_H_TREE  Scale the tree height with this factor
+        self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
+
+        # CFORCING_FILETYPE Offline surfex forcing format (NETCDF/ASCII)
+        self.update_setting("SURFEX#IO#CFORCING_FILETYPE", env["CFORCING_FILETYPE"])
+
+        #########################
+        # Assimilation settings #
+        #########################
+        # Soil assimilation
+        anasurf = env["ANASURF"]
+        if anasurf == "OI" or anasurf == "CANARI_OI_MAIN":
+            self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "OI")
+        if anasurf == "EKF" or anasurf == "CANARI_EKF_SURFEX":
+            self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
+
+        # NNCV = "1,1,1,1"  # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
+        nncv = env["NNCV"]
+        nncv = list(map(int, nncv.split(",")))
+        self.update_setting("SURFEX#ASSIMS#ISBA#EKF", nncv)
+
+        # NNCO = "1,1,0,0,1"  # Active observation types (Element 1=T2m, element 2=RH2m and element 3=Soil moisture,
+        # element 5=SWE)
+        nnco = env["NNCO"]
+        nnco = list(map(int, nnco.split(",")))
+        self.update_setting("SURFEX#ASSIMS#OBS#NNCO", nnco)
+
+        # ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
+        # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
+        self.update_setting("SURFEX#ASSIM#ISBA#OI#COEFFS", env["ANASURF_OI_COEFF"])
+
+        # PERTSURF ECMA    : perturb also the surface observation before Canari (recommended
+        #                  : for EDA to have full perturbation of the initial state).
+        #          model   : perturb surface fields in grid-point space (recursive filter)
+        #          none    : no perturbation for surface observations.
+        self.update_setting("SURFEX#ISBA#PERTSURF", False)
+        self.update_setting("SURFEX#SEA#PERTFLUX", False)
+        if env["PERTSURF"] == "model":
+            if "LPERTSURF" in env:
+                if env["LPERTSURF"].strip().lower() == ".true.":
+                    self.update_setting("SURFEX#ISBA#PERTSURF", True)
+                    self.update_setting("SURFEX#SEA#PERTFLUX", True)
+            else:
+                raise Exception("LPERTSURF should exists")

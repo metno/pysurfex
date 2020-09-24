@@ -253,6 +253,7 @@ def create_surfex_json_namelist(args):
         raise FileNotFoundError("Input file does not exist: " + settings_file)
 
     kwargs.update({"settings": settings})
+    config = surfex.Configuration(settings, {})
 
     if os.path.exists(system_settings):
         system_file_paths = json.load(open(system_settings, "r"))
@@ -260,7 +261,7 @@ def create_surfex_json_namelist(args):
         raise FileNotFoundError("System settings not found " + system_settings)
 
     merged_json_settings, ecoclimap_json, input_for_surfex_json = \
-        surfex.set_json_namelist_from_toml_env(program, settings, input_path, system_file_paths, **kwargs)
+        surfex.set_json_namelist_from_toml_env(program, config, input_path, system_file_paths, **kwargs)
 
     # Namelist settings
     print("\nNamelist: ")
@@ -929,99 +930,102 @@ def run_oi2soda(args):
     surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output)
 
 
-def lsm_file_assim(args):
+def parse_lsm_file_assim(argv):
+    parser = ArgumentParser(description="Create ASCII LSM input for SODA")
+    parser.add_argument('--file', type=str, help="Input file name", required=True)
+    parser.add_argument('--fileformat', type=str, help="Input fileformat", required=True)
+    parser.add_argument('--var', type=str, help="Variable in input file", required=False,
+                        default="air_temperature_2m")
+    parser.add_argument('--converter', type=str, help="Converter for variable", required=False, default="none")
+    parser.add_argument('--dtg', type=str, help="DTG", default=None, required=False)
+    parser.add_argument('--domain', type=str, help="Domain", required=True)
+    parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
 
-    if not os.path.exists(args.config):
-        raise FileNotFoundError(args.config)
+    if len(argv) < 3:
+        parser.print_help()
+        sys.exit(1)
 
-    if os.path.exists(args.domain):
-        geo = surfex.geo.get_geo_object(json.load(open(args.domain, "r")))
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+
+    domain = kwargs["domain"]
+    print(domain)
+    if os.path.exists(domain):
+        domain_json = json.load(open(domain, "r"))
+        kwargs.update({"geo": surfex.get_geo_object(domain_json)})
     else:
-        raise FileNotFoundError(args.domain)
+        raise FileNotFoundError(domain)
+    dtg = kwargs["dtg"]
+    if dtg is not None:
+        kwargs.update({"dtg": datetime.strptime(dtg, "%Y%m%d%H")})
+    return kwargs
 
-    validtime = datetime.strptime(args.dtg, "%Y%m%d%H")
-    variables = args.variables
-    variables = variables + ["altitude", "land_area_fraction"]
 
+def lsm_file_assim(**kwargs):
+
+    validtime = kwargs["dtg"]
     cache = surfex.cache.Cache(True, 3600)
-    fg = None
-    for var in variables:
 
-        inputfile = args.inputfile
-        fileformat = args.inputformat
-        converter = "none"
-        if var == "air_temperature_2m":
-            if args.t2m_file is not None:
-                inputfile = args.t2m_file
-            if args.t2m_format is not None:
-                fileformat = args.t2m_format
-            if args.t2m_converter is not None:
-                converter = args.t2m_converter
-        elif var == "relative_humidity_2m":
-            if args.rh2m_file is not None:
-                inputfile = args.rh2m_file
-            if args.rh2m_format is not None:
-                fileformat = args.rh2m_format
-            if args.rh2m_converter is not None:
-                converter = args.rh2m_converter
-        elif var == "surface_snow_thickness":
-            if args.sd_file is not None:
-                inputfile = args.sd_file
-            if args.sd_format is not None:
-                fileformat = args.sd_format
-            if args.sd_converter is not None:
-                converter = args.sd_converter
-        elif var == "altitude":
-            if args.altitude_file is not None:
-                inputfile = args.altitude_file
-            if args.altitude_format is not None:
-                fileformat = args.altitude_format
-            if args.altitude_converter is not None:
-                converter = args.altitude_converter
-        elif var == "land_area_fraction":
-            if args.laf_file is not None:
-                inputfile = args.laf_file
-            if args.laf_format is not None:
-                fileformat = args.laf_format
-            if args.laf_converter is not None:
-                converter = args.laf_converter
-        else:
-            raise NotImplementedError("Variable not implemented " + var)
+    geo = kwargs["geo"]
+    inputfile = kwargs["file"]
+    fileformat = kwargs["fileformat"]
+    converter = kwargs["converter"]
+    output = kwargs["output"]
 
-        if inputfile is None:
-            raise Exception("You must set input file")
+    var = kwargs["var"]
 
-        if fileformat is None:
-            raise Exception("You must set file format")
+    defs = {
+        "filepattern": inputfile,
+        "fileformat": fileformat,
+        "fcint": 3,
+        "offset": 0,
+        "file_inc": 1
+    }
 
-        config = yaml.load(open(args.config, "r"))
-        defs = config[fileformat]
-        defs.update({"filepattern": inputfile})
+    print(var, fileformat)
+    converter_conf = {
+            "none": {
+                "name": var
+            }
+    }
 
-        print(var, fileformat)
-        converter_conf = config[var][fileformat]["converter"]
-        if converter not in config[var][fileformat]["converter"]:
-            raise Exception("No converter " + converter + " definition found in " + args.config + "!")
+    var = "LSM"
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    field = np.reshape(field, [geo.nlons, geo.nlats])
+    field = np.transpose(field)
 
-        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
-        field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
-        field = np.reshape(field, [geo.nlons, geo.nlats])
+    fh = open(output, "w")
+    for lat in range(0, geo.nlats):
+        for lon in range(0, geo.nlons):
+            # print(field[lat, lon])
+            fh.write(str(field[lat, lon]) + "\n")
+    fh.close()
 
-        # Create file
-        if fg is None:
-            nx = geo.nlons
-            ny = geo.nlats
-            fg = surfex.create_netcdf_first_guess_template(variables, nx, ny, args.output)
-            fg.variables["time"][:] = float(validtime.strftime("%s"))
-            fg.variables["longitude"][:] = np.transpose(geo.lons)
-            fg.variables["latitude"][:] = np.transpose(geo.lats)
-            fg.variables["x"][:] = [i for i in range(0, nx)]
-            fg.variables["y"][:] = [i for i in range(0, ny)]
 
-        if var == "altitude":
-            field[field < 0] = 0
+def hm2pysurfex(**kwargs):
+    # surfex.Configuration
 
-        fg.variables[var][:] = np.transpose(field)
+    wd = "/home/trygveasp/sfx_home/new_ana/"
+    config = surfex.toml_load(wd + "/config/config.toml")
+    print(config)
+    config_files = {}
+    for f in config["config_files"]:
+        # EPS settings already in environment in HM
+        if f != "config_exp_eps.toml":
+            toml_dict = surfex.toml_load(wd + "/config/" + f)
+            config_files.update({f: {"toml": toml_dict, "blocks": config[f]["blocks"]}})
 
-    if fg is not None:
-        fg.close()
+    all_merged_settings = surfex.merge_toml_env_from_config_dicts(config_files)
+    # merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
+
+    system_file_paths = json.load(open(wd + "/Env_input_paths", "r"))
+    # Create configuration
+    config = surfex.ConfigurationFromHarmonie(os.environ, all_merged_settings)
+
+    namelist, eco, inp = surfex.set_json_namelist_from_toml_env("pgd", config, wd + "/nam", system_file_paths)
+    print(namelist)
+    print(eco.data)
+    print(inp.data)

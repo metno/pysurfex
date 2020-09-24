@@ -13,7 +13,8 @@ class RunTestNC(unittest.TestCase):
 
     def test_run_test_nc(self):
 
-        config_exp = "examples/settings/config_exp_surfex.toml"
+        config_exp = "scheduler/config/config_exp.toml"
+        config_exp_surfex = "scheduler/config/config_exp_surfex.toml"
         grid = "conf_proj"
         my_format = "NC"
         this_config = "test/settings/" + my_format.lower() + ".toml"
@@ -22,8 +23,8 @@ class RunTestNC(unittest.TestCase):
         config_file = "config_run_test_nc.toml"
         rte = "rte_run_test_nc.json"
         json.dump(dict(os.environ), open(rte, "w"))
-        config = surfex.merge_toml_env_from_files([config_exp, this_config])
-        toml.dump(config, open(config_file, "w"))
+        config = surfex.merge_toml_env_from_files([config_exp, config_exp_surfex, this_config])
+        surfex.toml_dump(config, config_file)
 
         # PGD
         task = "pgd"

@@ -288,7 +288,8 @@ def set_input_vertical_soil_ekf(dtg, settings, first_guess, perturbed_runs, lsmf
     if settings["NAM_ASSIM"]['LEXTRAP_SEA'] or settings["NAM_ASSIM"]['LEXTRAP_WATER'] or \
             settings["NAM_ASSIM"]['LEXTRAP_NATURE'] or settings["NAM_ASSIM"]['LEXTRAP_SNOW']:
 
-        cfile_format_lsm = settings["NAM_ASSIM"]['CFILE_FORMAT_CLIM']
+        print(settings)
+        cfile_format_lsm = settings["NAM_ASSIM"]['CFILE_FORMAT_LSM']
         if cfile_format_lsm.upper() == "ASCII":
             target = "LSM.DAT"
         elif cfile_format_lsm.upper() == "FA":

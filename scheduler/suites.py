@@ -251,7 +251,7 @@ class SurfexSuite(object):
             cycle_input_dtg_node.update({dtg_str: cycle_input})
 
             forcing = EcflowSuiteTask("Forcing", cycle_input, ecf_files=ecf_files)
-            forcing_complete = EcflowSuiteTrigger(forcing)
+            # forcing_complete = EcflowSuiteTrigger(forcing)
 
             triggers = EcflowSuiteTriggers([init_run_complete, static_complete, prepare_cycle_complete])
             if prev_dtg is not None:
@@ -274,6 +274,8 @@ class SurfexSuite(object):
                 for scheme in schemes:
                     if schemes[scheme].upper() != "NONE":
                         do_soda = True
+
+                do_snow_ass = False
                 snow_ass = exp.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
                 if len(snow_ass) > 0:
                     hh = int(dtg.strftime("%H"))
@@ -281,6 +283,7 @@ class SurfexSuite(object):
                         if hh == int(sn):
                             print("Do snow assimilation for ", dtg)
                             do_soda = True
+                            do_snow_ass = True
 
                 triggers = EcflowSuiteTriggers(prep_complete)
                 if not do_soda:
@@ -322,18 +325,12 @@ class SurfexSuite(object):
                                                 triggers=triggers)
 
                     prepare_oi_soil_input = None
+                    prepare_oi_climate = None
                     if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
                         prepare_oi_soil_input = EcflowSuiteTask("PrepareOiSoilInput", initialization,
                                                                 ecf_files=ecf_files)
-
-                    prepare_lsm = None
-                    need_lsm = False
-                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
-                        need_lsm = True
-                    if exp.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
-                        need_lsm = True
-                    if need_lsm:
-                        prepare_lsm = EcflowSuiteTask("PrepareLSM", initialization, ecf_files=ecf_files)
+                        prepare_oi_climate = EcflowSuiteTask("PrepareOiClimate", initialization,
+                                                             ecf_files=ecf_files)
 
                     prepare_sst = None
                     if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#SEA", "INPUT"):
@@ -349,7 +346,8 @@ class SurfexSuite(object):
                             elif ivar == 1:
                                 an_variables.update({"rh2m": True})
                             elif ivar == 4:
-                                an_variables.update({"sd": True})
+                                if do_snow_ass:
+                                    an_variables.update({"sd": True})
 
                     analysis = EcflowSuiteFamily("Analysis", initialization)
                     fg4oi = EcflowSuiteTask("FirstGuess4OI", analysis, ecf_files=ecf_files)
@@ -373,11 +371,25 @@ class SurfexSuite(object):
                         oi2soda = EcflowSuiteTask("Oi2soda", analysis, triggers=triggers, ecf_files=ecf_files)
                         oi2soda_complete = EcflowSuiteTrigger(oi2soda)
 
+                    prepare_lsm = None
+                    need_lsm = False
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
+                        need_lsm = True
+                    if exp.config.setting_is("SURFEX#ASSIM#SCHEMES#INLAND_WATER", "WATFLX"):
+                        if exp.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
+                            need_lsm = True
+                    if need_lsm:
+                        triggers = EcflowSuiteTriggers(fg4oi_complete)
+                        prepare_lsm = EcflowSuiteTask("PrepareLSM", initialization, ecf_files=ecf_files,
+                                                      triggers=triggers)
+
                     triggers = [EcflowSuiteTrigger(fg), oi2soda_complete]
                     if perturbations is not None:
                         triggers.append(EcflowSuiteTrigger(perturbations))
                     if prepare_oi_soil_input is not None:
                         triggers.append(EcflowSuiteTrigger(prepare_oi_soil_input))
+                    if prepare_oi_climate is not None:
+                        triggers.append(EcflowSuiteTrigger(prepare_oi_climate))
                     if prepare_sst is not None:
                         triggers.append(EcflowSuiteTrigger(prepare_sst))
                     if prepare_lsm is not None:

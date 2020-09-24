@@ -21,12 +21,12 @@ YCOVER = "ECOCLIMAP_2_5_p.dir"      # Version of ECOCLIMAP for surfex (1,2,SG)
                                     # SG represents SecondGeneration and is now availbale for test on ECMWF. However,
                                     # please note that SG is not yet compatible with any availbale lake data base.
 SG = false                          # ECOCLIMAP second generation
-H_TREE = "new_ht_c.dir"
-ALBNIR_SOIL = 'ANS_DESAG_@MM@@CDD@.dir'
-ALBNIR_VEG = 'ANV_DESAG_@MM@@CDD@.dir'
-ALBVIS_SOIL = 'AVS_DESAG_@MM@@CDD@.dir'
-ALBVIS_VEG = 'AVV_DESAG_@MM@@CDD@.dir'
-LAI = 'LAI_@MM@@CDD@_c.dir'
+H_TREE = "new_ht_c.dir"                 # SG tree height
+ALBNIR_SOIL = 'ANS_DESAG_@MM@@CDD@.dir' # SG soil NIR albedo
+ALBNIR_VEG = 'ANV_DESAG_@MM@@CDD@.dir'  # SG vegetation NIR albedo
+ALBVIS_SOIL = 'AVS_DESAG_@MM@@CDD@.dir' # SG soil visible albedo
+ALBVIS_VEG = 'AVV_DESAG_@MM@@CDD@.dir'  # SG vgetation visible albedo
+LAI = 'LAI_@MM@@CDD@_c.dir'             # SG Leaf area index
 
 [SURFEX.ZS]                         # Orography
 YZS = "gmted2010.dir"               # Database with orography: "gmted2010"|"gtopo30"
@@ -50,7 +50,7 @@ TOWN = "TEB"                        # Town scheme: "TEB"|"NONE"
 #######
 [SURFEX.SEA]                        # General sea settings
 ICE = "NONE"                        # Treatment of sea ice in surfex (NONE|SICE)
-PERTFLUX = "none"                   # Perturb sea fluxes
+PERTFLUX = false                    # Perturb sea fluxes
 LVOLATILE_SIC = false               # 
 
 
@@ -64,6 +64,7 @@ LVOLATILE_SIC = false               #
 # General FLAKE
 [SURFEX.FLAKE]
 LCLIM = true                        # Use FLAKE climatology
+LDB_VERSION = ""
 
 ##########
 # NATURE #
@@ -80,12 +81,12 @@ SNOW = "D95"                        # Type of snow scheme in SURFEX. Options: "D
 YSOC_TOP = "soc_top.dir"            # Soil organic carbon data. Options: "soc_top.dir"
 YSOC_SUB = "soc_sub.dir"            # Soil organic carbon data. Options: "soc_sub.dir"
 
-YSAND = "sand_fao.dir"         # Soil texture input data: "sand_fao.dir"|"SAND_HWSD_MOY_V2.dir"|"sand_SOILGRID.dir"
+YSAND = 'sand_fao.dir'              # Soil texture input data: "sand_fao.dir"|"SAND_HWSD_MOY_V2.dir"|"sand_SOILGRID.dir"
                                     # suffix json assumes namelist values provided as a json file
 
-YCLAY = "clay_fao.dir"         # Soil texture input data: "clay_fao.dir"|"CLAY_HWSD_MOY_V2.dir"|"clay_SOILGRID.dir"
+YCLAY = "clay_fao.dir"              # Soil texture input data: "clay_fao.dir"|"CLAY_HWSD_MOY_V2.dir"|"clay_SOILGRID.dir"
                                     # suffix json assumes namelist values provided as a json file
-PERTSURF = "none"                   # Perturb surface parameters
+PERTSURF = false                    # Perturb surface parameters
 XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
 
 # Sub-grid-scale orography settings
@@ -94,8 +95,10 @@ SCHEME = "NONE"                     # SSO scheme used in SURFEX "NONE"|"'Z01D'"|
 
 # Tree height treatment
 [SURFEX.TREEDRAG]
-TREEDATA_FILE = ""                  # Name of tree height data file (with *.llv suffix)
+TREEDATA_FILE = ""                # Name of tree height data file (with *.llv suffix)
 XSCALE_H_TREE = 1.0                 # Scale the tree height with this factor
+XALLEN_TERM  = 2.5                  # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
+XGRASS_H_DNM = 3.0                  # grass: z0=0.13*LAI/XGRASS_H_DNM; default=6.0
 
 ########
 # TOWN #
@@ -117,10 +120,10 @@ LTOWN_TO_ROCK = false               # Switch to set town as rock. Only used if s
 CFILE_FORMAT_LSM = "ASCII"              # File format for land sea mask when using SODA: "ASCII"|"FA"
 
 [SURFEX.ASSIM.SCHEMES]
-SEA = "NONE"                        # Assimilation method for sea tile: "INPUT"|"NONE"
-INLAND_WATER = "NONE"               # Assimilation method for water tile: "INPUT"|"NONE"
-ISBA = "EKF"                          # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
-TEB = "NONE"                        # Assimilation method for TEB tile: "NONE"|"ROADT"
+SEA = "NONE"                         # Assimilation method for sea tile: "INPUT"|"NONE"
+INLAND_WATER = "INPUT"               # Assimilation method for water tile: "INPUT"|"NONE"
+ISBA = "EKF"                         # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
+TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|"ROADT"
 
 [SURFEX.ASSIM.OBS]
 LOBSHEADER = false                          # ASCII observation file has header
@@ -138,7 +141,7 @@ LEXTRAP_SEA = false                  # Extrapolate sea variables to points havin
 
 [SURFEX.ASSIM.INLAND_WATER]
 LWATERTG2 = false                    # Use TG2 as LST in points having both land and water defined. Should use LEXTRAP_WATER=true
-LEXTRAP_WATER = false                # Extrapolate LST to points having LSM < 0.5 or to points masked by LWATERTG2
+LEXTRAP_WATER = true                # Extrapolate LST to points having LSM < 0.5 or to points masked by LWATERTG2
 
 [SURFEX.ASSIM.ISBA]
 UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assimilation.
@@ -158,6 +161,6 @@ XSIGH2MO = 0.1                      # SIGMA O for RH2M in oi_cacsts
 NNCV = [0,1,0,1]                        # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
 XSIGMA_M = [2.0, 2.0, 0.1 , 0.15]       # Background error
 CVAR_M = ["TG1", "TG2", "WG1" , "WG2"]  # Control variables
-XPRT_M = [0.0001, 0.0001, 1e-05, 1e-05] # Perturbation magnitude
+XPRT_M = [0.0001, 0.0001, 0.00001, 0.00001] # Perturbation magnitude
 XSCALE_Q = 0.125                        # Scaling of obs error
 EVOLVE_B = false                        # Evolve B matrix each cycle

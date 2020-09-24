@@ -29,5 +29,10 @@
   "NAM_ISBAn": {
     "LCANOPY_DRAG": true,
     "XCDRAG": 0.01
-  }
+  },
+  "NAM_SURF_ATM": {
+    "XCD_COEFF1": 10.0,
+    "XCD_COEFF2": 5.0,
+    "XCH_COEFF1": 15.0
+ }
 }

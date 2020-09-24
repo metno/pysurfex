@@ -192,7 +192,7 @@ class SurfexBinaryTask(AbstractTask):
 
         self.input_path = self.exp.wd + "/nam"  # kwargs["input_path"]
         input_paths = self.exp.get_file_name(self.exp.wd, "input_paths", full_path=True)
-        self.settings = self.exp.config.settings
+        # self.settings = self.exp.config.settings
         if os.path.exists(input_paths):
             self.system_file_paths = json.load(open(input_paths, "r"))
         else:
@@ -331,7 +331,7 @@ class Pgd(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
                                                        self.system_file_paths, **kwargs)
 
             SurfexBinaryTask.execute(self, binary, output, json_settings,
@@ -371,7 +371,7 @@ class Prep(SurfexBinaryTask):
                 "dtg": self.dtg
             }
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
                                                        self.system_file_paths, **kwargs)
 
             SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
@@ -405,7 +405,7 @@ class Forecast(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
+                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
                                                        self.system_file_paths, forc_zs=forc_zs)
 
             # Add forcing
@@ -448,7 +448,7 @@ class PerturbedRun(SurfexBinaryTask):
 
         if not os.path.exists(output) or force:
             json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env("offline", self.settings, self.input_path,
+                surfex.set_json_namelist_from_toml_env("offline", self.exp.config, self.input_path,
                                                        self.system_file_paths, forc_zs=forc_zs)
 
             # Add forcing
@@ -532,6 +532,7 @@ class Soda(SurfexBinaryTask):
     # Make sure we don't clean yet
     def postfix(self, **kwargs):
         pass
+
 
 class PrepareCycle(AbstractTask):
     def __init__(self, task, exp, **kwargs):
@@ -776,6 +777,13 @@ class Oi2soda(AbstractTask):
 
         an_variables = {"t2m": False, "rh2m": False, "sd": False}
         nnco = self.exp.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        snow_ass = self.exp.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
+        snow_ass_done = False
+        if len(snow_ass) > 0:
+            hh = int(self.exp.progress.dtg.strftime("%H"))
+            for sn in snow_ass:
+                if hh == int(sn):
+                    snow_ass_done = True
 
         for ivar in range(0, len(nnco)):
             if nnco[ivar] == 1:
@@ -784,7 +792,8 @@ class Oi2soda(AbstractTask):
                 elif ivar == 1:
                     an_variables.update({"rh2m": True})
                 elif ivar == 4:
-                    an_variables.update({"sd": True})
+                    if snow_ass_done:
+                        an_variables.update({"sd": True})
 
         for var in an_variables:
             if an_variables[var]:
@@ -965,10 +974,48 @@ class LogProgressPP(AbstractTask):
 class PrepareOiSoilInput(AbstractTask):
     def __init__(self, task, exp, **kwargs):
         AbstractTask.__init__(self, task, exp, **kwargs)
-        self.var_name = task.family1
 
     def execute(self, **kwargs):
-        pass
         # Create FG
-        # Create LSM
-        # Create CLIMATE
+        raise NotImplementedError
+
+
+class PrepareOiClimate(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        # Create CLIMATE.dat
+        raise NotImplementedError
+
+
+class PrepareSST(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        # Create CLIMATE.dat
+        raise NotImplementedError
+
+
+class PrepareLSM(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+
+        file = self.get_setting("input")
+        output = self.get_setting("output")
+        fileformat = self.get_setting("fileformat")
+        converter = self.get_setting("converter")
+        kwargs = {
+            "var": "land_area_fraction",
+            "file":  file,
+            "fileformat": fileformat,
+            "output": output,
+            "dtg": self.exp.progress.dtg,
+            "geo": self.exp.geo,
+            "converter": converter,
+        }
+        print(kwargs)
+        surfex.lsm_file_assim(**kwargs)

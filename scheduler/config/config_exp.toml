@@ -34,6 +34,7 @@ PREP_INPUT_FILETYPE = "json"
 #  Forecast model (physics + dynamics and output)
 #####################################################################################################
 
+PHYSICS = "arome"
 ENSMSEL = []                            # Ensemble members to run (list with member numbers)
 
 # **** Postprocessing/output ****

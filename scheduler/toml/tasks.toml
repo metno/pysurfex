@@ -36,13 +36,15 @@ prep_file = "@WRK_PATTERN@/fg_sfx"
 fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 output = "@ARCHIVE_PATTERN@/ANALYSIS.@CSURF_FILETYPE@"
 obsfile = "@ARCHIVE_PATTERN@/OBSERVATIONS.txt"
+perturbed_runs = "@ARCHIVE_PATTERN@/PERT_@PERT@.@CSURF_FILETYPE@"
+check_existence = false
+sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
+
+# External input files
 sstfile = "@WRK_PATTERN@/sstfile"
 ua_first_guess = "@WRK_PATTERN@/fg_ua"
-perturbed_runs = "@ARCHIVE_PATTERN@/PERT_@PERT@.@CSURF_FILETYPE@"
-lsmfile = "@WRK_PATTERN@/lsmfile"
-check_existence = false
-climfile = "@WRK_PATTERN@/climfile"
-sfx_first_guess = "@WRK_PATTERN@/fg_sfx"
+climfile = "@WRK_PATTERN@/CLIMATE.dat"
+lsmfile = "@WRK_PATTERN@/LSM.dat"
 # ascatfile = "ascatfile"
 
 ######################
@@ -149,3 +151,9 @@ output = "@ARCHIVE_PATTERN@/qc_sd.json"
 tests = ""
 
 [PrepareOiSoilInput]
+
+[PrepareLSM]
+input = "@ARCHIVE_PATTERN@/raw_@YYYY@@MM@@DD@@HH@.nc"
+output = "@WRK_PATTERN@/LSM.dat"
+fileformat = "netcdf"
+converter = "none"
