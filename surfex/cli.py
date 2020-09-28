@@ -195,8 +195,82 @@ def parse_args_create_surfex_json_namelist(argv):
     parser.add_argument('--config', '-c', type=str, nargs="?", required=True, help="Input TOML file")
     parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
     parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?', help="")
+    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
+                        help="Input file for PREP")
+    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
+                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
+    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
+                        help="Input PGD file for PREP input file")
+    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False,
+                        default=None,
+                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
+    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
+                        help="DTG (YYYYMMDDHH)")
+    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
+    parser.add_argument('program', help="For which program you should create the JSON file",
+                        choices=["pgd", "prep", "offline", "soda"])
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def create_surfex_json_namelist(**kwargs):
+
+    program = kwargs["program"]
+    input_path = kwargs["path"]
+    indent = kwargs["indent"]
+    name_of_namelist = kwargs["namelist"]
+    args = {
+        "forc_zs": kwargs["forc_zs"],
+        "prep_file": kwargs["prep_file"],
+        "prep_filetype": kwargs["prep_filetype"],
+        "prep_pgdfile": kwargs["prep_pgdfile"],
+        "prep_pgdfiletype": kwargs["prep_pgdfiletype"]
+    }
+    args.update({"dtg": kwargs["dtg"]})
+    if kwargs["dtg"] is not None:
+        args.update({"dtg": datetime.strptime(kwargs["dtg"], "%Y%m%d%H")})
+
+    settings_file = kwargs["config"]
+    if os.path.exists(settings_file):
+        print("Read toml settings from " + settings_file)
+        settings = surfex.toml_load(settings_file)
+        # print(settings)
+    else:
+        raise FileNotFoundError("Input file does not exist: " + settings_file)
+
+    # kwargs.update({"settings": settings})
+    config = surfex.Configuration(settings, {})
+
+    namelist = surfex.BaseNamelist(program, config, input_path, **args)
+    merged_json_settings = namelist.get_namelist()
+
+    # Namelist settings
+    print("\nNamelist: ")
+    for key in merged_json_settings:
+        print(key, ":", merged_json_settings[key])
+
+    # Dump namelist as json
+    surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
+
+
+def parse_args_create_surfex_json_input(argv):
+
+    """Parse the command line input arguments."""
+    parser = ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--config', '-c', type=str, nargs="?", required=True, help="Input TOML file")
+    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
+    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
     parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
                         help="Input json file for SURFEX binaries")
     parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
@@ -210,10 +284,6 @@ def parse_args_create_surfex_json_namelist(argv):
                         help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
     parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
                         help="DTG (YYYYMMDDHH)")
-    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
-
-    parser.add_argument('--ecoclimap', '-e', type=str, nargs="?", required=False, default="ecoclimap.json",
-                        help="Input ecoclimap json file for SURFEX binaries")
     parser.add_argument('program', help="For which program you should create the JSON file",
                         choices=["pgd", "prep", "offline", "soda"])
 
@@ -221,30 +291,31 @@ def parse_args_create_surfex_json_namelist(argv):
         parser.print_help()
         sys.exit()
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def create_surfex_json_namelist(args):
+def create_surfex_json_input(**kwargs):
 
-    program = args.program
-    input_path = args.path
-    indent = args.indent
-    system_settings = args.system
-    name_of_namelist = args.namelist
-    name_of_input_files = args.files
-    name_of_ecoclimap = args.ecoclimap
-    kwargs = {
-        "forc_zs": args.forc_zs,
-        "prep_file": args.prep_file,
-        "prep_filetype": args.prep_filetype,
-        "prep_pgdfile": args.prep_pgdfile,
-        "prep_pgdfiletype": args.prep_pgdfiletype
+    program = kwargs["program"]
+    indent = kwargs["indent"]
+    system_settings = kwargs["system"]
+    name_of_input_files = kwargs["files"]
+    args = {
+        "prep_file": kwargs["prep_file"],
+        "prep_filetype": kwargs["prep_filetype"],
+        "prep_pgdfile": kwargs["prep_pgdfile"],
+        "prep_pgdfiletype": kwargs["prep_pgdfiletype"]
     }
-    kwargs.update({"dtg": args.dtg})
-    if args.dtg is not None:
-        kwargs.update({"dtg": datetime.strptime(args.dtg, "%Y%m%d%H")})
+    args.update({"dtg": kwargs["dtg"]})
+    if kwargs["dtg"] is not None:
+        args.update({"dtg": datetime.strptime(kwargs["dtg"], "%Y%m%d%H")})
+    dtg = args["dtg"]
 
-    settings_file = args.config
+    settings_file = kwargs["config"]
     if os.path.exists(settings_file):
         print("Read toml settings from " + settings_file)
         settings = surfex.toml_load(settings_file)
@@ -252,7 +323,7 @@ def create_surfex_json_namelist(args):
     else:
         raise FileNotFoundError("Input file does not exist: " + settings_file)
 
-    kwargs.update({"settings": settings})
+    # kwargs.update({"settings": settings})
     config = surfex.Configuration(settings, {})
 
     if os.path.exists(system_settings):
@@ -260,29 +331,25 @@ def create_surfex_json_namelist(args):
     else:
         raise FileNotFoundError("System settings not found " + system_settings)
 
-    merged_json_settings, ecoclimap_json, input_for_surfex_json = \
-        surfex.set_json_namelist_from_toml_env(program, config, input_path, system_file_paths, **kwargs)
-
-    # Namelist settings
-    print("\nNamelist: ")
-    for key in merged_json_settings:
-        print(key, ":", merged_json_settings[key])
-
-    # Dump namelist as json
-    surfex.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
+    if program == "pgd":
+        input_for_surfex_json = surfex.PgdInputData(config, system_file_paths)
+    elif program == "prep":
+        input_for_surfex_json = surfex.PrepInputData(config, system_file_paths)
+    elif program == "offline":
+        input_for_surfex_json = surfex.OfflineInputData(config, system_file_paths)
+    elif program == "soda":
+        input_for_surfex_json = surfex.SodaInputData(config, system_file_paths, dtg)
+    else:
+        raise NotImplementedError
 
     # Input files for SURFEX binary
     print("\nInput files: ", input_for_surfex_json.data)
     json.dump(input_for_surfex_json.data, open(name_of_input_files, "w"), indent=indent)
 
-    # Ecoclimap
-    print("\nEcoclimap: ", ecoclimap_json.data)
-    json.dump(ecoclimap_json.data, open(name_of_ecoclimap, "w"), indent=indent)
-
 
 def parse_args_first_guess_for_oi(argv):
     parser = ArgumentParser(description="Create first guess file for gridpp")
-    parser.add_argument('-dtg', dest="dtg", type=str, help="Dae (YYYYMMDDHH)", required=True)
+    parser.add_argument('-dtg', dest="dtg", type=str, help="Date (YYYYMMDDHH)", required=True)
     parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
     parser.add_argument('-if', dest="inputformat", type=str, help="output file", default="grib2")
     parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
@@ -440,7 +507,6 @@ def parse_args_masterodb(argv):
     parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--ecoclimap', '-e', required=False, default=None, nargs='?')
     parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=False)
     parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
@@ -448,10 +514,6 @@ def parse_args_masterodb(argv):
                         help="JSON file with archive output")
     parser.add_argument('--binary', '-b', required=False, default=None, nargs='?',
                         help="Full path of MASTERODB binary")
-    parser.add_argument('--assim_input', required=False, default=None, nargs='?',
-                        help="JSON file with assimilation input")
-    parser.add_argument('--assim_output', required=False, default=None, nargs='?',
-                        help="JSON file with assimilation output")
 
     if len(argv) == 1:
         parser.print_help()
@@ -469,13 +531,10 @@ def run_masterodb(args):
     force = args.force
     output = args.output
     input_arg = args.input
-    ecoclimap = args.ecoclimap
     domain = args.domain
     archive = args.archive
     pgd_file_path = args.pgd
     prep_file_path = args.prep
-    assim_input = args.assim_input
-    assim_output = args.assim_output
 
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
@@ -493,11 +552,6 @@ def run_masterodb(args):
     else:
         raise FileNotFoundError
 
-    if os.path.exists(ecoclimap):
-        ecoclimap_file = ecoclimap
-    else:
-        raise FileNotFoundError
-
     my_input = None
     if input_arg is not None:
         if os.path.exists(input_arg):
@@ -512,25 +566,8 @@ def run_masterodb(args):
         else:
             raise FileNotFoundError
 
-    if assim_input is not None:
-        if os.path.exists(assim_input):
-            assim_input = surfex.JsonInputDataFromFile(assim_input)
-        else:
-            raise FileNotFoundError
-
-    if assim_output is not None:
-        if os.path.exists(assim_output):
-            assim_output = surfex.JsonInputDataFromFile(assim_output)
-        else:
-            raise FileNotFoundError
-
-    assim = None
-    if assim_input is not None or assim_output is not None:
-        assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
-
     my_settings = surfex.ascii2nml(json_settings)
     # my_geo.update_namelist(my_settings)
-    my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)
 
     my_format = my_settings["NAM_IO_OFFLINE"]["CSURF_FILETYPE"]
     my_pgdfile = my_settings["NAM_IO_OFFLINE"]["CPGDFILE"]
@@ -549,8 +586,8 @@ def run_masterodb(args):
                                       masterodb=True)
         surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
                                    masterodb=True)
-        masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
-                                     assim=assim, binary=None, input_data=my_input, print_namelist=True)
+        masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, binary=None,
+                                     input_data=my_input, print_namelist=True)
 
         if archive is not None:
             masterodb.archive_output()
@@ -562,8 +599,8 @@ def run_masterodb(args):
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap)
             my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap)
             surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
-            masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, my_ecoclimap,
-                                         assim=assim, binary=binary, input_data=my_input, archive_data=my_archive,
+            masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile,
+                                         binary=binary, input_data=my_input, archive_data=my_archive,
                                          print_namelist=True)
 
             # Archive output
@@ -578,7 +615,6 @@ def parse_args_surfex_binary(argv, mode):
     """Parse the command line input arguments."""
 
     pert = False
-    soda = False
     need_pgd = True
     need_prep = True
     if mode == "pgd":
@@ -591,7 +627,6 @@ def parse_args_surfex_binary(argv, mode):
     elif mode == "offline":
         desc = "Run Offline SURFEX"
     elif mode == "soda":
-        soda = True
         desc = "Run SURFEX data assimilation (SODA)"
     elif mode == "perturbed":
         pert = True
@@ -610,7 +645,6 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--ecoclimap', '-e', type=str, required=False, default=None, nargs='?')
     parser.add_argument('--domain', '-d', type=str, required=True, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=True)
     if pert:
@@ -618,11 +652,6 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--input', '-i', type=str, required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
-    if soda:
-        parser.add_argument('--assim_input', type=str, required=False, default=None, nargs='?',
-                            help="JSON file with assimilation input")
-        parser.add_argument('--assim_output', type=str, required=False, default=None, nargs='?',
-                            help="JSON file with assimilation output")
 
     parser.add_argument('binary', type=str, help="Command to run")
 
@@ -639,7 +668,6 @@ def run_surfex_binary(args, mode):
     pgd = False
     prep = False
     perturbed = False
-    soda = False
     need_pgd = True
     need_prep = True
     if mode == "pgd":
@@ -652,7 +680,7 @@ def run_surfex_binary(args, mode):
     elif mode == "offline":
         pass
     elif mode == "soda":
-        soda = True
+        pass
     elif mode == "perturbed":
         perturbed = True
     else:
@@ -665,7 +693,6 @@ def run_surfex_binary(args, mode):
     force = args.force
     output = args.output
     input_arg = args.input
-    ecoclimap = args.ecoclimap
     domain = args.domain
     archive = args.archive
     print_namelist = args.print_namelist
@@ -677,12 +704,6 @@ def run_surfex_binary(args, mode):
     prep_file_path = None
     if need_prep:
         prep_file_path = args.prep
-
-    assim_input = None
-    assim_output = None
-    if soda:
-        assim_input = args.assim_input
-        assim_output = args.assim_output
 
     pert = None
     if pert:
@@ -703,11 +724,6 @@ def run_surfex_binary(args, mode):
     else:
         raise FileNotFoundError("File not found: " + domain)
 
-    if os.path.exists(ecoclimap):
-        ecoclimap_file = ecoclimap
-    else:
-        raise FileNotFoundError("File not found: " + ecoclimap)
-
     my_input = None
     if input_arg is not None:
         if os.path.exists(input_arg):
@@ -723,28 +739,11 @@ def run_surfex_binary(args, mode):
         else:
             raise FileNotFoundError("File not found: " + archive)
 
-    if assim_input is not None:
-        if os.path.exists(assim_input):
-            assim_input = surfex.JsonInputDataFromFile(assim_input)
-        else:
-            raise FileNotFoundError("File not found: " + assim_input)
-
-    if assim_output is not None:
-        if os.path.exists(assim_output):
-            assim_output = surfex.JsonInputDataFromFile(assim_output)
-        else:
-            raise FileNotFoundError("File not found: " + assim_output)
-
-    assim = None
-    if assim_input is not None or assim_output is not None:
-        assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
-
     if not os.path.exists(output) or force:
         my_settings = surfex.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
 
         # Create input
-        my_ecoclimap = surfex.JsonInputDataFromFile(ecoclimap_file)
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
@@ -765,21 +764,21 @@ def run_surfex_binary(args, mode):
             surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
 
         if perturbed:
-            surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, my_ecoclimap,
+            surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings,
                                     pgdfile=my_pgdfile, surfout=surffile, input_data=my_input, archive_data=my_archive,
                                     print_namelist=print_namelist)
         elif pgd:
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path,
                                              archive_file=output, lfagmap=lfagmap)
-            surfex.SURFEXBinary(binary, my_batch, my_pgdfile, my_settings, my_ecoclimap,
+            surfex.SURFEXBinary(binary, my_batch, my_pgdfile, my_settings,
                                 input_data=my_input, archive_data=my_archive, print_namelist=print_namelist)
         elif prep:
             my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output, lfagmap=lfagmap)
-            surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
+            surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, pgdfile=my_pgdfile,
                                 input_data=my_input, archive_data=my_archive, print_namelist=print_namelist)
         else:
-            surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, my_ecoclimap, pgdfile=my_pgdfile,
-                                assim=assim, surfout=surffile, input_data=my_input, archive_data=my_archive,
+            surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, pgdfile=my_pgdfile,
+                                surfout=surffile, input_data=my_input, archive_data=my_archive,
                                 print_namelist=print_namelist)
 
     else:
@@ -1025,7 +1024,8 @@ def hm2pysurfex(**kwargs):
     # Create configuration
     config = surfex.ConfigurationFromHarmonie(os.environ, all_merged_settings)
 
-    namelist, eco, inp = surfex.set_json_namelist_from_toml_env("pgd", config, wd + "/nam", system_file_paths)
+    namelist = surfex.BaseNamelist("pgd", config, wd + "/nam").get_namelist()
+    # namelist, eco, inp = surfex.set_json_namelist_from_toml_env("pgd", config, wd + "/nam", system_file_paths)
     print(namelist)
-    print(eco.data)
+    inp = surfex.PgdInputData(config, system_file_paths)
     print(inp.data)

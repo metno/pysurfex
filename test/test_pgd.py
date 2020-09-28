@@ -40,12 +40,18 @@ class RunTestNC(unittest.TestCase):
         argv = [
             "-c", config_file,
             "-p", "scheduler/nam/",
-            "-e", "ecoclimap.json",
+            task
+        ]
+        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
+        surfex.create_surfex_json_namelist(**kwargs)
+
+        argv = [
+            "-c", config_file,
             "-s", system,
             task
         ]
-        args = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(args)
+        kwargs = surfex.parse_args_create_surfex_json_input(argv)
+        surfex.create_surfex_json_input(**kwargs)
 
         output = "PGD_TEST_" + grid + extension
         if "PGD_BINARY" in os.environ and os.environ["PGD_BINARY"] != "":
@@ -59,7 +65,6 @@ class RunTestNC(unittest.TestCase):
             "-j", "options.json",
             "-w", "",
             "-d", domain,
-            "-e", "ecoclimap.json",
             "-i", "surfex_input_files.json",
             "-r", rte,
             "-f",
@@ -75,7 +80,18 @@ class RunTestNC(unittest.TestCase):
         argv = [
             "-c", config_file,
             "-p", "scheduler/nam/",
-            "-e", "ecoclimap.json",
+            "--prep.file", "scheduler/nam/prep_from_namelist_values.json",
+            "--prep.filetype", "json",
+            "--dtg", "2020022000",
+            task
+        ]
+
+        print(argv)
+        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
+        surfex.create_surfex_json_namelist(**kwargs)
+
+        argv = [
+            "-c", config_file,
             "--prep.file", "scheduler/nam/prep_from_namelist_values.json",
             "--prep.filetype", "json",
             "--dtg", "2020022000",
@@ -83,8 +99,9 @@ class RunTestNC(unittest.TestCase):
             task
         ]
 
-        args = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(args)
+        print(argv)
+        kwargs = surfex.parse_args_create_surfex_json_input(argv)
+        surfex.create_surfex_json_input(**kwargs)
 
         output = "PREP_TEST_" + grid + extension
         if "PREP_BINARY" in os.environ and os.environ["PREP_BINARY"] != "":
@@ -98,7 +115,6 @@ class RunTestNC(unittest.TestCase):
             "-j", "options.json",
             "-w", "",
             "-d", domain,
-            "-e", "ecoclimap.json",
             "--pgd", pgd,
             "-i", "surfex_input_files.json",
             "-r", rte,
@@ -115,13 +131,19 @@ class RunTestNC(unittest.TestCase):
         argv = [
             "-c", config_file,
             "-p", "scheduler/nam/",
-            "-e", "ecoclimap.json",
             "--forc_zs",
+            task
+        ]
+        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
+        surfex.create_surfex_json_namelist(**kwargs)
+
+        argv = [
+            "-c", config_file,
             "-s", system,
             task
         ]
-        args = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(args)
+        kwargs = surfex.parse_args_create_surfex_json_input(argv)
+        surfex.create_surfex_json_input(**kwargs)
 
         if "OFFLINE_BINARY" in os.environ and os.environ["OFFLINE_BINARY"] != "":
             binary = os.environ["OFFLINE_BINARY"]
@@ -137,7 +159,6 @@ class RunTestNC(unittest.TestCase):
             "-j", "options.json",
             "-w", "",
             "-d", domain,
-            "-e", "ecoclimap.json",
             "--pgd", pgd,
             "--prep", prep,
             "-i", "surfex_input_files.json",

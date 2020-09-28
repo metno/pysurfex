@@ -24,13 +24,18 @@ class Configuration(object):
 
         self.settings = conf_dict
         if "GEOMETRY" not in self.settings:
-            self.settings.update({self.settings["GEOMETRY"]: {}})
+            self.settings.update({"GEOMETRY": {}})
         if geo is None:
             geo = "Not set"
         self.settings["GEOMETRY"].update({"GEO": geo})
-        self.members = self.get_setting("FORECAST#ENSMSEL")
-        if len(self.members) == 0:
-            self.members = None
+
+        # Find EPS information
+        self.members = None
+        if "FORECAST" in self.settings:
+            if "ENSMSEL" in self.settings["FORECAST"]:
+                self.members = self.get_setting("FORECAST#ENSMSEL")
+                if len(self.members) == 0:
+                    self.members = None
         self.member_settings = None
         self.task_limit = None
 
@@ -45,7 +50,7 @@ class Configuration(object):
                     raise Exception("Could not find config for member " + str(mbr))
                 member_settings.update({str(mbr): mbr_configs})
         self.member_settings = member_settings
-        self.do_build = self.setting_is("COMPILE#BUILD", "yes")
+        # self.do_build = self.setting_is("COMPILE#BUILD", "yes")
         self.ecoclimap_sg = self.setting_is("SURFEX#COVER#SG", True)
         self.gmted = self.setting_is("SURFEX#ZS#YZS", "gmted2010.dir")
 
@@ -124,7 +129,7 @@ class Configuration(object):
         else:
             return True
 
-    def get_setting(self, setting, mbr=None, sep="#"):
+    def get_setting(self, setting, mbr=None, sep="#", abort=True):
         if mbr is None:
             settings = self.settings
         else:
@@ -146,9 +151,15 @@ class Configuration(object):
                         # print(type(this_setting[key]))
                         this_setting = this_setting[key]
                     else:
-                        raise KeyError("Key not found " + key)
+                        if abort:
+                            raise KeyError("Key not found " + key)
+                        else:
+                            this_setting = None
         else:
-            raise KeyError("Key not found " + keys[0])
+            if abort:
+                raise KeyError("Key not found " + keys[0])
+            else:
+                this_setting = None
 
         # print(setting, this_setting, mbr, type(this_setting))
         return this_setting

@@ -28,24 +28,19 @@ class BatchJob(object):
 
 
 class SURFEXBinary(object):
-    def __init__(self, binary, batch, iofile, settings, ecoclimap, **kwargs):
+    def __init__(self, binary, batch, iofile, settings, input_data, **kwargs):
         self.binary = binary
         self.batch = batch
         self.iofile = iofile
         self.settings = settings
-        self.ecoclimap = ecoclimap
 
         self.surfout = None
         if "surfout" in kwargs:
             self.surfout = kwargs["surfout"]
 
-        self.assim = None
-        if "assim" in kwargs:
-            self.assim = kwargs["assim"]
-
-        self.input_data = None
-        if "input_data" in kwargs:
-            self.input_data = kwargs["input_data"]
+        # self.assim = None
+        # if "assim" in kwargs:
+        #    self.assim = kwargs["assim"]
 
         self.archive_data = None
         if "archive_data" in kwargs:
@@ -60,10 +55,8 @@ class SURFEXBinary(object):
             self.pgdfile = kwargs["pgdfile"]
 
         # Set input
-        self.ecoclimap.prepare_input()
-
-        if self.input_data is not None:
-            self.input_data.prepare_input()
+        self.input_data = input_data
+        self.input_data.prepare_input()
 
         if os.path.exists('OPTIONS.nam'):
             os.remove('OPTIONS.nam')
@@ -102,8 +95,8 @@ class SURFEXBinary(object):
                     print("Could not set PREP")
                     raise
 
-        if self.assim is not None:
-            self.assim.ass_input.prepare_input()
+        # if self.assim is not None:
+        #    self.assim.ass_input.prepare_input()
 
         cmd = self.binary
         self.batch.run(cmd)
@@ -127,17 +120,17 @@ class SURFEXBinary(object):
 
 
 class PerturbedOffline(SURFEXBinary):
-    def __init__(self, binary, batch, io, pert_number, settings, ecoclimap, surfout=None, input_data=None,
+    def __init__(self, binary, batch, io, pert_number, settings, input_data, surfout=None,
                  archive_data=None, pgdfile=None, print_namelist=False):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
         settings['nam_var']['nivar'] = int(pert_number)
-        SURFEXBinary.__init__(self, binary, batch, io, settings, ecoclimap, surfout=surfout, input_data=input_data,
+        SURFEXBinary.__init__(self, binary, batch, io, settings, input_data, surfout=surfout,
                               archive_data=archive_data, pgdfile=pgdfile, print_namelist=print_namelist)
 
 
 class Masterodb(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, ecoclimap, binary=None, assim=None, input_data=None,
+    def __init__(self, settings, batch, pgdfile, prepfile, surfout, input_data, binary=None,
                  archive_data=None, print_namelist=True):
         self.settings = settings
         self.binary = binary
@@ -145,17 +138,13 @@ class Masterodb(object):
         self.surfout = surfout
         self.batch = batch
         self.pgdfile = pgdfile
-        self.assim = assim
-        self.ecoclimap = ecoclimap
+        # self.assim = assim
         self.input = input_data
         self.archive = archive_data
         self.print_namelist = print_namelist
 
         # Set input
-        self.ecoclimap.prepare_input()
-
-        if self.input is not None:
-            self.input.prepare_input()
+        self.input.prepare_input()
 
         # Prepare namelist
         if os.path.exists('EXSEG1.nam'):
@@ -191,6 +180,7 @@ class Masterodb(object):
             print("PREP not found! " + self.prepfile.filename)
             raise FileNotFoundError
 
+        '''
         if self.assim is not None:
             self.assim.ass_input.prepare_input()
 
@@ -198,6 +188,7 @@ class Masterodb(object):
         if self.assim is not None:
             if self.assim.ass_input is not None:
                 self.assim.ass_input.prepare_input()
+        '''
 
         # Archive if we have run the binary
         if self.binary is not None:
@@ -211,9 +202,9 @@ class Masterodb(object):
         if self.archive is not None:
             self.archive.archive_files()
 
-        if self.assim is not None:
-            if self.assim.ass_input is not None:
-                self.assim.ass_input.archive_files()
+        # if self.assim is not None:
+        #    if self.assim.ass_input is not None:
+        #        self.assim.ass_input.archive_files()
 
 
 class InputDataToSurfexBinaries(ABC):
@@ -292,6 +283,11 @@ class JsonInputData(InputDataToSurfexBinaries):
             except IOError:
                 print(cmd + " failed")
                 raise
+
+    def add_data(self, data):
+        for key in data:
+            value = data[key]
+            self.data.update({key: value})
 
 
 class JsonInputDataFromFile(JsonInputData):

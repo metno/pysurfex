@@ -68,6 +68,7 @@ class Assimilation(object):
         self.ass_output = ass_output
 
 
+'''
 def set_assimilation_input(dtg, settings, sstfile=None, ua_first_guess=None, perturbed_runs=None, lsmfile=None,
                            obsfile=None, check_existence=False, oi_coeffs=None, climfile=None, sfx_first_guess=None,
                            ascatfile=None):
@@ -336,29 +337,29 @@ def set_output_vertical_soil_ekf(settings):
 
     print("WARNING: not implemented yet")
 
-    '''
-    Fromm SODA script
-    mv ANAL_INCR*  $WRK/.
-    mv INNOV* $WRK/.
-    mv OBSout* $WRK/.
-    mv OBSERRORout* $WRK/.
-    [ -f HO_WG2_v1 ] && mv HO_WG2_v1  $WRK/HO_WG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_WG2_v2 ] && mv HO_WG2_v2  $WRK/HO_WG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_WG2_v3 ] && mv HO_WG2_v3  $WRK/HO_WG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_WG1_v1 ] && mv HO_WG1_v1  $WRK/HO_WG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_WG1_v2 ] && mv HO_WG1_v2  $WRK/HO_WG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_WG1_v3 ] && mv HO_WG1_v3  $WRK/HO_WG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG2_v1 ] && mv HO_TG2_v1  $WRK/HO_TG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG2_v2 ] && mv HO_TG2_v2  $WRK/HO_TG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG2_v3 ] && mv HO_TG2_v3  $WRK/HO_TG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG1_v1 ] && mv HO_TG1_v1  $WRK/HO_TG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG1_v2 ] && mv HO_TG1_v2  $WRK/HO_TG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
-    [ -f HO_TG1_v3 ] && mv HO_TG1_v3  $WRK/HO_TG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
-    mv BGROUNDout_ASSIM.* $ARCHIVE
+    
+    # Fromm SODA script
+    # mv ANAL_INCR*  $WRK/.
+    # mv INNOV* $WRK/.
+    # mv OBSout* $WRK/.
+    # mv OBSERRORout* $WRK/.
+    # [ -f HO_WG2_v1 ] && mv HO_WG2_v1  $WRK/HO_WG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_WG2_v2 ] && mv HO_WG2_v2  $WRK/HO_WG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_WG2_v3 ] && mv HO_WG2_v3  $WRK/HO_WG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_WG1_v1 ] && mv HO_WG1_v1  $WRK/HO_WG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_WG1_v2 ] && mv HO_WG1_v2  $WRK/HO_WG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_WG1_v3 ] && mv HO_WG1_v3  $WRK/HO_WG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG2_v1 ] && mv HO_TG2_v1  $WRK/HO_TG2_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG2_v2 ] && mv HO_TG2_v2  $WRK/HO_TG2_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG2_v3 ] && mv HO_TG2_v3  $WRK/HO_TG2_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG1_v1 ] && mv HO_TG1_v1  $WRK/HO_TG1_T2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG1_v2 ] && mv HO_TG1_v2  $WRK/HO_TG1_HU2M_$FGYY$FGMM${FGDD}_r$NT.dat
+    # [ -f HO_TG1_v3 ] && mv HO_TG1_v3  $WRK/HO_TG1_WG1_$FGYY$FGMM${FGDD}_r$NT.dat
+    # mv BGROUNDout_ASSIM.* $ARCHIVE
 
-    '''
     return data
 
 
 def create_lsm_ascii_file():
     pass
+'''

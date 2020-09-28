@@ -209,6 +209,7 @@ def merge_toml_env_from_files(toml_files):
     return merged_env
 
 
+'''
 def set_json_namelist_from_toml_env(program, config, input_path, system_file_paths, **kwargs):
 
     forc_zs = False
@@ -633,15 +634,14 @@ def set_json_namelist_from_toml_env(program, config, input_path, system_file_pat
 
     return surfex.ascii2nml(merged_json_settings), surfex.JsonInputData(ecoclimap_json), \
         surfex.JsonInputData(input_for_surfex_json)
+'''
 
 
 class BaseNamelist(object):
-    def __init__(self, program, config, input_path, system_file_paths, **kwargs):
+    def __init__(self, program, config, input_path, **kwargs):
 
         self.config = config
         self.input_path = input_path
-        self.system_file_paths = system_file_paths
-
         self.forc_zs = False
         if "forc_zs" in kwargs:
             self.forc_zs = kwargs["forc_zs"]
@@ -668,8 +668,6 @@ class BaseNamelist(object):
         print("Creating JSON namelist input for program: " + program)
 
         self.input_list = []
-        self.ecoclimap_json = {}
-        self.input_for_surfex_json = {}
 
         self.prolog()
         # Program specific settings
@@ -694,7 +692,8 @@ class BaseNamelist(object):
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURF_FILETYPE":
                                                             self.config.get_setting("SURFEX#IO#CSURF_FILETYPE")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CTIMESERIES_FILETYPE":
-                                                            self.config.get_setting("SURFEX#IO#CTIMESERIES_FILETYPE")}}})
+                                                            self.config.get_setting(
+                                                                "SURFEX#IO#CTIMESERIES_FILETYPE")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CFORCING_FILETYPE":
                                                             self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF":
@@ -709,14 +708,8 @@ class BaseNamelist(object):
 
         # Constants and parameters
         self.input_list.append({"file": self.input_path + "/constants.json"})
-        self.input_list.append({"json": {"NAM_SURF_ATM": {"XRIMAX": self.config.get_setting("SURFEX#PARAMETERS#XRIMAX")}}})
-
-        # Ecoclimap settings
-        if not self.config.get_setting("SURFEX#COVER#SG"):
-            ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
-                               "ecoclimapII_eu_covers_param.bin"]
-            for fname in ecoclimap_files:
-                self.ecoclimap_json.update(set_input_data("ecoclimap_bin_dir", fname, self.system_file_paths))
+        self.input_list.append({"json": {"NAM_SURF_ATM": {"XRIMAX":
+                                                          self.config.get_setting("SURFEX#PARAMETERS#XRIMAX")}}})
 
     def set_pgd_namelist(self):
         # PGS schemes
@@ -729,17 +722,17 @@ class BaseNamelist(object):
                 }
             }})
 
+        eco_sg = self.config.get_setting("SURFEX#COVER#SG")
         # Ecoclimap SG
-        self.input_list.append({"json": {"NAM_FRAC": {"LECOSG": self.config.get_setting("SURFEX#COVER#SG")}}})
+        self.input_list.append({"json": {"NAM_FRAC": {"LECOSG": eco_sg}}})
         if self.config.get_setting("SURFEX#COVER#SG"):
             veg_types = 20
             decades = 36
 
             self.input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": decades}}})
-            tree_height_dir = "tree_height_dir"
+
             fname = self.config.get_setting("SURFEX#COVER#H_TREE")
             if fname != "" and fname is not None:
-                self.input_for_surfex_json.update(set_input_data(tree_height_dir, fname, self.system_file_paths))
                 self.input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
 
             decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
@@ -748,19 +741,8 @@ class BaseNamelist(object):
                     for decade in range(1, decades + 1):
                         filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
                         fname = parse_eco_sg_fnames(filepattern, decade)
-                        self.input_for_surfex_json.update(set_input_data(decadal_data_type.lower()+"_dir", fname,
-                                                                    self.system_file_paths))
                         self.input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname,
                                                                         vtype=vt, decade=decade))
-
-        # Set direct input files
-        if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            version = self.config.get_setting("SURFEX#FLAKE#LDB_VERSION")
-
-            self.input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeDepth" + version + ".dir",
-                                                        self.system_file_paths))
-            self.input_for_surfex_json.update(set_input_data("flake_dir", "GlobalLakeStatus" + version + ".dir",
-                                                        self.system_file_paths))
 
         ecoclimap_dir = "ecoclimap_dir"
         if self.config.get_setting("SURFEX#COVER#SG"):
@@ -782,9 +764,7 @@ class BaseNamelist(object):
         }
         for namelist_section in possible_direct_data:
             for ftype in possible_direct_data[namelist_section]:
-                data_dir = possible_direct_data[namelist_section][ftype]
                 fname = str(self.config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                self.input_for_surfex_json.update(set_input_data(data_dir, fname, self.system_file_paths))
                 self.input_list.append(set_direct_data_namelist("NAM_" + namelist_section, ftype, fname,
                                                                 self.input_path))
 
@@ -821,14 +801,17 @@ class BaseNamelist(object):
         # Treedrag
         if self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             treeheight = self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
-            self.input_for_surfex_json.update(set_input_data("tree_height_dir", treeheight, self.system_file_paths))
-            self.input_list.append({"json": {"NAM_DATA_ISBA":
-                                        {"CFNAM_H_TREE(4)": treeheight,
-                                         "CFTYP_H_TREE(4)": "ASCLLV",
-                                         "CFNAM_H_TREE(5)": treeheight,
-                                         "CFTYP_H_TREE(5)": "ASCLLV",
-                                         "CFNAM_H_TREE(6)": treeheight,
-                                         "CFTYP_H_TREE(6)": "ASCLLV"}}})
+            self.input_list.append({
+                "json": {
+                    "NAM_DATA_ISBA": {
+                        "CFNAM_H_TREE(4)": treeheight,
+                        "CFTYP_H_TREE(4)": "ASCLLV",
+                        "CFNAM_H_TREE(5)": treeheight,
+                        "CFTYP_H_TREE(5)": "ASCLLV",
+                        "CFNAM_H_TREE(6)": treeheight,
+                        "CFTYP_H_TREE(6)": "ASCLLV"}
+                }
+            })
 
         if self.config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
             if self.config.get_setting("SURFEX#TILES#TOWN") != "NONE":
@@ -850,14 +833,10 @@ class BaseNamelist(object):
             else:
                 fname = os.path.basename(prep_file)
                 self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILE": fname}}})
-                if fname != prep_file:
-                    self.input_for_surfex_json.update({fname: prep_file})
                 self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILETYPE": prep_filetype}}})
                 if prep_pgdfile is not None:
                     fname = os.path.basename(prep_pgdfile)
                     self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILEPGD": fname}}})
-                    if fname != prep_pgdfile:
-                        self.input_for_surfex_json.update({fname: prep_pgdfile})
                     self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILEPGDTYPE": prep_pgdfiletype}}})
         if self.dtg is not None:
             # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
@@ -866,14 +845,13 @@ class BaseNamelist(object):
             self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NMONTH": int(prep_time.strftime("%m"))}}})
             self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"NDAY": int(prep_time.strftime("%d"))}}})
             self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"XTIME": float(prep_time.strftime("%H"))*3600.}}})
-
+        else:
+            raise Exception("You must provide a DTG for prep")
         if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
             self.input_list.append({"json": {"NAM_PREP_SEAFLUX": {"CSEAICE_SCHEME": "SICE"}}})
             self.input_list.append({"file": self.input_path + "/prep_sice.json"})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            # Set NetCDF input for FLAKE
-            self.input_for_surfex_json.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", self.system_file_paths))
             self.input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE":
                                                                 self.config.get_setting("SURFEX#FLAKE#LCLIM")}}})
 
@@ -973,7 +951,8 @@ class BaseNamelist(object):
         self.input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_SST":
                                                        self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")}}})
         self.input_list.append({"json": {"NAM_ASSIM": {"LREAD_SST_FROM_FILE":
-                                                       self.config.get_setting("SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE")}}})
+                                                       self.config.get_setting(
+                                                           "SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE")}}})
         self.input_list.append({"json": {"NAM_ASSIM": {"LEXTRAP_SEA":
                                                        self.config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA")}}})
 
@@ -981,9 +960,11 @@ class BaseNamelist(object):
         self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_WATER":
                                                        self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER")}}})
         self.input_list.append({"json": {"NAM_ASSIM": {"LWATERTG2":
-                                                       self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LWATERTG2")}}})
+                                                       self.config.get_setting(
+                                                           "SURFEX#ASSIM#INLAND_WATER#LWATERTG2")}}})
         self.input_list.append({"json": {"NAM_ASSIM": {"LEXTRAP_WATER":
-                                                       self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER")}}})
+                                                       self.config.get_setting(
+                                                           "SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER")}}})
 
         # Nature
         self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA":
@@ -1012,21 +993,18 @@ class BaseNamelist(object):
                 self.input_list.append({"json": {"NAM_ASSIM": {"LAROME": False}}})
 
             self.input_list.append({"json": {"NAM_NACVEG": {"XSIGT2MO":
-                                                       self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO")}}})
+                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO")}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XSIGH2MO":
-                                                       self.config.get_setting("SURFEX#ASSIM#ISBAOI#XSIGH2MO")}}})
+                                    self.config.get_setting("SURFEX#ASSIM#ISBAOI#XSIGH2MO")}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLIMCA": 0.0}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLISST": 0.05}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"NECHGU": self.fcint}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"LOBS2M": True}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"LOBSWG": False}}})
             self.input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_CLIM":
-                                                      self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM")}}})
+                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM")}}})
             self.input_list.append({"json": {"NAM_ASSIM": {"CFILE_FORMAT_FG":
-                                                      self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")}}})
-            self.input_for_surfex_json.update({"fort.61": set_input_file_name("oi_coeff_dir",
-                                                                         self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS"),
-                                                                         self.system_file_paths)})
+                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")}}})
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
             nvar = 0
@@ -1091,13 +1069,7 @@ class BaseNamelist(object):
                 print("Can not handle input type "+str(inp))
                 raise Exception
 
-            return surfex.ascii2nml(merged_json_settings)
-
-    def get_ecoclimap(self):
-        return surfex.JsonInputData(self.ecoclimap_json)
-
-    def get_input_data(self):
-        return surfex.JsonInputData(self.input_for_surfex_json)
+        return surfex.ascii2nml(merged_json_settings)
 
 
 '''
@@ -1128,3 +1100,384 @@ class Namelist(Cy40, Cy43):
         else:
             raise Exception()
 '''
+
+
+class Ecoclimap(object):
+    def __init__(self, config, system_file_paths):
+        self.config = config
+        self.system_file_paths = system_file_paths
+        self.cover_dir = "ecoclimap_cover_dir"
+        self.ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
+                                "ecoclimapII_eu_covers_param.bin"]
+        self.decadal_data_types = None
+
+    def set_input(self):
+        data = {}
+        for fname in self.ecoclimap_files:
+            data.update(set_input_data("ecoclimap_bin_dir", fname, self.system_file_paths))
+        return data
+
+
+class EcoclimapSG(Ecoclimap):
+    def __init__(self, config, system_file_paths, veg_types=20, decades=36):
+        Ecoclimap.__init__(self, config, system_file_paths)
+        self.veg_types = veg_types
+        self.decades = decades
+        self.cover_file = self.config.get_setting("SURFEX#COVER#SG")
+        self.cover_dir = "ecoclimap_sg_cover_dir"
+        self.decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+
+    def set_input(self):
+        data = {}
+        tree_height_dir = "tree_height_dir"
+        fname = self.config.get_setting("SURFEX#COVER#H_TREE")
+        if fname != "" and fname is not None:
+            data.update(set_input_data(tree_height_dir, fname, self.system_file_paths))
+
+        veg_types = 20
+        decades = 36
+
+        decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+        for decadal_data_type in decadal_data_types:
+            for vt in range(1, veg_types + 1):
+                for decade in range(1, decades + 1):
+                    filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
+                    fname = parse_eco_sg_fnames(filepattern, decade)
+                    data.update(set_input_data(decadal_data_type.lower() + "_dir", fname,
+                                               self.system_file_paths))
+        return data
+
+
+class PgdInputData(surfex.JsonInputData):
+
+    def __init__(self, config, system_file_paths):
+
+        # Ecoclimap settings
+        eco_sg = config.get_setting("SURFEX#COVER#SG")
+        if eco_sg:
+            ecoclimap = EcoclimapSG(config, system_file_paths)
+        else:
+            ecoclimap = Ecoclimap(config, system_file_paths)
+
+        data = ecoclimap.set_input()
+
+        # Set direct input files
+        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
+            version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
+
+            data.update(set_input_data("flake_dir", "GlobalLakeDepth" + version + ".dir",
+                                       system_file_paths))
+            data.update(set_input_data("flake_dir", "GlobalLakeStatus" + version + ".dir",
+                                       system_file_paths))
+
+        possible_direct_data = {
+            "ISBA": {
+                "YSAND": "sand_dir",
+                "YCLAY": "clay_dir",
+                "YSOC_TOP": "soc_top_dir",
+                "YSOC_SUB": "soc_sub_dir"
+            },
+            "COVER": {
+                "YCOVER": ecoclimap.cover_dir
+            },
+            "ZS": {
+                "YZS": "oro_dir"
+            }
+        }
+        for namelist_section in possible_direct_data:
+            for ftype in possible_direct_data[namelist_section]:
+                data_dir = possible_direct_data[namelist_section][ftype]
+                fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
+                data.update(set_input_data(data_dir, fname, system_file_paths))
+
+        # Treedrag
+        if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
+            treeheight = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
+            data.update(
+                set_input_data("tree_height_dir", treeheight, system_file_paths))
+
+        surfex.JsonInputData.__init__(self, data)
+
+
+class PrepInputData(surfex.JsonInputData):
+
+    def __init__(self, config, system_file_paths, prep_file=None, prep_pgdfile=None):
+
+        self.config = config
+        self.system_file_paths = system_file_paths
+
+        data = {}
+        if prep_file is not None:
+            if not prep_file.endswith(".json"):
+                fname = os.path.basename(prep_file)
+                if fname != prep_file:
+                    data.update({fname: prep_file})
+                if prep_pgdfile is not None:
+                    fname = os.path.basename(prep_pgdfile)
+                    if fname != prep_pgdfile:
+                        data.update({fname: prep_pgdfile})
+
+        if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
+            # Set NetCDF input for FLAKE
+            data.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", self.system_file_paths))
+
+        surfex.JsonInputData.__init__(self, data)
+
+
+class OfflineInputData(surfex.JsonInputData):
+
+    def __init__(self, config, system_file_paths):
+
+        self.config = config
+        self.system_file_paths = system_file_paths
+
+        data = {}
+
+        if self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
+            # Set NetCDF input for FLAKE
+            data.update(set_input_data("forcing_dir", "FORCING.nc", self.system_file_paths))
+        else:
+            raise NotImplementedError
+
+        surfex.JsonInputData.__init__(self, data)
+
+
+class SodaInputData(surfex.JsonInputData):
+
+    def __init__(self, config, system_file_paths, dtg, **kwargs):
+
+        self.config = config
+        self.system_file_paths = system_file_paths
+        surfex.JsonInputData.__init__(self, {})
+
+        check_existence = None
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
+        lsmfile = None
+        if "lsmfile" in kwargs:
+            lsmfile = kwargs["lsmfile"]
+
+        # SEA
+        sstfile = None
+        if "sstfile" in kwargs:
+            sstfile = kwargs["sstfile"]
+
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
+            self.add_data(self.set_input_sea_assimilation(sstfile))
+
+        # WATER
+
+        # NATURE
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
+            ascatfile = None
+            if "ascatfile" in kwargs:
+                ascatfile = kwargs["ascatfile"]
+            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
+                try:
+                    sfx_first_guess = kwargs["sfx_first_guess"]
+                    perturbed_runs = kwargs["perturbed_runs"]
+                except ValueError:
+                    raise Exception("Needed input for EKF is missing")
+                self.add_data(self.set_input_vertical_soil_ekf(dtg, sfx_first_guess, perturbed_runs, lsmfile=lsmfile,
+                                                               check_existence=check_existence))
+            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
+                ua_first_guess = kwargs["ua_first_guess"]
+                climfile = kwargs["climfile"]
+                oi_coeffs = set_input_file_name("oi_coeff_dir",
+                                                self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS"),
+                                                self.system_file_paths)
+                self.add_data(self.set_input_vertical_soil_oi(dtg, ua_first_guess, oi_coeffs=oi_coeffs,
+                                                              climfile=climfile,
+                                                              lsmfile=lsmfile, ascatfile=ascatfile,
+                                                              check_existence=check_existence))
+
+    def set_input_observations(self, dtg, obsfile, check_existence=False):
+        yy = dtg.strftime("%y")
+        mm = dtg.strftime("%m")
+        dd = dtg.strftime("%d")
+        hh = dtg.strftime("%H")
+
+        obssettings = {}
+        cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
+        if cfile_format_obs == "ASCII":
+            target = "OBSERVATIONS_" + yy + mm + dd + "H" + hh + ".DAT"
+        elif cfile_format_obs == "FA":
+            target = "CANARI"
+        else:
+            print(cfile_format_obs)
+            raise NotImplementedError
+
+        if obsfile is not None:
+            if os.path.exists(obsfile):
+                obssettings.update({target: obsfile})
+            else:
+                if check_existence:
+                    print(cfile_format_obs)
+                    raise FileNotFoundError(obsfile)
+
+        return obssettings
+
+    def set_input_sea_assimilation(self, sstfile, check_existence=False):
+
+        if sstfile is None:
+            print("You must set sstfile")
+            raise Exception
+
+        sea_settings = {}
+        cfile_format_sst = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")
+        if cfile_format_sst.upper() == "ASCII":
+            target = "SST_SIC.DAT"
+        elif cfile_format_sst.upper() == "FA":
+            target = "SST_SIC"
+        else:
+            print(cfile_format_sst)
+            raise NotImplementedError
+        sea_settings.update({target: sstfile})
+        if not os.path.exists(sstfile) and check_existence:
+            print("Needed file missing: " + sstfile)
+            raise FileNotFoundError
+
+        return sea_settings
+
+    def set_input_vertical_soil_oi(self, dtg, first_guess, oi_coeffs=None, climfile=None, lsmfile=None, ascatfile=None,
+                                   check_existence=False):
+
+        if first_guess is None:
+            print("You must set first guess for OI")
+            raise Exception
+
+        yy = dtg.strftime("%y")
+        mm = dtg.strftime("%m")
+        dd = dtg.strftime("%d")
+        hh = dtg.strftime("%H")
+        oi_settings = {}
+
+        # Climate
+        cfile_format_clim = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_CLIM")
+        if cfile_format_clim.upper() == "ASCII":
+            target = "CLIMATE.DAT"
+        elif cfile_format_clim.upper() == "FA":
+            target = "clim_isba"
+        else:
+            print(cfile_format_clim)
+            raise NotImplementedError
+        if climfile is not None:
+            if os.path.exists(climfile):
+                oi_settings.update({target: climfile})
+            else:
+                if check_existence:
+                    print("Needed file missing: " + climfile)
+                    raise FileNotFoundError
+        else:
+            raise FileNotFoundError("OI needs a climate file")
+
+        # First guess for SURFEX
+        cfile_format_fg = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")
+        if cfile_format_fg.upper() == "ASCII":
+            target = "FIRST_GUESS_" + yy + mm + dd + "H" + hh + ".DAT"
+        elif cfile_format_fg.upper() == "FA":
+            target = "FG_OI_MAIN"
+        else:
+            print(cfile_format_fg)
+            raise NotImplementedError
+
+        if os.path.exists(first_guess):
+            oi_settings.update({target: first_guess})
+        else:
+            print("First guess not found")
+            print("Needed file missing: " + first_guess)
+            raise FileNotFoundError
+
+        if ascatfile is not None:
+            if os.path.exists(ascatfile):
+                oi_settings.update({"ASCAT_SM.DAT": ascatfile})
+            else:
+                if check_existence:
+                    print("Needed file missing: " + ascatfile)
+                    raise FileNotFoundError
+
+        # OI coefficients
+        if oi_coeffs is not None:
+            if os.path.exists(oi_coeffs):
+                oi_settings.update({"fort.61": oi_coeffs})
+            else:
+                print("Needed file missing for OI coefficients: " + oi_coeffs)
+                raise FileNotFoundError
+
+        # LSM
+        cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
+        if cfile_format_lsm.upper() == "ASCII":
+            target = "LSM.DAT"
+        elif cfile_format_lsm.upper() == "FA":
+            target = "FG_OI_MAIN"
+        else:
+            print(cfile_format_lsm)
+            raise NotImplementedError
+        if lsmfile is not None:
+            if os.path.exists(lsmfile):
+                oi_settings.update({target: lsmfile})
+            else:
+                if check_existence:
+                    print("Needed file missing: " + lsmfile)
+                    raise FileNotFoundError
+        else:
+            print("OI needs a LSM file")
+            raise FileNotFoundError
+
+        return oi_settings
+
+    def set_input_vertical_soil_ekf(self, dtg, first_guess, perturbed_runs, lsmfile=None, check_existence=False):
+
+        if first_guess is None or perturbed_runs is None:
+            raise Exception("You must set input files (first_guess and/or perturbed_runs)")
+
+        yy = dtg.strftime("%y")
+        mm = dtg.strftime("%m")
+        dd = dtg.strftime("%d")
+        hh = dtg.strftime("%H")
+        ekf_settings = {}
+
+        # First guess for SURFEX
+
+        extension = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
+        if extension == "ascii":
+            extension = ".txt"
+        if first_guess is not None:
+            if os.path.exists(first_guess):
+                ekf_settings.update({"PREP_INIT." + extension: first_guess})
+                ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
+            else:
+                if check_existence:
+                    print("Needed file missing: " + first_guess)
+                    raise FileNotFoundError
+
+        for p in range(0, len(perturbed_runs)):
+            target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_PERT" + str(p) + "." + extension
+            ekf_settings.update({target: perturbed_runs[p]})
+            if check_existence and not os.path.exists(perturbed_runs[p]):
+                print("Needed file missing: " + perturbed_runs[p])
+                raise FileNotFoundError
+
+        # LSM
+        # Fetch first_guess needed for LSM for extrapolations
+        if self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
+            cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
+            if cfile_format_lsm.upper() == "ASCII":
+                target = "LSM.DAT"
+            elif cfile_format_lsm.upper() == "FA":
+                target = "FG_OI_MAIN"
+            else:
+                print(cfile_format_lsm)
+                raise NotImplementedError
+            if lsmfile is not None:
+                if os.path.exists(lsmfile):
+                    ekf_settings.update({target: lsmfile})
+                else:
+                    if check_existence:
+                        print("Needed file missing: " + lsmfile)
+                        raise FileNotFoundError
+            else:
+                print("EKF needs a LSM file to extrapolate values")
+                raise FileNotFoundError
+        return ekf_settings
