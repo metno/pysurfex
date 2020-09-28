@@ -8,7 +8,7 @@
 # IO and non-tile specific settings #
 #####################################
 # SURFEX IO
-[SURFEX_IO]
+[SURFEX.IO]
 CSURF_FILETYPE = "NC"               # IO settings NC/FA/ASCII. Inline runs use FA
 CTIMESERIES_FILETYPE = "NC"         # Fileformat for timseries. Inline runs use FA
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
@@ -22,7 +22,7 @@ LSPLIT_PATCH = false                # Split patches into separate variables in o
 ##########
 
 # ISBA settings
-[ISBA]
+[SURFEX.ISBA]
 SCHEME = "DIF"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
 NPATCH = 2                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
 MEB = true                          # Enable Multi Energy Budget (MEB) model
@@ -35,18 +35,16 @@ SNOW = "3-L"                        # Type of snow scheme in SURFEX. Options: "D
 # Assimilation settings #
 #########################
 
-[ASSIM]
-SPATIALIZATION_TOOL = "gridpp"       # Program which does horizontal analysis: "gridpp"|"CANARI"
-ASSIMILATION_TOOL = "SODA"           # Program which updates the soil: "SODA"|"CANARI".
+[SURFEX.ASSIM]
 CFILE_FORMAT_LSM = "ASCII"           # File format for land sea mask when using SODA: "ASCII"|"FA"
 
-[ASSIM_SCHEMES]
+[SURFEX.ASSIM_SCHEMES]
 SEA = "NONE"                         # Assimilation method for sea tile: "INPUT"|"NONE"
 INLAND_WATER = "NONE"                # Assimilation method for water tile: "INPUT"|"NONE"
 ISBA = "EKF"                         # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
 TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|"ROADT"
 
-[ASSIM_OBS]
+[SURFEX.ASSIM.OBS]
 LOBSHEADER = false                          # ASCII observation file has header
 CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when using SODA: "ASCII"|"FA"
 LOBSNAT = false                             # Observation ASCII file only contains nature points
@@ -60,7 +58,7 @@ UPDATE_SNOW_CYCLES = ["09"]          # Cycles to update snow depths/SWE in assim
                                      # Empty list or not valid values means no update
 
 # EKF settings
-[ASSIM_ISBA_EKF]
+[SURFEX.ASSIM.ISBA.EKF]
 NNCV = [0,1,0,1]                        # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
 XSIGMA_M = [2.0, 2.0, 0.1 , 0.15]       # Background error
 CVAR_M = ["TG1", "TG2", "WG1" , "WG2"]  # Control variables

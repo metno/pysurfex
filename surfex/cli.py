@@ -284,9 +284,21 @@ def parse_args_create_surfex_json_input(argv):
                         help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
     parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
                         help="DTG (YYYYMMDDHH)")
+
     parser.add_argument('program', help="For which program you should create the JSON file",
                         choices=["pgd", "prep", "offline", "soda"])
-
+    parser.add_argument('--sfx_first_guess', type=str, nargs="?", required=False, default=None,
+                        help="")
+    parser.add_argument('--ua_first_guess', type=str, nargs="?", required=False, default=None,
+                        help="")
+    parser.add_argument('--perturbed_runs', type=str, nargs="*", required=False, default=None,
+                        help="")
+    parser.add_argument('--lsmfile', type=str, nargs="?", required=False, default=None,
+                        help="")
+    parser.add_argument('--climfile', type=str, nargs="?", required=False, default=None,
+                        help="")
+    parser.add_argument('--ascatfile', type=str, nargs="?", required=False, default=None,
+                        help="")
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
@@ -304,16 +316,10 @@ def create_surfex_json_input(**kwargs):
     indent = kwargs["indent"]
     system_settings = kwargs["system"]
     name_of_input_files = kwargs["files"]
-    args = {
-        "prep_file": kwargs["prep_file"],
-        "prep_filetype": kwargs["prep_filetype"],
-        "prep_pgdfile": kwargs["prep_pgdfile"],
-        "prep_pgdfiletype": kwargs["prep_pgdfiletype"]
-    }
-    args.update({"dtg": kwargs["dtg"]})
+    dtg = None
     if kwargs["dtg"] is not None:
-        args.update({"dtg": datetime.strptime(kwargs["dtg"], "%Y%m%d%H")})
-    dtg = args["dtg"]
+        dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+    kwargs.update({"dtg": dtg})
 
     settings_file = kwargs["config"]
     if os.path.exists(settings_file):
@@ -323,22 +329,20 @@ def create_surfex_json_input(**kwargs):
     else:
         raise FileNotFoundError("Input file does not exist: " + settings_file)
 
-    # kwargs.update({"settings": settings})
-    config = surfex.Configuration(settings, {})
-
+    kwargs.update({"config": surfex.Configuration(settings, {})})
     if os.path.exists(system_settings):
-        system_file_paths = json.load(open(system_settings, "r"))
+        kwargs.update({"system_file_paths": json.load(open(system_settings, "r"))})
     else:
         raise FileNotFoundError("System settings not found " + system_settings)
 
     if program == "pgd":
-        input_for_surfex_json = surfex.PgdInputData(config, system_file_paths)
+        input_for_surfex_json = surfex.PgdInputData(**kwargs)
     elif program == "prep":
-        input_for_surfex_json = surfex.PrepInputData(config, system_file_paths)
+        input_for_surfex_json = surfex.PrepInputData(**kwargs)
     elif program == "offline":
-        input_for_surfex_json = surfex.OfflineInputData(config, system_file_paths)
+        input_for_surfex_json = surfex.OfflineInputData(**kwargs)
     elif program == "soda":
-        input_for_surfex_json = surfex.SodaInputData(config, system_file_paths, dtg)
+        input_for_surfex_json = surfex.SodaInputData(**kwargs)
     else:
         raise NotImplementedError
 
@@ -880,7 +884,8 @@ def run_titan(args):
     var = args.variable
 
     tests = surfex.titan.define_quality_control(tests, settings)
-    datasources = surfex.obs.get_datasources(an_time, settings["sets"])
+    print(settings)
+    datasources = surfex.obs.get_datasources(an_time, settings[var]["sets"])
     data_set = surfex.TitanDataSet(var, settings[var], tests, test_flags, datasources, an_time, debug=True)
     data_set.perform_tests()
 

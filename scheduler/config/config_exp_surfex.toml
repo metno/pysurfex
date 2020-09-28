@@ -135,13 +135,13 @@ XERROBS_M = [1.0, 0.1, 0.1, 0.1, 0.1, 20.0] # Observation error (used in EKF)
 LSWE = false                                # Assimilate SWE, if false assimilate snow depth
 
 [SURFEX.ASSIM.SEA]
-CFILE_FORMAT_SST = "FA"              # File format for SST input when using SODA and SEA == "INPUT": "ASCII"|"FA"
+CFILE_FORMAT_SST = "ASCII"           # File format for SST input when using SODA and SEA == "INPUT": "ASCII"|"FA"
 LREAD_SST_FROM_FILE = true           # When SEA == INPUT read SST from external file
 LEXTRAP_SEA = false                  # Extrapolate sea variables to points having LSM < 0.5
 
 [SURFEX.ASSIM.INLAND_WATER]
 LWATERTG2 = false                    # Use TG2 as LST in points having both land and water defined. Should use LEXTRAP_WATER=true
-LEXTRAP_WATER = true                # Extrapolate LST to points having LSM < 0.5 or to points masked by LWATERTG2
+LEXTRAP_WATER = false                # Extrapolate LST to points having LSM < 0.5 or to points masked by LWATERTG2
 
 [SURFEX.ASSIM.ISBA]
 UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assimilation.
@@ -149,8 +149,8 @@ UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assim
 
 # OI settings
 [SURFEX.ASSIM.ISBA.OI]
-CFILE_FORMAT_CLIM = "FA"            # File format for file containing climatological fields
-CFILE_FORMAT_FG = "FA"              # File format of upper air first guess
+CFILE_FORMAT_CLIM = "ASCII"         # File format for file containing climatological fields
+CFILE_FORMAT_FG = "ASCII"           # File format of upper air first guess
 COEFFS="POLYNOMES_ISBA"             # Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
                                     # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
 XSIGT2MO = 1.0                      # SIGMA O for T2M in oi_cacsts
