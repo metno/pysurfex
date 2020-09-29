@@ -1,212 +1,56 @@
 import os
 import json
-import toml
 from datetime import datetime
 import surfex
 import yaml
 import f90nml
-import collections
 
 
-def capitalize_namelist_dict(dict_in):
-    new_dict = {}
-    for key in dict_in:
-        upper_case2 = {}
-        for key2 in dict_in[key]:
-            upper_case2.update({key2.upper(): dict_in[key][key2]})
-        new_dict.update({key.upper(): upper_case2})
-    return new_dict
+class SystemFilePaths(object):
+    def __init__(self, system_file_paths):
+        self.system_file_paths = system_file_paths
 
-
-def lower_case_namelist_dict(dict_in):
-    new_dict = {}
-    for key in dict_in:
-        lower_case_dict = {}
-        for key2 in dict_in[key]:
-            lower_case_dict.update({key2.lower(): dict_in[key][key2]})
-        new_dict.update({key.lower(): lower_case_dict})
-    return new_dict
-
-
-def merge_namelist_dicts(old_dict, new_dict):
-    old_dict = capitalize_namelist_dict(old_dict)
-    new_dict = capitalize_namelist_dict(new_dict)
-    merged_dict = old_dict
-
-    for new_key in new_dict:
-        # Namelist block already exists
-        if new_key in merged_dict:
-            settings = merged_dict[new_key]
-            for new_key2 in new_dict[new_key]:
-                settings.update({new_key2: new_dict[new_key][new_key2]})
-
-            merged_dict.update({new_key: settings})
-        # New namelist block
+    def get_system_path(self, dtype, default=None):
+        # print(dtype)
+        for p in self.system_file_paths:
+            # print(dtype, p)
+            if p == dtype:
+                return self.system_file_paths[p]
+        if default is None:
+            raise Exception("No system path found for " + dtype)
         else:
-            merged_dict.update({new_key: new_dict[new_key]})
-
-    return merged_dict
+            return default
 
 
-def ascii2nml(input_data):
-    output_data = f90nml.Namelist(input_data)
-    return output_data
+class SystemFilePathsFromFile(SystemFilePaths):
+    def __init__(self, system_file_paths):
+        system_file_paths = json.load(open(system_file_paths, "r"))
+        SystemFilePaths.__init__(self, system_file_paths)
 
 
-def ascii_file2nml(input_fname, input_fmt="json"):
-    if input_fmt == 'json':
-        with open(input_fname) as input_file:
-            output_data = json.load(input_file)
-    elif input_fmt == 'yaml':
-        with open(input_fname) as input_file:
-            output_data = yaml.safe_load(input_file)
-    output_data = f90nml.Namelist(output_data)
-    return output_data
+class ExternalSurfexInputFile(object):
 
+    def __init__(self, system_file_paths):
+        self.system_file_paths = system_file_paths
 
-def nml2ascii(input_data, output_file, output_fmt="json", indent=2):
-    if output_fmt == 'json':
-        input_data = input_data.todict(complex_tuple=True)
-        json.dump(input_data, open(output_file, "w"), indent=indent, separators=(',', ': '))
-    elif output_fmt == 'yaml':
-        input_data = input_data.todict(complex_tuple=True)
-        yaml.dump(input_data, output_file, default_flow_style=False)
-
-
-def merge_json_namelist_file(old_dict, my_file):
-
-    print(my_file)
-    if os.path.exists(my_file):
-        new_dict = json.load(open(my_file, "r"))
-    else:
-        raise FileNotFoundError
-
-    return merge_namelist_dicts(old_dict, new_dict)
-
-
-def set_input_file_name(ldtype, lfname, lsystem):
-    dir_path = lsystem["climdir"]
-    if ldtype in lsystem:
-        dir_path = lsystem[ldtype]
-    return dir_path + "/" + lfname
-
-
-def set_input_data(ldtype, lfname, lsystem):
-    if lfname.endswith(".bin"):
-        return {lfname: set_input_file_name(ldtype, lfname, lsystem)}
-    elif lfname.endswith(".dir"):
-        basename = os.path.splitext(os.path.basename(lfname))[0]
-        hdr_file = set_input_file_name(ldtype, basename + ".hdr", lsystem)
-        dir_file = set_input_file_name(ldtype, basename + ".dir", lsystem)
-        return {basename + ".hdr": hdr_file, basename + ".dir": dir_file}
-    elif lfname.endswith(".json"):
-        return {}
-    elif lfname.endswith(".nc"):
-        return {lfname: set_input_file_name(ldtype, lfname, lsystem)}
-    elif lfname.endswith(".ascllv"):
-        return {lfname: set_input_file_name(ldtype, lfname, lsystem)}
-    else:
-        print("Unknown suffix for " + lfname)
-
-
-def set_direct_data_namelist(lnamelist_section, ldtype, ldname, linput_path):
-    if ldname.endswith(".dir"):
-        basename = os.path.splitext(os.path.basename(ldname))[0]
-        filetype_name = ldtype
-        if ldtype == "YSOC_TOP" or ldtype == "YSOC_SUB":
-            filetype_name = "YSOC"
-        return {"json": json.loads('{"' + lnamelist_section + '": { "' + ldtype + '": "' + basename + '", ' + '"' +
-                                   filetype_name + 'FILETYPE": "DIRECT"}}')}
-    elif ldname.endswith(".json"):
-        return {"file": linput_path + "/" + ldname}
-
-
-def parse_eco_sg_fnames(filepattern, decade):
-    filename = filepattern
-    add = 1
-    if decade % 3 == 0:
-        add = 0
-    mm = int(decade / 3) + add
-    mm = "{:02d}".format(mm)
-    cdd = ((decade % 3) * 10) + 5
-    cdd = "{:02d}".format(cdd)
-    filename = filename.replace("@MM@", str(mm))
-    filename = filename.replace("@CDD@", str(cdd))
-    return filename
-
-
-def set_dirtyp_data_namelist(lnamelist_section, ldtype, ldname, vtype=None, decade=None):
-    basename = os.path.splitext(os.path.basename(ldname))[0]
-    filetype_name = ldtype.upper()
-    if vtype is not None or decade is not None:
-        filetype_name = filetype_name + "("
-    if vtype is not None:
-        filetype_name = filetype_name + str(vtype)
-    if vtype is not None and decade is not None:
-        filetype_name = filetype_name + ","
-    if decade is not None:
-        filetype_name = filetype_name + str(decade)
-    if vtype is not None or decade is not None:
-        filetype_name = filetype_name + ")"
-    return {
-        "json": json.loads('{"' + lnamelist_section + '": { "CFNAM_' + filetype_name + '": "' + basename + '", ' +
-                           '"CFTYP_' + filetype_name + '": "DIRTYPE"}}')
-    }
-
-
-def get_surfex_env(settings, var_list, mbr=None):
-
-    found = None
-    for v in var_list:
-        if found is None:
-            found = settings
-        if v in found:
-            found = found[v]
-            if v == "MEMBER_SETTINGS" and mbr is not None:
-                if mbr in found:
-                    found = found[mbr]
-                else:
-                    return ""
+    def set_input_data(self, dtype, fname):
+        default = self.system_file_paths.get_system_path("climdir")
+        fname_with_path = self.system_file_paths.get_system_path(dtype, default=default) + "/" + fname
+        if fname.endswith(".bin"):
+            return {fname: fname_with_path}
+        elif fname.endswith(".dir"):
+            basename = os.path.splitext(os.path.basename(fname))[0]
+            hdr_file = self.system_file_paths.get_system_path(dtype, default=default) + "/" + basename + ".hdr"
+            dir_file = self.system_file_paths.get_system_path(dtype, default=default) + "/" + basename + ".dir"
+            return {basename + ".hdr": hdr_file, basename + ".dir": dir_file}
+        elif fname.endswith(".json"):
+            return {}
+        elif fname.endswith(".nc"):
+            return {fname: fname_with_path}
+        elif fname.endswith(".ascllv"):
+            return {fname: fname_with_path}
         else:
-            return ""
-    return found
-
-
-def get_env_from_file(toml_file, var_list, mbr=None):
-    if os.path.exists(toml_file):
-        return get_surfex_env(toml.load(open(toml_file, "r")), var_list, mbr=mbr)
-    else:
-        raise Exception("WARNING: File not found " + toml_file)
-
-
-def deep_update(source, overrides):
-    """
-    Update a nested dictionary or similar mapping.
-    Modify ``source`` in place.
-    """
-    for key, value in overrides.items():
-        if isinstance(value, collections.Mapping) and value:
-            returned = deep_update(source.get(key, {}), value)
-            source[key] = returned
-        else:
-            source[key] = overrides[key]
-    return source
-
-
-def merge_toml_env(old_env, mods):
-    return deep_update(old_env, mods)
-
-
-def merge_toml_env_from_files(toml_files):
-    merged_env = {}
-    for toml_file in toml_files:
-        if os.path.exists(toml_file):
-            print(toml_file)
-            modification = toml.load(open(toml_file, "r"))
-            merged_env = merge_toml_env(merged_env, modification)
-        else:
-            print("WARNING: File not found " + toml_file)
-    return merged_env
+            raise Exception("Unknown suffix for " + fname)
 
 
 class BaseNamelist(object):
@@ -298,23 +142,22 @@ class BaseNamelist(object):
         # Ecoclimap SG
         self.input_list.append({"json": {"NAM_FRAC": {"LECOSG": eco_sg}}})
         if self.config.get_setting("SURFEX#COVER#SG"):
-            veg_types = 20
-            decades = 36
+            ecoclimap = EcoclimapSG(self.config)
 
-            self.input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": decades}}})
+            self.input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": ecoclimap.decades}}})
 
             fname = self.config.get_setting("SURFEX#COVER#H_TREE")
             if fname != "" and fname is not None:
-                self.input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
+                self.input_list.append(self.set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE", fname, vtype=1))
 
             decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
             for decadal_data_type in decadal_data_types:
-                for vt in range(1, veg_types + 1):
-                    for decade in range(1, decades + 1):
+                for vt in range(1, ecoclimap.veg_types + 1):
+                    for decade in range(1, ecoclimap.decades + 1):
                         filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
-                        fname = parse_eco_sg_fnames(filepattern, decade)
-                        self.input_list.append(set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname,
-                                                                        vtype=vt, decade=decade))
+                        fname = ecoclimap.parse_fnames(filepattern, decade)
+                        self.input_list.append(self.set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname,
+                                                                             vtype=vt, decade=decade))
 
         ecoclimap_dir = "ecoclimap_dir"
         if self.config.get_setting("SURFEX#COVER#SG"):
@@ -337,8 +180,8 @@ class BaseNamelist(object):
         for namelist_section in possible_direct_data:
             for ftype in possible_direct_data[namelist_section]:
                 fname = str(self.config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                self.input_list.append(set_direct_data_namelist("NAM_" + namelist_section, ftype, fname,
-                                                                self.input_path))
+                self.input_list.append(self.set_direct_data_namelist("NAM_" + namelist_section, ftype, fname,
+                                                                     self.input_path))
 
         # Set ISBA properties
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
@@ -624,6 +467,113 @@ class BaseNamelist(object):
             print("WARNING: Override settings with content from " + self.input_path + "/override.json")
             self.input_list.append({"file": self.input_path + "/override.json"})
 
+    @staticmethod
+    def set_direct_data_namelist(lnamelist_section, ldtype, ldname, linput_path):
+        if ldname.endswith(".dir"):
+            basename = os.path.splitext(os.path.basename(ldname))[0]
+            filetype_name = ldtype
+            if ldtype == "YSOC_TOP" or ldtype == "YSOC_SUB":
+                filetype_name = "YSOC"
+            return {"json": json.loads('{"' + lnamelist_section + '": { "' + ldtype + '": "' + basename + '", ' + '"' +
+                                       filetype_name + 'FILETYPE": "DIRECT"}}')}
+        elif ldname.endswith(".json"):
+            return {"file": linput_path + "/" + ldname}
+
+    @staticmethod
+    def set_dirtyp_data_namelist(lnamelist_section, ldtype, ldname, vtype=None, decade=None):
+        basename = os.path.splitext(os.path.basename(ldname))[0]
+        filetype_name = ldtype.upper()
+        if vtype is not None or decade is not None:
+            filetype_name = filetype_name + "("
+        if vtype is not None:
+            filetype_name = filetype_name + str(vtype)
+        if vtype is not None and decade is not None:
+            filetype_name = filetype_name + ","
+        if decade is not None:
+            filetype_name = filetype_name + str(decade)
+        if vtype is not None or decade is not None:
+            filetype_name = filetype_name + ")"
+        return {
+            "json": json.loads('{"' + lnamelist_section + '": { "CFNAM_' + filetype_name + '": "' + basename + '", ' +
+                               '"CFTYP_' + filetype_name + '": "DIRTYPE"}}')
+        }
+
+    @staticmethod
+    def capitalize_namelist_dict(dict_in):
+        new_dict = {}
+        for key in dict_in:
+            upper_case2 = {}
+            for key2 in dict_in[key]:
+                upper_case2.update({key2.upper(): dict_in[key][key2]})
+            new_dict.update({key.upper(): upper_case2})
+        return new_dict
+
+    @staticmethod
+    def lower_case_namelist_dict(dict_in):
+        print(dict_in)
+        new_dict = {}
+        for key in dict_in:
+            lower_case_dict = {}
+            print(key)
+            for key2 in dict_in[key]:
+                lower_case_dict.update({key2.lower(): dict_in[key][key2]})
+            new_dict.update({key.lower(): lower_case_dict})
+        return new_dict
+
+    def merge_namelist_dicts(self, old_dict, new_dict):
+        old_dict = self.capitalize_namelist_dict(old_dict)
+        new_dict = self.capitalize_namelist_dict(new_dict)
+        merged_dict = old_dict
+
+        for new_key in new_dict:
+            # Namelist block already exists
+            if new_key in merged_dict:
+                settings = merged_dict[new_key]
+                for new_key2 in new_dict[new_key]:
+                    settings.update({new_key2: new_dict[new_key][new_key2]})
+
+                merged_dict.update({new_key: settings})
+            # New namelist block
+            else:
+                merged_dict.update({new_key: new_dict[new_key]})
+
+        return merged_dict
+
+    @staticmethod
+    def ascii2nml(input_data):
+        output_data = f90nml.Namelist(input_data)
+        return output_data
+
+    @staticmethod
+    def ascii_file2nml(input_fname, input_fmt="json"):
+        if input_fmt == 'json':
+            with open(input_fname) as input_file:
+                output_data = json.load(input_file)
+        elif input_fmt == 'yaml':
+            with open(input_fname) as input_file:
+                output_data = yaml.safe_load(input_file)
+        output_data = f90nml.Namelist(output_data)
+        return output_data
+
+    @staticmethod
+    def nml2ascii(input_data, output_file, output_fmt="json", indent=2):
+        if output_fmt == 'json':
+            input_data = input_data.todict(complex_tuple=True)
+            json.dump(input_data, open(output_file, "w"), indent=indent, separators=(',', ': '))
+        elif output_fmt == 'yaml':
+            input_data = input_data.todict(complex_tuple=True)
+            yaml.dump(input_data, output_file, default_flow_style=False)
+
+    def merge_json_namelist_file(self, old_dict, my_file):
+
+        print(my_file)
+        if os.path.exists(my_file):
+            new_dict = json.load(open(my_file, "r"))
+        else:
+            raise FileNotFoundError
+
+        return self.merge_namelist_dicts(old_dict, new_dict)
+
     def get_namelist(self):
         print("Constructing namelist:")
         merged_json_settings = {}
@@ -634,59 +584,53 @@ class BaseNamelist(object):
                     print("Needed namelist input does not exist: " + json_file)
                     raise FileNotFoundError
                 else:
-                    merged_json_settings = merge_json_namelist_file(merged_json_settings, json_file)
+                    merged_json_settings = self.merge_json_namelist_file(merged_json_settings, json_file)
             elif "json" in inp:
-                merged_json_settings = merge_namelist_dicts(merged_json_settings, inp["json"])
+                merged_json_settings = self.merge_namelist_dicts(merged_json_settings, inp["json"])
             else:
                 print("Can not handle input type "+str(inp))
                 raise Exception
 
-        return surfex.ascii2nml(merged_json_settings)
-
-
-'''
-class BaseNamelist(object):
-    def __init__(self):
-        print("BaseNamelist")
+        return self.ascii2nml(merged_json_settings)
 
 
 class Cy43(BaseNamelist):
-    def __init__(self):
-        print("Cy43")
-        BaseNamelist.__init__(self)
+    def __init__(self, program, config, input_path, **kwargs):
+        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
 
 
 class Cy40(BaseNamelist):
-    def __init__(self):
-        print("Cy40")
-        BaseNamelist.__init__(self)
+    def __init__(self, program, config, input_path, **kwargs):
+        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
 
 
 class Namelist(Cy40, Cy43):
-    def __init__(self, cycle):
-        print("Namelist")
+    def __init__(self, cycle, program, config, input_path, **kwargs):
         if cycle == "cy43":
-            Cy43.__init__(self)
+            Cy43.__init__(self, program, config, input_path, **kwargs)
         elif cycle == "cy40":
-            Cy40.__init__(self)
+            Cy40.__init__(self, program, config, input_path, **kwargs)
         else:
             raise Exception()
-'''
 
 
 class Ecoclimap(object):
-    def __init__(self, config, system_file_paths):
+    def __init__(self, config, system_file_paths=None):
         self.config = config
         self.system_file_paths = system_file_paths
         self.cover_dir = "ecoclimap_cover_dir"
+        self.bin_dir = "ecoclimap_bin_dir"
         self.ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
                                 "ecoclimapII_eu_covers_param.bin"]
         self.decadal_data_types = None
 
     def set_input(self):
+        if self.system_file_paths is None:
+            raise Exception("System file path must be set for this method")
         data = {}
         for fname in self.ecoclimap_files:
-            data.update(set_input_data("ecoclimap_bin_dir", fname, self.system_file_paths))
+            fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(self.bin_dir, fname)
+            data.update(fname_data)
         return data
 
     def set_bin_files(self):
@@ -694,8 +638,8 @@ class Ecoclimap(object):
 
 
 class EcoclimapSG(Ecoclimap):
-    def __init__(self, config, system_file_paths, veg_types=20, decades=36):
-        Ecoclimap.__init__(self, config, system_file_paths)
+    def __init__(self, config, system_file_paths=None, veg_types=20, decades=36):
+        Ecoclimap.__init__(self, config,  system_file_paths=system_file_paths)
         self.veg_types = veg_types
         self.decades = decades
         self.cover_file = self.config.get_setting("SURFEX#COVER#SG")
@@ -706,47 +650,67 @@ class EcoclimapSG(Ecoclimap):
         pass
 
     def set_input(self):
+        if self.system_file_paths is None:
+            raise Exception("System file path must be set for this method")
+
         data = {}
         tree_height_dir = "tree_height_dir"
         fname = self.config.get_setting("SURFEX#COVER#H_TREE")
         if fname != "" and fname is not None:
-            data.update(set_input_data(tree_height_dir, fname, self.system_file_paths))
-
-        veg_types = 20
-        decades = 36
+            fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(tree_height_dir, fname)
+            data.update(fname_data)
 
         decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
         for decadal_data_type in decadal_data_types:
-            for vt in range(1, veg_types + 1):
-                for decade in range(1, decades + 1):
+            for vt in range(1, self.veg_types + 1):
+                for decade in range(1, self.decades + 1):
                     filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
-                    fname = parse_eco_sg_fnames(filepattern, decade)
-                    data.update(set_input_data(decadal_data_type.lower() + "_dir", fname,
-                                               self.system_file_paths))
+                    fname = self.parse_fnames(filepattern, decade)
+                    dtype = decadal_data_type.lower() + "_dir"
+                    fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(dtype, fname)
+                    data.update(fname_data)
+
         return data
+
+    @staticmethod
+    def parse_fnames(filepattern, decade):
+        filename = filepattern
+        add = 1
+        if decade % 3 == 0:
+            add = 0
+        mm = int(decade / 3) + add
+        mm = "{:02d}".format(mm)
+        cdd = ((decade % 3) * 10) + 5
+        cdd = "{:02d}".format(cdd)
+        filename = filename.replace("@MM@", str(mm))
+        filename = filename.replace("@CDD@", str(cdd))
+        return filename
 
 
 class PgdInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths):
+    def __init__(self, **kwargs):
+
+        config = kwargs["config"]
+        system_file_paths = kwargs["system_file_paths"]
 
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
         if eco_sg:
-            ecoclimap = EcoclimapSG(config, system_file_paths)
+            ecoclimap = EcoclimapSG(config, system_file_paths=system_file_paths)
         else:
-            ecoclimap = Ecoclimap(config, system_file_paths)
+            ecoclimap = Ecoclimap(config, system_file_paths=system_file_paths)
 
         data = ecoclimap.set_input()
 
         # Set direct input files
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
-
-            data.update(set_input_data("flake_dir", "GlobalLakeDepth" + version + ".dir",
-                                       system_file_paths))
-            data.update(set_input_data("flake_dir", "GlobalLakeStatus" + version + ".dir",
-                                       system_file_paths))
+            dtype = "flake_dir"
+            fname = "GlobalLakeDepth" + version + ".dir"
+            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(dtype, fname))
+            fname = "GlobalLakeStatus" + version + ".dir"
+            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(dtype, fname))
 
         possible_direct_data = {
             "ISBA": {
@@ -766,23 +730,29 @@ class PgdInputData(surfex.JsonInputData):
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
                 fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                data.update(set_input_data(data_dir, fname, system_file_paths))
+                data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, fname))
 
         # Treedrag
         if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             treeheight = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
-            data.update(
-                set_input_data("tree_height_dir", treeheight, system_file_paths))
+            data_dir = "tree_height_dir"
+            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, treeheight))
 
         surfex.JsonInputData.__init__(self, data)
 
 
 class PrepInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths, prep_file=None, prep_pgdfile=None):
+    def __init__(self, **kwargs):
 
-        self.config = config
-        self.system_file_paths = system_file_paths
+        config = kwargs["config"]
+        system_file_paths = kwargs["system_file_paths"]
+        prep_file = None
+        if "prep_file" in kwargs:
+            prep_file = kwargs["prep_file"]
+        prep_pgdfile = None
+        if "prep_pgdfile" in kwargs:
+            prep_pgdfile = kwargs["prep_pgdfile"]
 
         data = {}
         # Ecoclimap settings
@@ -801,30 +771,36 @@ class PrepInputData(surfex.JsonInputData):
                     if fname != prep_pgdfile:
                         data.update({fname: prep_pgdfile})
 
-        if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            # Set NetCDF input for FLAKE
-            data.update(set_input_data("flake_dir", "LAKE_LTA_NEW.nc", self.system_file_paths))
+        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
+            data_dir = "flake_dir"
+            fname = "LAKE_LTA_NEW.nc"
+            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, fname))
 
         surfex.JsonInputData.__init__(self, data)
 
 
 class OfflineInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths):
+    def __init__(self, **kwargs):
 
-        self.config = config
-        self.system_file_paths = system_file_paths
+        config = kwargs["config"]
+        system_file_paths = kwargs["system_file_paths"]
 
         data = {}
         # Ecoclimap settings
-        eco_sg = self.config.get_setting("SURFEX#COVER#SG")
+        eco_sg = config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(config, system_file_paths)
-            self.add_data(ecoclimap.set_bin_files())
+            data.update(ecoclimap.set_bin_files())
 
-        if self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
-            # Set NetCDF input for FLAKE
-            data.update(set_input_data("forcing_dir", "FORCING.nc", self.system_file_paths))
+        if config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
+            file_paths = ExternalSurfexInputFile(system_file_paths)
+            data_dir = "forcing_dir"
+            if "forcing_dir" in kwargs:
+                if kwargs["forcing_dir"] is not None:
+                    file_paths.system_file_paths[data_dir] = kwargs["forcing_dir"]
+            fname = "FORCING.nc"
+            data.update(file_paths.set_input_data(data_dir, fname))
         else:
             raise NotImplementedError
 
@@ -880,9 +856,10 @@ class SodaInputData(surfex.JsonInputData):
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
                 ua_first_guess = kwargs["ua_first_guess"]
                 climfile = kwargs["climfile"]
-                oi_coeffs = set_input_file_name("oi_coeff_dir",
-                                                self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS"),
-                                                self.system_file_paths)
+                data_dir = "oi_coeff_dir"
+                fname = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS")
+                fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(data_dir, fname)
+                oi_coeffs = fname_data[fname]
                 self.add_data(self.set_input_vertical_soil_oi(dtg, ua_first_guess, oi_coeffs=oi_coeffs,
                                                               climfile=climfile,
                                                               lsmfile=lsmfile, ascatfile=ascatfile,
@@ -985,7 +962,7 @@ class SodaInputData(surfex.JsonInputData):
         # OI coefficients
         if oi_coeffs is not None:
             oi_settings.update({"fort.61": oi_coeffs})
-            if not os.path.exists(oi_coeffs) and  check_existence:
+            if not os.path.exists(oi_coeffs) and check_existence:
                 raise FileNotFoundError("Needed file missing for OI coefficients: " + oi_coeffs)
 
         # LSM

@@ -4,27 +4,39 @@ import subprocess
 from abc import ABC, abstractmethod
 import json
 import shutil
+import sys
 
 
 class BatchJob(object):
     def __init__(self, rte, wrapper=""):
         self.rte = rte
         self.wrapper = wrapper
+        self.tag = "Trygve"
+        print("Constructed BatchJob")
 
     def run(self, cmd):
-        print("set up subprocess")
+
         if cmd is None:
-            print("No command provided!")
-            raise
+            raise Exception("No command provided!")
         cmd = self.wrapper + " " + cmd
-        try:
-            if "OMP_NUM_THREADS" in self.rte:
-                print("BATCH: ", self.rte["OMP_NUM_THREADS"])
-            print("Batch running " + cmd)
-            subprocess.check_call(cmd, shell=True, env=self.rte)
-        except RuntimeError:
-            print(cmd + " failed!")
-            raise
+
+        if "OMP_NUM_THREADS" in self.rte:
+            print("BATCH: ", self.rte["OMP_NUM_THREADS"])
+        print("Batch running " + cmd)
+
+        process = subprocess.Popen(cmd, shell=True, env=self.rte, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                   universal_newlines=True, bufsize=1)
+        # Poll process for new output until finished
+        while True:
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
+                break
+            sys.stdout.write(nextline)
+            sys.stdout.flush()
+
+        return_code = process.wait()
+        if return_code != 0:
+            raise subprocess.CalledProcessError(return_code, cmd)
 
 
 class SURFEXBinary(object):
@@ -37,10 +49,6 @@ class SURFEXBinary(object):
         self.surfout = None
         if "surfout" in kwargs:
             self.surfout = kwargs["surfout"]
-
-        # self.assim = None
-        # if "assim" in kwargs:
-        #    self.assim = kwargs["assim"]
 
         self.archive_data = None
         if "archive_data" in kwargs:
@@ -89,18 +97,16 @@ class SURFEXBinary(object):
                         surfex.read.remove_existing_file(self.iofile.input_file, self.iofile.filename)
                         os.symlink(self.iofile.input_file, self.iofile.filename)
                     if not os.path.exists(self.iofile.filename):
-                        print("PREP not found! " + self.iofile.filename)
-                        raise FileNotFoundError
+                        raise FileNotFoundError("PREP not found! " + self.iofile.filename)
                 except FileNotFoundError:
-                    print("Could not set PREP")
-                    raise
-
-        # if self.assim is not None:
-        #    self.assim.ass_input.prepare_input()
+                    raise FileNotFoundError("Could not set PREP")
 
         cmd = self.binary
-        self.batch.run(cmd)
         print("Running " + cmd + " with settings OPTIONS.nam")
+        try:
+            self.batch.run(cmd)
+        except Exception as e:
+            raise RuntimeError(repr(e))
 
         listings = ["LISTING_PGD0.txt", "LISTING_PREP0.txt", "LISTING_OFFLINE0.txt", "LISTING_SODA0.txt"]
         for listing in listings:

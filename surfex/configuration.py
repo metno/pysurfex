@@ -589,7 +589,8 @@ class ConfigurationFromHarmonie(Configuration):
             }
         }
         geo = surfex.ConfProj(domain_dict)
-        self.update_setting("GEOMETRY#GEO", geo)
+        self.settings["GEOMETRY"].update({"GEO": geo})
+        # self.update_setting("GEOMETRY#GEO", geo)
         print(self.get_setting("GEOMETRY#GEO"))
 
         #  CISBA Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"

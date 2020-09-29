@@ -19,7 +19,7 @@ fc_start_sfx = "@WRK_PATTERN@/fc_start_sfx"
 pgd_file = "@CLIMDIR@/PGD.nc"
 prep_file = "@WRK_PATTERN@/fc_start_sfx"
 output = "@ARCHIVE_PATTERN@/SURFOUT.@CSURF_FILETYPE@"
-forcing = "@ARCHIVE_PATTERN@/FORCING.nc"
+forcing_dir = "@ARCHIVE_PATTERN@/"
 forc_zs = true
 
 [PerturbedRun]
@@ -27,7 +27,7 @@ pgd_file = "@CLIMDIR@/PGD.nc"
 prep_file = "@ARCHIVE_PATTERN@/PREP.@CSURF_FILETYPE@"
 analysis_file = "@ARCHIVE_PATTERN@/ANALYSIS.@CSURF_FILETYPE@"
 output = "@ARCHIVE_PATTERN@/PERT_@PERT@.@CSURF_FILETYPE@"
-forcing = "@ARCHIVE_PATTERN@/FORCING.nc"
+forcing_dir = "@ARCHIVE_PATTERN@/"
 forc_zs = true
 
 [Soda]

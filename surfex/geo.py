@@ -68,7 +68,7 @@ class SurfexGeo(ABC, Geo):
 class ConfProj(SurfexGeo):
     def __init__(self, from_json):
         self.cgrid = "CONF PROJ"
-        domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
+        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         self.ilone = None
         self.ilate = None
@@ -162,7 +162,7 @@ class ConfProj(SurfexGeo):
 class LonLatVal(SurfexGeo):
     def __init__(self, from_json):
         self.cgrid = "LONLATVAL"
-        domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
+        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
             if "xx" and "xy" and "xdx" and "xdy" in domain_dict["nam_lonlatval"]:
@@ -200,7 +200,7 @@ class LonLatVal(SurfexGeo):
 class Cartesian(SurfexGeo):
     def __init__(self, from_json):
         self.cgrid = "CARTESIAN"
-        domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
+        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
             if "xlat0" and "xlon0" and "nimax" and "njmax" and "xdx" and "xdy" in domain_dict["nam_cartesian"]:
@@ -243,7 +243,7 @@ class Cartesian(SurfexGeo):
 class LonLatReg(SurfexGeo):
     def __init__(self, from_json):
         self.cgrid = "LONLAT REG"
-        domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
+        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
             if "xlonmin" and "xlonmax" and "xlatmin" and "xlatmax" and "nlon" and "nlat" \
@@ -299,7 +299,7 @@ class LonLatReg(SurfexGeo):
 class IGN(SurfexGeo):
     def __init__(self, from_json, recreate=False):
         self.cgrid = "IGN"
-        domain_dict = surfex.namelist.lower_case_namelist_dict(from_json)
+        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
             if "clambert" and "npoints" and "xx" and "xy" and "xdx" and "xdy" and "xx_llcorner" and "xy_llcorner"  \

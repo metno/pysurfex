@@ -5,5 +5,5 @@ import sys
 
 
 if __name__ == "__main__":
-    args = surfex.parse_args_surfex_binary(sys.argv[1:], "prep")
-    surfex.run_surfex_binary(args, "prep")
+    kwargs = surfex.parse_args_surfex_binary(sys.argv[1:], "prep")
+    surfex.run_surfex_binary("prep", **kwargs)

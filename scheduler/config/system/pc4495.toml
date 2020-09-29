@@ -1,0 +1,32 @@
+#
+# Surfex system configuration for single machine setup
+#
+
+[HOST_SYSTEM]
+
+# Define computer centre.
+COMPCENTRE="LOCAL"
+
+# Define hosts
+HOSTS = ["pc4384"]
+
+# Location of working data, fast and large system
+# Experiment identifier and directories
+# EXP is defined when an experiment is started by "Harmonie start ..."
+SFX_EXP_DATA = "$HOME/scratch/sfx_home/$EXP"	# HM_DATA on main HIRLAM host
+# experiment archive directory in LPFS
+SFX_EXP_EXP = "$HOME/scratch/sfx_home/$EXP/$EXP"
+# directory for scripts, compiled objects, executables
+SFX_EXP_LIB = "$HOME/sfx_home/$EXP"
+
+HOST_NAME = ""
+ECF_HOST = "pc4384"
+ECF_LOGHOST = "pc4384"
+
+HOST_INSTALL = "0"
+
+JOBOUTDIR = "$HOME/ecflow"
+MKDIR = "mkdir -p"
+RSYNC = "rsync -avh"
+
+SURFEX_CONFIG = ""

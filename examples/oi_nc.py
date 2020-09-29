@@ -9,16 +9,18 @@ if __name__ == "__main__":
 
     root_dir = os.getcwd()
 
-    domain_name = "NORWAY-SOUTH"
-    domain_json = surfex.set_domain(json.load(open(root_dir + "/settings/domains.json", "r")), domain_name)
+    domain_name = "TRYGVE_TEST"
+    domain_json = surfex.set_domain(json.load(open(root_dir + "/scheduler/config/domains/Harmonie_domains.json", "r")),
+                                    domain_name, hm_mode=True)
     print(domain_json)
     my_geo = surfex.ConfProj(domain_json)
 
-    toml_files = [root_dir + "/settings/config_exp_surfex.toml", root_dir + "/settings/oi_nc.toml"]
+    toml_files = [root_dir + "/scheduler/config/config_exp_surfex.toml", root_dir + "/examples/settings/oi_nc.toml"]
     merged_toml_env = surfex.merge_toml_env_from_files(toml_files)
-    my_settings, my_ecoclimap, my_input = surfex.set_json_namelist_from_toml_env("pgd", merged_toml_env,
-                                                                                 root_dir + "/settings/",
-                                                                                 root_dir + "/settings/system.ppi.json")
+    config = surfex.Configuration(merged_toml_env, {})
+    my_settings = surfex.BaseNamelist("pgd", config, root_dir + "/scheduler/nam/").get_namelist()
+    system_file_paths = surfex.SystemFilePathsFromFile(root_dir + "/scheduler/config/input_paths/pc4384.json")
+    input_data = surfex.PgdInputData(config=config, system_file_paths=system_file_paths)
     print(my_settings)
 
     test_dir = os.environ["HOME"]+"/surfex-tests"
@@ -39,7 +41,7 @@ if __name__ == "__main__":
         workdir = test_dir + "/pgd_" + my_format
         surfex.create_working_dir(workdir)
         my_pgdfile = surfex.file.PGDFile(my_format, my_settings["nam_io_offline"]["cpgdfile"], my_geo, archive_file=pgd)
-        surfex.SURFEXBinary(test_dir + "/bin/PGD.exe", my_batch, my_pgdfile, my_ecoclimap, my_settings, input=my_input)
+        surfex.SURFEXBinary(test_dir + "/bin/PGD.exe", my_batch, my_pgdfile, my_settings, input_data)
         # surfex.clean_working_dir(workdir)
 
     # PREP

@@ -10,9 +10,11 @@ import shutil
 class AbstractTask(object):
     def __init__(self, task, exp, **kwargs):
         self.exp = exp
-        self.config = self.exp.conf
+        self.config = self.exp.config
         self.dtg = self.exp.progress.dtg
-        self.geo = self.exp.geo
+        self.geo = self.config.get_setting("GEOMETRY#GEO")
+        if self.geo is None:
+            raise Exception("You must set geo!")
         self.task = task
         self.task_settings = None
 
@@ -194,30 +196,41 @@ class SurfexBinaryTask(AbstractTask):
         input_paths = self.exp.get_file_name(self.exp.wd, "input_paths", full_path=True)
         # self.settings = self.exp.config.settings
         if os.path.exists(input_paths):
-            self.system_file_paths = json.load(open(input_paths, "r"))
+            self.system_file_paths = surfex.SystemFilePathsFromFile(input_paths)
         else:
             raise FileNotFoundError("System setting input paths not found " + input_paths)
+        self.namelist = surfex.BaseNamelist(self.mode, self.exp.config, self.input_path, **kwargs)
 
-    def execute(self, binary, output, json_settings, **kwargs):
+    def execute(self, binary, output, **kwargs):
 
         rte = os.environ
         wrapper = ""
         if "wrapper" in kwargs:
             wrapper = kwargs["wrapper"]
 
+        forcing_dir = None
+        if "forcing_dir" in kwargs:
+            forcing_dir = kwargs["forcing_dir"]
+
         if self.mode == "pgd":
             self.pgd = True
             self.need_pgd = False
             self.need_prep = False
+            input_data = surfex.PgdInputData(config=self.exp.config, system_file_paths=self.system_file_paths)
         elif self.mode == "prep":
             self.prep = True
             self.need_prep = False
+            input_data = surfex.PrepInputData(config=self.exp.config, system_file_paths=self.system_file_paths)
         elif self.mode == "offline":
-            pass
+            input_data = surfex.OfflineInputData(config=self.exp.config, system_file_paths=self.system_file_paths,
+                                                 forcing_dir=forcing_dir)
         elif self.mode == "soda":
             self.soda = True
+            input_data = surfex.SodaInputData(config=self.exp.config, system_file_paths=self.system_file_paths)
         elif self.mode == "perturbed":
             self.perturbed = True
+            input_data = surfex.OfflineInputData(config=self.exp.config, system_file_paths=self.system_file_paths,
+                                                 forcing_dir=forcing_dir)
         else:
             raise NotImplementedError(self.mode + " is not implemented!")
 
@@ -228,25 +241,10 @@ class SurfexBinaryTask(AbstractTask):
         if "prep_file_path" in kwargs:
             prep_file_path = kwargs["prep_file_path"]
 
-        input_data = None
-        if "input_data" in kwargs:
-            input_data = kwargs["input_data"]
-
-        ecoclimap = None
-        if "ecoclimap" in kwargs:
-            ecoclimap = kwargs["ecoclimap"]
-            # print(ecoclimap.data)
-
         print_namelist = True
         if "print_namelist" in kwargs:
             print_namelist = kwargs["print_namelist"]
 
-        assim_input = None
-        if "assim_input" in kwargs:
-            assim_input = kwargs["assim_input"]
-        assim_output = None
-        if "assim_output" in kwargs:
-            assim_input = kwargs["assim_output"]
         pert = None
         if "pert" in kwargs:
             pert = kwargs["pert"]
@@ -260,11 +258,8 @@ class SurfexBinaryTask(AbstractTask):
         if "archive_data" in kwargs:
             archive_data = kwargs["archive_data"]
 
-        assim = None
-        if assim_input is not None or assim_output is not None:
-            assim = surfex.Assimilation(ass_input=assim_input, ass_output=assim_output)
-
-        settings = surfex.ascii2nml(json_settings)
+        # settings = surfex.ascii2nml(json_settings)
+        settings = self.namelist.get_namelist()
         self.geo.update_namelist(settings)
 
         # Create input
@@ -276,10 +271,6 @@ class SurfexBinaryTask(AbstractTask):
         lfagmap = False
         if "LFAGMAP" in settings["NAM_IO_OFFLINE"]:
             lfagmap = settings["NAM_IO_OFFLINE"]["LFAGMAP"]
-
-        # print(pgdfile, lfagmap)
-        # if input_data is not None:
-        #    print(input_data.data)
 
         if self.need_pgd:
             pgdfile = surfex.file.PGDFile(filetype, pgdfile, self.geo, input_file=pgd_file_path,
@@ -295,24 +286,24 @@ class SurfexBinaryTask(AbstractTask):
             surffile = None
 
         if self.perturbed:
-            surfex.PerturbedOffline(binary, batch, prepfile, pert, settings, ecoclimap,
-                                    pgdfile=pgdfile, surfout=surffile, input_data=input_data,
+            surfex.PerturbedOffline(binary, batch, prepfile, pert, settings, input_data,
+                                    pgdfile=pgdfile, surfout=surffile,
                                     archive_data=archive_data,
                                     print_namelist=print_namelist)
         elif self.pgd:
             pgdfile = surfex.file.PGDFile(filetype, pgdfile, self.geo, input_file=pgd_file_path,
                                           archive_file=output, lfagmap=lfagmap)
             # print(input_data.data)
-            surfex.SURFEXBinary(binary, batch, pgdfile, settings, ecoclimap,
-                                input_data=input_data, archive_data=archive_data, print_namelist=print_namelist)
+            surfex.SURFEXBinary(binary, batch, pgdfile, settings, input_data,
+                                archive_data=archive_data, print_namelist=print_namelist)
         elif self.prep:
             prepfile = surfex.PREPFile(filetype, prepfile, self.geo, archive_file=output,
                                        lfagmap=lfagmap)
-            surfex.SURFEXBinary(binary, batch, prepfile, settings, ecoclimap, pgdfile=pgdfile,
-                                input_data=input_data, archive_data=archive_data, print_namelist=print_namelist)
+            surfex.SURFEXBinary(binary, batch, prepfile, settings, input_data, pgdfile=pgdfile,
+                                archive_data=archive_data, print_namelist=print_namelist)
         else:
-            surfex.SURFEXBinary(binary, batch, prepfile, settings, ecoclimap, pgdfile=pgdfile,
-                                assim=assim, surfout=surffile, input_data=input_data, archive_data=archive_data,
+            surfex.SURFEXBinary(binary, batch, prepfile, settings, input_data, pgdfile=pgdfile,
+                                surfout=surffile, archive_data=archive_data,
                                 print_namelist=print_namelist)
 
 
@@ -330,13 +321,7 @@ class Pgd(SurfexBinaryTask):
             force = kwargs["force"]
 
         if not os.path.exists(output) or force:
-            json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
-                                                       self.system_file_paths, **kwargs)
-
-            SurfexBinaryTask.execute(self, binary, output, json_settings,
-                                     input_data=input_data,
-                                     ecoclimap=ecoclimap)
+            SurfexBinaryTask.execute(self, binary, output, **kwargs)
         else:
             print("Output already exists: ", output)
 
@@ -370,12 +355,8 @@ class Prep(SurfexBinaryTask):
                 "prep_pgdfiletype": str(prep_pgdfiletype),
                 "dtg": self.dtg
             }
-            json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
-                                                       self.system_file_paths, **kwargs)
 
-            SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
-                                     pgd_file_path=pgd_file_path)
+            SurfexBinaryTask.execute(self, binary, output, pgd_file_path=pgd_file_path, **kwargs)
         else:
             print("Output already exists: ", output)
 
@@ -391,28 +372,21 @@ class Forecast(SurfexBinaryTask):
         SurfexBinaryTask.__init__(self, task, exp, "offline", **kwargs)
 
     def execute(self, **kwargs):
-        forcing = self.get_setting("forcing", dtg=self.dtg, default=None)
         forc_zs = self.get_setting("forc_zs", default=False)
         xyz = self.exp.config.get_setting("COMPILE#XYZ")
         binary = self.bindir + "/OFFLINE" + xyz
         output = self.get_setting("output", dtg=self.dtg)
         pgd_file_path = self.get_setting("pgd_file", dtg=self.dtg)
         prep_file_path = self.get_setting("prep_file", dtg=self.dtg)
+        forcing_dir = self.get_setting("forcing_dir", dtg=self.dtg)
 
         force = False
         if "force" in kwargs:
             force = kwargs["force"]
 
         if not os.path.exists(output) or force:
-            json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.exp.config, self.input_path,
-                                                       self.system_file_paths, forc_zs=forc_zs)
-
-            # Add forcing
-            # TODO Handle format. Use object
-            input_data.data.update({"FORCING.nc": forcing})
-            SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
-                                     forc_zs=forc_zs, pgd_file_path=pgd_file_path, prep_file_path=prep_file_path)
+            SurfexBinaryTask.execute(self, binary, output, forc_zs=forc_zs, pgd_file_path=pgd_file_path,
+                                     prep_file_path=prep_file_path, forcing_dir=forcing_dir)
         else:
             print("Output already exists: ", output)
 
@@ -427,7 +401,7 @@ class PerturbedRun(SurfexBinaryTask):
         hh = self.exp.progress.dtg.strftime("%H")
         fcint = self.exp.config.get_fcint(hh, mbr=self.mbr)
         fg_dtg = self.dtg - timedelta(hours=fcint)
-        forcing = self.get_setting("forcing", dtg=fg_dtg)
+        forcing_dir = self.get_setting("forcing_dir", dtg=fg_dtg)
         forc_zs = self.get_setting("forc_zs", default=False)
         xyz = self.exp.config.get_setting("COMPILE#XYZ")
         binary = self.bindir + "/OFFLINE" + xyz
@@ -436,7 +410,6 @@ class PerturbedRun(SurfexBinaryTask):
         prep_file = self.get_setting("prep_file", dtg=fg_dtg)
         analysis_file = self.get_setting("analysis_file", dtg=fg_dtg)
 
-        # print(self.dtg, fg_dtg, self.exp.progress.get_dtgbeg(fcint))
         if fg_dtg == self.exp.progress.get_dtgbeg(fcint):
             prep_file_path = prep_file
         else:
@@ -447,16 +420,8 @@ class PerturbedRun(SurfexBinaryTask):
             force = kwargs["force"]
 
         if not os.path.exists(output) or force:
-            json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env("offline", self.exp.config, self.input_path,
-                                                       self.system_file_paths, forc_zs=forc_zs)
-
-            # Add forcing
-            # TODO Handle format. Use object
-            input_data.data.update({"FORCING.nc": forcing})
-            SurfexBinaryTask.execute(self, binary, output, json_settings, ecoclimap=ecoclimap, input_data=input_data,
-                                     forc_zs=forc_zs, pgd_file_path=pgd_file_path, prep_file_path=prep_file_path,
-                                     pert=self.pert)
+            SurfexBinaryTask.execute(self, binary, output, forc_zs=forc_zs, pgd_file_path=pgd_file_path,
+                                     prep_file_path=prep_file_path, pert=self.pert, forcing_dir=forcing_dir)
         else:
             print("Output already exists: ", output)
 
@@ -479,7 +444,6 @@ class Soda(SurfexBinaryTask):
         obsfile = self.get_setting("obsfile", default=None)
         check_existence = self.get_setting("check_existence", default=False)
 
-        oi_coeffs = self.exp.wd + "/nam/POLYNOMES_ISBA"
         climfile = self.get_setting("climfile", default=None)
         sfx_first_guess = self.get_setting("sfx_first_guess", default=None)
         ascatfile = self.get_setting("ascatfile", default=None)
@@ -502,23 +466,17 @@ class Soda(SurfexBinaryTask):
             force = kwargs["force"]
 
         if not os.path.exists(output) or force:
-            json_settings, ecoclimap, input_data = \
-                surfex.set_json_namelist_from_toml_env(self.mode, self.settings, self.input_path,
-                                                       self.system_file_paths)
-
-            assim_input = surfex.set_assimilation_input(self.dtg, json_settings, sstfile=sstfile,
-                                                        ua_first_guess=ua_first_guess,
-                                                        perturbed_runs=perturbed_runs, lsmfile=lsmfile,
-                                                        obsfile=obsfile, check_existence=check_existence,
-                                                        oi_coeffs=oi_coeffs, climfile=climfile,
-                                                        sfx_first_guess=sfx_first_guess,
-                                                        ascatfile=ascatfile)
-            SurfexBinaryTask.execute(self, binary, output, json_settings,
-                                     input_data=input_data,
-                                     ecoclimap=ecoclimap,
+            SurfexBinaryTask.execute(self, binary, output,
                                      pgd_file_path=pgd_file_path,
                                      prep_file_path=prep_file_path,
-                                     assim_input=assim_input)
+                                     dtg=self.dtg,
+                                     sstfile=sstfile,
+                                     ua_first_guess=ua_first_guess,
+                                     perturbed_runs=perturbed_runs, lsmfile=lsmfile,
+                                     obsfile=obsfile, check_existence=check_existence,
+                                     climfile=climfile,
+                                     sfx_first_guess=sfx_first_guess,
+                                     ascatfile=ascatfile)
 
         else:
             print("Output already exists: ", output)

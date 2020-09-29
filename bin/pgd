@@ -6,5 +6,5 @@ import sys
 
 if __name__ == "__main__":
 
-    args = surfex.parse_args_surfex_binary(sys.argv[1:], "pgd")
-    surfex.run_surfex_binary(args, "pgd")
+    kwargs = surfex.parse_args_surfex_binary(sys.argv[1:], "pgd")
+    surfex.run_surfex_binary("pgd", **kwargs)
