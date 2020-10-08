@@ -29,6 +29,18 @@ class Configuration(object):
             geo = "Not set"
         self.settings["GEOMETRY"].update({"GEO": geo})
 
+        # Set default file names
+        if "CPGDFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CPGDFILE": "PGD"})
+        if "CPREPFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CPREPFILE": "PREP"})
+        if "CSURFFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CSURFFILE": "SURFOUT"})
+        if "LFAGMAP" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"LFAGMAP": True})
+
+        self.settings["SURFEX"]["ASSIM"]["ISBA"]["EKF"].update({"FILE_PATTERN": "SURFOUT_PERT@PERT@"})
+
         # Find EPS information
         self.members = None
         if "FORECAST" in self.settings:
@@ -77,15 +89,15 @@ class Configuration(object):
         else:
             return False
 
-    def setting_is(self, setting, value, mbr=None):
-        if self.get_setting(setting, mbr=mbr) == value:
+    def setting_is(self, setting, value, **kwargs):
+        if self.get_setting(setting, **kwargs) == value:
             return True
         else:
             return False
 
-    def setting_is_not(self, setting, value, mbr=None):
+    def setting_is_not(self, setting, value, **kwargs):
         found = False
-        if self.get_setting(setting, mbr=mbr) == value:
+        if self.get_setting(setting, **kwargs) == value:
             found = True
 
         if found:
@@ -93,9 +105,9 @@ class Configuration(object):
         else:
             return True
 
-    def value_is_one_of(self, setting, value, mbr=None):
+    def value_is_one_of(self, setting, value, **kwargs):
         found = False
-        setting = self.get_setting(setting, mbr=mbr)
+        setting = self.get_setting(setting, **kwargs)
         # if type(setting) is not list:
         #    raise Exception("Excpected a list as input, got ", type(setting))
         for s in setting:
@@ -103,17 +115,17 @@ class Configuration(object):
                 found = True
         return found
 
-    def value_is_not_one_of(self, setting, value, mbr=None):
+    def value_is_not_one_of(self, setting, value, **kwargs):
 
-        found = self.value_is_one_of(setting, value, mbr=mbr)
+        found = self.value_is_one_of(setting, value, **kwargs)
         if found:
             return False
         else:
             return True
 
-    def setting_is_one_of(self, setting, values, mbr=None):
+    def setting_is_one_of(self, setting, values, **kwargs):
         found = False
-        setting = self.get_setting(setting, mbr=mbr)
+        setting = self.get_setting(setting, **kwargs)
         if type(values) is not list:
             raise Exception("Excpected a list as input, got ", type(values))
         for v in values:
@@ -121,22 +133,37 @@ class Configuration(object):
                 found = True
         return found
 
-    def setting_is_not_one_of(self, setting, values, mbr=None):
+    def setting_is_not_one_of(self, setting, values, **kwargs):
 
-        found = self.setting_is_one_of(setting, values, mbr=mbr)
+        found = self.setting_is_one_of(setting, values, **kwargs)
         if found:
             return False
         else:
             return True
 
-    def get_setting(self, setting, mbr=None, sep="#", abort=True):
+    def get_setting(self, setting, **kwargs):
+        mbr = None
+        if mbr in kwargs:
+            mbr = kwargs["mbr"]
+        sep = "#"
+        if "sep" in kwargs:
+            sep = kwargs["sep"]
+        abort = True
+        if "abort" in kwargs:
+            abort = kwargs["abort"]
+        default = None
+        if "default" in kwargs:
+            default = kwargs["default"]
         if mbr is None:
             settings = self.settings
         else:
-            if self.members is not None and str(mbr) in self.members:
-                settings = self.member_settings[str(mbr)]
+            if self.members is not None:
+                if str(mbr) in self.members:
+                    settings = self.member_settings[str(mbr)]
+                else:
+                    raise Exception("Not a valid member: " + str(mbr))
             else:
-                raise Exception("Not a valid member: " + str(mbr))
+                raise Exception("No members found")
 
         if sep is None:
             keys = [setting]
@@ -148,10 +175,14 @@ class Configuration(object):
             if len(keys) > 1:
                 for key in keys[1:]:
                     if key in this_setting:
-                        # print(type(this_setting[key]))
                         this_setting = this_setting[key]
+                        # Time information
+                        this_setting = surfex.SystemFilePaths.substitute_string(this_setting)
+                        this_setting = surfex.SystemFilePaths.parse_setting(this_setting, **kwargs)
                     else:
-                        if abort:
+                        if default is not None:
+                            this_setting = default
+                        elif abort:
                             raise KeyError("Key not found " + key)
                         else:
                             this_setting = None
@@ -337,57 +368,22 @@ class Configuration(object):
         return expanded_hh_list, expanded_ll_list
 
 
-def process_merged_settings(merged_settings, host=None, stream=None, system=None):
-
-    # Set default system values if system has been defined
-    # print(self.system)
-    if system is not None:
-        if host is None:
-            raise Exception("You must set host")
-
-        if "SYSTEM" not in merged_settings:
-            merged_settings.update({"SYSTEM": {}})
-        if "BINDIR" not in merged_settings["SYSTEM"]:
-            merged_settings["SYSTEM"].update({"BINDIR": system.get_var("SFX_EXP_DATA", host,
-                                                                       stream=stream) + "/bin"})
-        if "CLIMDIR" not in merged_settings["SYSTEM"]:
-            merged_settings["SYSTEM"].update({"CLIMDIR": system.get_var("SFX_EXP_DATA", host,
-                                                                        stream=stream) + "/climate"})
-        if "ARCHIVE_ROOT" not in merged_settings["SYSTEM"]:
-            merged_settings["SYSTEM"].update({"ARCHIVE_ROOT": system.get_var("SFX_EXP_DATA", host,
-                                                                             stream=stream) + "/archive/"})
-        if "ARCHIVE_PATTERN" not in merged_settings["SYSTEM"]:
-            merged_settings["SYSTEM"].update({"ARCHIVE_PATTERN": merged_settings["SYSTEM"]["ARCHIVE_ROOT"] +
-                                              "/@YYYY@/@MM@/@DD@/@HH@"})
-        if "WRK_PATTERN" not in merged_settings["SYSTEM"]:
-            merged_settings["SYSTEM"].update({"WRK_PATTERN": system.get_var("SFX_EXP_DATA", host,
-                                                                            stream=stream) + "/@YMD@_@HH@"})
+def process_merged_settings(merged_settings):
 
     merged_member_settings = {}
     # Write member settings
     members = None
-    if "ENSMSEL" in merged_settings["FORECAST"]:
-        members = list(merged_settings["FORECAST"]["ENSMSEL"])
+    if "FORECAST" in merged_settings:
+        if "ENSMSEL" in merged_settings["FORECAST"]:
+            members = list(merged_settings["FORECAST"]["ENSMSEL"])
 
     # print(members, type(members), len(members))
     member_settings = {}
     if members is not None:
         for mbr in members:
-            member3 = "{:03d}".format(int(mbr))
             toml_settings = copy.deepcopy(merged_settings)
             member_dict = get_member_settings(merged_member_settings, mbr)
             toml_settings = merge_toml_env(toml_settings, member_dict)
-
-            # Settings where member string is added to variable
-            toml_settings["SYSTEM"].update({"ARCHIVE_PATTERN":
-                                            merged_settings["SYSTEM"]["ARCHIVE_PATTERN"] + "/mbr" + member3})
-            toml_settings["SYSTEM"].update({"WRK_PATTERN":
-                                            merged_settings["SYSTEM"]["WRK_PATTERN"] + "/mbr" + member3})
-            toml_settings["SYSTEM"].update({"EXTRARCH":
-                                            merged_settings["SYSTEM"]["EXTRARCH"] + "/mbr" + member3})
-            toml_settings["SYSTEM"].update({"CLIMDIR":
-                                            merged_settings["SYSTEM"]["CLIMDIR"] + "/mbr" + member3})
-
             member_settings.update({str(mbr): toml_settings})
 
     return merged_settings, member_settings
@@ -592,6 +588,17 @@ class ConfigurationFromHarmonie(Configuration):
         self.settings["GEOMETRY"].update({"GEO": geo})
         # self.update_setting("GEOMETRY#GEO", geo)
         print(self.get_setting("GEOMETRY#GEO"))
+
+        # IO
+        cnmexp = os.environ["CNMEXP"]
+        self.update_setting("SURFEX#IO#CPGDFILE", "Const.Clim")
+        self.update_setting("SURFEX#IO#CPREPFILE", "ICMSH" + cnmexp + "INIT")
+        self.update_setting("SURFEX#IO#CSURFFILE", "ICMSH" + cnmexp + "@LLLL@")
+        self.update_setting("SURFEX#IO#LFAGMAP", True)
+        lselect = False
+        if os.environ["LSURFEX_SELECT"] == "yes":
+            lselect = True
+        self.update_setting("SURFEX#IO#LSELECT", lselect)
 
         #  CISBA Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
         self.update_setting("SURFEX#ISBA#SCHEME", env["CISBA"])

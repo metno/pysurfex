@@ -119,7 +119,7 @@ class FirstGuess(QualityControl):
                     debug = settings[t]["debug"]
 
         if fg_file is None or fg_var is None:
-            raise Exception("You must set he name of fg file and variable")
+            raise Exception("You must set the name of fg file and variable")
 
         self.fg_file = fg_file
         self.fg_var = fg_var

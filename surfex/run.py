@@ -275,20 +275,28 @@ class JsonInputData(InputDataToSurfexBinaries):
         for target, input_file in self.data.items():
 
             print(target, input_file)
-            command = "ln -sf"
+            print(os.path.realpath(target))
+            command = None
             if type(input_file) is dict:
                 for key in input_file:
                     print(key, input_file[key])
                     command = str(input_file[key])
                     input_file = str(key)
+                    command = command.replace("@INPUT@", input_file)
+                    command = command.replace("@TARGET@", target)
 
-            cmd = command + " " + input_file + " " + target
-            try:
-                print(cmd)
-                subprocess.check_call(cmd, shell=True)
-            except IOError:
-                print(cmd + " failed")
-                raise
+            if os.path.realpath(target) == os.path.realpath(input_file):
+                print("Target and input file is the same file")
+            else:
+                if command is None:
+                    cmd = "ln -sf " + input_file + " " + target
+                else:
+                    cmd = command
+                try:
+                    print(cmd)
+                    subprocess.check_call(cmd, shell=True)
+                except IOError:
+                    raise(cmd + " failed")
 
     def add_data(self, data):
         for key in data:

@@ -347,25 +347,28 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
     conn.commit()
 
 
-def write_obsmon_sqlite_file(args):
+def write_obsmon_sqlite_file(**kwargs):
     modes = ["total", "land", "sea"]
     stat_cols = ["nobs", "fg_bias", "fg_abs_bias", "fg_rms", "fg_dep", "fg_uncorr", "bc", "an_bias", "an_abs_bias",
                  "an_rms", "an_dep"]
 
-    dtg = args.DTG
-    an_time = datetime.strptime(dtg, "%Y%m%d%H")
-    varname = args.varname
-    dbname = args.output
+    an_time = kwargs["dtg"]
+    if isinstance(an_time, str):
+        an_time = datetime.strptime(an_time, "%Y%m%d%H")
+    dtg = an_time.strftime("%Y%m%d%H")
+    varname = kwargs["varname"]
+    dbname = kwargs["output"]
 
-    obs_titan = surfex.dataset_from_file(an_time, args.qc, skip_flags=[150])
+    qc = kwargs["qc"]
+    obs_titan = surfex.dataset_from_file(an_time, qc, skip_flags=[150])
 
     conn = open_db(dbname)
     create_db(conn, modes, stat_cols)
     cache = surfex.Cache(False, 3600)
-    fg_file = args.fg_file
-    fg_var = args.file_var
-    an_file = args.an_file
-    an_var = args.file_var
+    fg_file = kwargs["fg_file"]
+    fg_var = kwargs["fg_var"]
+    an_file = kwargs["an_file"]
+    an_var = kwargs["an_var"]
 
     # Only first guess file implemented at the moment
     geo_in, validtime, an_field, glafs, gelevs = surfex.read_first_guess_netcdf_file(an_file, an_var)
@@ -396,7 +399,7 @@ def write_obsmon_sqlite_file(args):
         fg_dep.append(obs_titan.values[o] - fg_interpolated_field[o])
         an_dep.append(obs_titan.values[o] - an_interpolated_field[o])
 
-    obs_titan = surfex.dataset_from_file(an_time, args.qc, skip_flags=[150, 199], fg_dep=fg_dep, an_dep=an_dep)
+    obs_titan = surfex.dataset_from_file(an_time, qc, skip_flags=[150, 199], fg_dep=fg_dep, an_dep=an_dep)
 
     populate_usage_db(conn, dtg, varname, obs_titan)
     populate_obsmon_db(conn, dtg, calculate_statistics(obs_titan, modes, stat_cols),

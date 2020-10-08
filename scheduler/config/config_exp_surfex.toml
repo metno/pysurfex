@@ -14,6 +14,7 @@ CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCI
 XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
 XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
 LSPLIT_PATCH = true                 # Split patches into separate variables in output files
+LSELECT = true                      # Only write selected diagnostics
 
 [SURFEX.COVER]                      # Land cover information
 YCOVER = "ECOCLIMAP_2_5_p.dir"      # Version of ECOCLIMAP for surfex (1,2,SG)

@@ -92,7 +92,7 @@ class SurfexSurfIO(object):
 class PGDFile(SurfexSurfIO):
     def __init__(self, csurf_filetype, cpgdfile, geo, input_file=None, symlink=True, archive_file=None,
                  lfagmap=False, masterodb=False):
-        print(cpgdfile, csurf_filetype)
+        print(cpgdfile, csurf_filetype, masterodb)
 
         cpgdfile = get_surfex_io_object(cpgdfile, filetype="surf", geo=geo, fileformat=csurf_filetype,
                                         lfagmap=lfagmap, masterodb=masterodb)
@@ -248,14 +248,19 @@ def guess_file_format(fname, ftype=None):
 
 class AsciiSurfexFile(SurfexIO):
 
-    def __init__(self, filename, geo=None):
+    def __init__(self, filename, **kwargs):
 
+        suffix = SurfFileTypeExtension("ASCII", **kwargs).suffix
         self.filename = filename
+
+        geo = None
+        if "geo" in kwargs:
+            geo = kwargs["geo"]
         if geo is None:
             geo = self.get_geo()
 
-        if not filename.endswith(".txt"):
-            filename = filename + ".txt"
+        if not filename.endswith(suffix):
+            filename = filename + suffix
 
         SurfexIO.__init__(self, filename, geo, "txt")
 
@@ -440,10 +445,15 @@ class AsciiSurfexFile(SurfexIO):
 
 class NCSurfexFile(SurfexIO):
 
-    def __init__(self, filename, geo=None):
-        print(filename)
-        if not filename.endswith(".nc"):
-            filename = filename + ".nc"
+    def __init__(self, filename, **kwargs):
+        suffix = SurfFileTypeExtension("NC", **kwargs).suffix
+
+        if not filename.endswith(suffix):
+            filename = filename + suffix
+
+        geo = None
+        if "geo" in kwargs:
+            geo = kwargs["geo"]
 
         if geo is None:
             self.filename = filename
@@ -580,20 +590,20 @@ class NCSurfexFile(SurfexIO):
 
 class FaSurfexFile(SurfexIO):
 
-    def __init__(self, filename, geo=None, lfagmap=True, masterodb=False):
+    def __init__(self, filename, **kwargs):
 
-        if lfagmap:
-            extension = "sfx"
-            if not filename.endswith(".sfx"):
-                # Files are written with .fa outside masterodb
-                if masterodb:
-                    filename = filename + ".sfx"
-                else:
-                    filename = filename + ".fa"
-        else:
-            extension = "fa"
-            if not filename.endswith(".fa"):
-                filename = filename + ".fa"
+        geo = None
+        if "geo" in kwargs:
+            geo = kwargs["geo"]
+        lfagmap = True
+        if "lfagmap" in kwargs:
+            lfagmap = kwargs["lfagmap"]
+
+        extension = SurfFileTypeExtension("FA", **kwargs)
+        extension_suffix = extension.suffix
+
+        if not filename.endswith(extension_suffix):
+            filename = filename + extension_suffix
 
         # if geo is None:
         #    geo = self.get_geo()
@@ -631,6 +641,36 @@ class FaSurfexFile(SurfexIO):
         points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
                                                           cache=cache)
         return points, interpolator
+
+
+class SurfFileTypeExtension(object):
+
+    def __init__(self, csurf_filetype, **kwargs):
+        masterodb = False
+        if "masterodb" in kwargs:
+            masterodb = kwargs["masterodb"]
+        lfagmap = True
+        if "lfagmap" in kwargs:
+            lfagmap = kwargs["lfagmap"]
+
+        suffix = None
+        extension = ""
+        if csurf_filetype.lower() == "nc":
+            extension = "nc"
+        elif csurf_filetype.lower() == "ascii":
+            extension = "txt"
+        elif csurf_filetype.lower() == "fa":
+            if lfagmap:
+                extension = "sfx"
+                if not masterodb:
+                    suffix = "fa"
+            else:
+                extension = "fa"
+        if suffix is None:
+            suffix = "." + extension
+
+        self.type = extension
+        self.suffix = suffix
 
 
 class NetCDFSurfexFile(SurfexIO):

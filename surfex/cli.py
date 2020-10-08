@@ -184,7 +184,11 @@ def parse_args_qc2obsmon(argv):
     parser.add_argument('--file_var', type=str, help="File variable", required=True)
     parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
 def parse_args_create_surfex_json_namelist(argv):
@@ -315,6 +319,7 @@ def create_surfex_json_input(**kwargs):
 
     program = kwargs["program"]
     indent = kwargs["indent"]
+    del(kwargs["indent"])
     system_settings = kwargs["system"]
     name_of_input_files = kwargs["files"]
     dtg = None
@@ -336,14 +341,19 @@ def create_surfex_json_input(**kwargs):
     else:
         raise FileNotFoundError("System settings not found " + system_settings)
 
+    config = kwargs["config"]
+    system_file_paths = kwargs["system_file_paths"]
+    del(kwargs["config"])
+    del(kwargs["system_file_paths"])
+
     if program == "pgd":
-        input_for_surfex_json = surfex.PgdInputData(**kwargs)
+        input_for_surfex_json = surfex.PgdInputData(config, system_file_paths, **kwargs)
     elif program == "prep":
-        input_for_surfex_json = surfex.PrepInputData(**kwargs)
+        input_for_surfex_json = surfex.PrepInputData(config, system_file_paths, **kwargs)
     elif program == "offline":
-        input_for_surfex_json = surfex.OfflineInputData(**kwargs)
+        input_for_surfex_json = surfex.OfflineInputData(config, system_file_paths, **kwargs)
     elif program == "soda":
-        input_for_surfex_json = surfex.SodaInputData(**kwargs)
+        input_for_surfex_json = surfex.SodaInputData(config, system_file_paths, **kwargs)
     else:
         raise NotImplementedError
 
@@ -642,24 +652,32 @@ def parse_args_surfex_binary(argv, mode):
     parser = ArgumentParser(description=desc)
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
-    # parser.add_argument('--json', '-j', type=str, nargs="?", required=True, help="A JSON file with run options")
     if need_pgd:
         parser.add_argument('--pgd', type=str, nargs="?", required=True, help="Name of the PGD file")
     if need_prep:
         parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
+    if mode == "prep":
+        parser.add_argument('--prep_file', required=False, default=None, nargs='?')
+        parser.add_argument('--prep_filetype', required=False, default=None, nargs='?')
+        parser.add_argument('--prep_pgdfile', required=False, default=None, nargs='?')
+        parser.add_argument('--prep_pgdfiletype', required=False, default=None, nargs='?')
+    if mode == "offline" or mode == "perturbed":
+        parser.add_argument('--forc_zs', action="store_true", default=False, help="Set model ZS to forcing ZS")
+        parser.add_argument('--forcing_dir', required=False, default=None, nargs='?')
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
-    parser.add_argument('--harmonie', action="store_true", help="Domain in harmonie definition")
+    parser.add_argument('--harmonie', action="store_true",
+                        help="Surfex configuration created from Harmonie environment")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
+    parser.add_argument('--masterodb', action="store_true", default=True, help="Input file written by msterodb")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
     parser.add_argument('--config', '-c', required=True, nargs='?')
-    parser.add_argument('--system_file_paths', '-s', required=True, nargs='?')
+    parser.add_argument('--system_file_paths', '-s', required=True, nargs='?', help="Input file paths on your system")
     parser.add_argument('--namelist_path', '-n', required=True, nargs='?')
-    parser.add_argument('--domain', '-d', type=str, required=True, help="JSON file with domain")
+    parser.add_argument('--domain', type=str, required=True, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=True)
     parser.add_argument('--dtg', type=str, required=False, default=None)
     if pert:
         parser.add_argument('--pert', '-p', type=int, required=False, default=None)
-    # parser.add_argument('--input', '-i', type=str, required=False, default=None, nargs='?', help="JSON file with input")
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
 
@@ -689,12 +707,17 @@ def run_surfex_binary(mode, **kwargs):
             config = surfex.Configuration(input_data, {})
     else:
         raise FileNotFoundError("File not found: " + config)
+    del(kwargs["config"])
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
         system_file_paths = surfex.SystemFilePathsFromFile(system_file_paths)
     else:
         raise FileNotFoundError("File not found: " + system_file_paths)
+    del(kwargs["system_file_paths"])
+
+    if "forcing_dir" in kwargs:
+        system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
     pgd = False
     prep = False
@@ -705,39 +728,37 @@ def run_surfex_binary(mode, **kwargs):
         pgd = True
         need_pgd = False
         need_prep = False
-        input_data = surfex.PgdInputData(config=config, system_file_paths=system_file_paths)
+        input_data = surfex.PgdInputData(config, system_file_paths, **kwargs)
     elif mode == "prep":
         prep = True
         need_prep = False
-        input_data = surfex.PrepInputData(config=config, system_file_paths=system_file_paths)
+        input_data = surfex.PrepInputData(config, system_file_paths, **kwargs)
     elif mode == "offline":
-        input_data = surfex.OfflineInputData(config=config, system_file_paths=system_file_paths)
+        input_data = surfex.OfflineInputData(config, system_file_paths, **kwargs)
     elif mode == "soda":
-        input_data = surfex.SodaInputData(config=config, system_file_paths=system_file_paths)
+        input_data = surfex.SodaInputData(config, system_file_paths, **kwargs)
     elif mode == "perturbed":
         perturbed = True
-        input_data = surfex.OfflineInputData(config=config, system_file_paths=system_file_paths)
+        input_data = surfex.OfflineInputData(config, system_file_paths, **kwargs)
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
     binary = kwargs["binary"]
     rte = kwargs["rte"]
     wrapper = kwargs["wrapper"]
-    # json_file = kwargs["json"]
     namelist_path = kwargs["namelist_path"]
     force = kwargs["force"]
     output = kwargs["output"]
     domain = kwargs["domain"]
     archive = kwargs["archive"]
     print_namelist = kwargs["print_namelist"]
+    masterodb = kwargs["masterodb"]
+    print("masterodb ", masterodb)
 
-    args = {}
     if "dtg" in kwargs:
-        if kwargs["dtg"] is not None:
+        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
-            args.update({"dtg": dtg})
-
-    # TODO prep input files and assim input files
+            kwargs.update({"dtg": dtg})
 
     pgd_file_path = None
     if need_pgd:
@@ -770,7 +791,7 @@ def run_surfex_binary(mode, **kwargs):
 
     if not os.path.exists(output) or force:
 
-        my_settings = surfex.BaseNamelist(mode, config, namelist_path, **args).get_namelist()
+        my_settings = surfex.BaseNamelist(mode, config, namelist_path, **kwargs).get_namelist()
         my_geo.update_namelist(my_settings)
 
         # Create input
@@ -784,14 +805,17 @@ def run_surfex_binary(mode, **kwargs):
 
         print(my_pgdfile, lfagmap)
         if need_pgd:
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap)
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
+                                             masterodb=masterodb)
 
         if need_prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
+                                          masterodb=masterodb)
 
         surffile = None
         if need_prep and need_pgd:
-            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
+            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
+                                       masterodb=masterodb)
 
         if perturbed:
             surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, input_data,
@@ -799,11 +823,12 @@ def run_surfex_binary(mode, **kwargs):
                                     print_namelist=print_namelist)
         elif pgd:
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path,
-                                             archive_file=output, lfagmap=lfagmap)
+                                             archive_file=output, lfagmap=lfagmap, masterodb=masterodb)
             surfex.SURFEXBinary(binary, my_batch, my_pgdfile, my_settings, input_data,
                                 archive_data=my_archive, print_namelist=print_namelist)
         elif prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output, lfagmap=lfagmap)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output, lfagmap=lfagmap,
+                                          masterodb=masterodb)
             surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, input_data, pgdfile=my_pgdfile,
                                 archive_data=my_archive, print_namelist=print_namelist)
         else:

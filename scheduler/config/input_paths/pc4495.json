@@ -1,5 +1,6 @@
 {
   "scratch": "/home/$USER/surfex-tests",
+  "assim_dir": "/home/$USER/surfex-tests",
   "oi_coeff_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "climdir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "sand_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",

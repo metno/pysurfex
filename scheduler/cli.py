@@ -305,8 +305,7 @@ def surfex_script(argv):
         # Merge config
         all_merged_settings = surfex.merge_toml_env_from_config_dicts(sfx_exp.config_files)
         host = "0"
-        merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings, host=host,
-                                                                             system=system)
+        merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
 
         # Create configuration
         config = surfex.Configuration(merged_config, member_merged_config)

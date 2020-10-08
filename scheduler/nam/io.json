@@ -1,9 +1,5 @@
 {
   "nam_io_offline": {
-    "csurf_filetype": "FA",
-    "cpgdfile": "PGD",
-    "cprepfile": "PREP",
-    "csurffile": "SURFOUT",
     "lfagmap": true,
     "lrestart": true,
     "lrestart_2m": true,

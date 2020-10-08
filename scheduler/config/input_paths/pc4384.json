@@ -1,5 +1,7 @@
 {
   "scratch": "/home/$USER/surfex-tests",
+  "assim_dir": "/home/@USER@/surfex-tests",
+  "perturbed_run_dir": "/home/@USER@/surfex-tests/PERT@PERT@",
   "oi_coeff_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "climdir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "sand_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
@@ -8,6 +10,8 @@
   "soc_sub_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "flake_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD//",
   "ecoclimap_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
+  "ecoclimap_cover_dir": "/home/trygveasp/nobackup/harmonie_input/clim_data/PGD/",
   "ecoclimap_bin_dir": "/home/trygveasp/revision_control/develop/util/offline/MY_RUN/ECOCLIMAP/",
-  "oro_dir": "/home/trygveasp/scratch/hm_home/MNWC_pysurf/climate/TRYGVE_TEST/TRYGVE_TEST/"
+  "oro_dir": "/home/trygveasp/scratch/hm_home/MNWC_pysurf/climate/TRYGVE_TEST/TRYGVE_TEST/",
+  "bin_dir": "/home/trygveasp/scratch/sfx_home/new_ana/bin/"
 }

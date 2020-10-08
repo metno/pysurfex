@@ -346,15 +346,11 @@ class System(object):
                     systemn.update({key: value})
             system.update({str(host): systemn})
 
-        # print("system")
-        # print(system)
         self.system = system
         # Check for needed variables
         for var in self.system_variables:
             for host in range(0, len(self.hosts)):
                 pass
-                # print(var)
-                # print(self.get_var(var, host))
 
     def get_var(self, var, host, stream=None):
         if var == "HOSTS":
@@ -363,12 +359,8 @@ class System(object):
             else:
                 raise Exception("Variable " + var + " not found in system")
         else:
-            # print(host)
-            # print(self.exp_name)
             os.environ.update({"EXP": self.exp_name})
-            # print(var)
             if var in self.system[str(host)]:
-                # (var, self.system[str(host)][var])
                 if self.system[str(host)][var] is None:
                     raise Exception(var + " is None!")
                 expanded_var = os.path.expandvars(self.system[str(host)][var])
@@ -395,8 +387,8 @@ class SystemFromFile(System):
 
 
 class Exp(object):
-    def __init__(self, name, wdir, rev, conf, experiment_is_locked, system=None, server=None, configuration=None,
-                 geo=None, env_submit=None,  write_config_files=False, progress=None, host="0"):
+    def __init__(self, name, wdir, rev, conf, experiment_is_locked, system_file_paths=None, system=None, server=None,
+                 configuration=None, geo=None, env_submit=None,  write_config_files=False, progress=None):
 
         self.name = name
         self.wd = wdir
@@ -406,10 +398,10 @@ class Exp(object):
         self.system = system
         self.server = server
         self.env_submit = env_submit
+        self.system_file_paths = system_file_paths
         self.progress = progress
 
         # Check existence of needed config files
-        print(self.wd, self.conf)
         config = Exp.get_config(self.wd, self.conf)
         c_files = config["config_files"]
         config_files = {}
@@ -450,8 +442,7 @@ class Exp(object):
 
         # Merge config
         all_merged_settings = surfex.merge_toml_env_from_config_dicts(self.config_files)
-        merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings, host=host,
-                                                                             system=self.system)
+        merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
 
         # Create configuration
         self.config = surfex.Configuration(merged_config, member_merged_config, geo=geo)
@@ -741,9 +732,18 @@ class ExpFromFiles(Exp):
         else:
             experiment_is_locked = False
 
+        # System
         env_system = Exp.get_file_name(wdir, "system", full_path=True)
-        # print(env_system, name)
         system = SystemFromFile(env_system, name)
+
+        # System file path
+        input_paths = self.get_file_name(wdir, "input_paths", full_path=True)
+        if os.path.exists(input_paths):
+            system_file_paths = json.load(open(input_paths, "r"))
+        else:
+            raise FileNotFoundError("System setting input paths not found " + input_paths)
+        system_file_paths = SystemFilePathsFromSystem(system_file_paths, system, host=host, stream=stream)
+
         env_submit = json.load(open(env_submit_file, "r"))
 
         logfile = system.get_var("SFX_EXP_DATA", "0") + "/ECF.log"
@@ -752,13 +752,13 @@ class ExpFromFiles(Exp):
         domain_file = self.get_file_name(wdir, "domain", full_path=True)
         geo = surfex.geo.get_geo_object(json.load(open(domain_file, "r")))
 
+        print("progress")
         if progress is None:
             progress = ProgressFromFile(self.get_file_name(wdir, "progress", full_path=True),
                                         self.get_file_name(wdir, "progressPP", full_path=True))
 
-        # print("name", name)
-        Exp.__init__(self, name, wdir, rev, conf, experiment_is_locked, system=system, server=server,
-                     env_submit=env_submit, geo=geo, progress=progress, host=host)
+        Exp.__init__(self, name, wdir, rev, conf, experiment_is_locked, system_file_paths=system_file_paths,
+                     system=system, server=server, env_submit=env_submit, geo=geo, progress=progress)
 
     def set_experiment_is_locked(self, stream=None):
         experiment_is_locked_file = Exp.get_experiment_is_locked_file(self.wd, stream=stream, full_path=True)
@@ -1067,6 +1067,66 @@ class Domain(surfex.ConfProj):
                 return False
         else:
             return True
+
+
+class SystemFilePathsFromSystem(surfex.SystemFilePaths):
+
+    """
+
+    Also set SFX_EXP system variables (File stucture/ssh etc)
+
+    """
+    def __init__(self, paths, system, **kwargs):
+        surfex.SystemFilePaths.__init__(self, paths)
+        host = "0"
+        if "host" in kwargs:
+            host = kwargs["host"]
+        stream = None
+        if "stream" in kwargs:
+            stream = kwargs["stream"]
+
+        # override paths from system file
+        sfx_data = self.substitute_string(system.get_var("SFX_EXP_DATA", host=host, stream=stream))
+        sfx_lib = self.substitute_string(system.get_var("SFX_EXP_LIB", host=host, stream=stream))
+        os.makedirs(sfx_data, exist_ok=True)
+        os.makedirs(sfx_lib, exist_ok=True)
+        self.system_variables = {"SFX_EXP_DATA": sfx_data, "SFX_EXP_LIB": sfx_lib}
+
+        self.add_system_file_path("sfx_exp_data", sfx_data)
+        self.add_system_file_path("sfx_exp_lib", sfx_lib)
+        self.add_system_file_path("archive_dir", sfx_data + "/archive/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
+                                  check_parsing=False)
+        self.add_system_file_path("extrarch_dir", sfx_data + "/archive/extract/@EEE@/", check_parsing=False)
+        self.add_system_file_path("climdir", sfx_data + "/climate/@EEE@/", check_parsing=False)
+        try:
+            bindir = self.get_system_path("bin_dir")
+        except Exception:
+            bindir = sfx_data + "/bin/"
+        self.add_system_file_path("bin_dir", bindir, check_parsing=False)
+        self.add_system_file_path("wrk_dir", sfx_data + "/@YYYY@@MM@@DD@_@HH@/@EEE@/", check_parsing=False)
+        self.add_system_file_path("forcing_dir", sfx_data + "/forcing/@YYYY@@MM@@DD@@HH@/@EEE@/", check_parsing=False)
+
+        climdir = self.get_system_path("climdir", check_parsing=False)
+        self.add_system_file_path("pgd_dir", climdir, check_parsing=False)
+        archive = self.get_system_path("archive_dir", check_parsing=False)
+        self.add_system_file_path("prep_dir", archive, check_parsing=False)
+        self.add_system_file_path("obs_dir", sfx_data + "/archive/observations/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
+                                  check_parsing=False)
+        first_guess_dir = self.get_system_path("archive_dir", check_parsing=False)
+        self.add_system_file_path("first_guess_dir", first_guess_dir, check_parsing=False)
+
+
+class SystemFilePathsFromSystemFile(SystemFilePathsFromSystem):
+
+    """
+
+    Also set SFX_EXP system variables (File stucture/ssh etc)
+
+    """
+    def __init__(self, system_file_paths, system, name, **kwargs):
+        system_file_paths = json.load(open(system_file_paths, "r"))
+        system = SystemFromFile(system, name)
+        SystemFilePathsFromSystem.__init__(self, system_file_paths, system, **kwargs)
 
 
 def init_run(exp, stream=None):

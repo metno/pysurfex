@@ -28,30 +28,10 @@ class RunTestNC(unittest.TestCase):
 
         # PGD
         task = "pgd"
-        # workdir = rootdir + "/test_run_conf_proj_nc"
-        # surfex.create_working_dir(workdir)
 
-        if "SYSTEM_FILE" in os.environ and os.environ["SYSTEM_FILE"] != "":
-            system = os.environ["SYSTEM_FILE"]
-        else:
-            system = "system.json"
-            json.dump({"climdir": "none"}, open(system, "w"))
-
-        argv = [
-            "-c", config_file,
-            "-p", "scheduler/nam/",
-            task
-        ]
-        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(**kwargs)
-
-        argv = [
-            "-c", config_file,
-            "-s", system,
-            task
-        ]
-        kwargs = surfex.parse_args_create_surfex_json_input(argv)
-        surfex.create_surfex_json_input(**kwargs)
+        system = "scheduler/config/input_paths/pc4384.json"
+        #if "SYSTEM_FILE" in os.environ and os.environ["SYSTEM_FILE"] != "":
+        #    system = os.environ["SYSTEM_FILE"]
 
         output = "PGD_TEST_" + grid + extension
         if "PGD_BINARY" in os.environ and os.environ["PGD_BINARY"] != "":
@@ -62,46 +42,21 @@ class RunTestNC(unittest.TestCase):
             pgd = "testdata/PGD_CONF_PROJ.nc"
 
         argv = [
-            "-j", "options.json",
             "-w", "",
-            "-d", domain,
-            "-i", "surfex_input_files.json",
+            "-c", config_file,
+            "--domain", domain,
+            "-s", system,
+            "-n", "scheduler/nam/",
             "-r", rte,
             "-f",
             "-o", output,
             binary
         ]
-        args = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(args, task)
+        kwargs = surfex.parse_args_surfex_binary(argv, task)
+        surfex.run_surfex_binary(task, **kwargs)
 
         # PREP
         task = "prep"
-
-        argv = [
-            "-c", config_file,
-            "-p", "scheduler/nam/",
-            "--prep.file", "scheduler/nam/prep_from_namelist_values.json",
-            "--prep.filetype", "json",
-            "--dtg", "2020022000",
-            task
-        ]
-
-        print(argv)
-        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(**kwargs)
-
-        argv = [
-            "-c", config_file,
-            "--prep.file", "scheduler/nam/prep_from_namelist_values.json",
-            "--prep.filetype", "json",
-            "--dtg", "2020022000",
-            "-s", system,
-            task
-        ]
-
-        print(argv)
-        kwargs = surfex.parse_args_create_surfex_json_input(argv)
-        surfex.create_surfex_json_input(**kwargs)
 
         output = "PREP_TEST_" + grid + extension
         if "PREP_BINARY" in os.environ and os.environ["PREP_BINARY"] != "":
@@ -112,73 +67,56 @@ class RunTestNC(unittest.TestCase):
             prep = "testdata/PREP_CONF_PROJ.nc"
 
         argv = [
-            "-j", "options.json",
             "-w", "",
-            "-d", domain,
+            "--domain", domain,
             "--pgd", pgd,
-            "-i", "surfex_input_files.json",
+            "--prep_file", "scheduler/nam/prep_from_namelist_values.json",
+            "--prep_filetype", "json",
+            "--dtg", "2020022000",
+            "-c", config_file,
+            "-s", system,
+            "-n", "scheduler/nam/",
             "-r", rte,
             "-f",
             "-o", output,
             binary
         ]
-        args = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(args, task)
+        kwargs = surfex.parse_args_surfex_binary(argv, task)
+        surfex.run_surfex_binary(task, **kwargs)
 
         # OFFLINE
         task = "offline"
-
-        argv = [
-            "-c", config_file,
-            "-p", "scheduler/nam/",
-            "--forc_zs",
-            task
-        ]
-        kwargs = surfex.parse_args_create_surfex_json_namelist(argv)
-        surfex.create_surfex_json_namelist(**kwargs)
-
-        argv = [
-            "-c", config_file,
-            "-s", system,
-            task
-        ]
-        kwargs = surfex.parse_args_create_surfex_json_input(argv)
-        surfex.create_surfex_json_input(**kwargs)
 
         if "OFFLINE_BINARY" in os.environ and os.environ["OFFLINE_BINARY"] != "":
             binary = os.environ["OFFLINE_BINARY"]
         else:
             binary = "touch SURFOUT" + extension
 
-        fh = open("surfex_input_files.json", "w")
-        fh.write('{"FORCING.nc": "testdata/FORCING.nc"}')
-        fh.close()
-
         output = "OFFLINE_TEST_" + grid + extension
         argv = [
-            "-j", "options.json",
             "-w", "",
-            "-d", domain,
+            "--domain", domain,
             "--pgd", pgd,
             "--prep", prep,
-            "-i", "surfex_input_files.json",
+            "-c", config_file,
+            "-s", system,
+            "-n", "scheduler/nam/",
             "-r", rte,
             "-f",
             "-o", output,
+            "--forc_zs",
+            "--forcing_dir", "testdata",
             binary
         ]
-        args = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(args, task)
-
-        # os.chdir("..")
-        # surfex.clean_working_dir()
+        kwargs = surfex.parse_args_surfex_binary(argv, task)
+        surfex.run_surfex_binary(task, **kwargs)
 
     def test_input_json_from_file(self):
 
         fname = "test_in" + str(os.getpid())
         fh = open(fname, "w")
         # {"testfile":{ "fname": "ln -sf"}}}
-        fh.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname + "\": \"ln -sf\"}}")
+        fh.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname + "\": \"ln -sf @INFILE@ @TARGET@\"}}")
         fh.close()
 
         my_input = surfex.JsonInputDataFromFile(fname)

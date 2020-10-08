@@ -49,8 +49,9 @@ class GeoTest(unittest.TestCase):
     def test_geo_conf_proj(self):
 
         my_geo = surfex.geo.get_geo_object(self.domain_conf_proj)
+
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_settings = surfex.ascii2nml(json_settings)
+        my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
         my_geo.update_namelist(my_settings)
         self.assertEqual(self.domain_conf_proj["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         print(my_geo.identifier())
@@ -91,7 +92,7 @@ class GeoTest(unittest.TestCase):
         }
         my_geo = surfex.get_geo_object(domain)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_settings = surfex.ascii2nml(json_settings)
+        my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
         my_settings = my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         self.assertEqual(my_settings["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
@@ -134,7 +135,7 @@ class GeoTest(unittest.TestCase):
         }
         my_geo = surfex.get_geo_object(domain)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_settings = surfex.ascii2nml(json_settings)
+        my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
         my_settings = my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         self.assertEqual(my_settings["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
@@ -163,7 +164,7 @@ class GeoTest(unittest.TestCase):
         }
         my_geo = surfex.get_geo_object(domain)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_settings = surfex.ascii2nml(json_settings)
+        my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
         my_settings = my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         self.assertEqual(my_settings["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
@@ -197,7 +198,7 @@ class GeoTest(unittest.TestCase):
         }
         my_geo = surfex.geo.IGN(domain, recreate=True)
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-        my_settings = surfex.ascii2nml(json_settings)
+        my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
         my_settings = my_geo.update_namelist(my_settings)
         self.assertEqual(domain["nam_pgd_grid"]["cgrid"], my_geo.cgrid)
         self.assertEqual(my_settings["nam_pgd_grid"]["cgrid"], my_geo.cgrid)

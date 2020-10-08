@@ -241,7 +241,15 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         surfex.obs.ObservationSet.__init__(self, observations, label=label)
 
     @staticmethod
-    def td2rh(td, t):
+    def td2rh(td, t, kelvin=True):
+        if kelvin:
+            if td < 100:
+                raise Exception("Dew point temperature is probably not Kelvin")
+            if t < 100:
+                raise Exception("Temperature is probably not Kelvin")
+            td = td - 273.15
+            t = t - 273.15
+
         rh = 100 * (exp((17.625 * td) / (243.04 + td)) / exp((17.625 * t) / (243.04 + t)))
         if rh > 110 or rh < 1:
             print("\nWARNING: Calculated rh to " + str(rh) + " from " + str(td) + " and " + str(t) +

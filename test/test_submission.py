@@ -39,7 +39,7 @@ class TestSubmit(unittest.TestCase):
 
     stream = None
     all_merged_settings = surfex.merge_toml_env_from_config_dicts(sfx_exp.config_files)
-    merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings, "0")
+    merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
     config = surfex.Configuration(merged_config, member_merged_config)
 
     ecf_name = "/" + exp + "/Forecasting/Forecast"

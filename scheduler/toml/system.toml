@@ -1,7 +1,0 @@
-[system]
-sfx_data = "/home/@USER@/scratch/hm_home/sandbox/"
-lib = "/home/@USER@/scratch/hm_home/sandbox/lib@STREAM@"
-bindir = /home/@USER@/scratch/hm_home/sandbox/bin"
-wrk = "/home/@USER@/scratch/hm_home/sandbox/@YYYY@@MM@@DD@_@HH@"
-archive_root = "/home/@USER@/scratch/hm_home/sandbox/@YYYY@/@MM@/@DD@/@HH@"
-

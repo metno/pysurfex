@@ -230,6 +230,7 @@ class NetcdfVariable(Variable):
                         self.file_handler.fname = fname
 
             id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+            print(id_str)
             field, interpolator = self.file_handler.points(var_name, geo, level=level, validtime=validtime,
                                                            interpolation=int_type, units=units, cache=cache)
             # Rotate wind to geographic if requested

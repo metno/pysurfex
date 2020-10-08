@@ -28,6 +28,24 @@ ANASURF = "gridpp"
 # "/nobackup/prod2/cooper/BD_archive/2020/09/16/00/fc20200916_00+003
 PREP_INPUT_FILE = "@SFX_EXP_LIB@/nam/prep_from_namelist_values.json"
 PREP_INPUT_FILETYPE = "json"
+PREP_PGDFILE = ""
+PREP_PGDFILETYPE = ""
+
+
+[INITIAL_CONDITIONS.FG4OI]
+INPUTFILE = "https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"
+FILEFORMAT = "netcdf"
+CONVERTER = "none"
+
+[INITIAL_CONDITIONS.FG4OI.air_temperature_2m]
+
+[INITIAL_CONDITIONS.FG4OI.relative_humidity_2m]
+
+[INITIAL_CONDITIONS.FG4OI.surface_snow_thickness]
+CONVERTER = "sweclim"
+
+[INITIAL_CONDITIONS.FG4OI.altitude]
+CONVERTER = "phi2m"
 
 [FORECAST]
 #####################################################################################################
@@ -36,6 +54,8 @@ PREP_INPUT_FILETYPE = "json"
 
 PHYSICS = "arome"
 ENSMSEL = []                            # Ensemble members to run (list with member numbers)
+
+FORC_ZS = true
 
 # **** Postprocessing/output ****
 TFLAG = "h"                             # Time flag for model output. (h|min)

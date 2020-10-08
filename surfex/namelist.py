@@ -1,25 +1,212 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import surfex
 import yaml
 import f90nml
 
 
 class SystemFilePaths(object):
+
+    """
+    Mathes files and paths depending on possibly system specific settings.
+    User can provide a default system dir to nest dependencies.
+    """
+
     def __init__(self, system_file_paths):
         self.system_file_paths = system_file_paths
+        self.system_variables = None
 
-    def get_system_path(self, dtype, default=None):
-        # print(dtype)
+    def get_system_path(self, dtype, **kwargs):
+        default_dir = None
+        if "default_dir" in kwargs:
+            default_dir = kwargs["default_dir"]
+        verbosity = 0
+        if "verbosity" in kwargs:
+            verbosity = kwargs["verbosity"]
+        if verbosity > 0:
+            print("Search for: " + dtype + " Default: " + str(default_dir))
+
+        data_dir = self.find_matching_data_dir(dtype, **kwargs)
+        if data_dir is None:
+            if default_dir is None:
+                raise Exception("No system path found for " + dtype)
+            else:
+                data_dir = self.find_matching_data_dir(default_dir, **kwargs)
+        return data_dir
+
+    def find_matching_data_dir(self, dtype, **kwargs):
+        default_dir = None
+        if "default_dir" in kwargs:
+            default_dir = kwargs["default_dir"]
+        verbosity = 0
+        if "verbosity" in kwargs:
+            verbosity = kwargs["verbosity"]
+        check_existence = False
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
+        command = None
         for p in self.system_file_paths:
-            # print(dtype, p)
             if p == dtype:
-                return self.system_file_paths[p]
-        if default is None:
-            raise Exception("No system path found for " + dtype)
-        else:
-            return default
+                if verbosity > 3:
+                    print("Found " + p, type(p), self.system_file_paths)
+                data_dir = self.system_file_paths[p]
+                # If dict, also a command is attached
+                if isinstance(data_dir, dict):
+                    for key in data_dir:
+                        print(key, data_dir[key])
+                        command = str(data_dir[key])
+                        data_dir = str(key)
+                if verbosity > 2:
+                    print("Data directory before parsing is is: " + data_dir)
+                if not isinstance(data_dir, str):
+                    raise Exception("data dir is not a string!")
+                data_dir = self.parse_setting(self.substitute_string(data_dir), **kwargs)
+                # Add command to data_dir again
+                if command is not None:
+                    data_dir = {data_dir: command}
+                if verbosity > 2:
+                    print("Data directory after parsing is is: " + data_dir)
+                if check_existence:
+                    if not os.path.exists(data_dir) and default_dir is None:
+                        raise NotADirectoryError(data_dir)
+                return data_dir
+        return None
+
+    def get_system_file(self, dtype, fname, **kwargs):
+        verbosity = 0
+        if "verbosity" in kwargs:
+            verbosity = kwargs["verbosity"]
+        if verbosity > 5:
+            print("get_system_file", dtype, fname, kwargs)
+        command = None
+        path = self.get_system_path(dtype, **kwargs)
+        # If dict, also a command is attached
+        if isinstance(path, dict):
+            for key in path:
+                command = str(path[key])
+                path = str(key)
+        fname = self.parse_setting(fname, **kwargs)
+        fname = self.substitute_string(fname)
+        fname = path + "/" + fname
+        check_existence = False
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+        if check_existence:
+            if not os.path.exists(fname):
+                raise FileNotFoundError(fname)
+        if command is not None:
+            fname = {fname: command}
+        return fname
+
+    @staticmethod
+    def parse_setting(setting, **kwargs):
+        check_parsing = True
+        # Check on arguments
+        if kwargs is not None and isinstance(setting, str):
+            validtime = None
+            if "validtime" in kwargs:
+                validtime = kwargs["validtime"]
+            mbr = None
+            if "mbr" in kwargs:
+                mbr = kwargs["mbr"]
+            basedtg = None
+            if "basedtg" in kwargs:
+                basedtg = kwargs["basedtg"]
+            tstep = None
+            if "tstep" in kwargs:
+                tstep = kwargs["tstep"]
+            pert = None
+            if "pert" in kwargs:
+                pert = kwargs["pert"]
+            var = None
+            if "var" in kwargs:
+                var = kwargs["var"]
+
+            if basedtg is not None:
+                if isinstance(basedtg, str):
+                    basedtg = datetime.strptime(basedtg, "%Y%m%d%H")
+            if validtime is not None:
+                if isinstance(validtime, str):
+                    validtime = datetime.strptime(validtime, "%Y%m%d%H")
+            else:
+                validtime = basedtg
+
+            if basedtg is not None and validtime is not None:
+                lead_time = validtime - basedtg
+                lead_seconds = int(lead_time.total_seconds())
+                # lead_minutes = int(lead_seconds / 3600)
+                lead_hours = int(lead_seconds / 3600)
+                setting = str(setting).replace("@LL@",  "{:02d}".format(lead_hours))
+                setting = str(setting).replace("@LLL@", "{:03d}".format(lead_hours))
+                setting = str(setting).replace("@LLLL@", "{:04d}".format(lead_hours))
+                if tstep is not None:
+                    lead_step = int(lead_seconds / tstep)
+                    setting = str(setting).replace("@TTT@", "{:03d}".format(lead_step))
+                    setting = str(setting).replace("@TTTT@", "{:04d}".format(lead_step))
+
+            if basedtg is not None:
+                setting = str(setting).replace("@YMD@", basedtg.strftime("%Y%m%d"))
+                setting = str(setting).replace("@YYYY@", basedtg.strftime("%Y"))
+                setting = str(setting).replace("@YY@", basedtg.strftime("%y"))
+                setting = str(setting).replace("@MM@", basedtg.strftime("%m"))
+                setting = str(setting).replace("@DD@", basedtg.strftime("%d"))
+                setting = str(setting).replace("@HH@", basedtg.strftime("%H"))
+                setting = str(setting).replace("@mm@", basedtg.strftime("%M"))
+
+            if mbr is not None:
+                setting = str(setting).replace("@E@", "mbr{:d}".format(int(mbr)))
+                setting = str(setting).replace("@EE@", "mbr{:02d}".format(int(mbr)))
+                setting = str(setting).replace("@EEE@", "mbr{:03d}".format(int(mbr)))
+            else:
+                setting = str(setting).replace("@E@", "")
+                setting = str(setting).replace("@EE@", "")
+                setting = str(setting).replace("@EEE@", "")
+
+            if pert is not None:
+                print("replace", pert, "in ", setting)
+                setting = str(setting).replace("@PERT@", str(pert))
+                print("replaced", pert, "in ", setting)
+
+            if var is not None:
+                setting = str(setting).replace("@VAR@", var)
+
+            if "check_parsing" in kwargs:
+                check_parsing = kwargs["check_parsing"]
+
+        if check_parsing:
+            if isinstance(setting, str) and setting.count("@") > 1:
+                raise Exception("Setting was not substituted properly? " + setting)
+
+        return setting
+
+    @staticmethod
+    def substitute_string(setting, **kwargs):
+
+        if isinstance(setting, str):
+            env_vals = ["USER", "HOME", "PWD"]
+            for env_val in env_vals:
+                if env_val in os.environ:
+                    setting = setting.replace("@" + env_val + "@", os.environ[env_val])
+                else:
+                    print(env_val + " not found in environment")
+
+            system_variables = None
+            if "system_variables" in kwargs:
+                system_variables = kwargs["system_variables"]
+            if system_variables is not None:
+                print(system_variables)
+                for var in system_variables:
+                    print(var, system_variables)
+                    setting = str(setting).replace("@" + str(var) + "@", str(system_variables[var]))
+
+        return setting
+
+    def add_system_file_path(self, name, path, **kwargs):
+        path = self.substitute_string(path)
+        path = self.parse_setting(path, **kwargs)
+        self.system_file_paths.update({name: path})
 
 
 class SystemFilePathsFromFile(SystemFilePaths):
@@ -30,27 +217,27 @@ class SystemFilePathsFromFile(SystemFilePaths):
 
 class ExternalSurfexInputFile(object):
 
+    """
+    Wrapper around external input data to surfex which can have special treatment for each format.
+    Uses internally the SystemFilePaths class
+    """
+
     def __init__(self, system_file_paths):
         self.system_file_paths = system_file_paths
 
-    def set_input_data(self, dtype, fname):
-        default = self.system_file_paths.get_system_path("climdir")
-        fname_with_path = self.system_file_paths.get_system_path(dtype, default=default) + "/" + fname
-        if fname.endswith(".bin"):
-            return {fname: fname_with_path}
-        elif fname.endswith(".dir"):
+    def set_input_data_from_format(self, dtype, fname, **kwargs):
+        fname_with_path = self.system_file_paths.get_system_file(dtype, fname, **kwargs)
+
+        if fname.endswith(".dir"):
             basename = os.path.splitext(os.path.basename(fname))[0]
-            hdr_file = self.system_file_paths.get_system_path(dtype, default=default) + "/" + basename + ".hdr"
-            dir_file = self.system_file_paths.get_system_path(dtype, default=default) + "/" + basename + ".dir"
+            basedir = self.system_file_paths.get_system_path(dtype, **kwargs)
+            hdr_file = basedir + "/" + basename + ".hdr"
+            dir_file = basedir + "/" + basename + ".dir"
             return {basename + ".hdr": hdr_file, basename + ".dir": dir_file}
         elif fname.endswith(".json"):
             return {}
-        elif fname.endswith(".nc"):
-            return {fname: fname_with_path}
-        elif fname.endswith(".ascllv"):
-            return {fname: fname_with_path}
         else:
-            raise Exception("Unknown suffix for " + fname)
+            return {fname: fname_with_path}
 
 
 class BaseNamelist(object):
@@ -73,13 +260,23 @@ class BaseNamelist(object):
         prep_pgdfiletype = None
         if "prep_pgdfiletype" in kwargs:
             prep_pgdfiletype = kwargs["prep_pgdfiletype"]
-        self.dtg = None
+        dtg = None
         if "dtg" in kwargs:
-            self.dtg = kwargs["dtg"]
+            dtg = kwargs["dtg"]
+            if isinstance(dtg, str):
+                dtg = datetime.strptime(dtg, "%Y%m%d%H")
+        self.dtg = dtg
 
         self.fcint = 3
         if "fcint" in kwargs:
             self.fcint = kwargs["fcint"]
+
+        # TODO Should be taken from LL_LLIST
+        forecast_length = self.fcint
+        if self.dtg is not None:
+            self.end_of_forecast = self.dtg + timedelta(hours=forecast_length)
+        else:
+            self.end_of_forecast = None
 
         print("Creating JSON namelist input for program: " + program)
 
@@ -90,14 +287,16 @@ class BaseNamelist(object):
         if program == "pgd":
             self.set_pgd_namelist()
         elif program == "prep":
+            if prep_file is None:
+                raise Exception("Prep need an input file either as a json namelist or a surfex supported format")
             self.set_prep_namelist(prep_file=prep_file, prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
                                    prep_pgdfiletype=prep_pgdfiletype)
-        elif program == "offline":
+        elif program == "offline" or program == "perturbed":
             self.set_offline_namelist()
         elif program == "soda":
             self.set_soda_namelist()
         else:
-            raise NotImplementedError
+            raise NotImplementedError(program)
         self.epilog()
         self.override()
 
@@ -112,6 +311,14 @@ class BaseNamelist(object):
                                                                 "SURFEX#IO#CTIMESERIES_FILETYPE")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CFORCING_FILETYPE":
                                                             self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE")}}})
+        self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CPGDFILE":
+                                                            self.config.get_setting("SURFEX#IO#CPGDFILE")}}})
+        self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CPREPFILE":
+                                                            self.config.get_setting("SURFEX#IO#CPREPFILE")}}})
+        self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURFFILE":
+                                                            self.config.get_setting("SURFEX#IO#CSURFFILE",
+                                                                                    validtime=self.end_of_forecast,
+                                                                                    basedtg=self.dtg)}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF":
                                                             self.config.get_setting("SURFEX#IO#XTSTEP")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_OUTPUT":
@@ -286,6 +493,9 @@ class BaseNamelist(object):
     def set_offline_namelist(self):
         self.input_list.append({"file": self.input_path + "/offline.json"})
 
+        if self.config.get_setting("SURFEX#IO#LSELECT"):
+            self.input_list.append({"file": self.input_path + "/selected_output.json"})
+
         # SEAFLX settings
         if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
             # Surface perturbations
@@ -392,7 +602,7 @@ class BaseNamelist(object):
             if len(snow_cycles) > 0:
                 if self.dtg is not None:
                     for cycle in snow_cycles:
-                        if int(datetime.strptime(self.dtg, "%Y%m%d%H").strftime("%H")) == int(cycle):
+                        if int(self.dtg.strftime("%H")) == int(cycle):
                             print("true")
                             laesnm = True
                 else:
@@ -510,11 +720,11 @@ class BaseNamelist(object):
 
     @staticmethod
     def lower_case_namelist_dict(dict_in):
-        print(dict_in)
+        # print(dict_in)
         new_dict = {}
         for key in dict_in:
             lower_case_dict = {}
-            print(key)
+            # print(key)
             for key2 in dict_in[key]:
                 lower_case_dict.update({key2.lower(): dict_in[key][key2]})
             new_dict.update({key.lower(): lower_case_dict})
@@ -629,8 +839,8 @@ class Ecoclimap(object):
             raise Exception("System file path must be set for this method")
         data = {}
         for fname in self.ecoclimap_files:
-            fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(self.bin_dir, fname)
-            data.update(fname_data)
+            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname, default="climdir")
+            data.update({fname: fname_data})
         return data
 
     def set_bin_files(self):
@@ -657,8 +867,8 @@ class EcoclimapSG(Ecoclimap):
         tree_height_dir = "tree_height_dir"
         fname = self.config.get_setting("SURFEX#COVER#H_TREE")
         if fname != "" and fname is not None:
-            fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(tree_height_dir, fname)
-            data.update(fname_data)
+            ext_data = ExternalSurfexInputFile(self.system_file_paths)
+            data.update(ext_data.set_input_data_from_format(tree_height_dir, fname))
 
         decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
         for decadal_data_type in decadal_data_types:
@@ -667,9 +877,8 @@ class EcoclimapSG(Ecoclimap):
                     filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
                     fname = self.parse_fnames(filepattern, decade)
                     dtype = decadal_data_type.lower() + "_dir"
-                    fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(dtype, fname)
-                    data.update(fname_data)
-
+                    ext_data = ExternalSurfexInputFile(self.system_file_paths)
+                    data.update({fname: ext_data.set_input_data_from_format(dtype, fname)})
         return data
 
     @staticmethod
@@ -689,10 +898,7 @@ class EcoclimapSG(Ecoclimap):
 
 class PgdInputData(surfex.JsonInputData):
 
-    def __init__(self, **kwargs):
-
-        config = kwargs["config"]
-        system_file_paths = kwargs["system_file_paths"]
+    def __init__(self, config, system_file_paths, **kwargs):
 
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
@@ -703,14 +909,18 @@ class PgdInputData(surfex.JsonInputData):
 
         data = ecoclimap.set_input()
 
+        if "check_existence" not in kwargs:
+            kwargs.update({"check_existence": True})
+
+        ext_data = ExternalSurfexInputFile(system_file_paths)
         # Set direct input files
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
-            dtype = "flake_dir"
+            datadir = "flake_dir"
             fname = "GlobalLakeDepth" + version + ".dir"
-            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(dtype, fname))
+            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir", **kwargs))
             fname = "GlobalLakeStatus" + version + ".dir"
-            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(dtype, fname))
+            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir", **kwargs))
 
         possible_direct_data = {
             "ISBA": {
@@ -730,23 +940,21 @@ class PgdInputData(surfex.JsonInputData):
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
                 fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, fname))
+                data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir", **kwargs))
 
         # Treedrag
         if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
-            treeheight = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
+            fname = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
             data_dir = "tree_height_dir"
-            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, treeheight))
+            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir", **kwargs))
 
         surfex.JsonInputData.__init__(self, data)
 
 
 class PrepInputData(surfex.JsonInputData):
 
-    def __init__(self, **kwargs):
+    def __init__(self, config, system_file_paths, **kwargs):
 
-        config = kwargs["config"]
-        system_file_paths = kwargs["system_file_paths"]
         prep_file = None
         if "prep_file" in kwargs:
             prep_file = kwargs["prep_file"]
@@ -759,8 +967,11 @@ class PrepInputData(surfex.JsonInputData):
         eco_sg = config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(config, system_file_paths)
-            self.add_data(ecoclimap.set_bin_files())
+            data.update(ecoclimap.set_bin_files())
 
+        print("prep class ", system_file_paths.__class__)
+        ext_data = ExternalSurfexInputFile(system_file_paths)
+        # ext_data = system_file_paths
         if prep_file is not None:
             if not prep_file.endswith(".json"):
                 fname = os.path.basename(prep_file)
@@ -774,17 +985,15 @@ class PrepInputData(surfex.JsonInputData):
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             data_dir = "flake_dir"
             fname = "LAKE_LTA_NEW.nc"
-            data.update(ExternalSurfexInputFile(system_file_paths).set_input_data(data_dir, fname))
+            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
+                                                            check_existence=True))
 
         surfex.JsonInputData.__init__(self, data)
 
 
 class OfflineInputData(surfex.JsonInputData):
 
-    def __init__(self, **kwargs):
-
-        config = kwargs["config"]
-        system_file_paths = kwargs["system_file_paths"]
+    def __init__(self, config, system_file_paths, **kwargs):
 
         data = {}
         # Ecoclimap settings
@@ -793,14 +1002,10 @@ class OfflineInputData(surfex.JsonInputData):
             ecoclimap = Ecoclimap(config, system_file_paths)
             data.update(ecoclimap.set_bin_files())
 
+        data_dir = "forcing_dir"
         if config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
-            file_paths = ExternalSurfexInputFile(system_file_paths)
-            data_dir = "forcing_dir"
-            if "forcing_dir" in kwargs:
-                if kwargs["forcing_dir"] is not None:
-                    file_paths.system_file_paths[data_dir] = kwargs["forcing_dir"]
             fname = "FORCING.nc"
-            data.update(file_paths.set_input_data(data_dir, fname))
+            data.update({fname: system_file_paths.get_system_file(data_dir, fname, default_dir=None)})
         else:
             raise NotImplementedError
 
@@ -809,11 +1014,22 @@ class OfflineInputData(surfex.JsonInputData):
 
 class SodaInputData(surfex.JsonInputData):
 
-    def __init__(self, **kwargs):
+    """
+    This class set
+    """
 
-        self.config = kwargs["config"]
-        self.system_file_paths = kwargs["system_file_paths"]
-        dtg = kwargs["dtg"]
+    def __init__(self, config, system_file_paths, **kwargs):
+
+        kwargs.update({"verbosity": 6})
+        self.config = config
+        self.system_file_paths = system_file_paths
+        self.file_paths = ExternalSurfexInputFile(self.system_file_paths)
+        dtg = None
+        if "dtg" in kwargs:
+            dtg = kwargs["dtg"]
+            if isinstance(dtg, str):
+                dtg = datetime.strptime(dtg, "%Y%m%d%H")
+        self.dtg = dtg
         surfex.JsonInputData.__init__(self, {})
 
         # Ecoclimap settings
@@ -822,109 +1038,73 @@ class SodaInputData(surfex.JsonInputData):
             ecoclimap = Ecoclimap(self.config, self.system_file_paths)
             self.add_data(ecoclimap.set_bin_files())
 
-        check_existence = None
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
-
-        lsmfile = None
-        if "lsmfile" in kwargs:
-            lsmfile = kwargs["lsmfile"]
+        # OBS
+        self.add_data(self.set_input_observations())
 
         # SEA
-        sstfile = None
-        if "sstfile" in kwargs:
-            sstfile = kwargs["sstfile"]
-
-        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
-            self.add_data(self.set_input_sea_assimilation(sstfile))
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
+            if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
+                self.add_data(self.set_input_sea_assimilation())
 
         # WATER
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER") != "NONE":
+            pass
 
         # NATURE
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
-            ascatfile = None
-            if "ascatfile" in kwargs:
-                ascatfile = kwargs["ascatfile"]
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
-                try:
-                    sfx_first_guess = kwargs["sfx_first_guess"]
-                    perturbed_runs = kwargs["perturbed_runs"]
-                except ValueError:
-                    raise Exception("Needed input for EKF is missing")
-                self.add_data(self.set_input_vertical_soil_ekf(dtg, sfx_first_guess, perturbed_runs, lsmfile=lsmfile,
-                                                               check_existence=check_existence))
+                self.add_data(self.set_input_vertical_soil_ekf(**kwargs))
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
-                ua_first_guess = kwargs["ua_first_guess"]
-                climfile = kwargs["climfile"]
-                data_dir = "oi_coeff_dir"
-                fname = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS")
-                fname_data = ExternalSurfexInputFile(self.system_file_paths).set_input_data(data_dir, fname)
-                oi_coeffs = fname_data[fname]
-                self.add_data(self.set_input_vertical_soil_oi(dtg, ua_first_guess, oi_coeffs=oi_coeffs,
-                                                              climfile=climfile,
-                                                              lsmfile=lsmfile, ascatfile=ascatfile,
-                                                              check_existence=check_existence))
+                self.add_data(self.set_input_vertical_soil_oi(**kwargs))
 
-    def set_input_observations(self, dtg, obsfile, check_existence=False):
-        yy = dtg.strftime("%y")
-        mm = dtg.strftime("%m")
-        dd = dtg.strftime("%d")
-        hh = dtg.strftime("%H")
+        # Town
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
+            pass
 
-        obssettings = {}
+    def set_input_observations(self):
+
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
         if cfile_format_obs == "ASCII":
+            if self.dtg is None:
+                raise Exception("Obs ASCII file needs DTG information")
+            yy = self.dtg.strftime("%y")
+            mm = self.dtg.strftime("%m")
+            dd = self.dtg.strftime("%d")
+            hh = self.dtg.strftime("%H")
             target = "OBSERVATIONS_" + yy + mm + dd + "H" + hh + ".DAT"
         elif cfile_format_obs == "FA":
             target = "CANARI"
         else:
-            print(cfile_format_obs)
-            raise NotImplementedError
+            raise NotImplementedError(cfile_format_obs)
 
-        if obsfile is not None:
-            if os.path.exists(obsfile):
-                obssettings.update({target: obsfile})
-            else:
-                if check_existence:
-                    print(cfile_format_obs)
-                    raise FileNotFoundError(obsfile)
-
+        data_dir = "obs_dir"
+        obsfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                         check_existence=True, basedtg=self.dtg, verbosity=5)
+        obssettings = {
+            target: obsfile
+        }
         return obssettings
 
-    def set_input_sea_assimilation(self, sstfile, check_existence=False):
+    def set_input_sea_assimilation(self):
 
-        if sstfile is None:
-            print("You must set sstfile")
-            raise Exception
-
-        sea_settings = {}
         cfile_format_sst = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")
         if cfile_format_sst.upper() == "ASCII":
             target = "SST_SIC.DAT"
         elif cfile_format_sst.upper() == "FA":
             target = "SST_SIC"
         else:
-            print(cfile_format_sst)
-            raise NotImplementedError
-        sea_settings.update({target: sstfile})
-        if not os.path.exists(sstfile) and check_existence:
-            print("Needed file missing: " + sstfile)
-            raise FileNotFoundError
+            raise NotImplementedError(cfile_format_sst)
 
+        data_dir = self.system_file_paths.get_system_path("sst_file_dir", basedtg=self.dtg, default_dir="assim_dir")
+        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg, check_existence=True)
+        sea_settings = {
+            target: sstfile
+        }
         return sea_settings
 
-    def set_input_vertical_soil_oi(self, dtg, first_guess, oi_coeffs=None, climfile=None, lsmfile=None, ascatfile=None,
-                                   check_existence=False):
+    def set_input_vertical_soil_oi(self, **kwargs):
 
-        if first_guess is None:
-            raise Exception("You must set first guess for OI")
-
-        yy = dtg.strftime("%y")
-        mm = dtg.strftime("%m")
-        dd = dtg.strftime("%d")
-        hh = dtg.strftime("%H")
         oi_settings = {}
-
         # Climate
         cfile_format_clim = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM")
         if cfile_format_clim.upper() == "ASCII":
@@ -934,36 +1114,42 @@ class SodaInputData(surfex.JsonInputData):
         else:
             raise NotImplementedError(cfile_format_clim)
 
-        if climfile is not None:
-            oi_settings.update({target: climfile})
-            if not os.path.exists(climfile) and check_existence:
-                raise FileNotFoundError("Needed file missing: " + climfile)
-        else:
-            raise FileNotFoundError("OI needs a climate file")
+        data_dir = "climdir"
+        climfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                          check_existence=True)
+        oi_settings.update({target: climfile})
 
         # First guess for SURFEX
         cfile_format_fg = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")
         if cfile_format_fg.upper() == "ASCII":
+            if self.dtg is None:
+                raise Exception("First guess in ASCII format needs DTG information")
+            yy = self.dtg.strftime("%y")
+            mm = self.dtg.strftime("%m")
+            dd = self.dtg.strftime("%d")
+            hh = self.dtg.strftime("%H")
             target = "FIRST_GUESS_" + yy + mm + dd + "H" + hh + ".DAT"
         elif cfile_format_fg.upper() == "FA":
             target = "FG_OI_MAIN"
         else:
             raise NotImplementedError(cfile_format_fg)
 
+        data_dir = "first_guess_dir"
+        first_guess = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                             basedtg=self.dtg, check_existence=True)
         oi_settings.update({target: first_guess})
-        if os.path.exists(first_guess) and check_existence:
-            raise FileNotFoundError("Needed file missing: " + first_guess)
 
-        if ascatfile is not None:
-            oi_settings.update({"ASCAT_SM.DAT": ascatfile})
-            if not os.path.exists(ascatfile) and check_existence:
-                raise FileNotFoundError("Needed file missing: " + ascatfile)
+        data_dir = "ascat_dir"
+        ascatfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                           basedtg=self.dtg, check_existence=True)
+        oi_settings.update({"ASCAT_SM.DAT": ascatfile})
 
         # OI coefficients
-        if oi_coeffs is not None:
-            oi_settings.update({"fort.61": oi_coeffs})
-            if not os.path.exists(oi_coeffs) and check_existence:
-                raise FileNotFoundError("Needed file missing for OI coefficients: " + oi_coeffs)
+        data_dir = "oi_coeffs_dir"
+        oi_coeffs = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS")
+        oi_coeffs = self.system_file_paths.get_system_file(data_dir, oi_coeffs, default_dir="assim_dir",
+                                                           check_existence=True)
+        oi_settings.update({"fort.61": oi_coeffs})
 
         # LSM
         cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
@@ -972,48 +1158,92 @@ class SodaInputData(surfex.JsonInputData):
         elif cfile_format_lsm.upper() == "FA":
             target = "FG_OI_MAIN"
         else:
-            print(cfile_format_lsm)
-            raise NotImplementedError
-        if lsmfile is not None:
-            oi_settings.update({target: lsmfile})
-            if not os.path.exists(lsmfile) and check_existence:
-                raise FileNotFoundError("Needed file missing: " + lsmfile)
-        else:
-            raise FileNotFoundError("OI needs a LSM file")
+            raise NotImplementedError(cfile_format_lsm)
 
+        data_dir = "lsm_dir"
+        lsmfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                         basedtg=self.dtg, check_existence=True)
+        oi_settings.update({target: lsmfile})
         return oi_settings
 
-    def set_input_vertical_soil_ekf(self, dtg, first_guess, perturbed_runs, lsmfile=None, check_existence=False):
+    def set_input_vertical_soil_ekf(self, **kwargs):
 
-        if first_guess is None or perturbed_runs is None:
-            raise Exception("You must set input files (first_guess and/or perturbed_runs)")
+        if self.dtg is None:
+            raise Exception("You must set DTG")
 
-        yy = dtg.strftime("%y")
-        mm = dtg.strftime("%m")
-        dd = dtg.strftime("%d")
-        hh = dtg.strftime("%H")
+        yy = self.dtg.strftime("%y")
+        mm = self.dtg.strftime("%m")
+        dd = self.dtg.strftime("%d")
+        hh = self.dtg.strftime("%H")
         ekf_settings = {}
 
+        geo = self.config.get_setting("GEOMETRY#GEO")
         # First guess for SURFEX
-        extension = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
-        if extension == "ascii":
-            extension = ".txt"
-        if first_guess is not None:
-            ekf_settings.update({"PREP_INIT." + extension: first_guess})
-            ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
-            if not os.path.exists(first_guess) and check_existence:
-                raise FileNotFoundError("Needed file missing: " + first_guess)
+        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
+
+        # TODO
+        fcint = 3
+        fg_dtg = self.dtg - timedelta(hours=fcint)
+        fg = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
+        if csurf_filetype == "ascii":
+            fg_file = surfex.AsciiSurfexFile(fg, geo=geo)
+            extension = fg_file.extension
+            fg = fg_file.filename
+        elif csurf_filetype == "nc":
+            fg_file = surfex.NCSurfexFile(fg, geo=geo)
+            extension = fg_file.extension
+            fg = fg_file.filename
+        elif csurf_filetype == "fa":
+            lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
+            # TODO for now assume that first guess always is a inline forecast with FA format
+            masterodb = True
+            if "masterodb" in kwargs:
+                masterodb = kwargs["masterodb"]
+            fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
+            extension = fg_file.extension
+            fg = fg_file.filename
+        else:
+            raise NotImplementedError
+
+        data_dir = "first_guess_dir"
+        first_guess = self.system_file_paths.get_system_file(data_dir, fg, default_dir="assim_dir",
+                                                             validtime=self.dtg, basedtg=fg_dtg, check_existence=True)
+        ekf_settings.update({"PREP_INIT." + extension: first_guess})
+        ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-        lnncv = nncv.count(1) + 1
-        if len(perturbed_runs) != lnncv:
-            raise Exception("Mismatch in number of control variables and perturbed runs " + str(lnncv) + " " +
-                            str(len(perturbed_runs)))
-        for p in range(0, len(perturbed_runs)):
-            target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_PERT" + str(p) + "." + extension
-            ekf_settings.update({target: perturbed_runs[p]})
-            if check_existence and not os.path.exists(perturbed_runs[p]):
-                raise FileNotFoundError("Needed file missing: " + perturbed_runs[p])
+        # lnncv = nncv.count(1) + 1
+        pert_ekf = 0
+        pert_input = 0
+        for p in range(0, len(nncv) + 1):
+            exists = False
+            if p > 0:
+                if nncv[p-1] == 1:
+                    exists = True
+                    pert_input = p
+            else:
+                exists = True
+
+            if exists:
+                # We newer run inline model for perturbations
+                if csurf_filetype == "fa":
+                    extension = "fa"
+
+                data_dir = "perturbed_run_dir"
+                if "perturbed_file_pattern" in kwargs:
+                    perturbed_file_pattern = kwargs["perturbed_file_pattern"]
+                else:
+                    print("Use default CSURFFILE for perturbed file names")
+                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE") + "." + extension
+
+                # TODO depending on when perturbations are run
+                perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
+                                                                       validtime=self.dtg, basedtg=self.dtg,
+                                                                       check_existence=True, pert=pert_input)
+
+                target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_PERT" + str(pert_ekf) + "." + extension
+                ekf_settings.update({target: perturbed_run})
+                pert_ekf = pert_ekf + 1
 
         # LSM
         # Fetch first_guess needed for LSM for extrapolations
@@ -1024,13 +1254,11 @@ class SodaInputData(surfex.JsonInputData):
             elif cfile_format_lsm.upper() == "FA":
                 target = "FG_OI_MAIN"
             else:
-                print(cfile_format_lsm)
-                raise NotImplementedError
-            if lsmfile is not None:
-                print(lsmfile)
-                ekf_settings.update({target: lsmfile})
-                if not os.path.exists(lsmfile) and check_existence:
-                    raise FileNotFoundError("Needed file missing: " + lsmfile)
-            else:
-                raise FileNotFoundError("EKF needs a LSM file to extrapolate values when extrapolation is active")
+                raise NotImplementedError(cfile_format_lsm)
+
+            data_dir = "lsm_dir"
+            lsmfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                             validtime=self.dtg, basedtg=fg_dtg,
+                                                             check_existence=True)
+            ekf_settings.update({target: lsmfile})
         return ekf_settings
