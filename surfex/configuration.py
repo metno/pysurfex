@@ -565,6 +565,15 @@ class ConfigurationFromHarmonie(Configuration):
 
         # Set domain from environment variables. Geo is alway conf proj
         ezone = int(env["EZONE"])
+        ndluxg = int(env["NLON"]) - ezone
+        if "LNDLUXG" in env:
+            ndluxg = int(env["LNDLUXG"])
+        ndguxg = int(env["NLAT"]) - ezone
+        if "LNDGUXG" in env:
+            ndguxg = int(env["LNDGUXG"])
+        gsize = float(env["GSIZE"])
+        if "LGSIZE" in env:
+            gsize = float(env["LGSIZE"])
         domain_dict = {
             "nam_pgd_grid": {
                 "cgrid": "CONF PROJ"
@@ -578,10 +587,10 @@ class ConfigurationFromHarmonie(Configuration):
                 "ilate": ezone,
                 "xlatcen": float(env["LATC"]),
                 "xloncen": float(env["LONC"]),
-                "nimax": int(env["NLON"]) - ezone,
-                "njmax": int(env["NLAT"]) - ezone,
-                "xdx": float(env["GSIZE"]),
-                "xdy": float(env["GSIZE"]),
+                "nimax": ndluxg,
+                "njmax": ndguxg,
+                "xdx": gsize,
+                "xdy": gsize,
             }
         }
         geo = surfex.ConfProj(domain_dict)
@@ -594,9 +603,11 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#IO#CPGDFILE", "Const.Clim")
         self.update_setting("SURFEX#IO#CPREPFILE", "ICMSH" + cnmexp + "INIT")
         self.update_setting("SURFEX#IO#CSURFFILE", "ICMSH" + cnmexp + "@LLLL@")
+        self.update_setting("SURFEX#IO#CSURF_FILETYPE", "FA")
+        self.update_setting("SURFEX#IO#CCTIMESERIES_FILETYPE", "FA")
         self.update_setting("SURFEX#IO#LFAGMAP", True)
         lselect = False
-        if os.environ["LSURFEX_SELECT"] == "yes":
+        if os.environ["SURFEX_LSELECT"] == "yes":
             lselect = True
         self.update_setting("SURFEX#IO#LSELECT", lselect)
 
@@ -685,6 +696,29 @@ class ConfigurationFromHarmonie(Configuration):
         #########################
         # Assimilation settings #
         #########################
+        # Default schemes. Possible to override in future
+        # Sea
+        ana_sea = "INPUT"
+        if "ANA_SEA" in env:
+            ana_sea = env["ANA_SEA"]
+        self.update_setting("SURFEX#ASSIM#SCHEMES#SEA", ana_sea)
+
+        if "LECSST" in env:
+            self.update_setting("SURFEX#ASSIM#SEA#LECSST", env["LECSST"])
+        else:
+            self.update_setting("SURFEX#ASSIM#SEA#LECSST", True)
+
+        # Inland water
+        ana_lake = "INPUT"
+        if "ANA_LAKE" in env:
+            ana_lake = env["ANA_LAKE"]
+        self.update_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER", ana_lake)
+        # TEB
+        ana_teb = "ROADT"
+        if "ANA_TEB" in env:
+            ana_teb = env["ANA_TEB"]
+        self.update_setting("SURFEX#ASSIM#SCHEMES#TEB", ana_teb)
+
         # Soil assimilation
         anasurf = env["ANASURF"]
         if anasurf == "OI" or anasurf == "CANARI_OI_MAIN":
@@ -707,6 +741,41 @@ class ConfigurationFromHarmonie(Configuration):
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
         self.update_setting("SURFEX#ASSIM#ISBA#OI#COEFFS", env["ANASURF_OI_COEFF"])
 
+        # Always use FA format as input
+        self.update_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM", "FA")
+        self.update_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST", "FA")
+        self.update_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG", "FA")
+        self.update_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM", "FA")
+
+        snow_cycles = ["06"]
+        if "SNOW_CYCLES" in env:
+            snow_cycles = (str(env["SNOW_CYCLES"]).split(" "))
+        self.update_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES",  snow_cycles)
+
+        lswepsini = False
+        if "LSWEPSINI" in env:
+            if env["LSWEPSINI"].strip().lower() == ".true.":
+                lswepsini = True
+            else:
+                lswepsini = False
+        self.update_setting("SURFEX#ASSIM#ISBA#LSWEPSINI", lswepsini)
+        xswepsini = 1000.0
+        if "XSWEPSINI" in env:
+            xswepsini = float(env["XSWEPSINI"])
+        self.update_setting("SURFEX#ASSIM#ISBA#XSWEPSINI", xswepsini)
+        lswepsmin = False
+        if "LSWEPSMIN" in env:
+            if env["LSWEPSMIN"].strip().lower() == ".true.":
+                lswepsmin = True
+            else:
+                lswepsmin = False
+        self.update_setting("SURFEX#ASSIM#ISBA#LSWEPSMIN", lswepsmin)
+        xswepsmin = 500.0
+        if "XSWEPSMIN" in env:
+            xswepsmin = float(env["XSWEPSMIN"])
+        self.update_setting("SURFEX#ASSIM#ISBA#XSWEPSMIN", xswepsmin)
+
+        # Perturbations
         # PERTSURF ECMA    : perturb also the surface observation before Canari (recommended
         #                  : for EDA to have full perturbation of the initial state).
         #          model   : perturb surface fields in grid-point space (recursive filter)
@@ -718,5 +787,10 @@ class ConfigurationFromHarmonie(Configuration):
                 if env["LPERTSURF"].strip().lower() == ".true.":
                     self.update_setting("SURFEX#ISBA#PERTSURF", True)
                     self.update_setting("SURFEX#SEA#PERTFLUX", True)
+
+        # Volatile sea ice (climate mode)
+        if "LVOLATILE_SIC" in env:
+            if env["LVOLATILE_SIC"].strip().lower() == ".true.":
+                self.update_setting("SURFEX.SEA.LVOLATILE_SIC", True)
             else:
-                raise Exception("LPERTSURF should exists")
+                self.update_setting("SURFEX.SEA.LVOLATILE_SIC", False)

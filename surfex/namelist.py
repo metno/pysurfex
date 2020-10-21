@@ -266,6 +266,9 @@ class BaseNamelist(object):
             if isinstance(dtg, str):
                 dtg = datetime.strptime(dtg, "%Y%m%d%H")
         self.dtg = dtg
+        check_parsing = True
+        if self.dtg is None:
+            check_parsing = False
 
         self.fcint = 3
         if "fcint" in kwargs:
@@ -282,7 +285,7 @@ class BaseNamelist(object):
 
         self.input_list = []
 
-        self.prolog()
+        self.prolog(check_parsing)
         # Program specific settings
         if program == "pgd":
             self.set_pgd_namelist()
@@ -300,7 +303,7 @@ class BaseNamelist(object):
         self.epilog()
         self.override()
 
-    def prolog(self):
+    def prolog(self, check_parsing):
 
         # IO
         self.input_list.append({"file": self.input_path + "/io.json"})
@@ -318,7 +321,8 @@ class BaseNamelist(object):
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"CSURFFILE":
                                                             self.config.get_setting("SURFEX#IO#CSURFFILE",
                                                                                     validtime=self.end_of_forecast,
-                                                                                    basedtg=self.dtg)}}})
+                                                                                    basedtg=self.dtg,
+                                                                                    check_parsing=check_parsing)}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_SURF":
                                                             self.config.get_setting("SURFEX#IO#XTSTEP")}}})
         self.input_list.append({"json": {"NAM_IO_OFFLINE": {"XTSTEP_OUTPUT":
@@ -361,7 +365,7 @@ class BaseNamelist(object):
             for decadal_data_type in decadal_data_types:
                 for vt in range(1, ecoclimap.veg_types + 1):
                     for decade in range(1, ecoclimap.decades + 1):
-                        filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
+                        filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type, check_parsing=False)
                         fname = ecoclimap.parse_fnames(filepattern, decade)
                         self.input_list.append(self.set_dirtyp_data_namelist("NAM_DATA_ISBA", decadal_data_type, fname,
                                                                              vtype=vt, decade=decade))
@@ -580,6 +584,8 @@ class BaseNamelist(object):
                                                            "SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE")}}})
         self.input_list.append({"json": {"NAM_ASSIM": {"LEXTRAP_SEA":
                                                        self.config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA")}}})
+        self.input_list.append({"json": {"NAM_ASSIM": {"LECSST":
+                                                       self.config.get_setting("SURFEX#ASSIM#SEA#LECSST")}}})
 
         # Water
         self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_WATER":
@@ -874,11 +880,11 @@ class EcoclimapSG(Ecoclimap):
         for decadal_data_type in decadal_data_types:
             for vt in range(1, self.veg_types + 1):
                 for decade in range(1, self.decades + 1):
-                    filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type)
+                    filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type, check_parsing=False)
                     fname = self.parse_fnames(filepattern, decade)
                     dtype = decadal_data_type.lower() + "_dir"
                     ext_data = ExternalSurfexInputFile(self.system_file_paths)
-                    data.update({fname: ext_data.set_input_data_from_format(dtype, fname)})
+                    data.update(ext_data.set_input_data_from_format(dtype, fname))
         return data
 
     @staticmethod
@@ -916,6 +922,8 @@ class PgdInputData(surfex.JsonInputData):
         # Set direct input files
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
+            if version != "":
+                version = "_V" + version
             datadir = "flake_dir"
             fname = "GlobalLakeDepth" + version + ".dir"
             data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir", **kwargs))
@@ -1008,6 +1016,20 @@ class OfflineInputData(surfex.JsonInputData):
             data.update({fname: system_file_paths.get_system_file(data_dir, fname, default_dir=None)})
         else:
             raise NotImplementedError
+
+        surfex.JsonInputData.__init__(self, data)
+
+
+class InlineForecastInputData(surfex.JsonInputData):
+
+    def __init__(self, config, system_file_paths, **kwargs):
+
+        data = {}
+        # Ecoclimap settings
+        eco_sg = config.get_setting("SURFEX#COVER#SG")
+        if not eco_sg:
+            ecoclimap = Ecoclimap(config, system_file_paths)
+            data.update(ecoclimap.set_bin_files())
 
         surfex.JsonInputData.__init__(self, data)
 

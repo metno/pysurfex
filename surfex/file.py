@@ -602,6 +602,8 @@ class FaSurfexFile(SurfexIO):
         extension = SurfFileTypeExtension("FA", **kwargs)
         extension_suffix = extension.suffix
 
+        # Surfex binaries use .fa suffix for all input files no matter if they are lfagmap files
+
         if not filename.endswith(extension_suffix):
             filename = filename + extension_suffix
 
@@ -663,9 +665,10 @@ class SurfFileTypeExtension(object):
             if lfagmap:
                 extension = "sfx"
                 if not masterodb:
-                    suffix = "fa"
+                    suffix = ".fa"
             else:
                 extension = "fa"
+
         if suffix is None:
             suffix = "." + extension
 

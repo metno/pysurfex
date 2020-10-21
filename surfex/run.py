@@ -136,15 +136,15 @@ class PerturbedOffline(SURFEXBinary):
 
 
 class Masterodb(object):
-    def __init__(self, settings, batch, pgdfile, prepfile, surfout, input_data, binary=None,
-                 archive_data=None, print_namelist=True):
+    def __init__(self, pgdfile, prepfile, surffile, settings, input_data, binary=None,
+                 archive_data=None, print_namelist=True, batch=None):
+
         self.settings = settings
         self.binary = binary
         self.prepfile = prepfile
-        self.surfout = surfout
+        self.surfout = surffile
         self.batch = batch
         self.pgdfile = pgdfile
-        # self.assim = assim
         self.input = input_data
         self.archive = archive_data
         self.print_namelist = print_namelist
@@ -186,31 +186,16 @@ class Masterodb(object):
             print("PREP not found! " + self.prepfile.filename)
             raise FileNotFoundError
 
-        '''
-        if self.assim is not None:
-            self.assim.ass_input.prepare_input()
-
-        # Set up assimilation
-        if self.assim is not None:
-            if self.assim.ass_input is not None:
-                self.assim.ass_input.prepare_input()
-        '''
-
         # Archive if we have run the binary
         if self.binary is not None:
-            print("canari with settings OPTIONS.nam")
+            print("Run binary with namelist EXSEG1.nam: " + self.binary)
             self.batch.run(self.binary)
-            self.archive_output()
 
     def archive_output(self):
         # Archive output
         self.surfout.archive_output_file()
         if self.archive is not None:
             self.archive.archive_files()
-
-        # if self.assim is not None:
-        #    if self.assim.ass_input is not None:
-        #        self.assim.ass_input.archive_files()
 
 
 class InputDataToSurfexBinaries(ABC):
@@ -279,7 +264,8 @@ class JsonInputData(InputDataToSurfexBinaries):
             command = None
             if type(input_file) is dict:
                 for key in input_file:
-                    print(key, input_file[key])
+                    print(key)
+                    print(input_file[key])
                     command = str(input_file[key])
                     input_file = str(key)
                     command = command.replace("@INPUT@", input_file)

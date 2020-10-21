@@ -517,62 +517,105 @@ def parse_args_masterodb(argv):
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
-    parser.add_argument('--json', '-j', type=str, nargs="?", required=True, help="A JSON file with run options")
+    parser.add_argument('--harmonie', action="store_true", default=False,
+                        help="Surfex configuration created from Harmonie environment")
     parser.add_argument('--pgd', type=str, nargs="?", required=True, help="Name of the PGD file")
     parser.add_argument('--prep', type=str, nargs="?", required=True, help="Name of the PREP file")
-    parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
+    parser.add_argument('--force', '-f', action="store_true", default=False, help="Force re-creation")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--domain', '-d', required=True, type=str, help="JSON file with domain")
-    parser.add_argument('--output', '-o', type=str, required=False)
-    parser.add_argument('--input', '-i', required=False, default=None, nargs='?', help="JSON file with input")
+    parser.add_argument('--config', '-c', required=False, nargs='?')
+    parser.add_argument('--system_file_paths', '-s', required=True, nargs='?', help="Input file paths on your system")
+    parser.add_argument('--namelist_path', '-n', required=True, nargs='?')
+    parser.add_argument('--domain', type=str, required=False, help="JSON file with domain")
+    parser.add_argument('--dtg', type=str, required=False, default=None)
+    parser.add_argument('--output', '-o', type=str, required=False, default=None)
+    parser.add_argument('--only_archive', action="store_true", default=False, help="Only call archiving")
+    parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
+    parser.add_argument('--mode', '-m', type=str, required=True, choices=["forecast", "canari"])
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
                         help="JSON file with archive output")
     parser.add_argument('--binary', '-b', required=False, default=None, nargs='?',
                         help="Full path of MASTERODB binary")
 
-    if len(argv) == 1:
+    if len(argv) == 0:
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def run_masterodb(args):
+def run_masterodb(**kwargs):
 
-    binary = args.binary
-    rte = args.rte
-    wrapper = args.wrapper
-    json_file = args.json
-    force = args.force
-    output = args.output
-    input_arg = args.input
-    domain = args.domain
-    archive = args.archive
-    pgd_file_path = args.pgd
-    prep_file_path = args.prep
+    print("ARGS: ", kwargs)
+
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config" in kwargs:
+            if kwargs["config"] is not None:
+                config_exp = kwargs["config"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+        print("Using default config from: " + config_exp)
+        input_data = toml.load(open(config_exp, "r"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+    else:
+        if "domain" not in kwargs:
+            raise Exception("Missing domain definition")
+        if "config" not in kwargs:
+            raise Exception("Missing config")
+
+        domain = kwargs["domain"]
+        if os.path.exists(domain):
+            geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
+        else:
+            raise FileNotFoundError("File not found: " + domain)
+
+        config = kwargs["config"]
+        if os.path.exists(config):
+            input_data = toml.load(open(config, "r"))
+            config = surfex.Configuration(input_data, {}, geo=geo)
+        else:
+            raise FileNotFoundError("File not found: " + config)
+
+    if "config" in kwargs:
+        del(kwargs["config"])
+
+    system_file_paths = kwargs["system_file_paths"]
+    if os.path.exists(system_file_paths):
+        system_file_paths = surfex.SystemFilePathsFromFile(system_file_paths)
+    else:
+        raise FileNotFoundError("File not found: " + system_file_paths)
+    del(kwargs["system_file_paths"])
+
+    my_geo = config.get_setting("GEOMETRY#GEO")
+
+    binary = kwargs["binary"]
+    rte = kwargs["rte"]
+    wrapper = kwargs["wrapper"]
+    namelist_path = kwargs["namelist_path"]
+    force = kwargs["force"]
+    mode = kwargs["mode"]
+    output = kwargs["output"]
+    archive = kwargs["archive"]
+    only_archive = kwargs["only_archive"]
+    print_namelist = kwargs["print_namelist"]
+
+    if "dtg" in kwargs:
+        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
+            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            kwargs.update({"dtg": dtg})
+
+    pgd_file_path = kwargs["pgd"]
+    prep_file_path = kwargs["prep"]
 
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
     else:
         raise FileNotFoundError
-
-    if os.path.exists(json_file):
-        json_settings = json.load(open(json_file, "r"))
-    else:
-        raise FileNotFoundError
-
-    if os.path.exists(domain):
-        my_geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
-        print(my_geo)
-    else:
-        raise FileNotFoundError
-
-    my_input = None
-    if input_arg is not None:
-        if os.path.exists(input_arg):
-            my_input = surfex.JsonInputDataFromFile(input_arg)
-        else:
-            raise FileNotFoundError
 
     my_archive = None
     if archive is not None:
@@ -581,48 +624,59 @@ def run_masterodb(args):
         else:
             raise FileNotFoundError
 
-    my_settings = surfex.BaseNamelist.ascii2nml(json_settings)
-    # my_geo.update_namelist(my_settings)
+    if mode == "forecast":
+        input_data = surfex.InlineForecastInputData(config, system_file_paths, **kwargs)
+        mode = "offline"
+    elif mode == "canari":
+        input_data = surfex.SodaInputData(config, system_file_paths, **kwargs)
+        mode = "soda"
+    else:
+        raise NotImplementedError(mode + " is not implemented!")
 
-    my_format = my_settings["NAM_IO_OFFLINE"]["CSURF_FILETYPE"]
-    my_pgdfile = my_settings["NAM_IO_OFFLINE"]["CPGDFILE"]
-    my_prepfile = my_settings["NAM_IO_OFFLINE"]["CPREPFILE"]
-    my_surffile = my_settings["NAM_IO_OFFLINE"]["CSURFFILE"]
+    my_settings = surfex.BaseNamelist(mode, config, namelist_path, **kwargs).get_namelist()
+    my_geo.update_namelist(my_settings)
+
+    # Create input
+    my_format = my_settings["nam_io_offline"]["csurf_filetype"]
+    my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
+    my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
+    my_surffile = my_settings["nam_io_offline"]["csurffile"]
     lfagmap = False
-    if "LFAGMAP" in my_settings["NAM_IO_OFFLINE"]:
-        lfagmap = my_settings["NAM_IO_OFFLINE"]["LFAGMAP"]
+    if "lfagmap" in my_settings["nam_io_offline"]:
+        lfagmap = my_settings["nam_io_offline"]["lfagmap"]
+
+    print(my_pgdfile, lfagmap)
 
     # Not run binary
-    if binary is None:
-
-        my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
-                                         masterodb=True)
-        my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
-                                      masterodb=True)
-        surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
-                                   masterodb=True)
-        masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile, binary=None,
-                                     input_data=my_input, print_namelist=True)
-
-        if archive is not None:
-            masterodb.archive_output()
-
-    else:
+    masterodb = None
+    if not only_archive:
         # Normal dry or wet run
-        if not os.path.exists(output) or force:
+        exists = False
+        if output is not None:
+            exists = os.path.exists(output)
+        if not exists or force:
 
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap)
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap)
-            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap)
-            masterodb = surfex.Masterodb(my_settings, my_batch, my_pgdfile, my_prepfile, surffile,
-                                         binary=binary, input_data=my_input, archive_data=my_archive,
-                                         print_namelist=True)
+            if binary is None:
+                my_batch = None
 
-            # Archive output
-            if binary is not None:
-                masterodb.archive_output()
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
+                                             masterodb=True)
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
+                                          masterodb=True)
+            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
+                                       masterodb=True)
+
+            masterodb = surfex.Masterodb(my_pgdfile, my_prepfile, surffile, my_settings, input_data, binary=binary,
+                                         print_namelist=print_namelist, batch=my_batch, archive_data=my_archive)
+
         else:
             print(output + " already exists!")
+
+    if archive is not None:
+        if masterodb is not None:
+            masterodb.archive_output()
+        else:
+            print("Masterodb is None")
 
 
 def parse_args_surfex_binary(argv, mode):
@@ -665,22 +719,21 @@ def parse_args_surfex_binary(argv, mode):
         parser.add_argument('--forc_zs', action="store_true", default=False, help="Set model ZS to forcing ZS")
         parser.add_argument('--forcing_dir', required=False, default=None, nargs='?')
     parser.add_argument('--force', '-f', action="store_true", help="Force re-creation")
-    parser.add_argument('--harmonie', action="store_true",
+    parser.add_argument('--harmonie', action="store_true", default=False,
                         help="Surfex configuration created from Harmonie environment")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
-    parser.add_argument('--masterodb', action="store_true", default=True, help="Input file written by msterodb")
+    parser.add_argument('--masterodb', action="store_true", default=False, help="Input file written by msterodb")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
-    parser.add_argument('--config', '-c', required=True, nargs='?')
+    parser.add_argument('--config', '-c', required=False, nargs='?')
     parser.add_argument('--system_file_paths', '-s', required=True, nargs='?', help="Input file paths on your system")
     parser.add_argument('--namelist_path', '-n', required=True, nargs='?')
-    parser.add_argument('--domain', type=str, required=True, help="JSON file with domain")
+    parser.add_argument('--domain', type=str, required=False, help="JSON file with domain")
     parser.add_argument('--output', '-o', type=str, required=True)
     parser.add_argument('--dtg', type=str, required=False, default=None)
     if pert:
         parser.add_argument('--pert', '-p', type=int, required=False, default=None)
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
-
     parser.add_argument('binary', type=str, help="Command to run")
 
     if len(argv) == 0:
@@ -698,16 +751,37 @@ def run_surfex_binary(mode, **kwargs):
 
     print("ARGS: ", kwargs)
 
-    config = kwargs["config"]
-    if os.path.exists(config):
-        input_data = toml.load(open(config, "r"))
-        if kwargs["harmonie"]:
-            config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
-        else:
-            config = surfex.Configuration(input_data, {})
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config" in kwargs:
+            if kwargs["config"] is not None:
+                config_exp = kwargs["config"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+        print("Using default config from: " + config_exp)
+        input_data = toml.load(open(config_exp, "r"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
     else:
-        raise FileNotFoundError("File not found: " + config)
-    del(kwargs["config"])
+        if "domain" not in kwargs:
+            raise Exception("Missing domain definition")
+        if "config" not in kwargs:
+            raise Exception("Missing config")
+
+        domain = kwargs["domain"]
+        if os.path.exists(domain):
+            geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
+        else:
+            raise FileNotFoundError("File not found: " + domain)
+
+        config = kwargs["config"]
+        if os.path.exists(config):
+            input_data = toml.load(open(config, "r"))
+            config = surfex.Configuration(input_data, {}, geo=geo)
+        else:
+            raise FileNotFoundError("File not found: " + config)
+
+    if "config" in kwargs:
+        del(kwargs["config"])
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -716,6 +790,7 @@ def run_surfex_binary(mode, **kwargs):
         raise FileNotFoundError("File not found: " + system_file_paths)
     del(kwargs["system_file_paths"])
 
+    my_geo = config.get_setting("GEOMETRY#GEO")
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
@@ -749,7 +824,7 @@ def run_surfex_binary(mode, **kwargs):
     namelist_path = kwargs["namelist_path"]
     force = kwargs["force"]
     output = kwargs["output"]
-    domain = kwargs["domain"]
+    # domain = kwargs["domain"]
     archive = kwargs["archive"]
     print_namelist = kwargs["print_namelist"]
     masterodb = kwargs["masterodb"]
@@ -777,11 +852,6 @@ def run_surfex_binary(mode, **kwargs):
     else:
         raise FileNotFoundError("File not found: " + rte)
 
-    if os.path.exists(domain):
-        my_geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
-    else:
-        raise FileNotFoundError("File not found: " + domain)
-
     my_archive = None
     if archive is not None:
         if os.path.exists(archive):
@@ -800,8 +870,8 @@ def run_surfex_binary(mode, **kwargs):
         my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
         my_surffile = my_settings["nam_io_offline"]["csurffile"]
         lfagmap = False
-        if "LFAGMAP" in my_settings["NAM_IO_OFFLINE"]:
-            lfagmap = my_settings["NAM_IO_OFFLINE"]["LFAGMAP"]
+        if "lfagmap" in my_settings["nam_io_offline"]:
+            lfagmap = my_settings["nam_io_offline"]["lfagmap"]
 
         print(my_pgdfile, lfagmap)
         if need_pgd:

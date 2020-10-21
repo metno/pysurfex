@@ -5,5 +5,5 @@ import sys
 
 if __name__ == "__main__":
 
-    args = surfex.parse_args_masterodb(sys.argv[1:])
-    surfex.run_masterodb(args)
+    kwargs = surfex.parse_args_masterodb(sys.argv[1:])
+    surfex.run_masterodb(**kwargs)

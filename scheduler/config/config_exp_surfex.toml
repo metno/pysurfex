@@ -23,10 +23,10 @@ YCOVER = "ECOCLIMAP_2_5_p.dir"      # Version of ECOCLIMAP for surfex (1,2,SG)
                                     # please note that SG is not yet compatible with any availbale lake data base.
 SG = false                          # ECOCLIMAP second generation
 H_TREE = "new_ht_c.dir"                 # SG tree height
-ALBNIR_SOIL = 'ANS_DESAG_@MM@@CDD@.dir' # SG soil NIR albedo
-ALBNIR_VEG = 'ANV_DESAG_@MM@@CDD@.dir'  # SG vegetation NIR albedo
-ALBVIS_SOIL = 'AVS_DESAG_@MM@@CDD@.dir' # SG soil visible albedo
-ALBVIS_VEG = 'AVV_DESAG_@MM@@CDD@.dir'  # SG vgetation visible albedo
+ALBNIR_SOIL = 'AL_BH_NI_@MM@@CDD@_c.dir' # SG soil NIR albedo
+ALBNIR_VEG = 'AL_BH_NI_@MM@@CDD@_c.dir'  # SG vegetation NIR albedo
+ALBVIS_SOIL = 'AL_BH_VI_@MM@@CDD@_c.dir' # SG soil visible albedo
+ALBVIS_VEG = 'AL_BH_VI_@MM@@CDD@_c.dir'  # SG vgetation visible albedo
 LAI = 'LAI_@MM@@CDD@_c.dir'             # SG Leaf area index
 
 [SURFEX.ZS]                         # Orography
@@ -65,7 +65,7 @@ LVOLATILE_SIC = false               #
 # General FLAKE
 [SURFEX.FLAKE]
 LCLIM = true                        # Use FLAKE climatology
-LDB_VERSION = ""
+LDB_VERSION = "3.0"
 
 ##########
 # NATURE #
@@ -139,6 +139,7 @@ LSWE = false                                # Assimilate SWE, if false assimilat
 CFILE_FORMAT_SST = "ASCII"           # File format for SST input when using SODA and SEA == "INPUT": "ASCII"|"FA"
 LREAD_SST_FROM_FILE = true           # When SEA == INPUT read SST from external file
 LEXTRAP_SEA = false                  # Extrapolate sea variables to points having LSM < 0.5
+LECSST = true                        # SST from ECMWF
 
 [SURFEX.ASSIM.INLAND_WATER]
 LWATERTG2 = false                    # Use TG2 as LST in points having both land and water defined. Should use LEXTRAP_WATER=true
@@ -147,6 +148,11 @@ LEXTRAP_WATER = false                # Extrapolate LST to points having LSM < 0.
 [SURFEX.ASSIM.ISBA]
 UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assimilation.
                                      # Empty list or not valid values means no update
+LSWEPSINI = false
+XSWEPSINI = 1000.0
+LSWEPSMIN = false
+XSWEPSMIN = 500.0
+
 
 # OI settings
 [SURFEX.ASSIM.ISBA.OI]
