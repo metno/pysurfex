@@ -7,7 +7,7 @@ python:
 os: linux
 
 before_install:
-  - sudo apt-get -y install libudunits2-dev libhdf5-serial-dev libnetcdf-dev libboost-dev
+  - sudo apt-get -y install libudunits2-dev libhdf5-serial-dev libnetcdf-dev libboost-dev libgsl-dev libproj-dev
 
 install:
   pip install -r requirements.txt
