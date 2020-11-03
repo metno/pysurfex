@@ -176,9 +176,11 @@ def run_create_forcing(**kwargs):
 
 def parse_args_qc2obsmon(argv):
     parser = ArgumentParser("Create SQLite data base for obsmon")
-    parser.add_argument('DTG', type=str, help="YYYYMMDDHH")
+    parser.add_argument('dtg', type=str, help="YYYYMMDDHH")
     parser.add_argument('varname', type=str, help="Variable name")
     parser.add_argument('qc', type=str, help="QC dataset JSONfile")
+    parser.add_argument('--operator', type=str, help="Obs operator", choices=["bilinear", "nearest"],
+                        default="bilinear", required=False)
     parser.add_argument('--fg_file', type=str, help="First guess file", required=True)
     parser.add_argument('--an_file', type=str, help="Analysis file", required=True)
     parser.add_argument('--file_var', type=str, help="File variable", required=True)
@@ -916,7 +918,6 @@ def parse_args_gridpp(argv):
     parser.add_argument('-obs', '--obs_file', type=str, help="Input JSON file with QC observations", required=True)
     parser.add_argument('-o', '--output_file', type=str, help="Output NetCDF file with all variables", required=True)
     parser.add_argument('-v', '--var', type=str, help="Variable", required=True)
-    parser.add_argument('--minrho', dest='min_rho', type=float, default=0.0013, required=False)
     parser.add_argument('-hor', dest='hlength', type=float, required=True)
     parser.add_argument('-vert', dest='vlength', type=float, default=100000, required=False)
     parser.add_argument('--wlength', dest='wlength', type=float, default=0., required=False)
@@ -974,43 +975,75 @@ def parse_args_titan(argv):
     parser.add_argument('-v', '--variable', type=str, required=True, help="Observation variable")
     parser.add_argument('--indent', type=int, default=None, help="Indent")
     parser.add_argument('-dtg', type=str, help="Date time group YYYYMMDDHH", required=True)
+    parser.add_argument('--harmonie', action="store_true", default=False,
+                        help="Surfex configuration created from Harmonie environment")
     parser.add_argument('tests', nargs='+', type=str, help="Which tests to run and order to run")
+    parser.add_argument('--blacklist', type=str, required=False, default=None, help="JSON file with blacklist")
+    parser.add_argument('--domain', type=str, required=False, default=None, help="JSON file with domain")
 
-    if len(sys.argv) == 0:
+    if len(argv) == 0:
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def run_titan(args):
+def run_titan(**kwargs):
 
-    input_file = args.input_file
+    domain_geo = None
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config" in kwargs:
+            if kwargs["config"] is not None:
+                config_exp = kwargs["config"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+        print("Using default config from: " + config_exp)
+        input_data = toml.load(open(config_exp, "r"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        domain_geo = config.get_setting("GEOMETRY#GEO")
+    elif "domain" in kwargs:
+        if kwargs["domain"] is not None:
+            domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+        del(kwargs["domain"])
+
+    # Set domain geo if set
+    kwargs.update({"domain_geo": domain_geo})
+
+    blacklist = None
+    if "blacklist" in kwargs:
+        if kwargs["blacklist"] is not None:
+            blacklist = json.load(open(kwargs["blacklist"], "r"))
+    kwargs.update({"blacklist": blacklist})
+
+    input_file = kwargs["input_file"]
     if os.path.exists(input_file):
         settings = json.load(open(input_file, "r"))
     else:
         raise FileNotFoundError("Could not find input file " + input_file)
-    tests = args.tests
+    tests = kwargs["tests"]
 
-    # Find name of global config file
-    root = __file__
-    if os.path.islink(root):
-        root = os.path.realpath(root)
-    base = os.path.dirname(os.path.abspath(root))
-    qc_config = base + "/cfg/qc_codes.json"
+    output_file = kwargs["output_file"]
+    indent = kwargs["indent"]
 
-    test_flags = json.load(open(qc_config, "r"))
+    an_time = kwargs["dtg"]
+    if isinstance(an_time, str):
+        an_time = datetime.strptime(an_time, "%Y%m%d%H")
+    kwargs.update({"an_time": an_time})
+    var = kwargs["variable"]
 
-    an_time = datetime.strptime(args.dtg, "%Y%m%d%H")
-    var = args.variable
-
-    tests = surfex.titan.define_quality_control(tests, settings)
-    print(settings)
+    tests = surfex.titan.define_quality_control(tests, settings[var], an_time, domain_geo=domain_geo,
+                                                blacklist=blacklist)
+    # print(settings)
     datasources = surfex.obs.get_datasources(an_time, settings[var]["sets"])
-    data_set = surfex.TitanDataSet(var, settings[var], tests, test_flags, datasources, an_time, debug=True)
+    data_set = surfex.TitanDataSet(var, settings[var], tests, datasources, an_time, debug=True)
     data_set.perform_tests()
 
-    data_set.write_output(args.output_file, indent=args.indent)
+    data_set.write_output(output_file, indent=indent)
 
 
 def parse_args_oi2soda(argv):

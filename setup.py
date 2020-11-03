@@ -87,8 +87,7 @@ setup(
         "StringIO; python_version < '3'",
         "eccodes",
         "python-csv",
-        "db-sqlite3",
-        "configParser"
+        "db-sqlite3"
     ],
 
     # Not on pypi

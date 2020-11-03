@@ -4,6 +4,7 @@ import numpy as np
 import surfex
 from datetime import datetime, timedelta
 import json
+import glob
 
 
 class Observation(object):
@@ -91,7 +92,6 @@ def get_datasources(obs_time, settings):
                 filepattern = settings[obs_set]["filepattern"]
 
             validtime = obs_time
-
             if filetype.lower() == "bufr":
                 filename = surfex.file.parse_filepattern(filepattern, obs_time, validtime)
                 if "varname" in settings[obs_set]:
@@ -118,6 +118,30 @@ def get_datasources(obs_time, settings):
                 filenames = None
                 if "filenames" in settings[obs_set]:
                     filenames = settings[obs_set]["filenames"]
+                if filenames is None:
+                    if "filepattern" in settings[obs_set]:
+                        filepattern = settings[obs_set]["filepattern"]
+                        neg_t_range = 15
+                        if "neg_t_range" in settings[obs_set]:
+                            neg_t_range = settings[obs_set]["neg_t_range"]
+                        pos_t_range = 15
+                        if "pos_t_range" in settings[obs_set]:
+                            pos_t_range = settings[obs_set]["pos_t_range"]
+
+                        dtg = validtime - timedelta(minutes=int(neg_t_range))
+                        end_dtg = validtime - timedelta(minutes=int(pos_t_range))
+
+                        filenames = []
+                        while dtg < end_dtg:
+                            fname = surfex.file.parse_filepattern(filepattern, dtg, dtg)
+                            fname = glob.glob(fname)
+                            if len(fname) == 1:
+                                fname = fname[0]
+                                if os.path.exists(fname) and fname not in filenames:
+                                    filenames.append(fname)
+                            dtg = dtg + timedelta(minutes=1)
+                    else:
+                        raise Exception("No filenames or filepattern found")
                 if "varname" in settings[obs_set]:
                     variable = settings[obs_set]["varname"]
                 else:

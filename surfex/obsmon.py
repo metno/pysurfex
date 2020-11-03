@@ -9,92 +9,6 @@ except ImportWarning:
     sqlite3 = None
     print("Could not import sqlie3 modules")
 
-try:
-    import csv
-except ImportWarning:
-    csv = None
-    print("Could not import csv module")
-
-
-def read_ascii_file_with_header(obstime, filename):
-
-    """
-
-    Read feor example gridpp from file
-
-    """
-
-    if csv is None:
-        raise Exception("Could not import needed csv module")
-
-    observations = []
-    flags = []
-    cis = []
-    lafs = []
-    fg_deps = []
-    an_deps = []
-    passed_tests = None
-    providers = []
-
-    with open(filename, 'r') as csvfile:
-        diagreader = csv.reader(csvfile, delimiter=';', quotechar='|')
-        first = True
-        header = []
-        for row in diagreader:
-            lon = "NULL"
-            lat = "NULL"
-            status = "NULL"
-            fg = np.nan
-            an = np.nan
-            value = np.nan
-            stid = "NULL"
-            land = 1
-            i = 0
-            for element in row:
-                if first:
-                    header.append(element)
-                else:
-                    if header[i] == "lon":
-                        lon = float(element)
-                    if header[i] == "lat":
-                        lat = float(element)
-                    if header[i] == "id":
-                        stid = element
-                    if header[i] == "dqc":
-                        st = element
-                        st = int(st)
-                        if st == 0:
-                            status = str(st + 1)
-                        else:
-                            status = str(st)
-                        # print(status)
-                    if header[i] == "value" and element != "NA":
-                        value = float(element)
-                    if header[i] == "fg" and element != "NA":
-                        fg = float(element)
-                    if header[i] == "an" and element != "NA":
-                        an = float(element)
-                    if header[i] == "land":
-                        land = element
-                i = i + 1
-
-            # Add observations
-            if not first:
-                # obs = {"lon": lon, "lat": lat, "id": stid, "dqc": status, "value": value, "fg": fg, "an": an,
-                #       "land": land}
-
-                observations.append(surfex.Observation(obstime, lon, lat, value, stid=stid))
-                flags.append(status)
-                cis.append(np.nan)
-                lafs.append(land)
-                fg_deps.append(fg)
-                an_deps.append(an)
-                providers.append("NA")
-
-            first = False
-
-    return surfex.QCDataSet(obstime, observations, flags, cis, lafs, providers, passed_tests=passed_tests)
-
 
 def open_db(dbname):
     if sqlite3 is None:
@@ -359,45 +273,26 @@ def write_obsmon_sqlite_file(**kwargs):
     varname = kwargs["varname"]
     dbname = kwargs["output"]
 
+    operator = "bilinear"
+    if "operator" in kwargs:
+        operator = kwargs["operator"]
+
     qc = kwargs["qc"]
     obs_titan = surfex.dataset_from_file(an_time, qc, skip_flags=[150])
 
     conn = open_db(dbname)
     create_db(conn, modes, stat_cols)
-    cache = surfex.Cache(False, 3600)
     fg_file = kwargs["fg_file"]
-    fg_var = kwargs["fg_var"]
+    fg_var = kwargs["file_var"]
     an_file = kwargs["an_file"]
-    an_var = kwargs["an_var"]
+    an_var = kwargs["file_var"]
 
     # Only first guess file implemented at the moment
     geo_in, validtime, an_field, glafs, gelevs = surfex.read_first_guess_netcdf_file(an_file, an_var)
     geo_in, validtime, fg_field, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, fg_var)
-    dx = []
-    dy = []
-    for i in range(0, len(obs_titan.flags)):
-        dx.append(0.5)
-        dy.append(0.5)
 
-    settings = {
-        "nam_lonlatval": {
-            "xx": obs_titan.lons[:],
-            "xy": obs_titan.lats[:],
-            "xdx": dx,
-            "xdy": dy
-        }
-    }
-    geo_out = surfex.LonLatVal(settings)
-
-    an_interpolated_field = surfex.NearestNeighbour(geo_in, geo_out, distance_check=False, cache=cache). \
-        interpolate(an_field)
-    fg_interpolated_field = surfex.NearestNeighbour(geo_in, geo_out, distance_check=False, cache=cache). \
-        interpolate(fg_field)
-    fg_dep = []
-    an_dep = []
-    for o in range(0, len(obs_titan.flags)):
-        fg_dep.append(obs_titan.values[o] - fg_interpolated_field[o])
-        an_dep.append(obs_titan.values[o] - an_interpolated_field[o])
+    fg_dep = surfex.Departure(operator, geo_in, obs_titan, fg_field, "first_guess").get_departure()
+    an_dep = surfex.Departure(operator, geo_in, obs_titan, an_field, "analysis").get_departure()
 
     obs_titan = surfex.dataset_from_file(an_time, qc, skip_flags=[150, 199], fg_dep=fg_dep, an_dep=an_dep)
 

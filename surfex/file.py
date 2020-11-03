@@ -106,7 +106,7 @@ class PREPFile(SurfexSurfIO):
     def __init__(self, csurf_filetype, cprepfile, geo, input_file=None, symlink=True, archive_file=None,
                  lfagmap=False, masterodb=False):
         cprepfile = get_surfex_io_object(cprepfile, filetype="surf", geo=geo, fileformat=csurf_filetype,
-                                         lfagmap=lfagmap, masterodb=masterodb)
+                                         lfagmap=lfagmap, masterodb=masterodb,)
 
         SurfexSurfIO.__init__(self, cprepfile, csurf_filetype, input_file=input_file,
                               archive_file=archive_file, symlink=symlink)
@@ -654,6 +654,8 @@ class SurfFileTypeExtension(object):
         lfagmap = True
         if "lfagmap" in kwargs:
             lfagmap = kwargs["lfagmap"]
+        if "read" in kwargs:
+            read = kwargs["read"]
 
         suffix = None
         extension = ""
@@ -1106,6 +1108,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     month = basetime.strftime('%m')
     day = basetime.strftime('%d')
     hour = basetime.strftime('%H')
+    mins = basetime.strftime('%M')
     dt = validtime-basetime
     l1 = "%d" % (dt.seconds / 3600)
     ll = "%02d" % (dt.seconds / 3600)
@@ -1116,6 +1119,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace('@MM@', month)
     file_name = file_name.replace('@DD@', day)
     file_name = file_name.replace('@HH@', hour)
+    file_name = file_name.replace('@mm@', mins)
     file_name = file_name.replace('@L@', l1)
     file_name = file_name.replace('@LL@', ll)
     file_name = file_name.replace('@LLL@', lll)

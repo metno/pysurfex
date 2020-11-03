@@ -626,7 +626,7 @@ class BaseNamelist(object):
             self.input_list.append({"json": {"NAM_NACVEG": {"XSIGT2MO":
                                     self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO")}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XSIGH2MO":
-                                    self.config.get_setting("SURFEX#ASSIM#ISBAOI#XSIGH2MO")}}})
+                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGH2MO")}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLIMCA": 0.0}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLISST": 0.05}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"NECHGU": self.fcint}}})
@@ -1117,8 +1117,10 @@ class SodaInputData(surfex.JsonInputData):
         else:
             raise NotImplementedError(cfile_format_sst)
 
-        data_dir = self.system_file_paths.get_system_path("sst_file_dir", basedtg=self.dtg, default_dir="assim_dir")
-        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg, check_existence=True)
+        # data_dir = self.system_file_paths.get_system_path("sst_file_dir", basedtg=self.dtg, default_dir="assim_dir")
+        data_dir = "sst_file_dir"
+        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg, check_existence=True,
+                                                         default_dir="assim_dir")
         sea_settings = {
             target: sstfile
         }

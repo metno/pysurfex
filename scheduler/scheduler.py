@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-import ecflow
+try:
+    import ecflow
+except ModuleNotFoundError:
+    ecflow = None
 import subprocess
 import scheduler
 import surfex
@@ -41,6 +44,8 @@ class Server(ABC):
 
 class EcflowServer(Server):
     def __init__(self, ecf_host, ecf_port, logfile):
+        if ecflow is None:
+            raise Exception("Ecflow was not found")
         Server.__init__(self)
         self.ecf_host = ecf_host
         self.ecf_port = ecf_port
