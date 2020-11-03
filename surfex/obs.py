@@ -81,9 +81,13 @@ class Observation(object):
         return stids
 
 
-def get_datasources(obs_time, settings):
+def get_datasources(obs_time, settings, tolerate_nmissing=0):
+    nmissing = 0
     datasources = []
     for obs_set in settings:
+        tolerate_nmissing = False
+        if "tolerate_missing" in settings[obs_set]:
+            tolerate_nmissing = settings[obs_set]["tolerate_nmissing"]
 
         if "filetype" in settings[obs_set]:
             filetype = settings[obs_set]["filetype"]

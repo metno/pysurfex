@@ -11,7 +11,7 @@ class SuiteDefinition(object):
 
         if ecflow is None:
             raise Exception("Ecflow not loaded properly")
-        
+
         self.config = config
         self.def_file = def_file
         self.stream = stream

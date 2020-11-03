@@ -87,13 +87,13 @@ setup(
         "StringIO; python_version < '3'",
         "eccodes",
         "python-csv",
-        "db-sqlite3"
+        "db-sqlite3",
+        "titanlib",
+        "gridpp"
     ],
 
     # Not on pypi
     # epygram
-    # titanlib
-    # gridppOI
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
