@@ -1,4 +1,7 @@
-import ecflow
+try:
+    import ecflow
+except ImportError:
+    ecflow = None
 import os
 from datetime import datetime, timedelta
 
@@ -6,6 +9,9 @@ from datetime import datetime, timedelta
 class SuiteDefinition(object):
     def __init__(self, config, exp, def_file, host="0", stream=None):
 
+        if ecflow is None:
+            raise Exception("Ecflow not loaded properly")
+        
         self.config = config
         self.def_file = def_file
         self.stream = stream
