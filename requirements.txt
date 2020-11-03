@@ -4,6 +4,7 @@ netCDF4
 cfunits
 pyproj
 pyyaml
+toml
 tomlkit
 netCDF4
 jsonmerge
@@ -14,21 +15,7 @@ requests
 json; python_version < '3'
 StringIO; python_version < '3'
 eccodes
-python-csv
 db-sqlite3
-configParser
-epygram
-titanlib
-gridppOI
-coverage
-coveralls
-pep8
-nose
-matplotlib
-cartopy
 
 # This is an implicit value, here for clarity
 --index-url https://pypi.python.org/simple/
-
--e .[test]
-
