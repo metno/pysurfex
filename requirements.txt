@@ -16,8 +16,8 @@ json; python_version < '3'
 StringIO; python_version < '3'
 eccodes
 db-sqlite3
-titanlib
-gridpp
+# titanlib
+# gridpp
 
 # This is an implicit value, here for clarity
 --index-url https://pypi.python.org/simple/
