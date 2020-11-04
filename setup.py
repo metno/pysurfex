@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+import numpy
 
 here = path.abspath(path.dirname(__file__))
 
@@ -121,6 +122,8 @@ setup(
         'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml', 'cfg/first_guess.yml'],
     },
     include_package_data=True,
+
+    include_dirs=[numpy.get_include()],
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
