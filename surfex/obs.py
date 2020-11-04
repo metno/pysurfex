@@ -717,7 +717,7 @@ class JsonObservationSet(ObservationSet):
             if "varname" in obs[ind]:
                 varname = obs[ind]["varname"]
 
-            if varname is "" and var is not None:
+            if varname == "" and var is not None:
                 raise Exception("Varname is not found " + varname)
 
             if var is None or var == varname:
