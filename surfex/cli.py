@@ -132,7 +132,6 @@ def parse_args_create_forcing(argv):
                             choices=["netcdf", "grib1", "grib2", "surfex", "constant"])
     group_uval.add_argument("--uval_converter", type=str, help="Converter function to UREF", default="none",
                             choices=["none"])
-    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 4:
         parser.print_help()
