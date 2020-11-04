@@ -13,13 +13,28 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
     # print(long_description)
 
+
+def read(rel_path):
+    with open(path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
 setup(
     name='pysurfex',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version="0.0.4-dev",
+    version=get_version("surfex/__init__.py"),
 
     description='Python API to SURFEX',
     long_description='Python API to SURFEX',
@@ -89,7 +104,7 @@ setup(
         "python-csv",
         "db-sqlite3",
         # "titanlib",
-        "gridpp == 0.5.0"
+        "gridpp == 0.5.0a1"
     ],
 
     # Not on pypi

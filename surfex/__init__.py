@@ -1,4 +1,4 @@
-__version__ = '0.0.1-dev'
+__version__ = '0.0.1a1'
 
 from .file import *
 from .geo import *

@@ -132,6 +132,7 @@ def parse_args_create_forcing(argv):
                             choices=["netcdf", "grib1", "grib2", "surfex", "constant"])
     group_uval.add_argument("--uval_converter", type=str, help="Converter function to UREF", default="none",
                             choices=["none"])
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 4:
         parser.print_help()
@@ -185,6 +186,7 @@ def parse_args_qc2obsmon(argv):
     parser.add_argument('--an_file', type=str, help="Analysis file", required=True)
     parser.add_argument('--file_var', type=str, help="File variable", required=True)
     parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     args = parser.parse_args(argv)
     kwargs = {}
@@ -217,6 +219,7 @@ def parse_args_create_surfex_json_namelist(argv):
     parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
     parser.add_argument('program', help="For which program you should create the JSON file",
                         choices=["pgd", "prep", "offline", "soda"])
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -306,6 +309,8 @@ def parse_args_create_surfex_json_input(argv):
                         help="")
     parser.add_argument('--ascatfile', type=str, nargs="?", required=False, default=None,
                         help="")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
@@ -406,6 +411,7 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('variables', nargs="+", choices=["air_temperature_2m", "relative_humidity_2m",
                                                          "surface_snow_thickness"],
                         help="Variables to create first guess for")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -538,6 +544,7 @@ def parse_args_masterodb(argv):
                         help="JSON file with archive output")
     parser.add_argument('--binary', '-b', required=False, default=None, nargs='?',
                         help="Full path of MASTERODB binary")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -737,6 +744,7 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
     parser.add_argument('binary', type=str, help="Command to run")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -928,6 +936,7 @@ def parse_args_gridpp(argv):
     parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.5, required=False)
     parser.add_argument('--minvalue', dest='minvalue', type=float, default=None, required=False)
     parser.add_argument('--maxvalue', dest='maxvalue', type=float, default=None, required=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(sys.argv) == 0:
         parser.print_help()
@@ -980,6 +989,7 @@ def parse_args_titan(argv):
     parser.add_argument('tests', nargs='+', type=str, help="Which tests to run and order to run")
     parser.add_argument('--blacklist', type=str, required=False, default=None, help="JSON file with blacklist")
     parser.add_argument('--domain', type=str, required=False, default=None, help="JSON file with domain")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -1059,6 +1069,7 @@ def parse_args_oi2soda(argv):
                         default="surface_snow_thickness")
     parser.add_argument('dtg', nargs="?", type=str, help="DTG", default=None)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 3:
         parser.print_help()
@@ -1098,6 +1109,7 @@ def parse_lsm_file_assim(argv):
     parser.add_argument('--dtg', type=str, help="DTG", default=None, required=False)
     parser.add_argument('--domain', type=str, help="Domain", required=True)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 3:
         parser.print_help()
