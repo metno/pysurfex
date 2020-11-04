@@ -43,11 +43,7 @@ jobs:
         wget "https://docs.google.com/uc?export=download&id=1fMAetPj7ho4UYOX6FMAuU5pF2QK3y3J1" -O testdata.zip
         unzip -o testdata.zip
         nosetests
-    - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v1.1.2
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: .coverage
+    - name: Coveralls
       run: |
         ./create_coverage.sh
-
+        COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
