@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install libboost-dev libproj-dev libgsl-dev python3-setuptools python3-nose python3-numpy python3-scipy
+        sudo apt update && sudo apt install install libudunits2-dev libboost-dev libproj-dev libgsl-dev python3-setuptools python3-nose python3-numpy python3-scipy
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
