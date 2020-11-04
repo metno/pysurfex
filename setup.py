@@ -88,8 +88,8 @@ setup(
         "eccodes",
         "python-csv",
         "db-sqlite3",
-        #"titanlib",
-        #"gridpp"
+        # "titanlib",
+        "gridpp"
     ],
 
     # Not on pypi
