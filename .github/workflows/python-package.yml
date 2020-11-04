@@ -40,6 +40,4 @@ jobs:
         pip install -e .[test]
     - name: Test with nosetests
       run: |
-        env:
-          PYTHONPATH: $PYTHONPATH:$GITHUB_WORKSPACE
         nosetests
