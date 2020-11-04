@@ -40,4 +40,6 @@ jobs:
         pip install -e .[test]
     - name: Test with nosetests
       run: |
+        wget "https://docs.google.com/uc?export=download&id=1fMAetPj7ho4UYOX6FMAuU5pF2QK3y3J1" -O testdata.zip
+        unzip -o testdata.zip
         nosetests
