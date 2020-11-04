@@ -104,7 +104,7 @@ setup(
         "python-csv",
         "db-sqlite3",
         # "titanlib",
-        "gridpp == 0.4.2b4"
+        #"gridpp == 0.4.2b4"
     ],
 
     # Not on pypi
