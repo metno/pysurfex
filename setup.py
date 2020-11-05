@@ -88,7 +88,7 @@ setup(
         "scipy",
         "netCDF4",
         "cfunits",
-        "pyproj",
+        "pyproj <= 1.9.6",
         "pyyaml",
         "toml",
         "netCDF4",
