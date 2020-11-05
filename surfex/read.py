@@ -29,6 +29,14 @@ class ReadData(object):
 
 # Direct data can be ead with this class with converter = None
 class ConvertedInput(ReadData):
+    """
+    Converted input
+
+    Args:
+        geo (surfex.Geo): Surfex geometry
+        var_name (str): Variable name
+        converter (surfex.Converter): Converter
+    """
 
     def __init__(self, geo, var_name, converter):
         ReadData.__init__(self, geo, var_name)
@@ -47,7 +55,16 @@ class ConvertedInput(ReadData):
 
 
 class ConstantValue(ReadData):
+    """
+    Set a field to a constant value
 
+    :param geo: Geometry object
+    :type geo: surfex.Geo
+    :param var_name: Variable name
+    :type var_name: str
+    :param var_dict: Variable definition
+    :type var_dict: dict
+    """
     def __init__(self, geo, var_name, var_dict):
         ReadData.__init__(self, geo, var_name)
         self.var_dict = var_dict
@@ -96,7 +113,7 @@ class Converter:
     :param name: name of the converter
     :type name: str
     :param validtime: The valid time you want to read
-    :type validtime: datetime
+    :type validtime: datetime.datetime
     :param defs: A dictionary defining the variables
     :type defs: dict
     :param conf: A dictionary defining the converter
@@ -104,7 +121,7 @@ class Converter:
     :param fileformat: Fileformat of the converter
     :type fileformat: str
     :param basetime: The base time of the input data source
-    :type basetime: validtime
+    :type basetime: datetime.datetime
     :param debug: Debug optiom
     :type debug: bool
     """
@@ -171,6 +188,21 @@ class Converter:
         print(self.name)
 
     def create_variable(self, fileformat, defs, var_dict, debug):
+        """
+        Create a variable
+
+            Args:
+                fileformat (str): Fileformat
+                defs (dict): defs
+                var_dict (dict): Variable dictionary
+                debug(bool): Debug option
+
+            Raises:
+                 NotImplementedError: Not implemented
+
+            Returns:
+                field: The read field
+        """
 
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables

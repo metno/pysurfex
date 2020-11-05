@@ -126,7 +126,7 @@ class SuiteDefinition(object):
 
         # self.defs.save_as_defs(self.def_file)
         self.defs.save_as_defs(self.def_file)
-        print("def filed saved to " + self.def_file)
+        print("def file saved to " + self.def_file)
 
 
 class SurfexSuite(object):
@@ -511,7 +511,7 @@ class EcflowSuite(EcflowNodeContainer):
 
     def save_as_defs(self):
         self.defs.save_as_defs(self.def_file)
-        print("def filed saved to " + self.def_file)
+        print("def file saved to " + self.def_file)
 
 
 class EcflowSuiteTriggers(object):
