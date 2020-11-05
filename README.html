@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Offline SURFEX Forcing and Visualization of SURFEX data &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <title>Python API to SURFEX (pysurfex) &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -25,7 +25,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Offline SURFEX Forcing and Visualization of SURFEX data</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Python API to SURFEX (pysurfex)</a></li> 
       </ul>
     </div>  
 
@@ -34,15 +34,32 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <img alt="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/offline-surfex-forcing/badge.svg?branch=master:target:https://coveralls.io/github/metno/offline-surfex-forcing?branch=master" />
-<div class="section" id="offline-surfex-forcing-and-visualization-of-surfex-data">
-<h1>Offline SURFEX Forcing and Visualization of SURFEX data<a class="headerlink" href="#offline-surfex-forcing-and-visualization-of-surfex-data" title="Permalink to this headline">¶</a></h1>
-<p>Tool to create offline SURFEX forcing and plotting and verification of results</p>
+  <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
+<div class="section" id="python-api-to-surfex-pysurfex">
+<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this headline">¶</a></h1>
+<dl class="simple">
+<dt>An API in python to the external surface model SURFEX.</dt><dd><ul class="simple">
+<li><p>Prepare input and namelists to a SURFEX binary</p></li>
+<li><p>Create atmospheric forcing for offline SURFEX runs</p></li>
+<li><p>Read SURFEX output</p></li>
+<li><p>A scheduler setup to run offline SURFEX experiments</p></li>
+<li><p>Quality control of observations with titanlib</p></li>
+<li><p>Optimal interpolation with gridpp</p></li>
+<li><p>Monitor the observations usage</p></li>
+</ul>
+</dd>
+</dl>
+<p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <div class="section" id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
 <p>Install the required pacakges:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
-sudo apt-get install python-setuptools python-pip
+<span class="c1"># Python tools</span>
+sudo apt-get install python3-setuptools python3-numpy python3-scipy
+<span class="c1"># Cfunits</span>
+sudo apt-get install libudunits2-dev
+<span class="c1"># Titanlib</span>
+sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
@@ -51,23 +68,22 @@ sudo apt-get install python-setuptools python-pip
 <h2>General dependencies<a class="headerlink" href="#general-dependencies" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
+netCDF4
 cfunits
 pyproj
 pyyaml
 toml
+tomlkit
+netCDF4
 jsonmerge
 datetime
 f90nml
-cfunits
 enum34
 requests
-python-dateutil
 json<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
 StringIO<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
 eccodes
-python-csv
 db-sqlite3
-configParser
 </pre></div>
 </div>
 <p>To read NetCDF files:</p>
@@ -75,9 +91,10 @@ configParser
 </pre></div>
 </div>
 <p>To read grib files:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>eccodes from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with <span class="nv">ENABLE_PYTHON</span><span class="o">=</span>ON
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>eccodes
 </pre></div>
 </div>
+<p>from ECMWF <a class="reference external" href="https://software.ecmwf.int/wiki/display/ECC/Releases">https://software.ecmwf.int/wiki/display/ECC/Releases</a> installed with ENABLE_PYTHON=ON</p>
 <p>To plot:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>matplotlib
 cartopy
@@ -87,18 +104,32 @@ cartopy
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>requests
 </pre></div>
 </div>
+<p>For Quality control of observations</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>titanlib
+</pre></div>
+</div>
+<p>For optimal interpolation and observation operators</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gridpp
+</pre></div>
+</div>
 <p>For testing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
+nose
 Testdata from https://drive.google.com/open?id<span class="o">=</span>1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
 </pre></div>
 </div>
-<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">offline-surfex-forcing</span></code> by executing the following inside the extracted
+<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
 folder:</p>
+</div>
+<div class="section" id="install-pysurfex">
+<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
 </pre></div>
 </div>
-<p>Create documentation</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> sphinx
+</div>
+<div class="section" id="create-documentation">
+<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
 <span class="c1"># Create html documentation</span>
 make html
 <span class="c1"># Create latex documentation</span>
@@ -107,6 +138,21 @@ make latex
 make latexpdf
 </pre></div>
 </div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="running-an-experiment-in-ecflow">
+<h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
+<p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
+<span class="nb">cd</span> sfx_home
+mkdir sandbox
+<span class="nb">cd</span> sandbox
+PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-label --domain your-domain
+PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
+</pre></div>
 </div>
 </div>
 
@@ -119,11 +165,15 @@ make latexpdf
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Offline SURFEX Forcing and Visualization of SURFEX data</a><ul>
+<li><a class="reference internal" href="#">Python API to SURFEX (pysurfex)</a><ul>
 <li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
 <li><a class="reference internal" href="#general-dependencies">General dependencies</a></li>
+<li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
+<li><a class="reference internal" href="#create-documentation">Create documentation</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#running-an-experiment-in-ecflow">Running an experiment in EcFlow</a></li>
 </ul>
 
   <div role="note" aria-label="source link">
@@ -154,7 +204,7 @@ make latexpdf
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="nav-item nav-item-0"><a href="index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Offline SURFEX Forcing and Visualization of SURFEX data</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Python API to SURFEX (pysurfex)</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

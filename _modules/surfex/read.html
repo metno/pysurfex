@@ -128,17 +128,28 @@
 
 <div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#surfex.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Main interface to read a field is done through a converter</span>
-<span class="sd">    The converter is default &quot;None&quot; to read a plain field</span>
+<span class="sd">    Main interface to read a field is done through a converter.</span>
+<span class="sd">    The converter name is default &quot;None&quot; to read a plain field without any conversion.</span>
+
+<span class="sd">    :param name: name of the converter</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :param validtime: The valid time you want to read</span>
+<span class="sd">    :type validtime: datetime</span>
+<span class="sd">    :param defs: A dictionary defining the variables</span>
+<span class="sd">    :type defs: dict</span>
+<span class="sd">    :param conf: A dictionary defining the converter</span>
+<span class="sd">    :type conf: dict</span>
+<span class="sd">    :param fileformat: Fileformat of the converter</span>
+<span class="sd">    :type fileformat: str</span>
+<span class="sd">    :param basetime: The base time of the input data source</span>
+<span class="sd">    :type basetime: validtime</span>
+<span class="sd">    :param debug: Debug optiom</span>
+<span class="sd">    :type debug: bool</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializing the converter</span>
-
-<span class="sd">        :param name: name</span>
-<span class="sd">        :param conf: dictionary</span>
-<span class="sd">        :param fileformat: format</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -166,8 +177,8 @@
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-        <span class="c1">#            self.rh = self.create_variable(fileformat,defs,conf[self.name][&quot;t&quot;],debug)</span>
-        <span class="c1">#            self.p = self.create_variable(fileformat,defs,conf[self.name][&quot;p&quot;],debug)</span>
+            <span class="c1"># self.rh = self.create_variable(fileformat,defs,conf[self.name][&quot;t&quot;],debug)</span>
+            <span class="c1"># self.p = self.create_variable(fileformat,defs,conf[self.name][&quot;p&quot;],debug)</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcrain&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
