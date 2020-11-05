@@ -10,11 +10,10 @@ Welcome to SURFEX Python API's documentation!
    :maxdepth: 3
    :caption: Contents:
 
-.. include::  sphinx/example.rst
+.. include::  docs/example.rst
 .. include::  README.rst
 
 .. autoclass:: surfex.Converter
-.. autoclass:: surfex.Assimilation
 .. autoclass:: surfex.SurfexSurfIO
 .. autoclass:: surfex.PGDFile
 .. autoclass:: surfex.PREPFile
@@ -73,8 +72,8 @@ Welcome to SURFEX Python API's documentation!
 .. autoclass:: scheduler.EcflowServer
 .. autoclass:: scheduler.EcflowServerFromFile
 .. autoclass:: scheduler.EcflowLogServer
-.. autoclass:: scheduler.Task
-.. autoclass:: scheduler.Client
+.. autoclass:: scheduler.EcflowTask
+.. autoclass:: scheduler.EcflowClient
 .. autoclass:: scheduler.EcflowSubmitTask
 .. autoclass:: scheduler.SubmitException
 .. autoclass:: scheduler.KillException
@@ -82,14 +81,14 @@ Welcome to SURFEX Python API's documentation!
 .. autoclass:: scheduler.BackgroundSubmission
 .. autoclass:: scheduler.PBSSubmission
 .. autoclass:: scheduler.SlurmSubmission
+.. autoclass:: scheduler.SurfexSuite
 .. autoclass:: scheduler.EcflowSuite
-.. autoclass:: scheduler.Node
-.. autoclass:: scheduler.EcfSuite
-.. autoclass:: scheduler.EcfTriggers
-.. autoclass:: scheduler.EcfTrigger
-.. autoclass:: scheduler.EcfVariable
-.. autoclass:: scheduler.EcfFamily
-.. autoclass:: scheduler.EcfTask
+.. autoclass:: scheduler.EcflowNode
+.. autoclass:: scheduler.EcflowSuiteTriggers
+.. autoclass:: scheduler.EcflowSuiteTrigger
+.. autoclass:: scheduler.EcflowSuiteVariable
+.. autoclass:: scheduler.EcflowSuiteFamily
+.. autoclass:: scheduler.EcflowSuiteTask
 .. autoclass:: scheduler.AbstractTask
 .. autoclass:: scheduler.SurfexBinaryTask
 .. autoclass:: scheduler.Pgd
