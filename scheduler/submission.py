@@ -56,10 +56,9 @@ class EcflowSubmitTask(object):
             wrapper = ""
             if self.task_settings.wrapper is not None:
                 wrapper = str(self.task_settings.wrapper)
-            fh.write("wrapper = \"" + wrapper + "\"\n")
-            fh.write("host = \"" + self.task_settings.host + "\"\n")
 
             fh.write("\n#Python script:\n")
+            return wrapper, self.task_settings.host
 
     def write_trailer(self, fh):
         if self.task_settings.trailer is not None:
@@ -71,9 +70,11 @@ class EcflowSubmitTask(object):
         fname = ecf_job + ".tmp"
         shutil.move(ecf_job, fname)
         fh = open(ecf_job, "w")
-        self.write_header(fh)
+        wrapper, host = self.write_header(fh)
         job_fh = open(fname, "r")
         for line in job_fh.readlines():
+            line = line.replace("@WRAPPER_TO_BE_SUBSTITUTED@", wrapper)
+            line = line.replace("@HOST_TO_BE_SUBSTITUTED@", host)
             fh.write(line)
         job_fh.close()
         self.write_trailer(fh)
@@ -443,7 +444,7 @@ class BackgroundSubmission(SubmissionBaseClass):
 
     def set_job_status(self):
         print("set_job_status ", self.job_id)
-        print(self.job_status_cmd )
+        print(self.job_status_cmd)
         if self.job_id is not None:
             self.job_status_cmd = "ps -auxq " + str(self.job_id)
         print(self.job_status_cmd)

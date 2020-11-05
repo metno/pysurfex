@@ -654,8 +654,6 @@ class SurfFileTypeExtension(object):
         lfagmap = True
         if "lfagmap" in kwargs:
             lfagmap = kwargs["lfagmap"]
-        if "read" in kwargs:
-            read = kwargs["read"]
 
         suffix = None
         extension = ""

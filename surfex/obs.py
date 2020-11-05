@@ -82,6 +82,15 @@ class Observation(object):
 
 
 def get_datasources(obs_time, settings, tolerate_nmissing=0):
+
+    """
+    Main data source interface setting data ObservationSet objects based on settings dictionary
+
+    obs_time: datetime
+    settings: dict
+
+    """
+
     nmissing = 0
     datasources = []
     for obs_set in settings:

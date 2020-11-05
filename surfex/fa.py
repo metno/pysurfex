@@ -19,54 +19,54 @@ class Fa(object):
 
         if epygram is None:
             raise Exception("You need epygram to read FA files")
-
-        resource = epygram.formats.resource(self.fname, openmode='r')
-        field = resource.readfield(varname)
-
-        # TODO: check time
-        print("Not checking validtime at the moment: ", validtime)
-
-        if field.geometry.name == "lambert":
-            ny = field.geometry.dimensions["Y_CIzone"]
-            nx = field.geometry.dimensions["X_CIzone"]
-            ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
-            lon0 = field.geometry.projection['reference_lon'].get('degrees')
-            lat0 = field.geometry.projection['reference_lat'].get('degrees')
-            dx = field.geometry.grid["X_resolution"]
-            dy = field.geometry.grid["Y_resolution"]
-
-            # TODO: Can I get centre point directly
-            earth = 6.37122e+6
-            proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
-                    str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
-
-            proj = pyproj.Proj(proj4)
-            x0, y0 = proj(ll_lon, ll_lat)
-            xc = x0 + 0.5 * (nx - 1) * dx
-            yc = y0 + 0.5 * (ny - 1) * dy
-            lonc, latc = proj(xc, yc, inverse=True)
-
-            domain = {
-                "nam_conf_proj": {
-                    "xlon0": lon0,
-                    "xlat0": lat0
-                },
-                "nam_conf_proj_grid": {
-                    "xloncen": lonc,
-                    "xlatcen": latc,
-                    "nimax": nx,
-                    "njmax": ny,
-                    "xdx": dx,
-                    "xdy": dy,
-                    "ilone": 0,
-                    "ilate": 0
-                }
-            }
-            geo_out = surfex.geo.ConfProj(domain)
         else:
-            raise NotImplementedError(field.geometry.name + " not implemented yet!")
+            resource = epygram.formats.resource(self.fname, openmode='r')
+            field = resource.readfield(varname)
 
-        return field.data, geo_out
+            # TODO: check time
+            print("Not checking validtime at the moment: ", validtime)
+
+            if field.geometry.name == "lambert":
+                ny = field.geometry.dimensions["Y_CIzone"]
+                nx = field.geometry.dimensions["X_CIzone"]
+                ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
+                lon0 = field.geometry.projection['reference_lon'].get('degrees')
+                lat0 = field.geometry.projection['reference_lat'].get('degrees')
+                dx = field.geometry.grid["X_resolution"]
+                dy = field.geometry.grid["Y_resolution"]
+
+                # TODO: Can I get centre point directly
+                earth = 6.37122e+6
+                proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
+                        str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+
+                proj = pyproj.Proj(proj4)
+                x0, y0 = proj(ll_lon, ll_lat)
+                xc = x0 + 0.5 * (nx - 1) * dx
+                yc = y0 + 0.5 * (ny - 1) * dy
+                lonc, latc = proj(xc, yc, inverse=True)
+
+                domain = {
+                    "nam_conf_proj": {
+                        "xlon0": lon0,
+                        "xlat0": lat0
+                    },
+                    "nam_conf_proj_grid": {
+                        "xloncen": lonc,
+                        "xlatcen": latc,
+                        "nimax": nx,
+                        "njmax": ny,
+                        "xdx": dx,
+                        "xdy": dy,
+                        "ilone": 0,
+                        "ilate": 0
+                    }
+                }
+                geo_out = surfex.geo.ConfProj(domain)
+            else:
+                raise NotImplementedError(field.geometry.name + " not implemented yet!")
+
+            return field.data, geo_out
 
     def points(self, varname, geo, validtime=None, interpolation="nearest", cache=None):
 

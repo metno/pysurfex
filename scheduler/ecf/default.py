@@ -1,5 +1,7 @@
 import scheduler
 
+host = "@HOST_TO_BE_SUBSTITUTED@"
+wrapper = "@WRAPPER_TO_BE_SUBSTITUTED@"
 lib = "%LIB%"
 exp = "%EXP%"
 stream = "%STREAM%"

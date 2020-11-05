@@ -598,7 +598,7 @@ class ConfigurationFromHarmonie(Configuration):
         # self.update_setting("GEOMETRY#GEO", geo)
         print(self.get_setting("GEOMETRY#GEO"))
 
-        self.settings.update({"FORECAST": { "PHYSICS": env["PHYSICS"]}})
+        self.settings.update({"FORECAST": {"PHYSICS": env["PHYSICS"]}})
 
         # IO
         cnmexp = os.environ["CNMEXP"]

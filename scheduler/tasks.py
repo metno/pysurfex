@@ -457,7 +457,7 @@ class QualityControl(AbstractTask):
         indent = 2
         test_flags = json.load(open(qc_codes, "r"))
 
-        tests = surfex.titan.define_quality_control(tests, settings)
+        tests = surfex.titan.define_quality_control(an_time, tests, settings)
 
         if "netatmo" in settings["sets"]:
             dt = 20
@@ -478,7 +478,7 @@ class QualityControl(AbstractTask):
 
         datasources = surfex.obs.get_datasources(an_time, settings["sets"])
         data_set = surfex.TitanDataSet(self.var_name, settings, tests, test_flags, datasources,
-                                       an_time, debug=True)
+                                       an_time)
         data_set.perform_tests()
 
         data_set.write_output(output, indent=indent)
@@ -563,7 +563,7 @@ class Forcing(AbstractTask):
         kwargs.update({"pattern": "https://thredds.met.no/thredds/dodsC/meps25epsarchive/" +
                                   "@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
 
-        forcing_dir =  self.system_file_paths.get_system_path("forcing_dir", basedtg=self.dtg)
+        forcing_dir = self.system_file_paths.get_system_path("forcing_dir", basedtg=self.dtg)
         os.makedirs(forcing_dir, exist_ok=True)
         output = self.system_file_paths.get_system_file("forcing_dir", "FORCING.nc", basedtg=self.dtg)
 
@@ -753,7 +753,7 @@ class FirstGuess4OI(AbstractTask):
                 for var in var_in:
                     var_name = self.translation[var]
                     variables.append(var_name)
-                    symlink_files.update({ self.archive + "/raw_" + var_name + ".nc":  "raw.nc"})
+                    symlink_files.update({self.archive + "/raw_" + var_name + ".nc":  "raw.nc"})
             except ValueError:
                 raise Exception("Variables could not be translated")
 

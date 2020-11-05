@@ -21,6 +21,7 @@ def parse_submit_cmd(argv):
     parser.add_argument('-ecf_rid', nargs='?', type=str, default=None, required=False, help="ECF remote id")
     parser.add_argument('-e', dest="ensmbr", nargs="?", type=int, help="Ensemble member", required=False, default=None)
     parser.add_argument('--db', type=str, nargs="?", help="Database", required=False, default=None)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -85,6 +86,7 @@ def parse_kill_cmd(argv):
     parser.add_argument('ecf_pass', type=str, help="ECF_PASS")
     parser.add_argument('-ecf_rid', type=str, help="ECF_RID", required=False, nargs="?", default=None)
     parser.add_argument('-submission_id', type=str, help="SUBMISSION_ID")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -132,6 +134,7 @@ def parse_status_cmd(argv):
     parser.add_argument('ecf_pass', type=str, help="ECF_PASS")
     parser.add_argument('-ecf_rid', type=str, help="ECF_RID", required=False, nargs="?", default=None)
     parser.add_argument('-submission_id', type=str, help="SUBMISSION_ID")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -188,6 +191,8 @@ def parse_surfex_script(argv):
                         default=None)
     parser.add_argument('--domain', help="Domain", type=str, required=False, default=None)
     parser.add_argument('--config', help="Config", type=str, required=False, default=None)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
     return parser.parse_args(argv)
 
 
@@ -304,7 +309,6 @@ def surfex_script(argv):
 
         # Merge config
         all_merged_settings = surfex.merge_toml_env_from_config_dicts(sfx_exp.config_files)
-        host = "0"
         merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
 
         # Create configuration

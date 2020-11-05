@@ -4,11 +4,7 @@ import numpy as np
 import time
 import copy
 import shutil
-import os
-import sys
 import surfex
-import yaml
-import json
 from datetime import datetime, timedelta
 
 

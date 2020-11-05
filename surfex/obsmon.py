@@ -2,7 +2,6 @@ import numpy as np
 import surfex
 from datetime import datetime
 
-HAS_SQLITE = True
 try:
     import sqlite3
 except ImportWarning:

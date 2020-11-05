@@ -712,7 +712,7 @@ def parse_args_surfex_binary(argv, mode):
         raise NotImplementedError(mode + " is not implemented!")
 
     parser = ArgumentParser(description=desc)
-    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--version', action='version', version=surfex.__version__)
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
     if need_pgd:
         parser.add_argument('--pgd', type=str, nargs="?", required=True, help="Name of the PGD file")
@@ -743,7 +743,6 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
     parser.add_argument('binary', type=str, help="Command to run")
-    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()

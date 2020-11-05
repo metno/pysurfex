@@ -11,7 +11,6 @@ class BatchJob(object):
     def __init__(self, rte, wrapper=""):
         self.rte = rte
         self.wrapper = wrapper
-        self.tag = "Trygve"
         print("Constructed BatchJob")
 
     def run(self, cmd):

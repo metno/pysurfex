@@ -531,7 +531,6 @@ def read_first_guess_netcdf_file(input_file, var):
                     cfunits.Units("seconds since 1970-01-01 00:00:00")))
     validtime = datetime.fromtimestamp(validtime)
 
-
     nx = lons.shape[1]
     ny = lons.shape[0]
 
@@ -541,39 +540,24 @@ def read_first_guess_netcdf_file(input_file, var):
     # print(lons.shape, lats.shape, type(lons))
     geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
 
-    background_in = fh[var][:]
-    background = np.random.rand(nx, ny)
-
-    if "land_area_fraction" in fh.variables:
-        glafs_in = fh["land_area_fraction"][:]
-        glafs = np.random.rand(nx, ny)
-    else:
-        raise Exception("No land area fraction found in first guess file")
-
-    if "altitude" in fh.variables:
-        gelevs_in = fh["altitude"][:]
-        gelevs = np.random.rand(nx, ny)
-    else:
-        raise Exception("No altitude found in first guess file")
-
     background = fh[var][:]
     background = np.array(np.reshape(background, [nx * ny]))
     background = np.reshape(background, [ny, nx])
     background = np.transpose(background)
-    background = background.tolist()
-    background = np.asarray(background)
+    # background = background.tolist()
+    # background = np.asarray(background)
     glafs = fh["land_area_fraction"][:]
     glafs = np.array(np.reshape(glafs, [nx * ny]))
     glafs = np.reshape(glafs, [ny, nx])
     glafs = np.transpose(glafs)
-    glafs = glafs.tolist()
-    glafs = np.asarray(glafs)
+    # glafs = glafs.tolist()
+    # glafs = np.asarray(glafs)
     gelevs = fh["altitude"][:]
     gelevs = np.array(np.reshape(gelevs, [nx * ny]))
     gelevs = np.reshape(gelevs, [ny, nx])
     gelevs = np.transpose(gelevs)
-    gelevs = gelevs.tolist()
-    gelevs = np.asarray(gelevs)
+    # gelevs = gelevs.tolist()
+    # gelevs = np.asarray(gelevs)
 
     fh.close()
     return geo, validtime, background, glafs, gelevs
@@ -640,6 +624,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         mask = np.ma.is_masked(t2m_var)
         t2m_var[mask] = 999.
         t2m_var = t2m_var.tolist()
+    else:
+        t2m_var = [999] * (nx * ny)
 
     if rh2m is not None:
         rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
@@ -653,6 +639,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         mask = np.ma.is_masked(rh2m_var)
         rh2m_var[mask] = 999.
         rh2m_var = rh2m_var.tolist()
+    else:
+        rh2m_var = [999] * (nx * ny)
 
     if sd is not None:
         sd_fh = netCDF4.Dataset(sd["file"], "r")
@@ -667,27 +655,12 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         mask = np.ma.is_masked(sd_var)
         sd_var[mask] = 999.
         sd_var = sd_var.tolist()
+    else:
+        sd_var = [999] * (nx * ny)
 
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
 
-    if t2m is None:
-        t2m_var = [999] * (nx * ny)
-    if rh2m is None:
-        rh2m_var = [999] * (nx * ny)
-    if sd is None:
-        sd_var = [999] * (nx * ny)
-
-    # undefined = []
-    # for i in range(0, nx *ny):
-    #     undefined.append("999")
-
-    print(t2m)
-    print(rh2m)
-    print(sd)
-    print(len(t2m_var))
-    print(len(rh2m_var))
-    print(len(sd_var))
     if output is None:
         out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
     else:
@@ -697,32 +670,4 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
         print("i", i)
 
-    '''
-    for j in range(0, ny):
-        for i in range(0, nx):
-            # out.write(str(array1[0,j,i])+" "+str(array2[0,j,i])+" 999 999 "+str(array3[0,j,i])+"\n")
-            undef = "999"
-            if t2m_var is not None:
-                if np.ma.is_masked(t2m_var[j, i]):
-                    t2m_val = undef
-                else:
-                    t2m_val = str(t2m_var[j, i])
-            else:
-                t2m_val = undef
-            if rh2m_var is not None:
-                if np.ma.is_masked(rh2m_var[j, i]):
-                    rh2m_val = undef
-                else:
-                    rh2m_val = str(rh2m_var[j, i])
-            else:
-                rh2m_val = undef
-            if sd_var is not None:
-                if np.ma.is_masked(sd_var[j, i]):
-                    sd_val = undef
-                else:
-                    sd_val = str(sd_var[j, i])
-            else:
-                sd_val = undef
-            out.write(t2m_val + " " + rh2m_val + " " + sd_val + "\n")
-    '''
     out.close()

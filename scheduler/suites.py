@@ -256,8 +256,7 @@ class SurfexSuite(object):
             cycle_input = EcflowSuiteFamily("CycleInput", dtg_node, triggers=triggers)
             cycle_input_dtg_node.update({dtg_str: cycle_input})
 
-            forcing = EcflowSuiteTask("Forcing", cycle_input, ecf_files=ecf_files)
-            # forcing_complete = EcflowSuiteTrigger(forcing)
+            EcflowSuiteTask("Forcing", cycle_input, ecf_files=ecf_files)
 
             triggers = EcflowSuiteTriggers([init_run_complete, static_complete, prepare_cycle_complete])
             if prev_dtg is not None:

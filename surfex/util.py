@@ -19,9 +19,6 @@ def warning(message):
     print("\033[1;33mWarning: " + message + "\033[0m")
 
 
-
-
-
 def unixtime_to_datenum(time):
 
     """ Converts unixtime into datenum

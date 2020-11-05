@@ -1,6 +1,3 @@
-import os
-import surfex
-# import jsonmerge
 import numpy as np
 try:
     import gridpp
