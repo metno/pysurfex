@@ -6,8 +6,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>surfex.geo &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -106,7 +106,7 @@
 <div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#surfex.ConfProj">[docs]</a><span class="k">class</span> <span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CONF PROJ&quot;</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">namelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="o">=</span> <span class="kc">None</span>
@@ -200,7 +200,7 @@
 <div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#surfex.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLATVAL&quot;</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">namelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlatval&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;xx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xy&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdy&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_lonlatval&quot;</span><span class="p">]:</span>
@@ -238,7 +238,7 @@
 <div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#surfex.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CARTESIAN&quot;</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">namelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_cartesian&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;xlat0&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xlon0&quot;</span> <span class="ow">and</span> <span class="s2">&quot;nimax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;njmax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdy&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_cartesian&quot;</span><span class="p">]:</span>
@@ -281,7 +281,7 @@
 <div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#surfex.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLAT REG&quot;</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">namelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlat_reg&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;xlonmin&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xlonmax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xlatmin&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xlatmax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;nlon&quot;</span> <span class="ow">and</span> <span class="s2">&quot;nlat&quot;</span> \
@@ -337,7 +337,7 @@
 <div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#surfex.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;IGN&quot;</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">namelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_ign&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;clambert&quot;</span> <span class="ow">and</span> <span class="s2">&quot;npoints&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xy&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdy&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xx_llcorner&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xy_llcorner&quot;</span>  \
@@ -624,7 +624,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
     </div>
   </body>
 </html>

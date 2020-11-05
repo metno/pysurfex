@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Overview: module code &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <title>Running an experiment in EcFlow &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
@@ -25,7 +25,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Running an experiment in EcFlow</a></li> 
       </ul>
     </div>  
 
@@ -34,24 +34,19 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="scheduler/scheduler.html">scheduler.scheduler</a></li>
-<li><a href="scheduler/submission.html">scheduler.submission</a></li>
-<li><a href="scheduler/suites.html">scheduler.suites</a></li>
-<li><a href="scheduler/tasks.html">scheduler.tasks</a></li>
-<li><a href="surfex/file.html">surfex.file</a></li>
-<li><a href="surfex/forcing.html">surfex.forcing</a></li>
-<li><a href="surfex/geo.html">surfex.geo</a></li>
-<li><a href="surfex/grib.html">surfex.grib</a></li>
-<li><a href="surfex/interpolation.html">surfex.interpolation</a></li>
-<li><a href="surfex/netcdf.html">surfex.netcdf</a></li>
-<li><a href="surfex/obs.html">surfex.obs</a></li>
-<li><a href="surfex/read.html">surfex.read</a></li>
-<li><a href="surfex/run.html">surfex.run</a></li>
-<li><a href="surfex/timeseries.html">surfex.timeseries</a></li>
-<li><a href="surfex/titan.html">surfex.titan</a></li>
-<li><a href="surfex/variable.html">surfex.variable</a></li>
-</ul>
+  <div class="section" id="running-an-experiment-in-ecflow">
+<h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
+<p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
+<span class="nb">cd</span> sfx_home
+mkdir sandbox
+<span class="nb">cd</span> sandbox
+PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-label --domain your-domain
+PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
+</pre></div>
+</div>
+</div>
+
 
             <div class="clearer"></div>
           </div>
@@ -59,6 +54,13 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/example.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -80,7 +82,7 @@
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="nav-item nav-item-0"><a href="../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Running an experiment in EcFlow</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

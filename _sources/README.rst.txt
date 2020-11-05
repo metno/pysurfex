@@ -89,7 +89,7 @@ Create documentation
 
 .. code-block:: bash
 
-  cd docs
+  cd sphinx
   # Create html documentation
   make html
   # Create latex documentation

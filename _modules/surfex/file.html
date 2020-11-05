@@ -6,8 +6,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>surfex.file &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -130,7 +130,7 @@
 <div class="viewcode-block" id="PGDFile"><a class="viewcode-back" href="../../index.html#surfex.PGDFile">[docs]</a><span class="k">class</span> <span class="nc">PGDFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cpgdfile</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">cpgdfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">cpgdfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">masterodb</span><span class="p">)</span>
 
         <span class="n">cpgdfile</span> <span class="o">=</span> <span class="n">get_surfex_io_object</span><span class="p">(</span><span class="n">cpgdfile</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="n">csurf_filetype</span><span class="p">,</span>
                                         <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
@@ -144,7 +144,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cprepfile</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">cprepfile</span> <span class="o">=</span> <span class="n">get_surfex_io_object</span><span class="p">(</span><span class="n">cprepfile</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="n">csurf_filetype</span><span class="p">,</span>
-                                         <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
+                                         <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,)</span>
 
         <span class="n">SurfexSurfIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cprepfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="n">input_file</span><span class="p">,</span>
                               <span class="n">archive_file</span><span class="o">=</span><span class="n">archive_file</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="n">symlink</span><span class="p">)</span>
@@ -286,14 +286,19 @@
 
 <div class="viewcode-block" id="AsciiSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">AsciiSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
+        <span class="n">suffix</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;ASCII&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">geo</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">geo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_geo</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.txt&quot;</span><span class="p">):</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="n">suffix</span>
 
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">)</span>
 
@@ -478,10 +483,15 @@
 
 <div class="viewcode-block" id="NCSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NCSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.nc&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;NC&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="n">suffix</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">geo</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
@@ -618,20 +628,22 @@
 
 <div class="viewcode-block" id="FaSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">FaSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="n">lfagmap</span><span class="p">:</span>
-            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;sfx&quot;</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.sfx&quot;</span><span class="p">):</span>
-                <span class="c1"># Files are written with .fa outside masterodb</span>
-                <span class="k">if</span> <span class="n">masterodb</span><span class="p">:</span>
-                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.sfx&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.fa&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.fa&quot;</span><span class="p">):</span>
-                <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.fa&quot;</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">geo</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo&quot;</span><span class="p">]</span>
+        <span class="n">lfagmap</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s2">&quot;lfagmap&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">lfagmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lfagmap&quot;</span><span class="p">]</span>
+
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;FA&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">extension_suffix</span> <span class="o">=</span> <span class="n">extension</span><span class="o">.</span><span class="n">suffix</span>
+
+        <span class="c1"># Surfex binaries use .fa suffix for all input files no matter if they are lfagmap files</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">extension_suffix</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="n">extension_suffix</span>
 
         <span class="c1"># if geo is None:</span>
         <span class="c1">#    geo = self.get_geo()</span>
@@ -669,6 +681,37 @@
         <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span> <span class="o">=</span> <span class="n">SurfexIO</span><span class="o">.</span><span class="n">interpolate_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span>
                                                           <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
+
+
+<span class="k">class</span> <span class="nc">SurfFileTypeExtension</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">masterodb</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;masterodb&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">masterodb</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;masterodb&quot;</span><span class="p">]</span>
+        <span class="n">lfagmap</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s2">&quot;lfagmap&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">lfagmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lfagmap&quot;</span><span class="p">]</span>
+
+        <span class="n">suffix</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">csurf_filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
+            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;nc&quot;</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
+            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;txt&quot;</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lfagmap</span><span class="p">:</span>
+                <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;sfx&quot;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">masterodb</span><span class="p">:</span>
+                    <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;.fa&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
+
+        <span class="k">if</span> <span class="n">suffix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">extension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="n">suffix</span>
 
 
 <div class="viewcode-block" id="NetCDFSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NetCDFSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
@@ -1101,6 +1144,7 @@
     <span class="n">month</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m&#39;</span><span class="p">)</span>
     <span class="n">day</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">hour</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H&#39;</span><span class="p">)</span>
+    <span class="n">mins</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%M&#39;</span><span class="p">)</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="n">validtime</span><span class="o">-</span><span class="n">basetime</span>
     <span class="n">l1</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>
     <span class="n">ll</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>
@@ -1111,6 +1155,7 @@
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@MM@&#39;</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@DD@&#39;</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@HH@&#39;</span><span class="p">,</span> <span class="n">hour</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@mm@&#39;</span><span class="p">,</span> <span class="n">mins</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@L@&#39;</span><span class="p">,</span> <span class="n">l1</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@LL@&#39;</span><span class="p">,</span> <span class="n">ll</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@LLL@&#39;</span><span class="p">,</span> <span class="n">lll</span><span class="p">)</span>
@@ -1151,7 +1196,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
     </div>
   </body>
 </html>

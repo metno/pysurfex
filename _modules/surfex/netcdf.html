@@ -6,8 +6,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>surfex.netcdf &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -569,7 +569,6 @@
                     <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="s2">&quot;seconds since 1970-01-01 00:00:00&quot;</span><span class="p">)))</span>
     <span class="n">validtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">validtime</span><span class="p">)</span>
 
-
     <span class="n">nx</span> <span class="o">=</span> <span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">ny</span> <span class="o">=</span> <span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -579,39 +578,24 @@
     <span class="c1"># print(lons.shape, lats.shape, type(lons))</span>
     <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Geo</span><span class="p">(</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
 
-    <span class="n">background_in</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span>
-    <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s2">&quot;land_area_fraction&quot;</span> <span class="ow">in</span> <span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
-        <span class="n">glafs_in</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;land_area_fraction&quot;</span><span class="p">][:]</span>
-        <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No land area fraction found in first guess file&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s2">&quot;altitude&quot;</span> <span class="ow">in</span> <span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
-        <span class="n">gelevs_in</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">][:]</span>
-        <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No altitude found in first guess file&quot;</span><span class="p">)</span>
-
     <span class="n">background</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span>
     <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">]))</span>
     <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
-    <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+    <span class="c1"># background = background.tolist()</span>
+    <span class="c1"># background = np.asarray(background)</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;land_area_fraction&quot;</span><span class="p">][:]</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">glafs</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">]))</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">glafs</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">glafs</span><span class="p">)</span>
-    <span class="n">glafs</span> <span class="o">=</span> <span class="n">glafs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">glafs</span><span class="p">)</span>
+    <span class="c1"># glafs = glafs.tolist()</span>
+    <span class="c1"># glafs = np.asarray(glafs)</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">][:]</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gelevs</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">]))</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gelevs</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">gelevs</span><span class="p">)</span>
-    <span class="n">gelevs</span> <span class="o">=</span> <span class="n">gelevs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gelevs</span><span class="p">)</span>
+    <span class="c1"># gelevs = gelevs.tolist()</span>
+    <span class="c1"># gelevs = np.asarray(gelevs)</span>
 
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span>
@@ -678,6 +662,8 @@
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">)</span>
         <span class="n">t2m_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">999.</span>
         <span class="n">t2m_var</span> <span class="o">=</span> <span class="n">t2m_var</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">rh2m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">rh2m_fh</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">rh2m</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">],</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
@@ -691,6 +677,8 @@
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">)</span>
         <span class="n">rh2m_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">999.</span>
         <span class="n">rh2m_var</span> <span class="o">=</span> <span class="n">rh2m_var</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rh2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">sd_fh</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">sd</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">],</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
@@ -705,27 +693,12 @@
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">sd_var</span><span class="p">)</span>
         <span class="n">sd_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">999.</span>
         <span class="n">sd_var</span> <span class="o">=</span> <span class="n">sd_var</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sd_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must specify at least one file to read from!&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">t2m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">t2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rh2m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rh2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sd_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-
-    <span class="c1"># undefined = []</span>
-    <span class="c1"># for i in range(0, nx *ny):</span>
-    <span class="c1">#     undefined.append(&quot;999&quot;)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="n">t2m</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">rh2m</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sd_var</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;OBSERVATIONS_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">yy</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.DAT&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -735,34 +708,6 @@
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sd_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    for j in range(0, ny):</span>
-<span class="sd">        for i in range(0, nx):</span>
-<span class="sd">            # out.write(str(array1[0,j,i])+&quot; &quot;+str(array2[0,j,i])+&quot; 999 999 &quot;+str(array3[0,j,i])+&quot;\n&quot;)</span>
-<span class="sd">            undef = &quot;999&quot;</span>
-<span class="sd">            if t2m_var is not None:</span>
-<span class="sd">                if np.ma.is_masked(t2m_var[j, i]):</span>
-<span class="sd">                    t2m_val = undef</span>
-<span class="sd">                else:</span>
-<span class="sd">                    t2m_val = str(t2m_var[j, i])</span>
-<span class="sd">            else:</span>
-<span class="sd">                t2m_val = undef</span>
-<span class="sd">            if rh2m_var is not None:</span>
-<span class="sd">                if np.ma.is_masked(rh2m_var[j, i]):</span>
-<span class="sd">                    rh2m_val = undef</span>
-<span class="sd">                else:</span>
-<span class="sd">                    rh2m_val = str(rh2m_var[j, i])</span>
-<span class="sd">            else:</span>
-<span class="sd">                rh2m_val = undef</span>
-<span class="sd">            if sd_var is not None:</span>
-<span class="sd">                if np.ma.is_masked(sd_var[j, i]):</span>
-<span class="sd">                    sd_val = undef</span>
-<span class="sd">                else:</span>
-<span class="sd">                    sd_val = str(sd_var[j, i])</span>
-<span class="sd">            else:</span>
-<span class="sd">                sd_val = undef</span>
-<span class="sd">            out.write(t2m_val + &quot; &quot; + rh2m_val + &quot; &quot; + sd_val + &quot;\n&quot;)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 
@@ -799,7 +744,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
     </div>
   </body>
 </html>

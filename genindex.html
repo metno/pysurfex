@@ -6,8 +6,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
@@ -69,8 +69,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#surfex.AsciiSurfexFile">AsciiSurfexFile (class in surfex)</a>
 </li>
-      <li><a href="index.html#surfex.Assimilation">Assimilation (class in surfex)</a>
-</li>
       <li><a href="index.html#surfex.Axis">Axis (class in surfex)</a>
 </li>
   </ul></td>
@@ -93,14 +91,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#surfex.Cartesian">Cartesian (class in surfex)</a>
 </li>
-      <li><a href="index.html#scheduler.Client">Client (class in scheduler)</a>
-</li>
       <li><a href="index.html#surfex.ConfProj">ConfProj (class in surfex)</a>
+</li>
+      <li><a href="index.html#surfex.ConstantValue">ConstantValue (class in surfex)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#surfex.ConstantValue">ConstantValue (class in surfex)</a>
-</li>
       <li><a href="index.html#surfex.ConvertedInput">ConvertedInput (class in surfex)</a>
 </li>
       <li><a href="index.html#surfex.Converter">Converter (class in surfex)</a>
@@ -113,9 +109,11 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#scheduler.EcfFamily">EcfFamily (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowClient">EcflowClient (class in scheduler)</a>
 </li>
       <li><a href="index.html#scheduler.EcflowLogServer">EcflowLogServer (class in scheduler)</a>
+</li>
+      <li><a href="index.html#scheduler.EcflowNode">EcflowNode (class in scheduler)</a>
 </li>
       <li><a href="index.html#scheduler.EcflowServer">EcflowServer (class in scheduler)</a>
 </li>
@@ -127,15 +125,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#scheduler.EcflowSuite">EcflowSuite (class in scheduler)</a>
 </li>
-      <li><a href="index.html#scheduler.EcfSuite">EcfSuite (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowSuiteFamily">EcflowSuiteFamily (class in scheduler)</a>
 </li>
-      <li><a href="index.html#scheduler.EcfTask">EcfTask (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowSuiteTask">EcflowSuiteTask (class in scheduler)</a>
 </li>
-      <li><a href="index.html#scheduler.EcfTrigger">EcfTrigger (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowSuiteTrigger">EcflowSuiteTrigger (class in scheduler)</a>
 </li>
-      <li><a href="index.html#scheduler.EcfTriggers">EcfTriggers (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowSuiteTriggers">EcflowSuiteTriggers (class in scheduler)</a>
 </li>
-      <li><a href="index.html#scheduler.EcfVariable">EcfVariable (class in scheduler)</a>
+      <li><a href="index.html#scheduler.EcflowSuiteVariable">EcflowSuiteVariable (class in scheduler)</a>
+</li>
+      <li><a href="index.html#scheduler.EcflowTask">EcflowTask (class in scheduler)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -261,17 +261,15 @@
 </li>
       <li><a href="index.html#surfex.Netcdf">Netcdf (class in surfex)</a>
 </li>
-      <li><a href="index.html#surfex.NetCDFFileVariable">NetCDFFileVariable (class in surfex)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#surfex.NetCDFFileVariable">NetCDFFileVariable (class in surfex)</a>
+</li>
       <li><a href="index.html#surfex.NetCDFOutput">NetCDFOutput (class in surfex)</a>
 </li>
       <li><a href="index.html#surfex.NetCDFSurfexFile">NetCDFSurfexFile (class in surfex)</a>
 </li>
       <li><a href="index.html#surfex.NetcdfVariable">NetcdfVariable (class in surfex)</a>
-</li>
-      <li><a href="index.html#scheduler.Node">Node (class in scheduler)</a>
 </li>
       <li><a href="index.html#surfex.NoInterpolation">NoInterpolation (class in surfex)</a>
 </li>
@@ -345,15 +343,17 @@
 </li>
       <li><a href="index.html#surfex.SURFEXBinary">SURFEXBinary (class in surfex)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#scheduler.SurfexBinaryTask">SurfexBinaryTask (class in scheduler)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#surfex.SurfexFileVariable">SurfexFileVariable (class in surfex)</a>
 </li>
       <li><a href="index.html#surfex.SurfexForcing">SurfexForcing (class in surfex)</a>
 </li>
       <li><a href="index.html#surfex.SurfexGeo">SurfexGeo (class in surfex)</a>
+</li>
+      <li><a href="index.html#scheduler.SurfexSuite">SurfexSuite (class in scheduler)</a>
 </li>
       <li><a href="index.html#surfex.SurfexSurfIO">SurfexSurfIO (class in surfex)</a>
 </li>
@@ -367,8 +367,6 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#scheduler.Task">Task (class in scheduler)</a>
-</li>
       <li><a href="index.html#surfex.TexteSurfexFile">TexteSurfexFile (class in surfex)</a>
 </li>
   </ul></td>
@@ -422,7 +420,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
     </div>
   </body>
 </html>
