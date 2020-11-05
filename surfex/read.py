@@ -90,17 +90,28 @@ def remove_existing_file(f_in, f_out):
 
 class Converter:
     """
-    Main interface to read a field is done through a converter
-    The converter is default "None" to read a plain field
+    Main interface to read a field is done through a converter.
+    The converter name is default "None" to read a plain field without any conversion.
+
+    :param name: name of the converter
+    :type name: str
+    :param validtime: The valid time you want to read
+    :type validtime: datetime
+    :param defs: A dictionary defining the variables
+    :type defs: dict
+    :param conf: A dictionary defining the converter
+    :type conf: dict
+    :param fileformat: Fileformat of the converter
+    :type fileformat: str
+    :param basetime: The base time of the input data source
+    :type basetime: validtime
+    :param debug: Debug optiom
+    :type debug: bool
     """
 
     def __init__(self, name, validtime, defs, conf, fileformat, basetime, debug=False):
         """
         Initializing the converter
-
-        :param name: name
-        :param conf: dictionary
-        :param fileformat: format
         """
 
         self.name = name

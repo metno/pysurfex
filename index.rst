@@ -10,9 +10,11 @@ Welcome to SURFEX Python API's documentation!
    :maxdepth: 3
    :caption: Contents:
 
-.. include::  docs/example.rst
 .. include::  README.rst
+.. include::  docs/example.rst
 
+Classes
+---------------------------------------------
 .. autoclass:: surfex.Converter
 .. autoclass:: surfex.SurfexSurfIO
 .. autoclass:: surfex.PGDFile
