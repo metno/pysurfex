@@ -139,8 +139,8 @@ class Converter:
         elif name == "calcsnow":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
             self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
-        #            self.rh = self.create_variable(fileformat,defs,conf[self.name]["t"],debug)
-        #            self.p = self.create_variable(fileformat,defs,conf[self.name]["p"],debug)
+            # self.rh = self.create_variable(fileformat,defs,conf[self.name]["t"],debug)
+            # self.p = self.create_variable(fileformat,defs,conf[self.name]["p"],debug)
         elif name == "calcrain":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
             self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
