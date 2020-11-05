@@ -1,3 +1,0 @@
-[SURFEX.IO]
-CSURF_FILETYPE = "NC"               # IO settings NC/FA/ASCII. Inline runs use FA
-

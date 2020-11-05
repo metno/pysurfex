@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-import surfex
-import sys
-
-
-if __name__ == "__main__":
-    kwargs = {}
-    surfex.hm2pysurfex(**kwargs)

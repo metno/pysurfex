@@ -1,5 +1,0 @@
-#!/usr/bin/env python3
-import scheduler
-import sys
-
-scheduler.surfex_script(sys.argv[1:])

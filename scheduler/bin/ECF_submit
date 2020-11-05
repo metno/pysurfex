@@ -1,5 +1,0 @@
-#!/usr/bin/env python3
-import sys
-import scheduler
-
-args = scheduler.submit_cmd(sys.argv[1:])

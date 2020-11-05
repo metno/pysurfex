@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-import surfex
-import sys
-
-if __name__ == "__main__":
-
-    args = surfex.parse_args_gridpp(sys.argv[1:])
-    surfex.run_gridpp(args)
