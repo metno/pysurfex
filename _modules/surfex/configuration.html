@@ -1,0 +1,875 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>surfex.configuration &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.configuration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for surfex.configuration</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">tomlkit</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
+
+
+<div class="viewcode-block" id="toml_load"><a class="viewcode-back" href="../../index.html#surfex.configuration.toml_load">[docs]</a><span class="k">def</span> <span class="nf">toml_load</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="toml_dump"><a class="viewcode-back" href="../../index.html#surfex.configuration.toml_dump">[docs]</a><span class="k">def</span> <span class="nf">toml_dump</span><span class="p">(</span><span class="n">to_dump</span><span class="p">,</span>  <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">to_dump</span><span class="p">))</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.configuration.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">conf_dict</span>
+        <span class="k">if</span> <span class="s2">&quot;GEOMETRY&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;GEOMETRY&quot;</span><span class="p">:</span> <span class="p">{}})</span>
+        <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">geo</span> <span class="o">=</span> <span class="s2">&quot;Not set&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;GEOMETRY&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;GEO&quot;</span><span class="p">:</span> <span class="n">geo</span><span class="p">})</span>
+
+        <span class="c1"># Set default file names</span>
+        <span class="k">if</span> <span class="s2">&quot;CPGDFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CPGDFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;PGD&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;CPREPFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CPREPFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;PREP&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;CSURFFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CSURFFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFOUT&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;LFAGMAP&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;LFAGMAP&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;ASSIM&quot;</span><span class="p">][</span><span class="s2">&quot;ISBA&quot;</span><span class="p">][</span><span class="s2">&quot;EKF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;FILE_PATTERN&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFOUT_PERT@PERT@&quot;</span><span class="p">})</span>
+
+        <span class="c1"># Find EPS information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;FORECAST&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;ENSMSEL&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;FORECAST#ENSMSEL&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_limit</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Set EPS config</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">member_conf_dict</span><span class="p">:</span>
+                    <span class="n">mbr_configs</span> <span class="o">=</span> <span class="n">member_conf_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Could not find config for member &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span>
+                <span class="n">member_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">):</span> <span class="n">mbr_configs</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span> <span class="o">=</span> <span class="n">member_settings</span>
+        <span class="c1"># self.do_build = self.setting_is(&quot;COMPILE#BUILD&quot;, &quot;yes&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecoclimap_sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gmted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ZS#YZS&quot;</span><span class="p">,</span> <span class="s2">&quot;gmted2010.dir&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ekf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">)</span>
+        <span class="n">nncv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#NNCV&quot;</span><span class="p">)</span>
+        <span class="n">perts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">nncv</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">perts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perts</span> <span class="o">=</span> <span class="n">perts</span>
+
+    <span class="k">def</span> <span class="nf">max_fc_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ll_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">max_fc</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="n">ll_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_fc</span><span class="p">):</span>
+                <span class="n">max_fc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">max_fc</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">has_sfc_analysis</span><span class="p">(</span><span class="n">anasurf</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CANARI&quot;</span><span class="p">,</span> <span class="s2">&quot;gridpp&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># if type(setting) is not list:</span>
+        <span class="c1">#    raise Exception(&quot;Excpected a list as input, got &quot;, type(setting))</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Excpected a list as input, got &quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">mbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mbr&quot;</span><span class="p">]</span>
+        <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;sep&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">sep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sep&quot;</span><span class="p">]</span>
+        <span class="n">abort</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s2">&quot;abort&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">abort</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;abort&quot;</span><span class="p">]</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;default&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mbr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+                    <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not a valid member: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No members found&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">this_setting</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">this_setting</span><span class="p">:</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">this_setting</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                        <span class="c1"># Time information</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span><span class="n">this_setting</span><span class="p">)</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">this_setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">this_setting</span> <span class="o">=</span> <span class="n">default</span>
+                        <span class="k">elif</span> <span class="n">abort</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Key not found &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Key not found &quot;</span> <span class="o">+</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># print(setting, this_setting, mbr, type(this_setting))</span>
+        <span class="k">return</span> <span class="n">this_setting</span>
+
+    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="n">last_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dsetting</span> <span class="o">=</span> <span class="p">{</span><span class="n">last_key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">dsetting</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">dsetting</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">mbr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">dsetting</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)],</span> <span class="n">dsetting</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not a valid member: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_total_unique_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Create a list of all unique HHs from all members</span>
+        <span class="c1"># print(self.members, self.get_hh_list())</span>
+        <span class="n">hh_list_all</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+                <span class="n">hh_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hh_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="n">hh_l</span><span class="p">:</span>
+                    <span class="n">hh</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">hh</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hh_list_all</span><span class="p">:</span>
+                        <span class="n">hh_list_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hh_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hh_list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="n">hh_l</span><span class="p">:</span>
+                <span class="n">hh</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">hh</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hh_list_all</span><span class="p">:</span>
+                    <span class="n">hh_list_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
+
+        <span class="c1"># print(hh_list_all)</span>
+        <span class="c1"># Sort this list</span>
+        <span class="n">hh_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">hh_list_all</span><span class="p">):</span>
+            <span class="n">hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hh_list</span>
+
+    <span class="k">def</span> <span class="nf">get_fcint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hh_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">hh</span><span class="p">])</span> <span class="o">%</span> <span class="mi">24</span>
+            <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">cycle</span><span class="p">)</span> <span class="o">%</span> <span class="mi">24</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">hh</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">fcint</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]))</span> <span class="o">%</span> <span class="mi">24</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">hh</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">hh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">fcint</span>
+
+    <span class="k">def</span> <span class="nf">get_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#HH_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#LL_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="c1"># print(hh_list, ll_list)</span>
+        <span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_hh_and_ll_list</span><span class="p">(</span><span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hh_list</span>
+
+    <span class="k">def</span> <span class="nf">get_ll_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#HH_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#LL_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
+        <span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_hh_and_ll_list</span><span class="p">(</span><span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ll_list</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">expand_list</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:03d}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sep1</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">sep2</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">sep3</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep1</span><span class="p">)</span>
+        <span class="n">expanded_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">expanded_list</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)):</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="c1"># print(element)</span>
+            <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep3</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">p1</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep2</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">p1</span> <span class="o">=</span> <span class="n">element</span>
+
+                <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep3</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)):</span>
+                    <span class="n">add</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">maxval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ll</span> <span class="o">&gt;</span> <span class="n">maxval</span><span class="p">:</span>
+                            <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">tstep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="n">ll</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span> <span class="o">%</span> <span class="n">tstep</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="n">ll</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="n">tstep</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Time step is not a minute!&quot;</span><span class="p">)</span>
+                        <span class="n">this_ll</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+                        <span class="n">expanded_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_ll</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># print(fmt, element)</span>
+                <span class="c1"># print(fmt.decode(&#39;ascii&#39;))</span>
+                <span class="n">add</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">ll</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">maxval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ll</span> <span class="o">&gt;</span> <span class="n">maxval</span><span class="p">:</span>
+                        <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">tstep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">ll</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span> <span class="o">%</span> <span class="n">tstep</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">ll</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="n">tstep</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Time step is not a minute! &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ll</span><span class="p">))</span>
+                    <span class="n">ll</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+                    <span class="n">expanded_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+
+        <span class="c1"># Add last value if wanted and not existing</span>
+        <span class="k">if</span> <span class="n">maxval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">add_last</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tstep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">maxval</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span> <span class="o">%</span> <span class="n">tstep</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">maxval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxval</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="n">tstep</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Time step is not a minute!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">maxval</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expanded_list</span><span class="p">:</span>
+                <span class="n">ll</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxval</span><span class="p">)</span>
+                <span class="n">expanded_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">expanded_list</span>
+
+    <span class="k">def</span> <span class="nf">expand_hh_and_ll_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+        <span class="c1"># hhs = split_hh_and_ll(hh_list)</span>
+        <span class="c1"># lls = split_hh_and_ll(ll_list)</span>
+        <span class="n">hhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_list</span><span class="p">(</span><span class="n">hh_list</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lls_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_list</span><span class="p">(</span><span class="n">ll_list</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:d}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># print(hhs)</span>
+        <span class="c1"># print(lls_in)</span>
+
+        <span class="n">lls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hhs</span><span class="p">)):</span>
+            <span class="n">lls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lls_in</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lls_in</span><span class="p">):</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hhs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lls</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+
+        <span class="n">expanded_hh_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">expanded_ll_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hhs</span><span class="p">)):</span>
+            <span class="n">ll</span> <span class="o">=</span> <span class="n">lls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="c1"># print(i, hhs[i])</span>
+            <span class="k">if</span> <span class="n">hhs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">p1</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">hhs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+                <span class="n">h1</span><span class="p">,</span> <span class="n">h2</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">h1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">h2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)):</span>
+                    <span class="n">hh</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+                    <span class="n">expanded_hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
+                    <span class="n">expanded_ll_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hh</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hhs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">expanded_hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
+                <span class="n">expanded_ll_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
+
+        <span class="c1"># print(expanded_hh_list, expanded_ll_list)</span>
+        <span class="k">return</span> <span class="n">expanded_hh_list</span><span class="p">,</span> <span class="n">expanded_ll_list</span></div>
+
+
+<div class="viewcode-block" id="process_merged_settings"><a class="viewcode-back" href="../../index.html#surfex.configuration.process_merged_settings">[docs]</a><span class="k">def</span> <span class="nf">process_merged_settings</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">):</span>
+
+    <span class="n">merged_member_settings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Write member settings</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;FORECAST&quot;</span> <span class="ow">in</span> <span class="n">merged_settings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;ENSMSEL&quot;</span> <span class="ow">in</span> <span class="n">merged_settings</span><span class="p">[</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">]:</span>
+            <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">[</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">][</span><span class="s2">&quot;ENSMSEL&quot;</span><span class="p">])</span>
+
+    <span class="c1"># print(members, type(members), len(members))</span>
+    <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+            <span class="n">toml_settings</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">)</span>
+            <span class="n">member_dict</span> <span class="o">=</span> <span class="n">get_member_settings</span><span class="p">(</span><span class="n">merged_member_settings</span><span class="p">,</span> <span class="n">mbr</span><span class="p">)</span>
+            <span class="n">toml_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">toml_settings</span><span class="p">,</span> <span class="n">member_dict</span><span class="p">)</span>
+            <span class="n">member_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">):</span> <span class="n">toml_settings</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">merged_settings</span><span class="p">,</span> <span class="n">member_settings</span></div>
+
+
+<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
+    <span class="c1"># print(mods)</span>
+    <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
+    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
+            <span class="c1"># print(toml_file)</span>
+            <span class="n">modification</span> <span class="o">=</span> <span class="n">toml_load</span><span class="p">(</span><span class="n">toml_file</span><span class="p">)</span>
+            <span class="c1"># print(modification)</span>
+            <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
+            <span class="c1"># print(merged_env)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: File not found &quot;</span> <span class="o">+</span> <span class="n">toml_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">merged_env</span></div>
+
+
+<div class="viewcode-block" id="merge_toml_env_from_file"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_file">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_file</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
+    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
+        <span class="c1"># print(toml_file)</span>
+        <span class="n">modification</span> <span class="o">=</span> <span class="n">toml_load</span><span class="p">(</span><span class="n">toml_file</span><span class="p">)</span>
+        <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: File not found &quot;</span> <span class="o">+</span> <span class="n">toml_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">merged_env</span></div>
+
+
+<span class="k">def</span> <span class="nf">merge_config_files_dict</span><span class="p">(</span><span class="n">config_files</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testbed_configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">user_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">this_config_file</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">:</span>
+        <span class="n">hm_exp</span> <span class="o">=</span> <span class="n">config_files</span><span class="p">[</span><span class="n">this_config_file</span><span class="p">][</span><span class="s2">&quot;toml&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">block_config</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">this_config_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="s2">&quot;config_exp.toml&quot;</span><span class="p">:</span>
+                <span class="n">block_config</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># HARMONIE experiment configuration file</span><span class="se">\n</span><span class="s2">#&quot;</span> <span class="o">+</span>
+                                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># Please read the documentation on &quot;</span> <span class="o">+</span>
+                                                 <span class="s2">&quot;https://hirlam.org/trac/wiki/HarmonieSystemDocumentation &quot;</span> <span class="o">+</span>
+                                                 <span class="s2">&quot;first</span><span class="se">\n</span><span class="s2">#&quot;</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">[</span><span class="n">this_config_file</span><span class="p">][</span><span class="s2">&quot;blocks&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># print(configuration)</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Configuration should be a dict here!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">configuration</span><span class="p">:</span>
+                    <span class="n">merged_config</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">hm_exp</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">configuration</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">merged_config</span> <span class="o">=</span> <span class="n">hm_exp</span><span class="p">[</span><span class="n">block</span><span class="p">]</span>
+
+                <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">merged_config</span><span class="p">})</span>
+
+            <span class="k">if</span> <span class="n">testbed_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># print(&quot;testbed&quot;, testbed_configuration)</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">testbed_configuration</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Testbed configuration should be a dict here!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">testbed_configuration</span><span class="p">:</span>
+                    <span class="n">hm_testbed</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">testbed_configuration</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">hm_testbed</span> <span class="o">=</span> <span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">]</span>
+                <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">hm_testbed</span><span class="p">})</span>
+
+            <span class="k">if</span> <span class="n">user_settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">user_settings</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;User settings should be a dict here!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">user_settings</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Merge user settings in block &quot;</span> <span class="o">+</span> <span class="n">block</span><span class="p">)</span>
+                    <span class="n">user</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">user_settings</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
+                    <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">user</span><span class="p">})</span>
+
+        <span class="n">config_files</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">this_config_file</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;toml&quot;</span><span class="p">:</span> <span class="n">block_config</span><span class="p">}})</span>
+        <span class="k">return</span> <span class="n">config_files</span>
+
+
+<div class="viewcode-block" id="merge_toml_env_from_config_dicts"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_config_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_config_dicts</span><span class="p">(</span><span class="n">config_files</span><span class="p">):</span>
+
+    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">:</span>
+        <span class="c1"># print(f)</span>
+        <span class="n">modification</span> <span class="o">=</span> <span class="n">config_files</span><span class="p">[</span><span class="n">f</span><span class="p">][</span><span class="s2">&quot;toml&quot;</span><span class="p">]</span>
+        <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">merged_env</span></div>
+
+
+<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../index.html#surfex.configuration.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">recurse</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)):</span>
+                <span class="n">recurse</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">recurse</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">k</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">parent_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+
+    <span class="n">recurse</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="get_member_settings"><a class="viewcode-back" href="../../index.html#surfex.configuration.get_member_settings">[docs]</a><span class="k">def</span> <span class="nf">get_member_settings</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+
+    <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">setting</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="c1"># print(setting)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="c1"># print(keys)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># print(member)</span>
+            <span class="n">member3</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:03d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">member</span><span class="p">))</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@EEE@&quot;</span><span class="p">,</span> <span class="n">member3</span><span class="p">)</span>
+
+            <span class="n">this_setting</span> <span class="o">=</span> <span class="p">{</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">val</span><span class="p">}</span>
+            <span class="c1"># print(&quot;This setting&quot;, this_setting)</span>
+            <span class="n">member_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">member_settings</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">this_member</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># print(keys)</span>
+            <span class="k">if</span> <span class="n">this_member</span> <span class="o">==</span> <span class="n">member</span><span class="p">:</span>
+                <span class="c1"># print(&quot;This is it&quot;)</span>
+                <span class="c1"># print(setting, keys, this_member)</span>
+
+                <span class="n">this_setting</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">this_setting</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">this_setting</span><span class="p">}</span>
+
+                <span class="c1"># print(this_setting)</span>
+                <span class="n">member_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">member_settings</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">member_settings</span></div>
+
+
+<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.configuration.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update a nested dictionary or similar mapping.</span>
+<span class="sd">    Modify ``source`` in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">returned</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">value</span><span class="p">)</span>
+            <span class="c1"># print(&quot;Returned:&quot;, key, returned)</span>
+            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">returned</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">override</span> <span class="o">=</span> <span class="n">overrides</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="c1"># print(&quot;Override:&quot;, key, override)</span>
+
+            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">override</span>
+
+    <span class="k">return</span> <span class="n">source</span></div>
+
+
+<div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.configuration.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class sets up a SURFEX configuration from an environment based Harmonie run with it&#39;s</span>
+<span class="sd">    corresponding configuration.</span>
+
+<span class="sd">    Some settings imply several changes in SURFEX configuration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">):</span>
+
+        <span class="n">member_conf_dict</span> <span class="o">=</span> <span class="n">conf_dict</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">)</span>
+
+        <span class="c1"># Set domain from environment variables. Geo is alway conf proj</span>
+        <span class="n">ezone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;EZONE&quot;</span><span class="p">])</span>
+        <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLON&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDLUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDLUXG&quot;</span><span class="p">])</span>
+        <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLAT&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDGUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDGUXG&quot;</span><span class="p">])</span>
+        <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;LGSIZE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LGSIZE&quot;</span><span class="p">])</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;CONF PROJ&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LAT0&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LON0&quot;</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LATC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LONC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">ndluxg</span><span class="p">,</span>
+                <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ndguxg</span><span class="p">,</span>
+                <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ConfProj</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;GEOMETRY&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;GEO&quot;</span><span class="p">:</span> <span class="n">geo</span><span class="p">})</span>
+        <span class="c1"># self.update_setting(&quot;GEOMETRY#GEO&quot;, geo)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GEOMETRY#GEO&quot;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">:</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">]}})</span>
+
+        <span class="c1"># IO</span>
+        <span class="n">cnmexp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CNMEXP&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CPGDFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;Const.Clim&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CPREPFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;ICMSH&quot;</span> <span class="o">+</span> <span class="n">cnmexp</span> <span class="o">+</span> <span class="s2">&quot;INIT&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;ICMSH&quot;</span> <span class="o">+</span> <span class="n">cnmexp</span> <span class="o">+</span> <span class="s2">&quot;@LLLL@&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CCTIMESERIES_FILETYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">lselect</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SURFEX_LSELECT&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+            <span class="n">lselect</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSELECT&quot;</span><span class="p">,</span> <span class="n">lselect</span><span class="p">)</span>
+
+        <span class="c1">#  CISBA Type of ISBA scheme in SURFEX. Options: &quot;3-L&quot;|&quot;2-L&quot;|&quot;DIF&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CISBA&quot;</span><span class="p">])</span>
+
+        <span class="c1"># CSNOW Type of snow scheme in SURFEX. Options: &quot;D95&quot; and &quot;3-L&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CSNOW&quot;</span><span class="p">])</span>
+
+        <span class="c1"># NPATCH Number of patches over land in SURFEX (see also LISBA_CANOPY)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#NPATCH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NPATCH&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX (must be .FALSE. for NPATCH&gt;1)</span>
+        <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+            <span class="n">canopy</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">canopy</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#CANOPY&quot;</span><span class="p">,</span> <span class="n">canopy</span><span class="p">)</span>
+
+        <span class="c1"># CROUGH SSO scheme used in SURFEX &quot;NONE&quot;|&quot;Z01D&quot;|&quot;BE04&quot;|&quot;OROT&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SSO#SCHEME&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CROUGH&quot;</span><span class="p">])</span>
+
+        <span class="c1"># SURFEX_SEA_ICE Treatment of sea ice in surfex (none|sice)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SURFEX_SEA_ICE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+        <span class="c1"># SURFEX_LAKES Treatment of lakes in surfex (WATFLX|FLAKE)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SURFEX_LAKES&quot;</span><span class="p">])</span>
+
+        <span class="c1"># TOPO_SOURCE Input source for orography. Available are (gmted2010|gtopo30)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ZS#YZS&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;TOPO_SOURCE&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ECOCLIMAP</span>
+        <span class="n">ecoclimap_version</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ECOCLIMAP_VERSION&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ecoclimap_version</span> <span class="o">==</span> <span class="s2">&quot;SG&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#YCOVER&quot;</span><span class="p">,</span> <span class="s2">&quot;ecosg_final_map.dir&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">version1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="s2">&quot;1.2&quot;</span><span class="p">,</span> <span class="s2">&quot;1.3&quot;</span><span class="p">,</span> <span class="s2">&quot;1.4&quot;</span><span class="p">,</span> <span class="s2">&quot;1.5&quot;</span><span class="p">]</span>
+            <span class="n">version2</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2.0&quot;</span><span class="p">,</span> <span class="s2">&quot;2.1&quot;</span><span class="p">,</span> <span class="s2">&quot;2.2&quot;</span><span class="p">,</span> <span class="s2">&quot;2.2.1&quot;</span><span class="p">,</span> <span class="s2">&quot;2.5_plus&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ecoclimap_version</span> <span class="ow">in</span> <span class="n">version1</span><span class="p">:</span>
+                <span class="n">ycover</span> <span class="o">=</span> <span class="s2">&quot;ECOCLIMAP_I_GLOBAL&quot;</span>
+            <span class="k">elif</span> <span class="n">ecoclimap_version</span> <span class="ow">in</span> <span class="n">version2</span><span class="p">:</span>
+                <span class="n">ycover</span> <span class="o">=</span> <span class="s2">&quot;ECOCLIMAP_II_EUROP&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="n">ycover_ver</span> <span class="o">=</span> <span class="n">ycover</span> <span class="o">+</span> <span class="s2">&quot;_V&quot;</span> <span class="o">+</span> <span class="n">ecoclimap_version</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#YCOVER&quot;</span><span class="p">,</span> <span class="n">ycover_ver</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># SOIL_TEXTURE_VERSION  # Soil texture input data FAO|HWSD_v2|SOILGRID</span>
+        <span class="c1"># Soil texture (sand/clay)</span>
+        <span class="n">soil_texture</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SOIL_TEXTURE_VERSION&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;FAO&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;sand_fao&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;clay_fao&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;HWSD_v2&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;SAND_HWSD_MOY_v2&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;CLAY_HWSD_MOY_v2&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;SOILGRID&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;SAND_SOILGRID&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;CLAY_SOILGRID&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#YSAND&quot;</span><span class="p">,</span> <span class="n">ysand</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#YCLAY&quot;</span><span class="p">,</span> <span class="n">yclay</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># LDB_VERSION = 3.0  # Lake database version.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#FLAKE#LDB_VERSION&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LDB_VERSION&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Treeheight</span>
+        <span class="k">if</span> <span class="s2">&quot;H_TREE_FILE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;H_TREE_FILE&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># XRIMAX Maximum allowed Richardson number in the surface layer (cy40h default was 0.0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XRIMAX&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># XSCALE_H_TREE  Scale the tree height with this factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#XSCALE_H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSCALE_H_TREE&quot;</span><span class="p">])</span>
+
+        <span class="c1"># CFORCING_FILETYPE Offline surfex forcing format (NETCDF/ASCII)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CFORCING_FILETYPE&quot;</span><span class="p">])</span>
+
+        <span class="c1">#########################</span>
+        <span class="c1"># Assimilation settings #</span>
+        <span class="c1">#########################</span>
+        <span class="c1"># Default schemes. Possible to override in future</span>
+        <span class="c1"># Sea</span>
+        <span class="n">ana_sea</span> <span class="o">=</span> <span class="s2">&quot;INPUT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_SEA&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_sea</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_SEA&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">,</span> <span class="n">ana_sea</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;LECSST&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Inland water</span>
+        <span class="n">ana_lake</span> <span class="o">=</span> <span class="s2">&quot;INPUT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_LAKE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_lake</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_LAKE&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#INLAND_WATER&quot;</span><span class="p">,</span> <span class="n">ana_lake</span><span class="p">)</span>
+        <span class="c1"># TEB</span>
+        <span class="n">ana_teb</span> <span class="o">=</span> <span class="s2">&quot;ROADT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_TEB&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_teb</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_TEB&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">,</span> <span class="n">ana_teb</span><span class="p">)</span>
+
+        <span class="c1"># Soil assimilation</span>
+        <span class="n">anasurf</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANASURF&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;OI&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_OI_MAIN&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;OI&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_EKF_SURFEX&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">)</span>
+
+        <span class="c1"># NNCV = &quot;1,1,1,1&quot;  # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1</span>
+        <span class="n">nncv</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCV&quot;</span><span class="p">]</span>
+        <span class="n">nncv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nncv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIMS#ISBA#EKF&quot;</span><span class="p">,</span> <span class="n">nncv</span><span class="p">)</span>
+
+        <span class="c1"># NNCO = &quot;1,1,0,0,1&quot;  # Active observation types (Element 1=T2m, element 2=RH2m and element 3=Soil moisture,</span>
+        <span class="c1"># element 5=SWE)</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCO&quot;</span><span class="p">]</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nnco</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIMS#OBS#NNCO&quot;</span><span class="p">,</span> <span class="n">nnco</span><span class="p">)</span>
+
+        <span class="c1"># ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)</span>
+        <span class="c1"># # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#COEFFS&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANASURF_OI_COEFF&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Always use FA format as input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#CFILE_FORMAT_SST&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+
+        <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;06&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;SNOW_CYCLES&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">,</span>  <span class="n">snow_cycles</span><span class="p">)</span>
+
+        <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSINI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LSWEPSINI&quot;</span><span class="p">,</span> <span class="n">lswepsini</span><span class="p">)</span>
+        <span class="n">xswepsini</span> <span class="o">=</span> <span class="mf">1000.0</span>
+        <span class="k">if</span> <span class="s2">&quot;XSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xswepsini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSWEPSINI&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSINI&quot;</span><span class="p">,</span> <span class="n">xswepsini</span><span class="p">)</span>
+        <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSMIN&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LSWEPSMIN&quot;</span><span class="p">,</span> <span class="n">lswepsmin</span><span class="p">)</span>
+        <span class="n">xswepsmin</span> <span class="o">=</span> <span class="mf">500.0</span>
+        <span class="k">if</span> <span class="s2">&quot;XSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xswepsmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSWEPSMIN&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSMIN&quot;</span><span class="p">,</span> <span class="n">xswepsmin</span><span class="p">)</span>
+
+        <span class="c1"># Perturbations</span>
+        <span class="c1"># PERTSURF ECMA    : perturb also the surface observation before Canari (recommended</span>
+        <span class="c1">#                  : for EDA to have full perturbation of the initial state).</span>
+        <span class="c1">#          model   : perturb surface fields in grid-point space (recursive filter)</span>
+        <span class="c1">#          none    : no perturbation for surface observations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PERTSURF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;LPERTSURF&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPERTSURF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Volatile sea ice (climate mode)</span>
+        <span class="k">if</span> <span class="s2">&quot;LVOLATILE_SIC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LVOLATILE_SIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.configuration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
+    </div>
+  </body>
+</html>

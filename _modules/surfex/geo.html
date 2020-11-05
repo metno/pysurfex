@@ -44,7 +44,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 
-<div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#surfex.Geo">[docs]</a><span class="k">class</span> <span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#surfex.geo.Geo">[docs]</a><span class="k">class</span> <span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npoints</span><span class="p">,</span> <span class="n">nlons</span><span class="p">,</span> <span class="n">nlats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">proj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">can_interpolate</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -92,7 +92,7 @@
             <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#surfex.SurfexGeo">[docs]</a><span class="k">class</span> <span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#surfex.geo.SurfexGeo">[docs]</a><span class="k">class</span> <span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">npoints</span><span class="p">,</span> <span class="n">nlons</span><span class="p">,</span> <span class="n">nlats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">proj</span>
@@ -103,7 +103,7 @@
         <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
 
 
-<div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#surfex.ConfProj">[docs]</a><span class="k">class</span> <span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#surfex.geo.ConfProj">[docs]</a><span class="k">class</span> <span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CONF PROJ&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
@@ -197,7 +197,7 @@
         <span class="k">return</span> <span class="n">nml</span></div>
 
 
-<div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#surfex.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#surfex.geo.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLATVAL&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
@@ -235,7 +235,7 @@
         <span class="k">return</span> <span class="n">nml</span></div>
 
 
-<div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#surfex.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#surfex.geo.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CARTESIAN&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
@@ -278,7 +278,7 @@
         <span class="k">return</span> <span class="n">nml</span></div>
 
 
-<div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#surfex.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#surfex.geo.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLAT REG&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
@@ -334,7 +334,7 @@
         <span class="k">return</span> <span class="n">nml</span></div>
 
 
-<div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#surfex.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#surfex.geo.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;IGN&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
@@ -522,7 +522,7 @@
         <span class="k">return</span> <span class="n">nml</span></div>
 
 
-<span class="k">def</span> <span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#surfex.geo.get_geo_object">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
     <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">from_json</span><span class="p">:</span>
         <span class="n">lower_case_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -549,10 +549,10 @@
             <span class="k">raise</span> <span class="ne">KeyError</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nam_pgd_grid not set!&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="set_domain"><a class="viewcode-back" href="../../index.html#surfex.geo.set_domain">[docs]</a><span class="k">def</span> <span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">domain</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">hm_mode</span><span class="p">:</span>
@@ -588,7 +588,7 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Domain not found: &quot;</span> <span class="o">+</span> <span class="n">domain</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

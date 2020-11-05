@@ -46,7 +46,7 @@
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 
 
-<div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#surfex.Netcdf">[docs]</a><span class="k">class</span> <span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#surfex.netcdf.Netcdf">[docs]</a><span class="k">class</span> <span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -304,7 +304,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="Axis"><a class="viewcode-back" href="../../index.html#surfex.Axis">[docs]</a><span class="k">class</span> <span class="nc">Axis</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="Axis"><a class="viewcode-back" href="../../index.html#surfex.netcdf.Axis">[docs]</a><span class="k">class</span> <span class="nc">Axis</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">Undefined</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">GeoX</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">GeoY</span> <span class="o">=</span> <span class="mi">2</span>
@@ -319,7 +319,7 @@
     <span class="n">Hybrid</span> <span class="o">=</span> <span class="mi">11</span></div>
 
 
-<div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.netcdf.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">fh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
@@ -499,7 +499,7 @@
             <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<span class="k">def</span> <span class="nf">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">my_variables</span><span class="p">,</span> <span class="n">my_nx</span><span class="p">,</span> <span class="n">my_ny</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;raw.nc&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="create_netcdf_first_guess_template"><a class="viewcode-back" href="../../index.html#surfex.netcdf.create_netcdf_first_guess_template">[docs]</a><span class="k">def</span> <span class="nf">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">my_variables</span><span class="p">,</span> <span class="n">my_nx</span><span class="p">,</span> <span class="n">my_ny</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;raw.nc&quot;</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
@@ -556,10 +556,10 @@
         <span class="n">my_fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span><span class="o">.</span><span class="n">standard_name</span> <span class="o">=</span> <span class="n">standard_name</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span>
         <span class="n">my_fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">my_fg</span>
+    <span class="k">return</span> <span class="n">my_fg</span></div>
 
 
-<span class="k">def</span> <span class="nf">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<div class="viewcode-block" id="read_first_guess_netcdf_file"><a class="viewcode-back" href="../../index.html#surfex.netcdf.read_first_guess_netcdf_file">[docs]</a><span class="k">def</span> <span class="nf">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
 
     <span class="n">fh</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][:]</span>
@@ -598,10 +598,10 @@
     <span class="c1"># gelevs = np.asarray(gelevs)</span>
 
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span>
+    <span class="k">return</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span></div>
 
 
-<span class="k">def</span> <span class="nf">write_analysis_netcdf_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="write_analysis_netcdf_file"><a class="viewcode-back" href="../../index.html#surfex.netcdf.write_analysis_netcdf_file">[docs]</a><span class="k">def</span> <span class="nf">write_analysis_netcdf_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">fh</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
@@ -623,10 +623,10 @@
 
     <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">))</span>
     <span class="n">fh</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<span class="k">def</span> <span class="nf">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="oi2soda"><a class="viewcode-back" href="../../index.html#surfex.netcdf.oi2soda">[docs]</a><span class="k">def</span> <span class="nf">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">check_input_to_soda_dimensions</span><span class="p">(</span><span class="n">my_nx</span><span class="p">,</span> <span class="n">my_ny</span><span class="p">,</span> <span class="n">nx1</span><span class="p">,</span> <span class="n">ny1</span><span class="p">):</span>
 
@@ -708,7 +708,7 @@
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sd_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
-    <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>

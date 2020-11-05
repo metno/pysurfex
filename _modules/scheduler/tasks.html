@@ -45,7 +45,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 
 
-<div class="viewcode-block" id="AbstractTask"><a class="viewcode-back" href="../../index.html#scheduler.AbstractTask">[docs]</a><span class="k">class</span> <span class="nc">AbstractTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractTask"><a class="viewcode-back" href="../../index.html#scheduler.tasks.AbstractTask">[docs]</a><span class="k">class</span> <span class="nc">AbstractTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="n">exp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">system_file_paths</span>
@@ -137,7 +137,7 @@
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wdir</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SurfexBinaryTask"><a class="viewcode-back" href="../../index.html#scheduler.SurfexBinaryTask">[docs]</a><span class="k">class</span> <span class="nc">SurfexBinaryTask</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexBinaryTask"><a class="viewcode-back" href="../../index.html#scheduler.tasks.SurfexBinaryTask">[docs]</a><span class="k">class</span> <span class="nc">SurfexBinaryTask</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
@@ -254,7 +254,7 @@
                                 <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Pgd"><a class="viewcode-back" href="../../index.html#scheduler.Pgd">[docs]</a><span class="k">class</span> <span class="nc">Pgd</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Pgd"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Pgd">[docs]</a><span class="k">class</span> <span class="nc">Pgd</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -275,7 +275,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Prep"><a class="viewcode-back" href="../../index.html#scheduler.Prep">[docs]</a><span class="k">class</span> <span class="nc">Prep</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Prep"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Prep">[docs]</a><span class="k">class</span> <span class="nc">Prep</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;prep&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -321,7 +321,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_start_sfx</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Forecast"><a class="viewcode-back" href="../../index.html#scheduler.Forecast">[docs]</a><span class="k">class</span> <span class="nc">Forecast</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Forecast"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Forecast">[docs]</a><span class="k">class</span> <span class="nc">Forecast</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;offline&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -353,7 +353,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 
-<span class="k">class</span> <span class="nc">PerturbedRun</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PerturbedRun"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PerturbedRun">[docs]</a><span class="k">class</span> <span class="nc">PerturbedRun</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;pert&quot;</span><span class="p">]</span>
@@ -398,10 +398,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
             <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output already exists: &quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Soda"><a class="viewcode-back" href="../../index.html#scheduler.Soda">[docs]</a><span class="k">class</span> <span class="nc">Soda</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Soda"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Soda">[docs]</a><span class="k">class</span> <span class="nc">Soda</span><span class="p">(</span><span class="n">SurfexBinaryTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">SurfexBinaryTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="s2">&quot;soda&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -445,7 +445,7 @@
         <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="PrepareCycle"><a class="viewcode-back" href="../../index.html#scheduler.PrepareCycle">[docs]</a><span class="k">class</span> <span class="nc">PrepareCycle</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareCycle"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PrepareCycle">[docs]</a><span class="k">class</span> <span class="nc">PrepareCycle</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -457,7 +457,7 @@
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrk</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#scheduler.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#scheduler.tasks.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -522,7 +522,7 @@
         <span class="n">data_set</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OptimalInterpolation"><a class="viewcode-back" href="../../index.html#scheduler.OptimalInterpolation">[docs]</a><span class="k">class</span> <span class="nc">OptimalInterpolation</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimalInterpolation"><a class="viewcode-back" href="../../index.html#scheduler.tasks.OptimalInterpolation">[docs]</a><span class="k">class</span> <span class="nc">OptimalInterpolation</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -572,7 +572,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">write_analysis_netcdf_file</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">gelevs</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Forcing"><a class="viewcode-back" href="../../index.html#scheduler.Forcing">[docs]</a><span class="k">class</span> <span class="nc">Forcing</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Forcing"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Forcing">[docs]</a><span class="k">class</span> <span class="nc">Forcing</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -624,7 +624,7 @@
             <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.tasks.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -640,7 +640,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fg_guess_sfx</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="CycleFirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.CycleFirstGuess">[docs]</a><span class="k">class</span> <span class="nc">CycleFirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="CycleFirstGuess"><a class="viewcode-back" href="../../index.html#scheduler.tasks.CycleFirstGuess">[docs]</a><span class="k">class</span> <span class="nc">CycleFirstGuess</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -656,7 +656,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_start_sfx</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Oi2soda"><a class="viewcode-back" href="../../index.html#scheduler.Oi2soda">[docs]</a><span class="k">class</span> <span class="nc">Oi2soda</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Oi2soda"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Oi2soda">[docs]</a><span class="k">class</span> <span class="nc">Oi2soda</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -718,7 +718,7 @@
         <span class="c1"># surfex.run_surfex_binary(binary)</span>
 
 
-<div class="viewcode-block" id="Qc2obsmon"><a class="viewcode-back" href="../../index.html#scheduler.Qc2obsmon">[docs]</a><span class="k">class</span> <span class="nc">Qc2obsmon</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="Qc2obsmon"><a class="viewcode-back" href="../../index.html#scheduler.tasks.Qc2obsmon">[docs]</a><span class="k">class</span> <span class="nc">Qc2obsmon</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -756,7 +756,7 @@
                     <span class="n">surfex</span><span class="o">.</span><span class="n">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FirstGuess4OI"><a class="viewcode-back" href="../../index.html#scheduler.FirstGuess4OI">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess4OI</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess4OI"><a class="viewcode-back" href="../../index.html#scheduler.tasks.FirstGuess4OI">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess4OI</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -872,7 +872,7 @@
             <span class="n">fg</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="MakeOfflineBinaries"><a class="viewcode-back" href="../../index.html#scheduler.MakeOfflineBinaries">[docs]</a><span class="k">class</span> <span class="nc">MakeOfflineBinaries</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="MakeOfflineBinaries"><a class="viewcode-back" href="../../index.html#scheduler.tasks.MakeOfflineBinaries">[docs]</a><span class="k">class</span> <span class="nc">MakeOfflineBinaries</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -882,7 +882,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented yet&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="LogProgress"><a class="viewcode-back" href="../../index.html#scheduler.LogProgress">[docs]</a><span class="k">class</span> <span class="nc">LogProgress</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="LogProgress"><a class="viewcode-back" href="../../index.html#scheduler.tasks.LogProgress">[docs]</a><span class="k">class</span> <span class="nc">LogProgress</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -903,7 +903,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">progress_file</span><span class="p">,</span> <span class="n">progress_pp_file</span><span class="p">,</span> <span class="n">log_pp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="LogProgressPP"><a class="viewcode-back" href="../../index.html#scheduler.LogProgressPP">[docs]</a><span class="k">class</span> <span class="nc">LogProgressPP</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="LogProgressPP"><a class="viewcode-back" href="../../index.html#scheduler.tasks.LogProgressPP">[docs]</a><span class="k">class</span> <span class="nc">LogProgressPP</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">family1</span>
@@ -920,34 +920,34 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">progress_file</span><span class="p">,</span> <span class="n">progress_pp_file</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
-<span class="k">class</span> <span class="nc">PrepareOiSoilInput</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareOiSoilInput"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PrepareOiSoilInput">[docs]</a><span class="k">class</span> <span class="nc">PrepareOiSoilInput</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Create FG</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<span class="k">class</span> <span class="nc">PrepareOiClimate</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareOiClimate"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PrepareOiClimate">[docs]</a><span class="k">class</span> <span class="nc">PrepareOiClimate</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Create CLIMATE.dat</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<span class="k">class</span> <span class="nc">PrepareSST</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareSST"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PrepareSST">[docs]</a><span class="k">class</span> <span class="nc">PrepareSST</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Create CLIMATE.dat</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<span class="k">class</span> <span class="nc">PrepareLSM</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareLSM"><a class="viewcode-back" href="../../index.html#scheduler.tasks.PrepareLSM">[docs]</a><span class="k">class</span> <span class="nc">PrepareLSM</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AbstractTask</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -967,7 +967,7 @@
             <span class="s2">&quot;converter&quot;</span><span class="p">:</span> <span class="n">converter</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">surfex</span><span class="o">.</span><span class="n">lsm_file_assim</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">lsm_file_assim</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

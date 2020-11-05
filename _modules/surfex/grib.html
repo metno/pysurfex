@@ -54,7 +54,7 @@
     <span class="n">gribapi</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#surfex.Grib">[docs]</a><span class="k">class</span> <span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#surfex.grib.Grib">[docs]</a><span class="k">class</span> <span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
@@ -213,7 +213,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="Grib1Variable"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib1Variable"><a class="viewcode-back" href="../../index.html#surfex.grib.Grib1Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="n">par</span>
@@ -250,7 +250,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timeRangeIndicator:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#surfex.grib.Grib2Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="n">lt</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">discipline</span>
@@ -308,7 +308,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">print_grib_id</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
+<div class="viewcode-block" id="print_grib_id"><a class="viewcode-back" href="../../index.html#surfex.grib.print_grib_id">[docs]</a><span class="k">def</span> <span class="nf">print_grib_id</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eccodes not found. Needed for reading grib files&quot;</span><span class="p">)</span>
 
@@ -343,7 +343,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="n">type_of_statistical_processing</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unknown grib version&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unknown grib version&quot;</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

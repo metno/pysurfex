@@ -48,7 +48,7 @@
     <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>         <span class="c1"># Python 3.x</span>
 
 
-<span class="k">class</span> <span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadData"><a class="viewcode-back" href="../../index.html#surfex.read.ReadData">[docs]</a><span class="k">class</span> <span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
@@ -62,11 +62,19 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div>
 
 
 <span class="c1"># Direct data can be ead with this class with converter = None</span>
-<div class="viewcode-block" id="ConvertedInput"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput">[docs]</a><span class="k">class</span> <span class="nc">ConvertedInput</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertedInput"><a class="viewcode-back" href="../../index.html#surfex.read.ConvertedInput">[docs]</a><span class="k">class</span> <span class="nc">ConvertedInput</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converted input</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        geo (surfex.Geo): Surfex geometry</span>
+<span class="sd">        var_name (str): Variable name</span>
+<span class="sd">        converter (surfex.Converter): Converter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
@@ -84,8 +92,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="ConstantValue"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue">[docs]</a><span class="k">class</span> <span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantValue"><a class="viewcode-back" href="../../index.html#surfex.read.ConstantValue">[docs]</a><span class="k">class</span> <span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set a field to a constant value</span>
 
+<span class="sd">    :param geo: Geometry object</span>
+<span class="sd">    :type geo: surfex.Geo</span>
+<span class="sd">    :param var_name: Variable name</span>
+<span class="sd">    :type var_name: str</span>
+<span class="sd">    :param var_dict: Variable definition</span>
+<span class="sd">    :type var_dict: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span> <span class="o">=</span> <span class="n">var_dict</span>
@@ -105,7 +122,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
+<div class="viewcode-block" id="remove_existing_file"><a class="viewcode-back" href="../../index.html#surfex.read.remove_existing_file">[docs]</a><span class="k">def</span> <span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">f_in</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Input file not set&quot;</span><span class="p">)</span>
     <span class="c1"># If files are not the same file</span>
@@ -119,14 +136,14 @@
     <span class="c1"># files have the same path. Remove if it is a symlink</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">f_out</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f_out</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f_out</span><span class="p">)</span></div>
 
 
 <span class="c1">#######################################################</span>
 <span class="c1">#######################################################</span>
 
 
-<div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#surfex.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Converter</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main interface to read a field is done through a converter.</span>
 <span class="sd">    The converter name is default &quot;None&quot; to read a plain field without any conversion.</span>
@@ -134,7 +151,7 @@
 <span class="sd">    :param name: name of the converter</span>
 <span class="sd">    :type name: str</span>
 <span class="sd">    :param validtime: The valid time you want to read</span>
-<span class="sd">    :type validtime: datetime</span>
+<span class="sd">    :type validtime: datetime.datetime</span>
 <span class="sd">    :param defs: A dictionary defining the variables</span>
 <span class="sd">    :type defs: dict</span>
 <span class="sd">    :param conf: A dictionary defining the converter</span>
@@ -142,7 +159,7 @@
 <span class="sd">    :param fileformat: Fileformat of the converter</span>
 <span class="sd">    :type fileformat: str</span>
 <span class="sd">    :param basetime: The base time of the input data source</span>
-<span class="sd">    :type basetime: validtime</span>
+<span class="sd">    :type basetime: datetime.datetime</span>
 <span class="sd">    :param debug: Debug optiom</span>
 <span class="sd">    :type debug: bool</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -209,6 +226,21 @@
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a variable</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                fileformat (str): Fileformat</span>
+<span class="sd">                defs (dict): defs</span>
+<span class="sd">                var_dict (dict): Variable dictionary</span>
+<span class="sd">                debug(bool): Debug option</span>
+
+<span class="sd">            Raises:</span>
+<span class="sd">                 NotImplementedError: Not implemented</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                field: The read field</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Finally we can merge the variable with the default settings</span>
         <span class="c1"># Create deep copies not to inherit between variables</span>
@@ -331,7 +363,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-        <span class="k">return</span> <span class="n">field</span></div>
+        <span class="k">return</span> <span class="n">field</span>
 </pre></div>
 
             <div class="clearer"></div>

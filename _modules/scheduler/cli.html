@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scheduler.cli &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.cli</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for scheduler.cli</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">scheduler</span>
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+
+<div class="viewcode-block" id="parse_submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;ECF_submit task to ecflow&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Library path&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of ECF Task&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_tryno&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF try number&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_pass&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of ECF password&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-dtg&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dtg&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;DTG&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-stream&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-ecf_rid&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF remote id&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-e&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;ensmbr&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Ensemble member&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--db&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">surfex</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
+    <span class="n">lib</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lib&quot;</span><span class="p">]</span>
+    <span class="n">ecf_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_name&quot;</span><span class="p">]</span>
+    <span class="n">ensmbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ensmbr&quot;</span><span class="p">]</span>
+    <span class="n">dtg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dtg</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+    <span class="n">ecf_tryno</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_tryno&quot;</span><span class="p">]</span>
+    <span class="n">ecf_pass</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_pass&quot;</span><span class="p">]</span>
+    <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_rid&quot;</span><span class="p">]</span>
+    <span class="n">submission_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;db&quot;</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stream</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">stream</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ecf_rid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ecf_rid</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">ExpFromFiles</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+        <span class="n">wd</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">wd</span>
+
+        <span class="c1"># coldstart = config.is_coldstart(dtg)</span>
+        <span class="n">submit_exceptions</span> <span class="o">=</span> <span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/config//submit/submission.json&quot;</span>
+        <span class="n">submit_exceptions</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">submit_exceptions</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">EcflowTask</span><span class="p">(</span><span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecf_tryno</span><span class="p">,</span> <span class="n">ecf_pass</span><span class="p">,</span> <span class="n">ecf_rid</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">)</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">EcflowSubmitTask</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">submit_exceptions</span><span class="o">=</span><span class="n">submit_exceptions</span><span class="p">,</span>
+                                         <span class="n">ensmbr</span><span class="o">=</span><span class="n">ensmbr</span><span class="p">,</span> <span class="n">dbfile</span><span class="o">=</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">sub</span><span class="o">.</span><span class="n">submit</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">e</span></div>
+
+
+<div class="viewcode-block" id="parse_kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Kill EcFlow task and handle abort&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Library path&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;submit_type&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;submit type&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_NAME&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_tryno&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_TRYNO&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_pass&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_PASS&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-ecf_rid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_RID&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-submission_id&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;SUBMISSION_ID&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">surfex</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
+    <span class="n">lib</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lib&quot;</span><span class="p">]</span>
+    <span class="n">ecf_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_name&quot;</span><span class="p">]</span>
+    <span class="n">ecf_tryno</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_tryno&quot;</span><span class="p">]</span>
+    <span class="n">ecf_pass</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_pass&quot;</span><span class="p">]</span>
+    <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_rid&quot;</span><span class="p">]</span>
+    <span class="n">submission_id</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;submission_id&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">submission_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;submission_id&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">submission_id</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">submission_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">ExpFromFiles</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">EcflowTask</span><span class="p">(</span><span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecf_tryno</span><span class="p">,</span> <span class="n">ecf_pass</span><span class="p">,</span> <span class="n">ecf_rid</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">)</span>
+    <span class="n">task_settings</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">TaskSettings</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">env_submit</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">submission_id</span><span class="p">)</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">get_submission_object</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">task_settings</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+    <span class="n">sub</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">force_aborted</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_status_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Status of EcFlow task&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Library path&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_NAME&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_tryno&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_TRYNO&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;ecf_pass&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_PASS&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-ecf_rid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;ECF_RID&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-submission_id&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;SUBMISSION_ID&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">surfex</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.status_cmd">[docs]</a><span class="k">def</span> <span class="nf">status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
+    <span class="n">lib</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lib&quot;</span><span class="p">]</span>
+    <span class="n">ecf_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_name&quot;</span><span class="p">]</span>
+    <span class="n">ecf_tryno</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_tryno&quot;</span><span class="p">]</span>
+    <span class="n">ecf_pass</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_pass&quot;</span><span class="p">]</span>
+    <span class="n">ecf_rid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ecf_rid&quot;</span><span class="p">]</span>
+    <span class="n">submission_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;submission_id&quot;</span><span class="p">]</span>
+
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">ExpFromFiles</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">EcflowTask</span><span class="p">(</span><span class="n">ecf_name</span><span class="p">,</span> <span class="n">ecf_tryno</span><span class="p">,</span> <span class="n">ecf_pass</span><span class="p">,</span> <span class="n">ecf_rid</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">)</span>
+    <span class="n">task_settings</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">TaskSettings</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">env_submit</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">get_submission_object</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">task_settings</span><span class="p">)</span>
+    <span class="n">sub</span><span class="o">.</span><span class="n">status</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="parse_surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_surfex_script">[docs]</a><span class="k">def</span> <span class="nf">parse_surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Surfex offline run script&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Action&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;prod&quot;</span><span class="p">,</span> <span class="s2">&quot;continue&quot;</span><span class="p">,</span> <span class="s2">&quot;testbed&quot;</span><span class="p">,</span>
+                                                                    <span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="s2">&quot;climate&quot;</span><span class="p">,</span> <span class="s2">&quot;co&quot;</span><span class="p">])</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-exp&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Experiment name&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--wd&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Experiment working directory&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-dtg&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;DateTimeGroup (YYYYMMDDHH)&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-dtgend&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;DateTimeGroup (YYYYMMDDHH)&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--suite&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;surfex&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Type of suite definition&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--stream&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">)</span>
+
+    <span class="c1"># co</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--file&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;File to checkout&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Setup variables</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-rev&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Surfex source revison&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-conf&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;conf&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Surfex configuration&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-host&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;host&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Host label for setup files&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--domain&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Domain&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Config&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">surfex</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.cli.surfex_script">[docs]</a><span class="k">def</span> <span class="nf">surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">action</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">exp</span>
+
+    <span class="c1"># Setup</span>
+    <span class="n">wd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wd</span>
+    <span class="n">rev</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">rev</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">conf</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">host</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">domain</span>
+
+    <span class="c1"># Co</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span>
+
+    <span class="c1"># Others</span>
+    <span class="n">dtg</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">dtg</span>
+    <span class="n">dtgend</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">dtgend</span>
+    <span class="n">suite</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">suite</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">stream</span>
+
+    <span class="c1"># Find experiment</span>
+    <span class="k">if</span> <span class="n">wd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">wd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting current working directory as WD: &quot;</span> <span class="o">+</span> <span class="n">wd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting EXP from WD:&quot;</span> <span class="o">+</span> <span class="n">wd</span><span class="p">)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">wd</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EXP = &quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;setup&quot;</span><span class="p">:</span>
+        <span class="c1"># Copy files to WD from REV</span>
+        <span class="k">if</span> <span class="n">rev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set REV&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set host&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">rev</span>
+
+        <span class="n">experiment_is_locked</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">sfx_exp</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">Exp</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">wd</span><span class="p">,</span> <span class="n">rev</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">experiment_is_locked</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">sfx_exp</span><span class="o">.</span><span class="n">setup_files</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">domain_json</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">set_domain</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/config/domains/Harmonie_domains.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)),</span>
+                                            <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">domain_file</span> <span class="o">=</span> <span class="n">sfx_exp</span><span class="o">.</span><span class="n">get_file_name</span><span class="p">(</span><span class="n">wd</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">,</span> <span class="n">full_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">domain_json</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">domain_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="s2">&quot;action&quot;</span> <span class="o">==</span> <span class="s2">&quot;mon&quot;</span><span class="p">:</span>
+        <span class="c1"># TODO</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;co&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Checkout requires a file (--file)&quot;</span><span class="p">)</span>
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">ExpFromFiles</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">wd</span><span class="p">)</span><span class="o">.</span><span class="n">checkout</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Some kind of start</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;start&quot;</span> <span class="ow">and</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must provide -dtg to start a simulation&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;climate&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="s2">&quot;2008061600&quot;</span>
+            <span class="k">if</span> <span class="n">suite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">suite</span> <span class="o">!=</span> <span class="s2">&quot;climate&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Action was climate but you also specified a suite not being climate: &quot;</span> <span class="o">+</span> <span class="n">suite</span><span class="p">)</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="s2">&quot;climate&quot;</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;testbed&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="s2">&quot;2008061600&quot;</span>
+            <span class="k">if</span> <span class="n">suite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">suite</span> <span class="o">!=</span> <span class="s2">&quot;testbed&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Action was climate but you also specified a suite not being testbed: &quot;</span> <span class="o">+</span> <span class="n">suite</span><span class="p">)</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="s2">&quot;testbed&quot;</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;install&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="s2">&quot;2008061600&quot;</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="s2">&quot;Makeup&quot;</span>
+
+        <span class="n">updated_progress</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">updated_progress_pp</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">updated_progress</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTG&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">dtgend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">updated_progress</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTGEND&quot;</span><span class="p">:</span> <span class="n">dtgend</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;start&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No DTG was provided!&quot;</span><span class="p">)</span>
+            <span class="n">updated_progress</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTG&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+            <span class="n">updated_progress</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTGBEG&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+            <span class="n">updated_progress</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTGEND&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+            <span class="n">updated_progress_pp</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;DTGPP&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+
+        <span class="n">progress_file</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">Exp</span><span class="o">.</span><span class="n">get_file_name</span><span class="p">(</span><span class="n">wd</span><span class="p">,</span> <span class="s2">&quot;progress&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">full_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">progress_pp_file</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">Exp</span><span class="o">.</span><span class="n">get_file_name</span><span class="p">(</span><span class="n">wd</span><span class="p">,</span> <span class="s2">&quot;progressPP&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">full_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;prod&quot;</span> <span class="ow">or</span> <span class="n">action</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;continue&quot;</span><span class="p">:</span>
+            <span class="n">progress</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">ProgressFromFile</span><span class="p">(</span><span class="n">progress_file</span><span class="p">,</span> <span class="n">progress_pp_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dtgend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dtgend</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">Progress</span><span class="p">(</span><span class="n">updated_progress</span><span class="p">,</span> <span class="n">updated_progress_pp</span><span class="p">)</span>
+
+        <span class="c1"># Update progress</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">progress_file</span><span class="p">,</span> <span class="n">progress_pp_file</span><span class="p">)</span>
+
+        <span class="c1"># Set experiment from files. Should be existing now after setup</span>
+        <span class="n">sfx_exp</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">ExpFromFiles</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">wd</span><span class="p">)</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">sfx_exp</span><span class="o">.</span><span class="n">system</span>
+
+        <span class="c1"># Merge config</span>
+        <span class="n">all_merged_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">merge_toml_env_from_config_dicts</span><span class="p">(</span><span class="n">sfx_exp</span><span class="o">.</span><span class="n">config_files</span><span class="p">)</span>
+        <span class="n">merged_config</span><span class="p">,</span> <span class="n">member_merged_config</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">process_merged_settings</span><span class="p">(</span><span class="n">all_merged_settings</span><span class="p">)</span>
+
+        <span class="c1"># Create configuration</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Configuration</span><span class="p">(</span><span class="n">merged_config</span><span class="p">,</span> <span class="n">member_merged_config</span><span class="p">)</span>
+
+        <span class="n">data0</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;SFX_EXP_DATA&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
+        <span class="n">lib0</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;SFX_EXP_LIB&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
+        <span class="n">logfile</span> <span class="o">=</span> <span class="n">data0</span> <span class="o">+</span> <span class="s2">&quot;/ECF.log&quot;</span>
+
+        <span class="c1"># Create LIB0 and copy init run if WD != lib0</span>
+        <span class="k">if</span> <span class="n">wd</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">lib0</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">ecf_init_run</span> <span class="o">=</span> <span class="n">lib0</span> <span class="o">+</span> <span class="s2">&quot;/ecf/InitRun.py&quot;</span>
+            <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ecf_init_run</span><span class="p">)</span>
+            <span class="c1"># print(dirname)</span>
+            <span class="n">dirs</span> <span class="o">=</span> <span class="n">dirname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="c1"># print(dirs)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">d</span>
+                    <span class="c1"># print(p)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/ecf/InitRun.py&quot;</span><span class="p">,</span> <span class="n">ecf_init_run</span><span class="p">)</span>
+
+        <span class="c1"># Create the scheduler</span>
+        <span class="n">my_scheduler</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">EcflowServerFromFile</span><span class="p">(</span><span class="s2">&quot;Env_server&quot;</span><span class="p">,</span> <span class="n">logfile</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">scheduler</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="c1"># Create and start the suite</span>
+        <span class="n">def_file</span> <span class="o">=</span> <span class="n">data0</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">suite</span> <span class="o">+</span> <span class="s2">&quot;.def&quot;</span>
+
+        <span class="n">my_scheduler</span><span class="o">.</span><span class="n">start_exp</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">sfx_exp</span><span class="p">,</span> <span class="n">suite</span><span class="p">,</span> <span class="n">def_file</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">scheduler.cli</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
+    </div>
+  </body>
+</html>
