@@ -732,7 +732,7 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
     Parameters:
         test_list(list): List of tests
         settings(dict): Test settings
-        an_time(datetime): Analysis time
+        an_time(datetime.datetime): Analysis time
         domain_geo(surfex.Geo): Geo object
         blacklist(dict): Optional blacklist. Needd for blacklist test
 

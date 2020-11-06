@@ -71,14 +71,16 @@ class Fa(object):
     def points(self, varname, geo, validtime=None, interpolation="nearest", cache=None):
 
         """
-                Reads a 2-D field and interpolates it to requested positions
+        Reads a 2-D field and interpolates it to requested positions
 
-                Arguments:
-
-
-                Returns:
-                 np.array: vector with inpterpolated values
-
+        Args:
+            varname (str): Variable name
+            geo (surfex.Geo): Geometry
+            validtime (datetime.datetime): Validtime
+            interpolation (str): Interpoaltion method
+            cache (surfex.Cache): Cache
+        Returns:
+            np.array: vector with inpterpolated values
         """
 
         field, geo_in = self.field(varname, validtime)

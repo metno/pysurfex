@@ -110,20 +110,15 @@ class Converter:
     Main interface to read a field is done through a converter.
     The converter name is default "None" to read a plain field without any conversion.
 
-    :param name: name of the converter
-    :type name: str
-    :param validtime: The valid time you want to read
-    :type validtime: datetime.datetime
-    :param defs: A dictionary defining the variables
-    :type defs: dict
-    :param conf: A dictionary defining the converter
-    :type conf: dict
-    :param fileformat: Fileformat of the converter
-    :type fileformat: str
-    :param basetime: The base time of the input data source
-    :type basetime: datetime.datetime
-    :param debug: Debug optiom
-    :type debug: bool
+    Args:
+        name (str): name of the converter
+        validtime (datetime.datetime): The valid time you want to read
+        defs (dict): A dictionary defining the variables
+        conf (dict): A dictionary defining the converter
+        fileformat (str): Fileformat of the converter
+        basetime (datetime.datetime): The base time of the input data source
+        debug (bool): Debug optiom
+        
     """
 
     def __init__(self, name, validtime, defs, conf, fileformat, basetime, debug=False):
@@ -191,17 +186,17 @@ class Converter:
         """
         Create a variable
 
-            Args:
-                fileformat (str): Fileformat
-                defs (dict): defs
-                var_dict (dict): Variable dictionary
-                debug(bool): Debug option
+        Args:
+            fileformat (str): Fileformat
+            defs (dict): defs
+            var_dict (dict): Variable dictionary
+            debug(bool): Debug option
 
-            Raises:
-                 NotImplementedError: Not implemented
+        Raises:
+             NotImplementedError: Not implemented
 
-            Returns:
-                field: The read field
+        Returns:
+            field: The read field
         """
 
         # Finally we can merge the variable with the default settings

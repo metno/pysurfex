@@ -27,7 +27,7 @@ for code_dir in code_dirs:
                             if line.find("(") > 0 and line.find(":") == (len(line) - 1):
                                 cl = line.split(" ")[1]
                                 cl = cl.split("(")[0]
-                                cl = root + "." + ff + "." + cl
+                                cl = root + "." + cl
                                 classes.append(cl)
                         elif " def " in line:
                             if line.find("(") > 0 and line.find(":") == (len(line) - 1):
@@ -44,7 +44,7 @@ for code_dir in code_dirs:
                                     line = line.lstrip()
                                     m = line.split(" ")[1]
                                     m = m.split("(")[0]
-                                    methods.append(root + "." + ff + "." + m)
+                                    methods.append(root + "." + m)
 
 print("\nClasses")
 print("---------------------------------------------")
