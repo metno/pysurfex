@@ -88,7 +88,7 @@ setup(
         "scipy",
         "netCDF4",
         "cfunits",
-        "pyproj <= 1.9.6",
+        "pyproj",
         "pyyaml",
         "toml",
         "netCDF4",
@@ -103,7 +103,7 @@ setup(
         "eccodes",
         "python-csv",
         "db-sqlite3",
-        "titanlib==0.2.1",
+        "titanlib == 0.2.1",
         "gridpp == 0.5.0a1"
     ],
 
