@@ -2,7 +2,7 @@ numpy
 scipy
 netCDF4
 cfunits
-pyproj <= 1.9.6
+pyproj
 pyyaml
 toml
 tomlkit

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import math
-from pyproj import Proj
+import pyproj
 import numpy as np
 import surfex
 import os
@@ -99,17 +99,21 @@ class ConfProj(SurfexGeo):
             raise KeyError("Missing key4")
 
         earth = 6.37122e+6
-        proj4 = "+proj=lcc +lat_0=" + str(self.xlat0) + " +lon_0=" + str(self.xlon0) + " +lat_1=" + \
-                str(self.xlat0) + " +lat_2=" + str(self.xlat0) + " +units=m +no_defs +R=" + str(earth)
+        proj_string = "+proj=lcc +lat_0=" + str(self.xlat0) + " +lon_0=" + str(self.xlon0) + " +lat_1=" + \
+                      str(self.xlat0) + " +lat_2=" + str(self.xlat0) + " +units=m +no_defs +R=" + str(earth)
 
-        proj = Proj(proj4)
-        xloncen, xlatcen = proj(self.xloncen, self.xlatcen)
+        proj = pyproj.CRS.from_string(proj_string)
+        wgs84 = pyproj.CRS.from_string("EPSG:4326")
+
+        xloncen, xlatcen = \
+            pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(self.xloncen, self.xlatcen)
+
         x0 = xloncen - (0.5 * (float(self.nimax) - 1.) * self.xdx)
         y0 = xlatcen - (0.5 * (float(self.njmax) - 1.) * self.xdy)
         x = np.arange(x0, x0 + (self.nimax * self.xdx), self.xdx)
         y = np.arange(y0, y0 + (self.njmax * self.xdy), self.xdy)
         xv, yv = np.meshgrid(x, y)
-        lons, lats = proj(xv, yv, inverse=True)
+        lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xv, yv)
 
         npoints = self.nimax * self.njmax
         SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax, np.reshape(lons, [npoints], order="F"),
@@ -171,7 +175,7 @@ class LonLatVal(SurfexGeo):
                 self.xdx = domain_dict["nam_lonlatval"]["xdx"]
                 self.xdy = domain_dict["nam_lonlatval"]["xdy"]
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
-                proj = Proj(proj4)
+                proj = pyproj.CRS.from_string(proj4)
                 SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), np.asarray(self.xx),
                                    np.asarray(self.xy))
                 self.can_interpolate = False
@@ -261,8 +265,8 @@ class LonLatReg(SurfexGeo):
             print("Missing key")
             raise KeyError
 
-        proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
-        proj = Proj(proj4)
+        proj_string = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
+        proj = pyproj.CRS.from_string(proj_string)
         lons = []
         lats = []
         if self.nlon == 0 or self.nlat == 0:
@@ -332,7 +336,8 @@ class IGN(SurfexGeo):
         else:
             raise NotImplementedError
 
-        proj = Proj(proj4)
+        proj = pyproj.CRS.from_string(proj4)
+        wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
         pxall = self.get_coord(self.xx, self.xdx, "x", recreate)
         pyall = self.get_coord(self.xy, self.xdy, "y", recreate)
@@ -342,9 +347,7 @@ class IGN(SurfexGeo):
         lons = []
         lats = []
         for i in range(0, npoints):
-            # lon, lat = xy2pos(i * self.xdx, j * self.xdy)
-            lon, lat = proj(self.xx[i], self.xy[i], inverse=True)
-            print(self.xx[i], self.xy[i], lon, lat)
+            lon, lat = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(self.xx[i], self.xy[i])
             lons.append(lon)
             lats.append(lat)
 

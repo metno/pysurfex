@@ -117,8 +117,8 @@ class Converter:
         conf (dict): A dictionary defining the converter
         fileformat (str): Fileformat of the converter
         basetime (datetime.datetime): The base time of the input data source
-        debug (bool): Debug optiom
-        
+        debug (bool): Debug option
+
     """
 
     def __init__(self, name, validtime, defs, conf, fileformat, basetime, debug=False):

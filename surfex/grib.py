@@ -1,6 +1,6 @@
 import numpy as np
 import surfex
-from pyproj import Proj
+import pyproj
 try:
     import eccodes
     import gribapi
@@ -103,14 +103,15 @@ class Grib(object):
                         print("Hopefullly valid for time ", time)
 
                         earth = 6.37122e+6
-                        proj4 = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
-                                str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+                        proj_string = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
+                                      str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
 
-                        proj = Proj(proj4)
-                        x0, y0 = proj(ll_lon, ll_lat)
+                        proj = pyproj.CRS.from_string(proj_string)
+                        wgs84 = pyproj.CRS.from_string("EPSG:4326")
+                        x0, y0 = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(ll_lon, ll_lat)
                         xc = x0 + 0.5 * (nx - 1) * dx
                         yc = y0 + 0.5 * (ny - 1) * dy
-                        lonc, latc = proj(xc, yc, inverse=True)
+                        lonc, latc = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xc, yc)
                         field = np.reshape(values, [nx, ny], order="F")
 
                         if geo_out is None:

@@ -4,7 +4,8 @@ import surfex
 
 class ForcingTest(unittest.TestCase):
 
-    def test_forcing_nc(self):
+    @staticmethod
+    def test_forcing_nc():
 
         argv = ["2020022000", "2020022001", "test/settings/conf_proj_test.json",
                 "-p", "testdata/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc",
