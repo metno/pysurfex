@@ -47,7 +47,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not import sqlie3 modules&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="open_db"><a class="viewcode-back" href="../../index.html#surfex.obsmon.open_db">[docs]</a><span class="k">def</span> <span class="nf">open_db</span><span class="p">(</span><span class="n">dbname</span><span class="p">):</span>
+<div class="viewcode-block" id="open_db"><a class="viewcode-back" href="../../index.html#surfex.open_db">[docs]</a><span class="k">def</span> <span class="nf">open_db</span><span class="p">(</span><span class="n">dbname</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">sqlite3</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You need SQLITE for obsmon&quot;</span><span class="p">)</span>
 
@@ -55,11 +55,11 @@
     <span class="k">return</span> <span class="n">conn</span></div>
 
 
-<div class="viewcode-block" id="close_db"><a class="viewcode-back" href="../../index.html#surfex.obsmon.close_db">[docs]</a><span class="k">def</span> <span class="nf">close_db</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+<div class="viewcode-block" id="close_db"><a class="viewcode-back" href="../../index.html#surfex.close_db">[docs]</a><span class="k">def</span> <span class="nf">close_db</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
     <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="create_db"><a class="viewcode-back" href="../../index.html#surfex.obsmon.create_db">[docs]</a><span class="k">def</span> <span class="nf">create_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
+<div class="viewcode-block" id="create_db"><a class="viewcode-back" href="../../index.html#surfex.create_db">[docs]</a><span class="k">def</span> <span class="nf">create_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
     <span class="c1"># Create usage table</span>
@@ -86,7 +86,7 @@
     <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="populate_usage_db"><a class="viewcode-back" href="../../index.html#surfex.obsmon.populate_usage_db">[docs]</a><span class="k">def</span> <span class="nf">populate_usage_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">observations</span><span class="p">):</span>
+<div class="viewcode-block" id="populate_usage_db"><a class="viewcode-back" href="../../index.html#surfex.populate_usage_db">[docs]</a><span class="k">def</span> <span class="nf">populate_usage_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">observations</span><span class="p">):</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update usage&quot;</span><span class="p">)</span>
     <span class="n">obnumber</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
@@ -153,7 +153,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updated usage&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rmse"><a class="viewcode-back" href="../../index.html#surfex.obsmon.rmse">[docs]</a><span class="k">def</span> <span class="nf">rmse</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+<div class="viewcode-block" id="rmse"><a class="viewcode-back" href="../../index.html#surfex.rmse">[docs]</a><span class="k">def</span> <span class="nf">rmse</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(((</span><span class="n">predictions</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
@@ -161,7 +161,7 @@
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
 
-<div class="viewcode-block" id="bias"><a class="viewcode-back" href="../../index.html#surfex.obsmon.bias">[docs]</a><span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<div class="viewcode-block" id="bias"><a class="viewcode-back" href="../../index.html#surfex.bias">[docs]</a><span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
@@ -169,7 +169,7 @@
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
 
-<div class="viewcode-block" id="absbias"><a class="viewcode-back" href="../../index.html#surfex.obsmon.absbias">[docs]</a><span class="k">def</span> <span class="nf">absbias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<div class="viewcode-block" id="absbias"><a class="viewcode-back" href="../../index.html#surfex.absbias">[docs]</a><span class="k">def</span> <span class="nf">absbias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
@@ -177,7 +177,7 @@
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
 
-<div class="viewcode-block" id="mean"><a class="viewcode-back" href="../../index.html#surfex.obsmon.mean">[docs]</a><span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<div class="viewcode-block" id="mean"><a class="viewcode-back" href="../../index.html#surfex.mean">[docs]</a><span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
@@ -185,7 +185,7 @@
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
 
-<div class="viewcode-block" id="calculate_statistics"><a class="viewcode-back" href="../../index.html#surfex.obsmon.calculate_statistics">[docs]</a><span class="k">def</span> <span class="nf">calculate_statistics</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_statistics"><a class="viewcode-back" href="../../index.html#surfex.calculate_statistics">[docs]</a><span class="k">def</span> <span class="nf">calculate_statistics</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
 
     <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">flags</span><span class="p">)):</span>
@@ -251,7 +251,7 @@
     <span class="k">return</span> <span class="n">statistics</span></div>
 
 
-<div class="viewcode-block" id="populate_obsmon_db"><a class="viewcode-back" href="../../index.html#surfex.obsmon.populate_obsmon_db">[docs]</a><span class="k">def</span> <span class="nf">populate_obsmon_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">statistics</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
+<div class="viewcode-block" id="populate_obsmon_db"><a class="viewcode-back" href="../../index.html#surfex.populate_obsmon_db">[docs]</a><span class="k">def</span> <span class="nf">populate_obsmon_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">statistics</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update obsmon table&quot;</span><span class="p">)</span>
     <span class="n">obnumber</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
@@ -298,7 +298,7 @@
     <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="write_obsmon_sqlite_file"><a class="viewcode-back" href="../../index.html#surfex.obsmon.write_obsmon_sqlite_file">[docs]</a><span class="k">def</span> <span class="nf">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="write_obsmon_sqlite_file"><a class="viewcode-back" href="../../index.html#surfex.write_obsmon_sqlite_file">[docs]</a><span class="k">def</span> <span class="nf">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;sea&quot;</span><span class="p">]</span>
     <span class="n">stat_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;nobs&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_abs_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_rms&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_dep&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_uncorr&quot;</span><span class="p">,</span> <span class="s2">&quot;bc&quot;</span><span class="p">,</span> <span class="s2">&quot;an_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;an_abs_bias&quot;</span><span class="p">,</span>
                  <span class="s2">&quot;an_rms&quot;</span><span class="p">,</span> <span class="s2">&quot;an_dep&quot;</span><span class="p">]</span>

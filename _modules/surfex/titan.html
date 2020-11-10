@@ -52,7 +52,7 @@
     <span class="n">gridpp</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#surfex.titan.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#surfex.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
@@ -75,7 +75,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Plausibility"><a class="viewcode-back" href="../../index.html#surfex.titan.Plausibility">[docs]</a><span class="k">class</span> <span class="nc">Plausibility</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Plausibility"><a class="viewcode-back" href="../../index.html#surfex.Plausibility">[docs]</a><span class="k">class</span> <span class="nc">Plausibility</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
@@ -137,7 +137,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#surfex.titan.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#surfex.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="n">negdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">posdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
                  <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
@@ -214,7 +214,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Fraction"><a class="viewcode-back" href="../../index.html#surfex.titan.Fraction">[docs]</a><span class="k">class</span> <span class="nc">Fraction</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Fraction"><a class="viewcode-back" href="../../index.html#surfex.Fraction">[docs]</a><span class="k">class</span> <span class="nc">Fraction</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
                  <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
@@ -294,7 +294,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Sct"><a class="viewcode-back" href="../../index.html#surfex.titan.Sct">[docs]</a><span class="k">class</span> <span class="nc">Sct</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Sct"><a class="viewcode-back" href="../../index.html#surfex.Sct">[docs]</a><span class="k">class</span> <span class="nc">Sct</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_min</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">inner_radius</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="mi">150000</span><span class="p">,</span> <span class="n">num_iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                  <span class="n">num_min_prof</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">min_elev_diff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">min_horizonal_scale</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
                  <span class="n">vertical_scale</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">neg</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">eps2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">cmin</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">cmax</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">missing_elev_to_zero</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -439,7 +439,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Buddy"><a class="viewcode-back" href="../../index.html#surfex.titan.Buddy">[docs]</a><span class="k">class</span> <span class="nc">Buddy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Buddy"><a class="viewcode-back" href="../../index.html#surfex.Buddy">[docs]</a><span class="k">class</span> <span class="nc">Buddy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diff_elev_max</span><span class="o">=</span><span class="mf">200000.</span><span class="p">,</span> <span class="n">adjust_for_elev_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">distance_lim</span><span class="o">=</span><span class="mf">1000000.</span><span class="p">,</span> <span class="n">priorities</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">buddies_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">obs_to_check</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -542,7 +542,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Climatology"><a class="viewcode-back" href="../../index.html#surfex.titan.Climatology">[docs]</a><span class="k">class</span> <span class="nc">Climatology</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Climatology"><a class="viewcode-back" href="../../index.html#surfex.Climatology">[docs]</a><span class="k">class</span> <span class="nc">Climatology</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -609,7 +609,7 @@
         <span class="k">return</span> <span class="n">global_flags</span></div>
 
 
-<div class="viewcode-block" id="Redundancy"><a class="viewcode-back" href="../../index.html#surfex.titan.Redundancy">[docs]</a><span class="k">class</span> <span class="nc">Redundancy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Redundancy"><a class="viewcode-back" href="../../index.html#surfex.Redundancy">[docs]</a><span class="k">class</span> <span class="nc">Redundancy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">an_time</span> <span class="o">=</span> <span class="n">an_time</span>
@@ -647,7 +647,7 @@
         <span class="k">return</span> <span class="n">flags</span></div>
 
 
-<div class="viewcode-block" id="Blacklist"><a class="viewcode-back" href="../../index.html#surfex.titan.Blacklist">[docs]</a><span class="k">class</span> <span class="nc">Blacklist</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="Blacklist"><a class="viewcode-back" href="../../index.html#surfex.Blacklist">[docs]</a><span class="k">class</span> <span class="nc">Blacklist</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blacklist</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -706,7 +706,7 @@
         <span class="k">return</span> <span class="n">flags</span></div>
 
 
-<div class="viewcode-block" id="DomainCheck"><a class="viewcode-back" href="../../index.html#surfex.titan.DomainCheck">[docs]</a><span class="k">class</span> <span class="nc">DomainCheck</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="DomainCheck"><a class="viewcode-back" href="../../index.html#surfex.DomainCheck">[docs]</a><span class="k">class</span> <span class="nc">DomainCheck</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_geo</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">domain_geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -739,7 +739,7 @@
         <span class="k">return</span> <span class="n">flags</span></div>
 
 
-<div class="viewcode-block" id="NoMeta"><a class="viewcode-back" href="../../index.html#surfex.titan.NoMeta">[docs]</a><span class="k">class</span> <span class="nc">NoMeta</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+<div class="viewcode-block" id="NoMeta"><a class="viewcode-back" href="../../index.html#surfex.NoMeta">[docs]</a><span class="k">class</span> <span class="nc">NoMeta</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
@@ -763,14 +763,14 @@
         <span class="k">return</span> <span class="n">flags</span></div>
 
 
-<div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#surfex.titan.define_quality_control">[docs]</a><span class="k">def</span> <span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#surfex.define_quality_control">[docs]</a><span class="k">def</span> <span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Method to define different QC test from a dict</span>
 
 <span class="sd">    Parameters:</span>
 <span class="sd">        test_list(list): List of tests</span>
 <span class="sd">        settings(dict): Test settings</span>
-<span class="sd">        an_time(datetime): Analysis time</span>
+<span class="sd">        an_time(datetime.datetime): Analysis time</span>
 <span class="sd">        domain_geo(surfex.Geo): Geo object</span>
 <span class="sd">        blacklist(dict): Optional blacklist. Needd for blacklist test</span>
 
@@ -896,7 +896,7 @@
     <span class="k">return</span> <span class="n">tests</span></div>
 
 
-<div class="viewcode-block" id="QCDataSet"><a class="viewcode-back" href="../../index.html#surfex.titan.QCDataSet">[docs]</a><span class="k">class</span> <span class="nc">QCDataSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet">[docs]</a><span class="k">class</span> <span class="nc">QCDataSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">analysis_time</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">cis</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">providers</span><span class="p">,</span> <span class="n">passed_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remove_invalid_elevs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
@@ -1053,7 +1053,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">qcorep</span></div>
 
 
-<div class="viewcode-block" id="TitanDataSet"><a class="viewcode-back" href="../../index.html#surfex.titan.TitanDataSet">[docs]</a><span class="k">class</span> <span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
+<div class="viewcode-block" id="TitanDataSet"><a class="viewcode-back" href="../../index.html#surfex.TitanDataSet">[docs]</a><span class="k">class</span> <span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">corep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
@@ -1206,7 +1206,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ObsOperator"><a class="viewcode-back" href="../../index.html#surfex.titan.ObsOperator">[docs]</a><span class="k">class</span> <span class="nc">ObsOperator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ObsOperator"><a class="viewcode-back" href="../../index.html#surfex.ObsOperator">[docs]</a><span class="k">class</span> <span class="nc">ObsOperator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 
         <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
@@ -1248,7 +1248,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="Departure"><a class="viewcode-back" href="../../index.html#surfex.titan.Departure">[docs]</a><span class="k">class</span> <span class="nc">Departure</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Departure"><a class="viewcode-back" href="../../index.html#surfex.Departure">[docs]</a><span class="k">class</span> <span class="nc">Departure</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span> <span class="o">=</span> <span class="n">ObsOperator</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="n">max_distance</span><span class="p">)</span>
@@ -1285,13 +1285,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="dataset_from_file"><a class="viewcode-back" href="../../index.html#surfex.titan.dataset_from_file">[docs]</a><span class="k">def</span> <span class="nf">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="dataset_from_file"><a class="viewcode-back" href="../../index.html#surfex.dataset_from_file">[docs]</a><span class="k">def</span> <span class="nf">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">dataset_from_json</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="n">qc_flag</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="n">skip_flags</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="n">fg_dep</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="n">an_dep</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="dataset_from_json"><a class="viewcode-back" href="../../index.html#surfex.titan.dataset_from_json">[docs]</a><span class="k">def</span> <span class="nf">dataset_from_json</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="dataset_from_json"><a class="viewcode-back" href="../../index.html#surfex.dataset_from_json">[docs]</a><span class="k">def</span> <span class="nf">dataset_from_json</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">providers</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1357,7 +1357,7 @@
                      <span class="n">fg_dep</span><span class="o">=</span><span class="n">fg_deps</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="n">an_deps</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="merge_json_qc_data_sets"><a class="viewcode-back" href="../../index.html#surfex.titan.merge_json_qc_data_sets">[docs]</a><span class="k">def</span> <span class="nf">merge_json_qc_data_sets</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_json_qc_data_sets"><a class="viewcode-back" href="../../index.html#surfex.merge_json_qc_data_sets">[docs]</a><span class="k">def</span> <span class="nf">merge_json_qc_data_sets</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">ind</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>

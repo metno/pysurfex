@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>surfex.cache &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.cache</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for surfex.cache</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+
+
+<div class="viewcode-block" id="Cache"><a class="viewcode-back" href="../../index.html#surfex.Cache">[docs]</a><span class="k">class</span> <span class="nc">Cache</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span> <span class="n">max_age</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_age</span> <span class="o">=</span> <span class="n">max_age</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_files</span>
+
+    <span class="k">def</span> <span class="nf">set_file_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+        <span class="c1"># print &quot;Setting filename &quot;+str(filename)</span>
+        <span class="c1"># print &quot;Setting filehandler &quot;+str(file_handler)</span>
+        <span class="c1"># print &quot;Cache inventory: &quot;</span>
+        <span class="c1"># print str(self.files)</span>
+        <span class="c1"># print str(self.file_handler)</span>
+        <span class="c1"># print str(self.interpolators)</span>
+
+    <span class="k">def</span> <span class="nf">get_file_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">fh</span>
+
+    <span class="k">def</span> <span class="nf">file_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">interpolator_is_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+        <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+        <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">identifier_out</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">identifier_in</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Coud not find in &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Coud not find out&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">get_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+        <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+        <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="p">(</span><span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">][</span><span class="n">identifier_in</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">update_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+        <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update interpolator &quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+        <span class="n">this_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
+            <span class="n">out_geos</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">out_grid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
+                <span class="n">in_geos</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">]:</span>
+                    <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">f</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">][</span><span class="n">f</span><span class="p">]})</span>
+                <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_out</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+                <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">out_grid</span><span class="p">:</span> <span class="n">in_geos</span><span class="p">})</span>
+            <span class="n">this_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">out_geos</span><span class="p">})</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">inttype</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">this_dict</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">this_dict</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_out</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">}}})</span>
+
+    <span class="k">def</span> <span class="nf">save_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">id_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span>
+    
+    <span class="k">def</span> <span class="nf">clean_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this_time</span><span class="p">):</span>
+        <span class="n">del_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
+            <span class="n">yyyy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
+            <span class="n">mm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
+            <span class="n">dd</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">hh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span>
+            <span class="n">field_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">yyyy</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">hh</span><span class="p">)</span>
+            <span class="n">td</span> <span class="o">=</span> <span class="p">(</span><span class="n">this_time</span> <span class="o">-</span> <span class="n">field_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">td</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_age</span><span class="p">:</span>
+                <span class="n">del_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">del_keys</span><span class="p">)):</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">del_keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">is_saved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">id_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="n">gribvar</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">par</span>
+            <span class="n">typ</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">typ</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">level</span>
+            <span class="n">tri</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">tri</span>
+            <span class="k">return</span> <span class="s2">&quot;:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">dis</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">discipline</span>
+            <span class="n">pc</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">parameterCategory</span>
+            <span class="n">pn</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">parameterNumber</span>
+            <span class="n">lt</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">levelType</span>
+            <span class="n">lev</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">level</span>
+            <span class="n">tsp</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span>
+            <span class="k">return</span> <span class="s2">&quot;:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dis</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="n">lt</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                 <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_netcdf_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_surfex_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">patches</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">patches</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_obs_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">surfex.cache</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
+    </div>
+  </body>
+</html>

@@ -47,7 +47,7 @@
 <span class="kn">import</span> <span class="nn">pyproj</span>
 
 
-<div class="viewcode-block" id="SurfexIO"><a class="viewcode-back" href="../../index.html#surfex.file.SurfexIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
@@ -79,7 +79,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="SurfexSurfIO"><a class="viewcode-back" href="../../index.html#surfex.file.SurfexSurfIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexSurfIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexSurfIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexSurfIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surfexfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">surfexfile</span><span class="o">.</span><span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">csurf_filetype</span> <span class="o">=</span> <span class="n">csurf_filetype</span>
@@ -127,7 +127,7 @@
                 <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive_file</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="PGDFile"><a class="viewcode-back" href="../../index.html#surfex.file.PGDFile">[docs]</a><span class="k">class</span> <span class="nc">PGDFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
+<div class="viewcode-block" id="PGDFile"><a class="viewcode-back" href="../../index.html#surfex.PGDFile">[docs]</a><span class="k">class</span> <span class="nc">PGDFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cpgdfile</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">cpgdfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">masterodb</span><span class="p">)</span>
@@ -140,7 +140,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">False</span></div>
         
 
-<div class="viewcode-block" id="PREPFile"><a class="viewcode-back" href="../../index.html#surfex.file.PREPFile">[docs]</a><span class="k">class</span> <span class="nc">PREPFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
+<div class="viewcode-block" id="PREPFile"><a class="viewcode-back" href="../../index.html#surfex.PREPFile">[docs]</a><span class="k">class</span> <span class="nc">PREPFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cprepfile</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">cprepfile</span> <span class="o">=</span> <span class="n">get_surfex_io_object</span><span class="p">(</span><span class="n">cprepfile</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="n">csurf_filetype</span><span class="p">,</span>
@@ -151,7 +151,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="SURFFile"><a class="viewcode-back" href="../../index.html#surfex.file.SURFFile">[docs]</a><span class="k">class</span> <span class="nc">SURFFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFFile"><a class="viewcode-back" href="../../index.html#surfex.SURFFile">[docs]</a><span class="k">class</span> <span class="nc">SURFFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">csurffile</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">csurffile</span> <span class="o">=</span> <span class="n">get_surfex_io_object</span><span class="p">(</span><span class="n">csurffile</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="n">csurf_filetype</span><span class="p">,</span>
@@ -161,7 +161,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="SurfexFileVariable"><a class="viewcode-back" href="../../index.html#surfex.file.SurfexFileVariable">[docs]</a><span class="k">class</span> <span class="nc">SurfexFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexFileVariable"><a class="viewcode-back" href="../../index.html#surfex.SurfexFileVariable">[docs]</a><span class="k">class</span> <span class="nc">SurfexFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Surfex Variable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -179,7 +179,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">varname</span></div>
 
 
-<div class="viewcode-block" id="get_surfex_io_object"><a class="viewcode-back" href="../../index.html#surfex.file.get_surfex_io_object">[docs]</a><span class="k">def</span> <span class="nf">get_surfex_io_object</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="get_surfex_io_object"><a class="viewcode-back" href="../../index.html#surfex.get_surfex_io_object">[docs]</a><span class="k">def</span> <span class="nf">get_surfex_io_object</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;surf&quot;</span> <span class="ow">and</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;ts&quot;</span> <span class="ow">and</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;forcing&quot;</span><span class="p">:</span>
@@ -232,7 +232,7 @@
     <span class="k">return</span> <span class="n">obj</span></div>
 
 
-<div class="viewcode-block" id="guess_file_format"><a class="viewcode-back" href="../../index.html#surfex.file.guess_file_format">[docs]</a><span class="k">def</span> <span class="nf">guess_file_format</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="guess_file_format"><a class="viewcode-back" href="../../index.html#surfex.guess_file_format">[docs]</a><span class="k">def</span> <span class="nf">guess_file_format</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">fn</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -284,7 +284,7 @@
     <span class="k">return</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">ftype</span></div>
 
 
-<div class="viewcode-block" id="AsciiSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.file.AsciiSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">AsciiSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">AsciiSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -360,14 +360,15 @@
             <span class="n">ll_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;LATORI&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;FULL&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e+6</span>
-            <span class="n">proj4</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
-                    <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
+            <span class="n">proj_string</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
+                          <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
 
-            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Proj</span><span class="p">(</span><span class="n">proj4</span><span class="p">)</span>
-            <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+            <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
             <span class="n">xc</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
             <span class="n">yc</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
-            <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
 
             <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -481,7 +482,7 @@
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="NCSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.file.NCSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NCSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="NCSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NCSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">suffix</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;NC&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span>
@@ -515,14 +516,15 @@
             <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;LONORI&quot;</span><span class="p">][:]</span>
             <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;LATORI&quot;</span><span class="p">][:]</span>
             <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e+6</span>
-            <span class="n">proj4</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
-                    <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
+            <span class="n">proj_string</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
+                          <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
 
-            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Proj</span><span class="p">(</span><span class="n">proj4</span><span class="p">)</span>
-            <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+            <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
             <span class="n">xc</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
             <span class="n">yc</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
-            <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
 
             <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -626,7 +628,7 @@
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="FaSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.file.FaSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">FaSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="FaSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">FaSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -683,7 +685,7 @@
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="SurfFileTypeExtension"><a class="viewcode-back" href="../../index.html#surfex.file.SurfFileTypeExtension">[docs]</a><span class="k">class</span> <span class="nc">SurfFileTypeExtension</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfFileTypeExtension"><a class="viewcode-back" href="../../index.html#surfex.SurfFileTypeExtension">[docs]</a><span class="k">class</span> <span class="nc">SurfFileTypeExtension</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">masterodb</span> <span class="o">=</span> <span class="kc">False</span>
@@ -714,7 +716,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="n">suffix</span></div>
 
 
-<div class="viewcode-block" id="NetCDFSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.file.NetCDFSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NetCDFSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NetCDFSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reading surfex NetCDF output</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -903,7 +905,7 @@
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="TexteSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.file.TexteSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">TexteSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="TexteSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">TexteSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reading surfex TEXTE output</span>
@@ -993,7 +995,7 @@
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
-<div class="viewcode-block" id="ForcingFileNetCDF"><a class="viewcode-back" href="../../index.html#surfex.file.ForcingFileNetCDF">[docs]</a><span class="k">class</span> <span class="nc">ForcingFileNetCDF</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
+<div class="viewcode-block" id="ForcingFileNetCDF"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF">[docs]</a><span class="k">class</span> <span class="nc">ForcingFileNetCDF</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
@@ -1132,7 +1134,7 @@
     <span class="k">return</span> <span class="n">field</span>
 
 
-<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#surfex.file.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#surfex.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">basetime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">file_pattern</span>

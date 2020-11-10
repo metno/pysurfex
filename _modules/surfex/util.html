@@ -40,24 +40,24 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 
-<div class="viewcode-block" id="error"><a class="viewcode-back" href="../../index.html#surfex.util.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<div class="viewcode-block" id="error"><a class="viewcode-back" href="../../index.html#surfex.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Write error message to console and abort &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;31mError: &quot;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../index.html#surfex.util.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../index.html#surfex.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Write a information message to console &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;92mINFO: &quot;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="warning"><a class="viewcode-back" href="../../index.html#surfex.util.warning">[docs]</a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<div class="viewcode-block" id="warning"><a class="viewcode-back" href="../../index.html#surfex.warning">[docs]</a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Write a warning message to console &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;33mWarning: &quot;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="unixtime_to_datenum"><a class="viewcode-back" href="../../index.html#surfex.util.unixtime_to_datenum">[docs]</a><span class="k">def</span> <span class="nf">unixtime_to_datenum</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="unixtime_to_datenum"><a class="viewcode-back" href="../../index.html#surfex.unixtime_to_datenum">[docs]</a><span class="k">def</span> <span class="nf">unixtime_to_datenum</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot; Converts unixtime into datenum</span>
 
@@ -77,11 +77,11 @@
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You need to have dates installed&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="YamlReaderError"><a class="viewcode-back" href="../../index.html#surfex.util.YamlReaderError">[docs]</a><span class="k">class</span> <span class="nc">YamlReaderError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="YamlReaderError"><a class="viewcode-back" href="../../index.html#surfex.YamlReaderError">[docs]</a><span class="k">class</span> <span class="nc">YamlReaderError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="data_merge"><a class="viewcode-back" href="../../index.html#surfex.util.data_merge">[docs]</a><span class="k">def</span> <span class="nf">data_merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<div class="viewcode-block" id="data_merge"><a class="viewcode-back" href="../../index.html#surfex.data_merge">[docs]</a><span class="k">def</span> <span class="nf">data_merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;merges b into a and return merged result</span>
 
 <span class="sd">    NOTE: tuples and arbitrary objects are not handled as it is totally ambiguous what should happen&quot;&quot;&quot;</span>

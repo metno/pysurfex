@@ -46,7 +46,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 
 
-<div class="viewcode-block" id="parse_submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.parse_submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;ECF_submit task to ecflow&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
@@ -72,7 +72,7 @@
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 
-<div class="viewcode-block" id="submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="submit_cmd"><a class="viewcode-back" href="../../index.html#scheduler.submit_cmd">[docs]</a><span class="k">def</span> <span class="nf">submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_submit_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
@@ -113,7 +113,7 @@
         <span class="k">raise</span> <span class="n">e</span></div>
 
 
-<div class="viewcode-block" id="parse_kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.parse_kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Kill EcFlow task and handle abort&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
@@ -137,7 +137,7 @@
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 
-<div class="viewcode-block" id="kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="kill_cmd"><a class="viewcode-back" href="../../index.html#scheduler.kill_cmd">[docs]</a><span class="k">def</span> <span class="nf">kill_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
@@ -162,7 +162,7 @@
     <span class="n">exp</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">force_aborted</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="parse_status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_status_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.parse_status_cmd">[docs]</a><span class="k">def</span> <span class="nf">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Status of EcFlow task&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of experiment&quot;</span><span class="p">)</span>
@@ -185,7 +185,7 @@
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 
-<div class="viewcode-block" id="status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.cli.status_cmd">[docs]</a><span class="k">def</span> <span class="nf">status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="status_cmd"><a class="viewcode-back" href="../../index.html#scheduler.status_cmd">[docs]</a><span class="k">def</span> <span class="nf">status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_status_cmd</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
@@ -204,7 +204,7 @@
     <span class="n">sub</span><span class="o">.</span><span class="n">status</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="parse_surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.cli.parse_surfex_script">[docs]</a><span class="k">def</span> <span class="nf">parse_surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.parse_surfex_script">[docs]</a><span class="k">def</span> <span class="nf">parse_surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse the command line input arguments.&quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;Surfex offline run script&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Action&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;prod&quot;</span><span class="p">,</span> <span class="s2">&quot;continue&quot;</span><span class="p">,</span> <span class="s2">&quot;testbed&quot;</span><span class="p">,</span>
@@ -234,7 +234,7 @@
     <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.cli.surfex_script">[docs]</a><span class="k">def</span> <span class="nf">surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="surfex_script"><a class="viewcode-back" href="../../index.html#scheduler.surfex_script">[docs]</a><span class="k">def</span> <span class="nf">surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parse_surfex_script</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">action</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">action</span>

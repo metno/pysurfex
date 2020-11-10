@@ -43,20 +43,20 @@
 <span class="kn">import</span> <span class="nn">surfex</span>
 
 
-<div class="viewcode-block" id="toml_load"><a class="viewcode-back" href="../../index.html#surfex.configuration.toml_load">[docs]</a><span class="k">def</span> <span class="nf">toml_load</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="toml_load"><a class="viewcode-back" href="../../index.html#surfex.toml_load">[docs]</a><span class="k">def</span> <span class="nf">toml_load</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">res</span></div>
 
 
-<div class="viewcode-block" id="toml_dump"><a class="viewcode-back" href="../../index.html#surfex.configuration.toml_dump">[docs]</a><span class="k">def</span> <span class="nf">toml_dump</span><span class="p">(</span><span class="n">to_dump</span><span class="p">,</span>  <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="toml_dump"><a class="viewcode-back" href="../../index.html#surfex.toml_dump">[docs]</a><span class="k">def</span> <span class="nf">toml_dump</span><span class="p">(</span><span class="n">to_dump</span><span class="p">,</span>  <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">to_dump</span><span class="p">))</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.configuration.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
@@ -406,7 +406,7 @@
         <span class="k">return</span> <span class="n">expanded_hh_list</span><span class="p">,</span> <span class="n">expanded_ll_list</span></div>
 
 
-<div class="viewcode-block" id="process_merged_settings"><a class="viewcode-back" href="../../index.html#surfex.configuration.process_merged_settings">[docs]</a><span class="k">def</span> <span class="nf">process_merged_settings</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">):</span>
+<div class="viewcode-block" id="process_merged_settings"><a class="viewcode-back" href="../../index.html#surfex.process_merged_settings">[docs]</a><span class="k">def</span> <span class="nf">process_merged_settings</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">):</span>
 
     <span class="n">merged_member_settings</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># Write member settings</span>
@@ -427,12 +427,12 @@
     <span class="k">return</span> <span class="n">merged_settings</span><span class="p">,</span> <span class="n">member_settings</span></div>
 
 
-<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
     <span class="c1"># print(mods)</span>
     <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
     <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
@@ -446,7 +446,7 @@
     <span class="k">return</span> <span class="n">merged_env</span></div>
 
 
-<div class="viewcode-block" id="merge_toml_env_from_file"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_file">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_file</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env_from_file"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_file">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_file</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
     <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
         <span class="c1"># print(toml_file)</span>
@@ -506,7 +506,7 @@
         <span class="k">return</span> <span class="n">config_files</span>
 
 
-<div class="viewcode-block" id="merge_toml_env_from_config_dicts"><a class="viewcode-back" href="../../index.html#surfex.configuration.merge_toml_env_from_config_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_config_dicts</span><span class="p">(</span><span class="n">config_files</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env_from_config_dicts"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_config_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_config_dicts</span><span class="p">(</span><span class="n">config_files</span><span class="p">):</span>
 
     <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">:</span>
@@ -516,7 +516,7 @@
     <span class="k">return</span> <span class="n">merged_env</span></div>
 
 
-<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../index.html#surfex.configuration.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../index.html#surfex.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
 
     <span class="n">obj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
 
@@ -534,7 +534,7 @@
     <span class="k">return</span> <span class="n">obj</span></div>
 
 
-<div class="viewcode-block" id="get_member_settings"><a class="viewcode-back" href="../../index.html#surfex.configuration.get_member_settings">[docs]</a><span class="k">def</span> <span class="nf">get_member_settings</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_member_settings"><a class="viewcode-back" href="../../index.html#surfex.get_member_settings">[docs]</a><span class="k">def</span> <span class="nf">get_member_settings</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
 
     <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">settings</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -569,7 +569,7 @@
     <span class="k">return</span> <span class="n">member_settings</span></div>
 
 
-<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.configuration.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
+<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update a nested dictionary or similar mapping.</span>
 <span class="sd">    Modify ``source`` in place.</span>
@@ -588,7 +588,7 @@
     <span class="k">return</span> <span class="n">source</span></div>
 
 
-<div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.configuration.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class sets up a SURFEX configuration from an environment based Harmonie run with it&#39;s</span>
 <span class="sd">    corresponding configuration.</span>

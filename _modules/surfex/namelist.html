@@ -44,7 +44,7 @@
 <span class="kn">import</span> <span class="nn">f90nml</span>
 
 
-<div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#surfex.namelist.SystemFilePaths">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Mathes files and paths depending on possibly system specific settings.</span>
@@ -247,13 +247,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span></div>
 
 
-<div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#surfex.namelist.SystemFilePathsFromFile">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePathsFromFile">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
         <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
         <span class="n">SystemFilePaths</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#surfex.namelist.ExternalSurfexInputFile">[docs]</a><span class="k">class</span> <span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#surfex.ExternalSurfexInputFile">[docs]</a><span class="k">class</span> <span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper around external input data to surfex which can have special treatment for each format.</span>
@@ -278,7 +278,7 @@
             <span class="k">return</span> <span class="p">{</span><span class="n">fname</span><span class="p">:</span> <span class="n">fname_with_path</span><span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="BaseNamelist"><a class="viewcode-back" href="../../index.html#surfex.namelist.BaseNamelist">[docs]</a><span class="k">class</span> <span class="nc">BaseNamelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist">[docs]</a><span class="k">class</span> <span class="nc">BaseNamelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
@@ -848,17 +848,17 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ascii2nml</span><span class="p">(</span><span class="n">merged_json_settings</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Cy43"><a class="viewcode-back" href="../../index.html#surfex.namelist.Cy43">[docs]</a><span class="k">class</span> <span class="nc">Cy43</span><span class="p">(</span><span class="n">BaseNamelist</span><span class="p">):</span>
+<div class="viewcode-block" id="Cy43"><a class="viewcode-back" href="../../index.html#surfex.Cy43">[docs]</a><span class="k">class</span> <span class="nc">Cy43</span><span class="p">(</span><span class="n">BaseNamelist</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">BaseNamelist</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Cy40"><a class="viewcode-back" href="../../index.html#surfex.namelist.Cy40">[docs]</a><span class="k">class</span> <span class="nc">Cy40</span><span class="p">(</span><span class="n">BaseNamelist</span><span class="p">):</span>
+<div class="viewcode-block" id="Cy40"><a class="viewcode-back" href="../../index.html#surfex.Cy40">[docs]</a><span class="k">class</span> <span class="nc">Cy40</span><span class="p">(</span><span class="n">BaseNamelist</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">BaseNamelist</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Namelist"><a class="viewcode-back" href="../../index.html#surfex.namelist.Namelist">[docs]</a><span class="k">class</span> <span class="nc">Namelist</span><span class="p">(</span><span class="n">Cy40</span><span class="p">,</span> <span class="n">Cy43</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist"><a class="viewcode-back" href="../../index.html#surfex.Namelist">[docs]</a><span class="k">class</span> <span class="nc">Namelist</span><span class="p">(</span><span class="n">Cy40</span><span class="p">,</span> <span class="n">Cy43</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cycle</span> <span class="o">==</span> <span class="s2">&quot;cy43&quot;</span><span class="p">:</span>
             <span class="n">Cy43</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -868,7 +868,7 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#surfex.namelist.Ecoclimap">[docs]</a><span class="k">class</span> <span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#surfex.Ecoclimap">[docs]</a><span class="k">class</span> <span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span>
@@ -891,7 +891,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#surfex.namelist.EcoclimapSG">[docs]</a><span class="k">class</span> <span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
+<div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG">[docs]</a><span class="k">class</span> <span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">veg_types</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">decades</span><span class="o">=</span><span class="mi">36</span><span class="p">):</span>
         <span class="n">Ecoclimap</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span>  <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">veg_types</span> <span class="o">=</span> <span class="n">veg_types</span>
@@ -940,7 +940,7 @@
         <span class="k">return</span> <span class="n">filename</span></div>
 
 
-<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#surfex.namelist.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#surfex.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -997,7 +997,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#surfex.namelist.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#surfex.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -1037,7 +1037,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#surfex.namelist.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#surfex.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -1058,7 +1058,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#surfex.namelist.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#surfex.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -1072,7 +1072,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#surfex.namelist.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class set</span>

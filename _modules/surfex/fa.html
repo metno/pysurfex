@@ -44,7 +44,7 @@
     <span class="n">epygram</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="Fa"><a class="viewcode-back" href="../../index.html#surfex.fa.Fa">[docs]</a><span class="k">class</span> <span class="nc">Fa</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Fa"><a class="viewcode-back" href="../../index.html#surfex.Fa">[docs]</a><span class="k">class</span> <span class="nc">Fa</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="kc">None</span>
@@ -73,16 +73,17 @@
                 <span class="n">dx</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;X_resolution&quot;</span><span class="p">]</span>
                 <span class="n">dy</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;Y_resolution&quot;</span><span class="p">]</span>
 
-                <span class="c1"># TODO: Can I get centre point directly</span>
+                <span class="c1"># TODO: Can I get centre point directly?</span>
                 <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e+6</span>
-                <span class="n">proj4</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
-                        <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
+                <span class="n">proj_string</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
+                              <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
 
-                <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Proj</span><span class="p">(</span><span class="n">proj4</span><span class="p">)</span>
-                <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+                <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+                <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+                <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
                 <span class="n">xc</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
                 <span class="n">yc</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
-                <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
 
                 <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -109,14 +110,16 @@
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                Reads a 2-D field and interpolates it to requested positions</span>
+<span class="sd">        Reads a 2-D field and interpolates it to requested positions</span>
 
-<span class="sd">                Arguments:</span>
-
-
-<span class="sd">                Returns:</span>
-<span class="sd">                 np.array: vector with inpterpolated values</span>
-
+<span class="sd">        Args:</span>
+<span class="sd">            varname (str): Variable name</span>
+<span class="sd">            geo (surfex.Geo): Geometry</span>
+<span class="sd">            validtime (datetime.datetime): Validtime</span>
+<span class="sd">            interpolation (str): Interpoaltion method</span>
+<span class="sd">            cache (surfex.Cache): Cache</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: vector with inpterpolated values</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>

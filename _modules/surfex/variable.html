@@ -44,7 +44,7 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 
 
-<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#surfex.variable.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#surfex.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
@@ -188,7 +188,7 @@
             <span class="k">return</span> <span class="n">field</span></div>
 
 
-<div class="viewcode-block" id="NetcdfVariable"><a class="viewcode-back" href="../../index.html#surfex.variable.NetcdfVariable">[docs]</a><span class="k">class</span> <span class="nc">NetcdfVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="NetcdfVariable"><a class="viewcode-back" href="../../index.html#surfex.NetcdfVariable">[docs]</a><span class="k">class</span> <span class="nc">NetcdfVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NetCDF variable</span>
@@ -288,7 +288,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="GribVariable"><a class="viewcode-back" href="../../index.html#surfex.variable.GribVariable">[docs]</a><span class="k">class</span> <span class="nc">GribVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="GribVariable"><a class="viewcode-back" href="../../index.html#surfex.GribVariable">[docs]</a><span class="k">class</span> <span class="nc">GribVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Grib variable</span>
@@ -411,7 +411,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SurfexVariable"><a class="viewcode-back" href="../../index.html#surfex.variable.SurfexVariable">[docs]</a><span class="k">class</span> <span class="nc">SurfexVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexVariable"><a class="viewcode-back" href="../../index.html#surfex.SurfexVariable">[docs]</a><span class="k">class</span> <span class="nc">SurfexVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
         <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;file_inc&quot;</span><span class="p">,</span> <span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
@@ -533,7 +533,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FaVariable"><a class="viewcode-back" href="../../index.html#surfex.variable.FaVariable">[docs]</a><span class="k">class</span> <span class="nc">FaVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="FaVariable"><a class="viewcode-back" href="../../index.html#surfex.FaVariable">[docs]</a><span class="k">class</span> <span class="nc">FaVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    FA variable</span>
@@ -631,7 +631,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ObservationVariable"><a class="viewcode-back" href="../../index.html#surfex.variable.ObservationVariable">[docs]</a><span class="k">class</span> <span class="nc">ObservationVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationVariable"><a class="viewcode-back" href="../../index.html#surfex.ObservationVariable">[docs]</a><span class="k">class</span> <span class="nc">ObservationVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">var_dict</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
 
         <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;filetype&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;file_inc&quot;</span><span class="p">]</span>
