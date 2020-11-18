@@ -46,6 +46,7 @@ jobs:
         CLIENTID=${{ secrets.CLIENTID }} nosetests
 
   documentation:
+    runs-on: ubuntu-latest
     needs: build
     steps:
     - name: Coveralls
