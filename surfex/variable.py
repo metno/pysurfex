@@ -171,11 +171,12 @@ class NetcdfVariable(Variable):
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
             # print "Updating filehandler for "+self.print_variable_info()
-            if cache.file_open(self.filename):
+            if cache is not None and cache.file_open(self.filename):
                 self.file_handler = cache.get_file_handler(self.filename)
             else:
                 self.file_handler = surfex.netcdf.Netcdf(self.filename)
-                cache.set_file_handler(self.filename, self.file_handler)
+                if cache is not None:
+                    cache.set_file_handler(self.filename, self.file_handler)
 
         if self.file_handler is None:
             surfex.util.warning("No file handler exist for this time step")
@@ -211,8 +212,10 @@ class NetcdfVariable(Variable):
                     previous_field = np.zeros([geo.npoints])
                 else:
                     # Re-read field
-                    id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
-                    if cache.is_saved(id_str):
+                    id_str = None
+                    if cache is not None:
+                        id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
+                    if cache is not None and cache.is_saved(id_str):
                         print("Updating cached value ", id_str)
                         previous_field = cache.saved_fields[id_str]
                     else:
@@ -225,17 +228,19 @@ class NetcdfVariable(Variable):
                                                                         validtime=self.previoustime,
                                                                         interpolation=int_type,
                                                                         units=units, cache=cache)
-                        cache.save_field(id_str, previous_field)
+                        if cache is not None:
+                            cache.save_field(id_str, previous_field)
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
 
-            id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-            print(id_str)
             field, interpolator = self.file_handler.points(var_name, geo, level=level, validtime=validtime,
                                                            interpolation=int_type, units=units, cache=cache)
             # Rotate wind to geographic if requested
             field = self.rotate_geographic_wind(field, interpolator)
-            cache.save_field(id_str, field)
+            if cache is not None:
+                id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+                print(id_str)
+                cache.save_field(id_str, field)
 
             if accumulated:
                 instant = [(validtime - self.previoustime).total_seconds()]
@@ -265,8 +270,8 @@ class GribVariable(Variable):
             Variable.__init__(self, basetime, validtime, var_dict, debug)
             self.grib_type = grib_type
         elif grib_type == "grib2":
-            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level", "fcint",
-                         "offset", "file_inc", "filepattern"]
+            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level",
+                         "typeOfStatisticalProcessing", "fcint", "offset", "file_inc", "filepattern"]
             print(var_dict)
             for i in range(0, len(mandatory)):
                 if mandatory[i] not in var_dict:
@@ -282,11 +287,12 @@ class GribVariable(Variable):
                               int(self.var_dict["file_inc"])):
 
             # print "Updating filehandler for "+self.print_variable_info()
-            if cache.file_open(self.filename):
+            if cache is not None and cache.file_open(self.filename):
                 self.file_handler = cache.get_file_handler(self.filename)
             else:
-                self.file_handler = surfex.grib.Grib(self.filename)
-                cache.set_file_handler(self.filename, self.file_handler)
+                self.file_handler = surfex.grib.Grib(self.filename, debug=self.debug)
+                if cache is not None:
+                    cache.set_file_handler(self.filename, self.file_handler)
 
         if self.file_handler is None:
             warning("No file handler exist for this time step")
@@ -298,7 +304,7 @@ class GribVariable(Variable):
                 typ = self.var_dict["type"]
                 level = self.var_dict["level"]
                 tri = self.var_dict["tri"]
-                gribvar = surfex.grib.Grib1Variable(par, typ, level, tri)
+                gribvar = surfex.grib.Grib1Variable(par, typ, level, tri, debug=self.debug)
             elif self.grib_type == "grib2":
                 discipline = self.var_dict["discipline"]
                 pc = self.var_dict["parameterCategory"]
@@ -308,8 +314,7 @@ class GribVariable(Variable):
                 tsp = -1
                 if "typeOfStatisticalProcessing" in self.var_dict:
                     tsp = self.var_dict["typeOfStatisticalProcessing"]
-                print("Trygve ", discipline, pc, pn, lt, lev, tsp)
-                gribvar = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp)
+                gribvar = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp=tsp, debug=self.debug)
             else:
                 raise NotImplementedError
 
@@ -331,9 +336,10 @@ class GribVariable(Variable):
                     print(self.basetime, self.initialtime, self.previoustime)
                     previous_field = np.zeros([geo.npoints])
                 else:
-
-                    id_str = cache.generate_grib_id(gribvar, self.previousfilename, self.previoustime)
-                    if cache.is_saved(id_str):
+                    id_str = None
+                    if cache is not None:
+                        id_str = cache.generate_grib_id(gribvar, self.previousfilename, self.previoustime)
+                    if cache is not None and cache.is_saved(id_str):
                         previous_field = cache.saved_fields[id_str]
                     else:
                         # Modify filename in handler
@@ -346,18 +352,22 @@ class GribVariable(Variable):
 
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
-                        cache.save_field(id_str, previous_field)
+                        if cache is not None:
+                            cache.save_field(id_str, previous_field)
 
             # Read field
-            id_str = cache.generate_grib_id(gribvar, self.filename, self.validtime)
-            if cache.is_saved(id_str):
+            id_str = None
+            if cache is not None:
+                id_str = cache.generate_grib_id(gribvar, self.filename, self.validtime)
+            if cache is not None and cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
                 field, interpolator = self.file_handler.points(gribvar, geo, validtime, interpolation=int_type,
                                                                cache=cache)
                 # Rotate wind to geographic if requested
                 field = self.rotate_geographic_wind(field, interpolator)
-                cache.save_field(id_str, field)
+                if cache is not None:
+                    cache.save_field(id_str, field)
 
             # Deaccumulate
             if gribvar.is_accumulated():
@@ -450,9 +460,11 @@ class SurfexVariable(Variable):
                     print(self.basetime, self.initialtime, self.previoustime)
                     previous_field = np.zeros([geo.npoints])
                 else:
-                    id_str = cache.generate_surfex_id(varname, patches, layers, self.previousfilename,
-                                                      self.previoustime)
-                    if cache.is_saved(id_str):
+                    id_str = None
+                    if cache is not None:
+                        id_str = cache.generate_surfex_id(varname, patches, layers, self.previousfilename,
+                                                          self.previoustime)
+                    if cache is not None and cache.is_saved(id_str):
                         previous_field = cache.saved_fields[id_str]
                     else:
                         fname = self.filename
@@ -464,7 +476,8 @@ class SurfexVariable(Variable):
 
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
-                        cache.save_field(id_str, previous_field)
+                        if cache is not None:
+                            cache.save_field(id_str, previous_field)
 
             # Read field
             id_str = None
@@ -516,11 +529,12 @@ class FaVariable(Variable):
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
             # print "Updating filehandler for "+self.print_variable_info()
-            if cache.file_open(self.filename):
+            if cache is not None and cache.file_open(self.filename):
                 self.file_handler = cache.get_file_handler(self.filename)
             else:
                 self.file_handler = surfex.fa.Fa(self.filename)
-                cache.set_file_handler(self.filename, self.file_handler)
+                if cache is not None:
+                    cache.set_file_handler(self.filename, self.file_handler)
 
         if self.file_handler is None:
             surfex.util.warning("No file handler exist for this time step")
@@ -550,8 +564,10 @@ class FaVariable(Variable):
                     previous_field = np.zeros([geo.npoints])
                 else:
                     # Re-read field
-                    id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
-                    if cache.is_saved(id_str):
+                    id_str = None
+                    if cache is not None:
+                        id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
+                    if cache is not None and cache.is_saved(id_str):
                         print("Updating cached value ", id_str)
                         previous_field = cache.saved_fields[id_str]
                     else:
@@ -563,16 +579,18 @@ class FaVariable(Variable):
                         previous_field, intp = self.file_handler.points(var_name,  geo,
                                                                         validtime=self.previoustime,
                                                                         interpolation=int_type, cache=cache)
-                        cache.save_field(id_str, previous_field)
+                        if cache is not None:
+                            cache.save_field(id_str, previous_field)
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
 
-            id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
             field, interpolator = self.file_handler.points(var_name, geo, validtime=validtime,
                                                            interpolation=int_type, cache=cache)
             # Rotate wind to geographic if requested
             field = self.rotate_geographic_wind(field, interpolator)
-            cache.save_field(id_str, field)
+            if cache is not None:
+                id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+                cache.save_field(id_str, field)
 
             if accumulated:
                 print("accumulated variable ", self.var_dict)
@@ -650,8 +668,10 @@ class ObservationVariable(Variable):
                     print(self.basetime, self.initialtime, self.previoustime)
                     previous_field = np.zeros([geo.npoints])
                 else:
-                    id_str = cache.generate_obs_id(varname, self.previousfilename, self.previoustime)
-                    if cache.is_saved(id_str):
+                    id_str = None
+                    if cache is not None:
+                        id_str = cache.generate_obs_id(varname, self.previousfilename, self.previoustime)
+                    if cache is not None and cache.is_saved(id_str):
                         previous_field = cache.saved_fields[id_str]
                     else:
                         fname = self.filename
@@ -663,7 +683,8 @@ class ObservationVariable(Variable):
 
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
-                        cache.save_field(id_str, previous_field)
+                        if cache is not None:
+                            cache.save_field(id_str, previous_field)
 
             # Read field
             id_str = None

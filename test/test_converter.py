@@ -7,6 +7,7 @@ import json
 
 class ConverterTest(unittest.TestCase):
 
+    testdata = "testdata/"
     domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
@@ -24,7 +25,7 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "varname": "TG1P1",
-                        "filepattern": "testdata/PREP_CONF_PROJ.nc"
+                        "filepattern": testdata + "/PREP_CONF_PROJ.nc"
                     }
                 }
             }
@@ -60,7 +61,7 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "varname": "FRAC_NATURE",
-                        "filepattern": "testdata/PGD_CONF_PROJ.txt"
+                        "filepattern": testdata + "/PGD_CONF_PROJ.txt"
                     }
                 }
             }
@@ -96,7 +97,7 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "name": "air_temperature_2m",
-                        "filepattern": "testdata/meps_det_2_5km_20200220T00Z.nc"
+                        "filepattern": testdata + "/meps_det_2_5km_20201113T03Z.nc"
                     }
                 }
             }
@@ -109,7 +110,7 @@ class ConverterTest(unittest.TestCase):
     converter_conf = config[var][fileformat]["converter"]
     debug = False
 
-    validtime = datetime(year=2020, month=2, day=20, hour=1)
+    validtime = datetime(year=2020, month=11, day=13, hour=3)
     cache = surfex.Cache(debug, 7200)
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)

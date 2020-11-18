@@ -5,4 +5,5 @@ import sys
 
 if __name__ == '__main__':
     kwargs = surfex.parse_args_create_forcing(sys.argv[1:])
-    surfex.run_create_forcing(**kwargs)
+    options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
+    surfex.forcing.run_time_loop(options, var_objs, att_objs)

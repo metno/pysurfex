@@ -5,6 +5,10 @@ import surfex
 from datetime import datetime, timedelta
 import json
 import glob
+try:
+    import cfunits
+except ModuleNotFoundError:
+    cfunits = None
 
 
 class Observation(object):
@@ -94,6 +98,16 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
     nmissing = 0
     datasources = []
     for obs_set in settings:
+        kwargs = {
+            "debug": False
+        }
+        if "debug" in settings:
+            kwargs.update({"debug": settings["debug"]})
+
+        kwargs.update({"label": obs_set})
+        if "debug" in settings[obs_set]:
+            kwargs.update({"debug": settings[obs_set]["debug"]})
+
         tolerate_nmissing = False
         if "tolerate_missing" in settings[obs_set]:
             tolerate_nmissing = settings[obs_set]["tolerate_nmissing"]
@@ -112,18 +126,20 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
                 else:
                     raise Exception("You must set variable name")
 
-                lonrange = None
                 if "lonrange" in settings[obs_set]:
-                    lonrange = settings[obs_set]["lonrange"]
-                latrange = None
+                    kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
-                    latrange = settings[obs_set]["latrange"]
+                    kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "dt" in settings[obs_set]:
+                    dt = settings[obs_set]["dt"]
+                else:
+                    dt = 1800
 
-                valid_range = timedelta(seconds=3600)
+                print("kwargs", kwargs)
+                valid_range = timedelta(seconds=dt)
                 if os.path.exists(filename):
                     datasources.append(surfex.bufr.BufrObservationSet(filename, [varname], obs_time,
-                                                                      valid_range, lonrange=lonrange,
-                                                                      latrange=latrange, label=obs_set))
+                                                                      valid_range, **kwargs))
                 else:
                     print("WARNING: filename " + filename + " not set. Not added.")
 
@@ -142,12 +158,13 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
                             pos_t_range = settings[obs_set]["pos_t_range"]
 
                         dtg = validtime - timedelta(minutes=int(neg_t_range))
-                        end_dtg = validtime - timedelta(minutes=int(pos_t_range))
+                        end_dtg = validtime + timedelta(minutes=int(pos_t_range))
 
                         filenames = []
                         while dtg < end_dtg:
                             fname = surfex.file.parse_filepattern(filepattern, dtg, dtg)
                             fname = glob.glob(fname)
+                            # print(fname)
                             if len(fname) == 1:
                                 fname = fname[0]
                                 if os.path.exists(fname) and fname not in filenames:
@@ -160,17 +177,17 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
                 else:
                     raise Exception("You must set varname to read NETATMO JSON files")
 
-                lonrange = None
                 if "lonrange" in settings[obs_set]:
-                    lonrange = settings[obs_set]["lonrange"]
-                latrange = None
+                    kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
-                    latrange = settings[obs_set]["latrange"]
+                    kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "dt" in settings[obs_set]:
+                    kwargs.update({"dt": settings[obs_set]["dt"]})
+                else:
+                    kwargs.update({"dt": 1800})
 
                 if filenames is not None:
-                    datasources.append(NetatmoObservationSet(filenames, variable, obs_time,
-                                                             dt=3600, label=obs_set, lonrange=lonrange,
-                                                             latrange=latrange))
+                    datasources.append(NetatmoObservationSet(filenames, variable, obs_time, **kwargs))
                 else:
                     print("WARNING: filenames not set. Not added.")
 
@@ -179,15 +196,26 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
                     varname = settings[obs_set]["varname"]
                 else:
                     raise Exception("You must set variable name")
-                datasources.append(MetFrostObservations(varname, validtime=obs_time))
+
+                if "lonrange" in settings[obs_set]:
+                    kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
+                if "latrange" in settings[obs_set]:
+                    kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "unit" in settings[obs_set]:
+                    kwargs.update({"unit": settings[obs_set]["unit"]})
+                if "level" in settings[obs_set]:
+                    kwargs.update({"level": settings[obs_set]["level"]})
+                kwargs.update({"validtime": obs_time})
+                datasources.append(MetFrostObservations(varname, **kwargs))
             elif filetype.lower() == "json":
                 filename = surfex.file.parse_filepattern(filepattern, obs_time, validtime)
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
 
+                kwargs.update({"var": varname})
                 if os.path.exists(filename):
-                    datasources.append(JsonObservationSet(filename, label=obs_set, var=varname))
+                    datasources.append(JsonObservationSet(filename, **kwargs))
                 else:
                     print("WARNING: filename " + filename + " not existing. Not added.")
             else:
@@ -198,12 +226,13 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
 
 
 class ObservationSet(object):
-    def __init__(self, observations, label=""):
+    def __init__(self, observations, label="", debug=False):
         self.observations = observations
         self.size = len(self.observations)
         self.label = label
         self.index_pos = {}
         self.index_stid = {}
+        self.debug = debug
 
     def get_stid_index(self, stid):
         stid = str(stid)
@@ -223,7 +252,8 @@ class ObservationSet(object):
 
     def get_obs(self):
         obs2vectors = np.vectorize(Observation.obs2vectors)
-        print("Obs dim", len(self.observations))
+        if self.debug:
+            print("Obs dim", len(self.observations))
         if len(self.observations) > 0:
             times, lons, lats, stids, elevs, values, varnames = obs2vectors(self.observations)
 
@@ -311,8 +341,9 @@ class ObservationSet(object):
 
 class NetatmoObservationSet(ObservationSet):
     def __init__(self, filenames, variable, target_time, dt=3600, debug=True, re=True,
-                 lonrange=None, latrange=None, label=""):
+                 lonrange=None, latrange=None, label="netatmo"):
 
+        # print(filenames, variable, target_time)
         if lonrange is None:
             lonrange = [-180, 180]
         else:
@@ -430,7 +461,7 @@ class NetatmoObservationSet(ObservationSet):
                     curr_time = curr_times[ibest]
                     elev = metadata[my_id]["elev"]
                     observations.append(Observation(curr_time, metadata[my_id]["lon"], metadata[my_id]["lat"],
-                                                    data[my_id][ibest], elev=elev))
+                                                    data[my_id][ibest], elev=elev, varname=variable))
                     num_valid_stations += 1
         else:
             num_valid_stations = len(data)
@@ -447,59 +478,14 @@ class NetatmoObservationSet(ObservationSet):
                 extra = ""
             print("   %d missing elev%s" % (num_missing_elev, extra))
 
-        ObservationSet.__init__(self, observations, label=label)
-
-
-class MetKlappObservations(ObservationSet):
-
-    def __init__(self, lon, lat, station, varname, start, end, h=-1, utc=True, nob=0., nod=np.nan,
-                 elev=np.nan):
-        url = \
-            "http://klapp/metnopub/production/metno?re=17&ddel=dot&del=semicolon&ct=text/plain&nod=NOD&nob=NOB"
-        url = url + "&s=" + station
-        url = url + "&p=" + varname
-        url = url + "&fd=" + str(datetime.strftime(start, '%d.%m.%Y'))
-        # url = url + "&h=6"
-        if h != -1:
-            url = url + "&h=" + str(h)[1:-1].replace(" ", "")
-        url = url + "&td=" + str(datetime.strftime(end, '%d.%m.%Y'))
-        if utc:
-            url = url + "&nmt=0"
-        else:
-            url = url + "&nmt=1"
-
-        observations = []
-        # print url
-        dtypes = "i4,i4,i4,i4,i4,|U3"
-        request = np.genfromtxt(requests.get(url).iter_lines(), dtype=dtypes, skip_header=1, delimiter=";")
-        if np.size(request) == 1:
-            request.shape = 1
-
-        recs = request.shape[0]
-        for i in range(0, recs):
-            year = request[i][1]
-            mm = request[i][2]
-            dd = request[i][3]
-            hh = request[i][4]
-            val = request[i][5]
-
-            dtg = "{0:0>4}".format(year) + "{0:0>2}".format(mm) + "{0:0>2}".format(dd) + "{0:0>2}".format(hh)
-            obstime = datetime.strptime(str.strip(dtg), '%Y%m%d%H')
-            if val == "NOB":
-                val = nob
-            elif val == "NOD":
-                val = nod
-            else:
-                val = float(val)
-
-            observations.append(Observation(obstime, lon, lat, val, stid=str(station), elev=elev))
-        ObservationSet.__init__(self, observations, label="kdvh")
+        ObservationSet.__init__(self, observations, label=label, debug=debug)
 
 
 class MetFrostObservations(ObservationSet):
 
     def __init__(self, varname, stations=None, level=None, num_tries=3, debug=False, wmo=None,
-                 providers=None, xproviders=None, blacklist=None, validtime=None, dt=3600):
+                 providers=None, xproviders=None, blacklist=None, validtime=None, dt=3600, lonrange=None,
+                 latrange=None, unit=None, label="frost"):
 
         if blacklist is None:
             blacklist = []
@@ -521,11 +507,21 @@ class MetFrostObservations(ObservationSet):
             # first get all the stations within a polygon or in a country?
             # 'geometry': 'POLYGON((10 60, 10 59, 11 60, 11 59))' # area around Oslo
             # 'country': 'NO' # everything in Norway
-            parameters = {'types': 'SensorSystem', 'fields': 'id,geometry,masl,wmoid,stationholders'}
 
+            parameters = {'types': 'SensorSystem', 'fields': 'id,geometry,masl,wmoid,stationholders'}
+            if lonrange is not None and latrange is not None:
+                parameters.update({"geometry": "POLYGON((" + str(lonrange[0]) + " " + str(latrange[0]) + ", " +
+                                               str(lonrange[0]) + " " + str(latrange[1]) + ", " +
+                                               str(lonrange[1]) + " " + str(latrange[1]) + ", " +
+                                               str(lonrange[1]) + " " + str(latrange[0]) +
+                                               " ))"})
+            if debug:
+                print('Request parameters: ' + str(parameters))
             r = requests.get('https://frost.met.no/sources/v0.jsonld', parameters, auth=(client_id, ''),
                              timeout=30)
 
+            if debug:
+                print("Request https://frost.met.no/sources/v0.jsonld returned ", r.status_code)
             # extract list of stations (if response was valid)
             if r.status_code == 200:
                 data = r.json()['data']
@@ -607,6 +603,7 @@ class MetFrostObservations(ObservationSet):
                     print('Number of stations discarded: ' + str(count_discard))
                     # print(station_dict)
                 break
+
             if r.status_code == 404:
                 print('STATUS: No data was found for the list of query Ids.')
                 break
@@ -653,13 +650,13 @@ class MetFrostObservations(ObservationSet):
                     parameters2['maxage'] = 'PT30M'
                     parameters2['limit'] = 1
 
-                if level is not None:
-                    parameters2['levels'] = str(level)
-
-                # print('Request parameters: ' + str(parameters2))
+                if debug:
+                    print('Request parameters2: ' + str(parameters2))
                 r = requests.get('https://frost.met.no/observations/v0.jsonld', parameters2, auth=(client_id, ''),
                                  timeout=30)
 
+                if debug:
+                    print("Request https://frost.met.no/observations/v0.jsonld returned ", r.status_code)
                 if r.status_code == 200:
                     data = r.json()['data']
                     for i in range(len(data)):
@@ -676,18 +673,59 @@ class MetFrostObservations(ObservationSet):
                                             second=ref_sec)
                         if debug:
                             print("ref_time", ref_time, "validtime", validtime)
-                        if abs(ref_time - validtime) < dt:
+
+                        read_unit = None
+                        levels_ok = True
+                        if "observations" in data[i]:
+                            for obs in data[i]["observations"]:
+                                if debug:
+                                    print(obs)
+                                if "unit" in obs:
+                                    read_unit = obs["unit"]
+                                if "level" in obs:
+                                    if level is not None:
+                                        if debug:
+                                            print("level", obs["level"])
+                                        all_found = True
+                                        for key in level:
+                                            if key in obs["level"]:
+                                                if str(level[key]) != str(obs["level"][key]):
+                                                    if debug:
+                                                        print(level[key], " != ", obs["level"][key])
+                                                    all_found = False
+                                                else:
+                                                    if debug:
+                                                        print(level[key], " == ", obs["level"][key])
+                                        if not all_found:
+                                            levels_ok = False
+
+                        keep_this_obs = False
+                        if levels_ok:
+                            if abs(ref_time - validtime) < dt:
+                                keep_this_obs = True
+
+                        if keep_this_obs:
+                            if debug:
+                                print("Keep this obs")
                             value = data[i]['observations'][0]['value']
                             if len(str(value)) > 0:  # not all stations have observations
                                 source_id = str(data[i]['sourceId'])
                                 my_id = source_id.split(':')
+                                if unit is not None:
+                                    if read_unit is not None:
+                                        if cfunits is None:
+                                            raise Exception("cfunits not loaded!")
+                                        read_unit = cfunits.Units(read_unit)
+                                        unit = cfunits.Units(unit)
+                                        value = cfunits.Units.conform(value, read_unit, unit)
+                                    else:
+                                        raise Exception("Did not read a unit to convert!")
                                 ids_obs_dict[my_id[0]] = value
                             # print(ids_obs_dict)
 
                     if debug:
                         print('Station list length: ' + str(len(sub_id_list)) +
                               ', total number of observations retrieved: ' + str(len(ids_obs_dict)))
-
                     break
                 if r.status_code == 404:
                     print('STATUS: No data was found for the list of query Ids.')
@@ -697,20 +735,18 @@ class MetFrostObservations(ObservationSet):
 
             for station in ids_obs_dict:
                 value = float(ids_obs_dict[station])
-                if varname == "surface_snow_thickness":
-                    value = value * 0.01
                 id_info = station_dict[station]
                 stid = str(station)[2:]
                 lat = id_info[0]
                 lon = id_info[1]
                 elev = id_info[2]
-                observations.append(Observation(validtime, lon, lat, value, stid=str(stid), elev=elev))
+                observations.append(Observation(validtime, lon, lat, value, stid=str(stid), elev=elev, varname=varname))
 
-        ObservationSet.__init__(self, observations, label="frost")
+        ObservationSet.__init__(self, observations, label=label, debug=debug)
 
 
 class JsonObservationSet(ObservationSet):
-    def __init__(self, filename, label="", var=None):
+    def __init__(self, filename, label="json", var=None, debug=False):
 
         obs = json.load(open(filename, "r"))
         observations = []
@@ -732,11 +768,11 @@ class JsonObservationSet(ObservationSet):
             if var is None or var == varname:
                 observations.append(Observation(obstime, lon, lat, value, stid=stid, elev=elev, varname=varname))
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, debug=debug)
 
 
 class ObservationFromTitanJsonFile(ObservationSet):
-    def __init__(self, an_time, filename, label=""):
+    def __init__(self, an_time, filename, label="", debug=False):
 
         qc_obs = surfex.dataset_from_file(an_time, filename)
         observations = []
@@ -744,4 +780,63 @@ class ObservationFromTitanJsonFile(ObservationSet):
             observations.append(Observation(qc_obs.obstimes[i], qc_obs.dataset.lons[i], qc_obs.dataset.lats[i],
                                             qc_obs.dataset.elevs[i], qc_obs.dataset.value[i]))
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, debug=debug)
+
+
+def set_geo_from_obs_set(**kwargs):
+
+    obs_time = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
+    obs_type = kwargs["obs_type"]
+    varname = kwargs["variable"]
+    inputfile = kwargs["inputfile"]
+    lonrange = None
+    if "lonrange" in kwargs:
+        lonrange = kwargs["lonrange"]
+    latrange = None
+    if latrange in kwargs:
+        latrange = kwargs["latrange"]
+
+    settings = {
+        "obs": {
+            "varname": varname,
+            "filetype": obs_type,
+            "inputfile": inputfile,
+            "filepattern": inputfile
+        }
+    }
+    if lonrange is None:
+        lonrange = [-180, 180]
+    if latrange is None:
+        latrange = [-90, 90]
+
+    print(settings)
+    print("Get data source")
+    times, lons, lats, stids, elevs, values, varnames = surfex.get_datasources(obs_time, settings)[0].get_obs()
+
+    selected_lons = []
+    selected_lats = []
+    for i in range(0, len(lons)):
+        lon = lons[i]
+        lat = lats[i]
+
+        if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
+            lon = round(lon, 5)
+            lat = round(lat, 5)
+            # print(i, lon, lat)
+            selected_lons.append(lon)
+            selected_lats.append(lat)
+
+    dx = ["0.3"] * len(selected_lons)
+    geo_json = {
+        "nam_pgd_grid": {
+            "cgrid": "LONLATVAL"
+        },
+        "nam_lonlatval": {
+            "xx": selected_lons,
+            "xy": selected_lats,
+            "xdx": dx,
+            "xdy": dx
+        }
+    }
+    geo = surfex.LonLatVal(geo_json)
+    return geo

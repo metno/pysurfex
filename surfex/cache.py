@@ -111,21 +111,11 @@ class Cache:
     @staticmethod
     def generate_grib_id(gribvar, filename, validtime):
         if gribvar.version == 1:
-            par = gribvar.par
-            typ = gribvar.typ
-            level = gribvar.level
-            tri = gribvar.tri
-            return ":%d:%d:%d:%s:%s:%s" % (level, tri, par, typ, filename.split("/")[-1],
-                                           validtime.strftime('%Y%m%d%H'))
+            grib_id = gribvar.generate_grib_id()
+            return grib_id + "%s:%s" % (filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
         elif gribvar.version == 2:
-            dis = gribvar.discipline
-            pc = gribvar.parameterCategory
-            pn = gribvar.parameterNumber
-            lt = gribvar.levelType
-            lev = gribvar.level
-            tsp = gribvar.typeOfStatisticalProcessing
-            return ":%d:%d:%d:%s:%d:%d:%s:%s" % (dis, pc, pn, lt, lev, tsp, filename.split("/")[-1],
-                                                 validtime.strftime('%Y%m%d%H'))
+            grib_id = gribvar.generate_grib_id()
+            return grib_id + "%s:%s" % (filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
         else:
             raise NotImplementedError
 

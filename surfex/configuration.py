@@ -20,8 +20,9 @@ def toml_dump(to_dump,  fname, mode="w"):
 
 class Configuration(object):
 
-    def __init__(self, conf_dict, member_conf_dict, geo=None):
+    def __init__(self, conf_dict, member_conf_dict, geo=None, debug=False):
 
+        self.debug = debug
         self.settings = conf_dict
         if "GEOMETRY" not in self.settings:
             self.settings.update({"GEOMETRY": {}})
@@ -558,10 +559,10 @@ class ConfigurationFromHarmonie(Configuration):
     Some settings imply several changes in SURFEX configuration
 
     """
-    def __init__(self, env, conf_dict):
+    def __init__(self, env, conf_dict, debug=False):
 
         member_conf_dict = conf_dict
-        Configuration.__init__(self, conf_dict, member_conf_dict)
+        Configuration.__init__(self, conf_dict, member_conf_dict, debug=debug)
 
         # Set domain from environment variables. Geo is alway conf proj
         ezone = int(env["EZONE"])
@@ -596,7 +597,9 @@ class ConfigurationFromHarmonie(Configuration):
         geo = surfex.ConfProj(domain_dict)
         self.settings["GEOMETRY"].update({"GEO": geo})
         # self.update_setting("GEOMETRY#GEO", geo)
-        print(self.get_setting("GEOMETRY#GEO"))
+
+        if self.debug:
+            print(self.get_setting("GEOMETRY#GEO"))
 
         self.settings.update({"FORECAST": {"PHYSICS": env["PHYSICS"]}})
 

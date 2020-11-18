@@ -1,6 +1,10 @@
 # My stuff
 FORCING.nc
 .idea
+testdata
+unittest_*
+old_testdata
+testdata.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

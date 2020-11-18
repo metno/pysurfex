@@ -7,7 +7,7 @@ import os
 
 
 class Geo(object):
-    def __init__(self, npoints, nlons, nlats, lons, lats, proj=None):
+    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None):
         can_interpolate = False
         if type(lons) != np.ndarray or type(lats) != np.ndarray:
             raise Exception("Longitudes and latitudes must be numpy nd arrays")
@@ -28,6 +28,7 @@ class Geo(object):
             self.lonrange = [np.min(lons), np.max(lons)]
             self.latrange = [np.min(lats), np.max(lats)]
         self.can_interpolate = can_interpolate
+        self.json = from_json
 
     def identifier(self):
         f_lon = ""
@@ -55,10 +56,10 @@ class Geo(object):
 
 
 class SurfexGeo(ABC, Geo):
-    def __init__(self, proj, npoints, nlons, nlats, lons, lats):
+    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json):
         self.mask = None
         self.proj = proj
-        Geo.__init__(self, npoints, nlons, nlats, lons, lats, proj=proj)
+        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj)
 
     @abstractmethod
     def update_namelist(self, nml):
@@ -117,7 +118,7 @@ class ConfProj(SurfexGeo):
 
         npoints = self.nimax * self.njmax
         SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax, np.reshape(lons, [npoints], order="F"),
-                           np.reshape(lats, [npoints], order="F"))
+                           np.reshape(lats, [npoints], order="F"), from_json)
 
     def update_namelist(self, nml):
         if self.ilate is None or self.ilate is None:
@@ -177,7 +178,7 @@ class LonLatVal(SurfexGeo):
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = pyproj.CRS.from_string(proj4)
                 SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), np.asarray(self.xx),
-                                   np.asarray(self.xy))
+                                   np.asarray(self.xy), from_json)
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -217,7 +218,7 @@ class Cartesian(SurfexGeo):
                 proj = None
                 # proj, npoints, nlons, nlats, lons, lats
                 SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, np.asarray([]),
-                                   np.asarray([]))
+                                   np.asarray([]), from_json)
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -281,7 +282,8 @@ class LonLatReg(SurfexGeo):
                 lats.append(self.xlatmin + j * dlat)
 
         # proj, npoints, nlons, nlats, lons, lats
-        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat, np.asarray(lons), np.asarray(lats))
+        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat, np.asarray(lons), np.asarray(lats),
+                           from_json)
 
     def update_namelist(self, nml):
         nml.update({
@@ -351,7 +353,7 @@ class IGN(SurfexGeo):
             lons.append(lon)
             lats.append(lat)
 
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats))
+        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats), from_json)
         self.can_interpolate = False
 
     @staticmethod

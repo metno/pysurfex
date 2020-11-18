@@ -89,7 +89,10 @@ class SystemFilePaths(object):
                 path = str(key)
         fname = self.parse_setting(fname, **kwargs)
         fname = self.substitute_string(fname)
-        fname = path + "/" + fname
+        if path is None:
+            print("No path found for: " + dtype)
+        else:
+            fname = path + "/" + fname
         check_existence = False
         if "check_existence" in kwargs:
             check_existence = kwargs["check_existence"]
@@ -832,6 +835,7 @@ class Namelist(Cy40, Cy43):
 
 class Ecoclimap(object):
     def __init__(self, config, system_file_paths=None):
+
         self.config = config
         self.system_file_paths = system_file_paths
         self.cover_dir = "ecoclimap_cover_dir"
@@ -840,17 +844,18 @@ class Ecoclimap(object):
                                 "ecoclimapII_eu_covers_param.bin"]
         self.decadal_data_types = None
 
-    def set_input(self):
+    def set_input(self, check_existence=True):
         if self.system_file_paths is None:
             raise Exception("System file path must be set for this method")
         data = {}
         for fname in self.ecoclimap_files:
-            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname, default="climdir")
+            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname, default="climdir",
+                                                                check_existence=check_existence)
             data.update({fname: fname_data})
         return data
 
-    def set_bin_files(self):
-        return self.set_input()
+    def set_bin_files(self, check_existence=True):
+        return self.set_input(check_existence=check_existence)
 
 
 class EcoclimapSG(Ecoclimap):
@@ -865,7 +870,7 @@ class EcoclimapSG(Ecoclimap):
     def set_bin_files(self):
         pass
 
-    def set_input(self):
+    def set_input(self, check_existence=True):
         if self.system_file_paths is None:
             raise Exception("System file path must be set for this method")
 
@@ -874,7 +879,7 @@ class EcoclimapSG(Ecoclimap):
         fname = self.config.get_setting("SURFEX#COVER#H_TREE")
         if fname != "" and fname is not None:
             ext_data = ExternalSurfexInputFile(self.system_file_paths)
-            data.update(ext_data.set_input_data_from_format(tree_height_dir, fname))
+            data.update(ext_data.set_input_data_from_format(tree_height_dir, fname, check_existence=check_existence))
 
         decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
         for decadal_data_type in decadal_data_types:
@@ -884,7 +889,7 @@ class EcoclimapSG(Ecoclimap):
                     fname = self.parse_fnames(filepattern, decade)
                     dtype = decadal_data_type.lower() + "_dir"
                     ext_data = ExternalSurfexInputFile(self.system_file_paths)
-                    data.update(ext_data.set_input_data_from_format(dtype, fname))
+                    data.update(ext_data.set_input_data_from_format(dtype, fname, check_existence=check_existence))
         return data
 
     @staticmethod
@@ -913,11 +918,12 @@ class PgdInputData(surfex.JsonInputData):
         else:
             ecoclimap = Ecoclimap(config, system_file_paths=system_file_paths)
 
-        data = ecoclimap.set_input()
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+        data = ecoclimap.set_input(check_existence=check_existence)
 
-        if "check_existence" not in kwargs:
-            kwargs.update({"check_existence": True})
-
+        kwargs.update({"check_existence": check_existence})
         ext_data = ExternalSurfexInputFile(system_file_paths)
         # Set direct input files
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
@@ -970,12 +976,16 @@ class PrepInputData(surfex.JsonInputData):
         if "prep_pgdfile" in kwargs:
             prep_pgdfile = kwargs["prep_pgdfile"]
 
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
         data = {}
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files())
+            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
 
         print("prep class ", system_file_paths.__class__)
         ext_data = ExternalSurfexInputFile(system_file_paths)
@@ -994,7 +1004,7 @@ class PrepInputData(surfex.JsonInputData):
             data_dir = "flake_dir"
             fname = "LAKE_LTA_NEW.nc"
             data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
-                                                            check_existence=True))
+                                                            check_existence=check_existence))
 
         surfex.JsonInputData.__init__(self, data)
 
@@ -1003,12 +1013,16 @@ class OfflineInputData(surfex.JsonInputData):
 
     def __init__(self, config, system_file_paths, **kwargs):
 
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
         data = {}
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files())
+            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
 
         data_dir = "forcing_dir"
         if config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
@@ -1024,12 +1038,16 @@ class InlineForecastInputData(surfex.JsonInputData):
 
     def __init__(self, config, system_file_paths, **kwargs):
 
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
         data = {}
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files())
+            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
 
         surfex.JsonInputData.__init__(self, data)
 
@@ -1041,6 +1059,10 @@ class SodaInputData(surfex.JsonInputData):
     """
 
     def __init__(self, config, system_file_paths, **kwargs):
+
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
 
         kwargs.update({"verbosity": 6})
         self.config = config
@@ -1058,15 +1080,15 @@ class SodaInputData(surfex.JsonInputData):
         eco_sg = self.config.get_setting("SURFEX#COVER#SG")
         if not eco_sg:
             ecoclimap = Ecoclimap(self.config, self.system_file_paths)
-            self.add_data(ecoclimap.set_bin_files())
+            self.add_data(ecoclimap.set_bin_files(check_existence=check_existence))
 
         # OBS
-        self.add_data(self.set_input_observations())
+        self.add_data(self.set_input_observations(check_existence=check_existence))
 
         # SEA
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
             if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
-                self.add_data(self.set_input_sea_assimilation())
+                self.add_data(self.set_input_sea_assimilation(check_existence=check_existence))
 
         # WATER
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER") != "NONE":
@@ -1083,7 +1105,7 @@ class SodaInputData(surfex.JsonInputData):
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
             pass
 
-    def set_input_observations(self):
+    def set_input_observations(self, check_existence=True):
 
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
         if cfile_format_obs == "ASCII":
@@ -1101,13 +1123,13 @@ class SodaInputData(surfex.JsonInputData):
 
         data_dir = "obs_dir"
         obsfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
-                                                         check_existence=True, basedtg=self.dtg, verbosity=5)
+                                                         check_existence=check_existence, basedtg=self.dtg, verbosity=5)
         obssettings = {
             target: obsfile
         }
         return obssettings
 
-    def set_input_sea_assimilation(self):
+    def set_input_sea_assimilation(self, check_existence=True):
 
         cfile_format_sst = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")
         if cfile_format_sst.upper() == "ASCII":
@@ -1119,8 +1141,8 @@ class SodaInputData(surfex.JsonInputData):
 
         # data_dir = self.system_file_paths.get_system_path("sst_file_dir", basedtg=self.dtg, default_dir="assim_dir")
         data_dir = "sst_file_dir"
-        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg, check_existence=True,
-                                                         default_dir="assim_dir")
+        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg,
+                                                         check_existence=check_existence, default_dir="assim_dir")
         sea_settings = {
             target: sstfile
         }
@@ -1205,6 +1227,10 @@ class SodaInputData(surfex.JsonInputData):
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
         # TODO
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
@@ -1231,7 +1257,8 @@ class SodaInputData(surfex.JsonInputData):
 
         data_dir = "first_guess_dir"
         first_guess = self.system_file_paths.get_system_file(data_dir, fg, default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg, check_existence=True)
+                                                             validtime=self.dtg, basedtg=fg_dtg,
+                                                             check_existence=check_existence)
         ekf_settings.update({"PREP_INIT." + extension: first_guess})
         ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
 
@@ -1263,7 +1290,9 @@ class SodaInputData(surfex.JsonInputData):
                 # TODO depending on when perturbations are run
                 perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
                                                                        validtime=self.dtg, basedtg=self.dtg,
-                                                                       check_existence=True, pert=pert_input)
+                                                                       check_existence=check_existence,
+                                                                       default_dir="assim_dir",
+                                                                       pert=pert_input)
 
                 target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_PERT" + str(pert_ekf) + "." + extension
                 ekf_settings.update({target: perturbed_run})
@@ -1283,6 +1312,6 @@ class SodaInputData(surfex.JsonInputData):
             data_dir = "lsm_dir"
             lsmfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
                                                              validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=True)
+                                                             check_existence=check_existence)
             ekf_settings.update({target: lsmfile})
         return ekf_settings

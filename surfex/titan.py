@@ -222,13 +222,17 @@ class Fraction(QualityControl):
         if tit is None:
             raise ModuleNotFoundError("titanlib was not loaded properly")
 
+        print("Obs operator")
         fraction = ObsOperator(self.operator, self.geo_in, dataset, self.fraction_field,
                                max_distance=self.max_distance)
 
+        print("get_obs_value")
         fraction_vals = fraction.get_obs_value()
         minvals = []
         maxvals = []
         values = []
+
+        print("setup")
         for o in range(0, len(mask)):
             minval = self.min[o]
             maxval = self.max[o]
@@ -239,7 +243,9 @@ class Fraction(QualityControl):
         minvals = np.asarray(minvals)
         maxvals = np.asarray(maxvals)
         values = np.asarray(values)
+        print("Do test")
         flags = tit.range_check(values, minvals, maxvals)
+        print("Done test")
 
         global_flags = dataset.flags
         for i in range(0, len(mask)):
@@ -725,7 +731,7 @@ class NoMeta(QualityControl):
         return flags
 
 
-def define_quality_control(test_list, settings, an_time, domain_geo=None, blacklist=None):
+def define_quality_control(test_list, settings, an_time, domain_geo=None, blacklist=None, debug=False):
     """
     Method to define different QC test from a dict
 
@@ -735,6 +741,7 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
         an_time(datetime.datetime): Analysis time
         domain_geo(surfex.Geo): Geo object
         blacklist(dict): Optional blacklist. Needd for blacklist test
+        debug(bool): Turn on debugging
 
     Returns:
         tests(list): List of QualityControl objects
@@ -742,7 +749,8 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
     """
     tests = []
     for t in test_list:
-        kwargs = {"debug": False}
+        print("Set up test: " + t)
+        kwargs = {"debug": debug}
         test_options = None
         if t in settings:
             test_options = settings[t]
@@ -758,39 +766,63 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
         elif t.lower() == "firstguess":
             fg_file = None
             fg_var = None
+            fg_field = None
+            fg_geo = None
             if test_options is not None:
                 if "fg_file" in test_options:
                     fg_file = test_options["fg_file"]
                 if "fg_var" in test_options:
                     fg_var = test_options["fg_var"]
+                if "fg_field" in test_options:
+                    fg_field = test_options["fg_field"]
+                if "fg_geo" in test_options:
+                    fg_geo = test_options["fg_geo"]
                 opts = ["negdiff", "posdiff", "max_distance", "operator", "debug"]
                 for opt in opts:
                     if opt in test_options:
                         kwargs.update({opt: test_options[opt]})
-            if fg_file is None or fg_var is None:
-                raise Exception("You must set the name of fg file and variable")
-
-            geo_in, validtime, fg_field, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, fg_var)
-            tests.append(FirstGuess(geo_in, fg_field, **kwargs))
+            if fg_geo is None and fg_field is None:
+                if fg_file is None or fg_var is None:
+                    raise Exception("You must set the name of fg file and variable")
+                fg_geo, validtime, fg_field, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, fg_var)
+            else:
+                if fg_geo is None or fg_field is None:
+                    raise Exception("You must set both fg_field and fg_geo")
+            tests.append(FirstGuess(fg_geo, fg_field, **kwargs))
 
         elif t.lower() == "fraction":
+            kwargs.update({
+                "minval": 0.99,
+                "maxval": 1.01
+            })
             fraction_var = None
             fraction_file = None
+            fraction_field = None
+            fraction_geo = None
             if test_options is not None:
                 if "fraction_file" in test_options:
                     fraction_file = test_options["fraction_file"]
                 if "fraction_var" in test_options:
                     fraction_var = test_options["fraction_var"]
+                if "fraction_field" in test_options:
+                    fraction_field = test_options["fraction_field"]
+                if "fraction_geo" in test_options:
+                    fraction_geo = test_options["fraction_geo"]
                 opts = ["minval", "maxval", "max_distance", "operator", "debug"]
                 for opt in opts:
                     if opt in test_options:
                         kwargs.update({opt: test_options[opt]})
-            if fraction_var is None or fraction_file is None:
-                raise Exception("You must set the name of fraction file and variable")
 
-            geo_in, validtime, fraction_field, glafs, gelevs = \
-                surfex.read_first_guess_netcdf_file(fraction_file, fraction_var)
-            tests.append(Fraction(geo_in, fraction_field, **kwargs))
+            if fraction_geo is None and fraction_field is None:
+                if fraction_var is None or fraction_file is None:
+                    raise Exception("You must set the name of fraction file and variable")
+
+                fraction_geo, validtime, fraction_field, glafs, gelevs = \
+                    surfex.read_first_guess_netcdf_file(fraction_file, fraction_var)
+            else:
+                if fraction_field is None or fraction_geo is None:
+                    raise Exception("You must set both fraction_field and fraction_geo")
+            tests.append(Fraction(fraction_geo, fraction_field, **kwargs))
 
         elif t.lower() == "buddy":
             if test_options is not None:
@@ -1086,10 +1118,12 @@ class TitanDataSet(QCDataSet):
                 if obs_set.label == "":
                     raise Exception("Observations set for quality control are assumed to have a label")
 
-                # print("obs_set", obs_set.label)
+                print("obs_set", obs_set.label)
                 size = obs_set.size
 
                 do_test = False
+                if "do_test" in self.settings:
+                    do_test = self.settings["do_test"]
                 if t.name in self.settings:
                     if "do_test" in self.settings[t.name]:
                         do_test = self.settings[t.name]["do_test"]
@@ -1099,11 +1133,12 @@ class TitanDataSet(QCDataSet):
                     if obs_set.label in self.settings["sets"]:
                         if "tests" in self.settings["sets"][obs_set.label]:
                             if t.name in self.settings["sets"][obs_set.label]["tests"]:
-                                test_settings = self.settings["sets"][obs_set.label]["tests"][t.name]
+                                test_settings.update(self.settings["sets"][obs_set.label]["tests"][t.name])
 
                 do_test = test_settings["do_test"]
                 if do_test:
                     del(test_settings["do_test"])
+                    print(findex, size)
                     lmask = np.where(np.asarray(self.flags[findex:findex+size]) == 0)[0].tolist()
 
                     for i in range(0, len(lmask)):
@@ -1178,6 +1213,7 @@ class ObsOperator(object):
         lats = dataset.lats
         points = gridpp.Points(lats, lons)
 
+        print("Setting up \"" + operator + "\" observation operator for " + str(len(lons)) + " points")
         if operator == "nearest":
             obs_values = gridpp.nearest(grid, points, grid_values)
         elif operator == "bilinear":

@@ -20,6 +20,7 @@ grib2:
   file_inc: 3600
   fcint: 10800
   interpolator: nearest
+  typeOfStatisticalProcessing: -1
 
 surfex:
   filepattern: not_defined
@@ -48,13 +49,13 @@ ZS:
     converter:
       none:
         parameter: -1
-        type: sfc
+        type: 105
         level: 0
         tri: 0
       phi2m:
         phi:
           parameter: 6
-          type: sfc
+          type: 105
           level: 0
           tri: 0
   grib2:
@@ -65,7 +66,7 @@ ZS:
           discipline: 0
           parameterCategory: 3
           parameterNumber: 4
-          levelType: sfc
+          levelType: 103
           level: 0
   fa:
     converter:
@@ -87,8 +88,8 @@ ZREF:
     grib1:
       converter:
         none:
-          parameter: -1
-          type: sfc
+          parameter: 11
+          type: 109
           level: 0
           tri: 0
     grib2:
@@ -97,7 +98,7 @@ ZREF:
           discipline: 0
           parameterCategory: 0
           parameterNumber: 0
-          levelType: ml
+          levelType: 105
           level: 65
     fa:
       converter:
@@ -119,7 +120,7 @@ UREF:
       converter:
         none:
           parameter: -1
-          type: sfc
+          type: 109
           level: 0
           tri: 0
     grib2:
@@ -128,7 +129,7 @@ UREF:
           discipline: 0
           parameterCategory: 0
           parameterNumber: 0
-          levelType: ml
+          levelType: 105
           level: 65
     fa:
       converter:
@@ -145,7 +146,7 @@ TA:
       converter:
         none:
           parameter: 11
-          type: sfc
+          type: 105
           level: 2
           tri: 0
     grib2:
@@ -154,7 +155,7 @@ TA:
           discipline: 0
           parameterCategory: 0
           parameterNumber: 0
-          levelType: sfc
+          levelType: 103
           level: 2
     fa:
       converter:
@@ -170,7 +171,7 @@ TA:
       converter:
         none:
           parameter: 11
-          type: ml
+          type: 109
           level: 65
           tri: 0
     grib2:
@@ -179,7 +180,7 @@ TA:
           discipline: 0
           parameterCategory: 0
           parameterNumber: 0
-          levelType: ml
+          levelType: 105
           level: 65
     fa:
       converter:
@@ -209,23 +210,23 @@ QA:
       converter:
         none:
           parameter: 51
-          type: sfc
+          type: 105
           level: 2
           tri: 0
         rh2q:
           rh:
             parameter: 52
-            type: sfc
+            type: 105
             level: 2
             tri: 0
           t:
             parameter: 11
-            type: sfc
+            type: 105
             level: 2
             tri: 0
           p:
             parameter: 1
-            type: sfc
+            type: 105
             level: 0
             tri: 0
     grib2:
@@ -234,26 +235,26 @@ QA:
           discipline: 0
           parameterCategory: 1
           parameterNumber: 0
-          levelType: sfc
+          levelType: 103
           level: 0
         rh2q:
           rh:
             discipline: 0
             parameterCategory: 1
             parameterNumber: 192
-            levelType: sfc
+            levelType: 103
             level: 2
           t:
             discipline: 0
             parameterCategory: 0
             parameterNumber: 0
-            levelType: sfc
+            levelType: 103
             level: 2
           p:
             discipline: 0
             parameterCategory: 3
             parameterNumber: 0
-            levelType: sfc
+            levelType: 103
             level: 0
     fa:
       converter:
@@ -288,23 +289,23 @@ QA:
       converter:
         none:
           parameter: 51
-          type: ml
+          type: 109
           level: 65
           tri: 0
         rh2q:
           rh:
             parameter: 52
-            type: ml
+            type: 109
             level: 65
             tri: 0
           t:
             parameter: 11
-            type: ml
+            type: 109
             level: 65
             tri: 0
           p:
             parameter: 1
-            type: sfc
+            type: 105
             level: 0
             tri: 0
     grib2:
@@ -313,26 +314,26 @@ QA:
           discipline: 0
           parameterCategory: 1
           parameterNumber: 0
-          levelType: ml
+          levelType: 105
           level: 65
         rh2q:
           rh:
             discipline: 0
             parameterCategory: 1
             parameterNumber: 192
-            levelType: ml
+            levelType: 105
             level: 65
           t:
             discipline: 0
             parameterCategory: 0
             parameterNumber: 0
-            levelType: ml
+            levelType: 105
             level: 65
           p:
             discipline: 0
             parameterCategory: 3
             parameterNumber: 0
-            levelType: sfc
+            levelType: 103
             level: 0
     fa:
       converter:
@@ -362,18 +363,18 @@ WIND:
       converter:
         none:
           parameter: 32
-          type: sfc
+          type: 105
           level: 10
           tri: 0
         windspeed:
           x:
             parameter: 33
-            type: sfc
+            type: 105
             level: 10
             tri: 0
           y:
             parameter: 34
-            type: sfc
+            type: 105
             level: 10
             tri: 0
     grib2:
@@ -382,20 +383,20 @@ WIND:
           discipline: 0
           parameterCategory: 2
           parameterNumber: 1
-          levelType: sfc
+          levelType: 103
           level: 10
         windspeed:
           x:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 2
-            levelType: sfc
+            levelType: 103
             level: 10
           y:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 3
-            levelType: sfc
+            levelType: 103
             level: 10
     fa:
       converter:
@@ -423,18 +424,18 @@ WIND:
       converter:
         none:
           parameter: 207
-          type: sfc
+          type: 105
           level: 10
           tri: 0
         windspeed:
           x:
             parameter: 33
-            type: ml
+            type: 109
             level: 65
             tri: 0
           y:
             parameter: 34
-            type: ml
+            type: 109
             level: 65
             tri: 0
     grib2:
@@ -443,20 +444,20 @@ WIND:
           discipline: 0
           parameterCategory: 2
           parameterNumber: 1
-          levelType: ml
+          levelType: 105
           level: 65
         windspeed:
           x:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 2
-            levelType: ml
+            levelType: 105
             level: 65
           y:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 3
-            levelType: ml
+            levelType: 105
             level: 65
     fa:
       converter:
@@ -486,19 +487,19 @@ WIND_DIR:
       converter:
         none:
           parameter: 31
-          type: sfc
+          type: 105
           level: 10
           tri: 0
         winddir:
           x:
             parameter: 33
-            type: sfc
+            type: 105
             level: 10
             tri: 0
             rotate_to_geographic: True
           y:
             parameter: 34
-            type: sfc
+            type: 105
             level: 10
             tri: 0
             rotate_to_geographic: True
@@ -508,21 +509,21 @@ WIND_DIR:
           discipline: 0
           parameterCategory: 2
           parameterNumber: 1
-          levelType: sfc
+          levelType: 103
           level: 10
         winddir:
           x:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 2
-            levelType: sfc
+            levelType: 103
             level: 10
             rotate_to_geographic: True
           y:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 3
-            levelType: sfc
+            levelType: 103
             level: 10
             rotate_to_geographic: True
     fa:
@@ -556,18 +557,18 @@ WIND_DIR:
         none:
           parameter: 249
           type: ml
-          level: 65
+          level: 109
           tri: 0
         winddir:
           x:
             parameter: 33
-            type: ml
+            type: 109
             level: 65
             tri: 0
             rotate_to_geographic: True
           y:
             parameter: 34
-            type: ml
+            type: 109
             level: 65
             tri: 0
             rotate_to_geographic: True
@@ -577,21 +578,21 @@ WIND_DIR:
           discipline: 0
           parameterCategory: 2
           parameterNumber: 0
-          levelType: ml
+          levelType: 105
           level: 65
         winddir:
           x:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 2
-            levelType: ml
+            levelType: 105
             level: 65
             rotate_to_geographic: True
           y:
             discipline: 0
             parameterCategory: 2
             parameterNumber: 3
-            levelType: ml
+            levelType: 105
             level: 65
             rotate_to_geographic: True
     fa:
@@ -626,20 +627,20 @@ RAIN:
   grib1:
     converter:
       none:
-        parameter: 221
-        type: sfc
+        parameter: 181
+        type: 105
         level: 0
         tri: 4
       totalprec:
         totalprec:
           parameter: 61
-          type: sfc
+          type: 105
           level: 0
           tri: 4
           instant: 3600.
         snow:
           parameter: 185
-          type: sfc
+          type: 105
           level: 0
           tri: 4
           instant: 3600.
@@ -649,7 +650,7 @@ RAIN:
         discipline: 0
         parameterCategory: 1
         parameterNumber: 65
-        levelType: sfc
+        levelType: 103
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
@@ -658,15 +659,15 @@ RAIN:
           discipline: 0
           parameterCategory: 1
           parameterNumber: 8
-          levelType: sfc
+          levelType: 103
           level: 0
           instant: 3600.
           typeOfStatisticalProcessing: 1
         snow:
           discipline: 0
           parameterCategory: 1
-          parameterNumber: 200
-          levelType: sfc
+          parameterNumber: 53
+          levelType: 103
           level: 0
           instant: 3600.
           typeOfStatisticalProcessing: 1
@@ -704,7 +705,7 @@ SNOW:
     converter:
       none:
         parameter: 185
-        type: sfc
+        type: 105
         level: 0
         tri: 4
         instant: 3600.
@@ -713,8 +714,8 @@ SNOW:
       none:
         discipline: 0
         parameterCategory: 1
-        parameterNumber: 200
-        levelType: sfc
+        parameterNumber: 53
+        levelType: 103
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
@@ -735,7 +736,7 @@ PS:
     converter:
       none:
         parameter: 1
-        type: sfc
+        type: 105
         level: 0
         tri: 0
   grib2:
@@ -744,7 +745,7 @@ PS:
         discipline: 0
         parameterCategory: 3
         parameterNumber: 0
-        levelType: sfc
+        levelType: 103
         level: 0
   fa:
     converter:
@@ -763,7 +764,7 @@ DIR_SW:
     converter:
       none:
         parameter: 117
-        type: sfc
+        type: 105
         level: 0
         tri: 4
   grib2:
@@ -772,7 +773,7 @@ DIR_SW:
         discipline: 0
         parameterCategory: 4
         parameterNumber: 3
-        levelType: sfc
+        levelType: 103
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
@@ -792,7 +793,7 @@ SCA_SW:
     converter:
       none:
         parameter: 14
-        type: sfc
+        type: 105
         level: 0
         tri: 0
   grib2:
@@ -811,7 +812,7 @@ LW:
     converter:
       none:
         parameter: 115
-        type: sfc
+        type: 105
         level: 0
         tri: 4
   grib2:
@@ -820,7 +821,7 @@ LW:
         discipline: 0
         parameterCategory: 5
         parameterNumber: 4
-        levelType: sfc
+        levelType: 103
         level: 0
         instant: 3600.
         typeOfStatisticalProcessing: 1
@@ -838,7 +839,7 @@ CO2:
     converter:
       none:
         parameter: -1
-        type: sfc
+        type: 105
         level: 0
         tri: 0
   grib2:

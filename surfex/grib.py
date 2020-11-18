@@ -18,13 +18,14 @@ except:
 
 class Grib(object):
 
-    def __init__(self, fname):
+    def __init__(self, fname, debug=False):
         self.fname = fname
         self.projection = None
         self.lons = None
         self.lats = None
         self.nearest = None
         self.linear = None
+        self.debug = debug
         # print "Grib constructor "
 
     def field(self, gribvar, time):
@@ -51,9 +52,11 @@ class Grib(object):
                      "LaDInDegrees",
                      "Latin2InDegrees",
                      "latitudeOfSouthernPoleInDegrees",
-                     "longitudeOfSouthernPoleInDegrees",
-                     "gridType"
+                     "longitudeOfSouthernPoleInDegrees"
                      ]
+
+        if self.debug:
+            print("Look for ", gribvar.generate_grib_id())
 
         geo_out = None
         fh = open(self.fname)
@@ -69,26 +72,30 @@ class Grib(object):
                 # print("\n Next key")
                 # print_grib_id(gid)
                 if gribvar.matches(gid):
+
                     # print("Found key")
                     # gribvar.print_keys()
 
-                    geo = {}
-                    for key in geography:
-                        try:
-                            geo.update({key: eccodes.codes_get(gid, key)})
-                        except eccodes.CodesInternalError as err:
-                            print('Error with key="%s" : %s' % (key, err.msg))
+                    grid_type = str(eccodes.codes_get(gid, "gridType"))
+                    if grid_type.lower() == "lambert":
+                        geo = {}
+                        for key in geography:
+                            try:
+                                geo.update({key: eccodes.codes_get(gid, key)})
+                            except eccodes.CodesInternalError as err:
+                                print('Error with key="%s" : %s' % (key, err.msg))
 
-                    # print('There are %d values, average is %f, min is %f, max is %f' % (
-                    #        codes_get_size(gid, 'values'),
-                    #        codes_get(gid, 'average'),
-                    #        codes_get(gid, 'min'),
-                    #        codes_get(gid, 'max')
-                    #    ))
+                        if self.debug:
+                            print('There are %d values, average is %f, min is %f, max is %f' % (
+                                eccodes.codes_get_size(gid, 'values'),
+                                eccodes.codes_get(gid, 'average'),
+                                eccodes.codes_get(gid, 'min'),
+                                eccodes.codes_get(gid, 'max')
+                            ))
 
-                    if geo["gridType"].lower() == "lambert":
                         values = eccodes.codes_get_values(gid)
-                        print(values)
+                        if self.debug:
+                            print("Values: ", values)
                         nx = geo["Nx"]
                         ny = geo["Ny"]
 
@@ -133,12 +140,10 @@ class Grib(object):
                             }
                             geo_out = surfex.geo.ConfProj(domain)
                     else:
-                        raise NotImplementedError(geo["gridType"] + " not implemented yet!")
+                        raise NotImplementedError(str(grid_type) + " not implemented yet!")
 
                     eccodes.codes_release(gid)
                     fh.close()
-                    # print lons
-                    # print lats
 
                     if geo_out is None:
                         raise Exception("No geometry is found in file")
@@ -149,13 +154,13 @@ class Grib(object):
     def points(self, gribvar, geo, validtime=None, interpolation="nearest", cache=None):
 
         """
-                Reads a 2-D field and interpolates it to requested positions
+        Reads a 2-D field and interpolates it to requested positions
 
-                Arguments:
+        Arguments:
 
 
-                Returns:
-                 np.array: vector with inpterpolated values
+        Returns:
+            np.array: vector with inpterpolated values
 
         """
 
@@ -177,15 +182,18 @@ class Grib(object):
 
 
 class Grib1Variable(object):
-    def __init__(self, par, typ, level, tri):
+    def __init__(self, par, typ, level, tri, debug=False):
         self.version = 1
-        self.par = par
-        self.typ = str(typ).strip()
-        self.level = level
-        self.tri = tri
+        self.par = int(par)
+        self.typ = int(typ)
+        self.level = int(level)
+        self.tri = int(tri)
+        self.debug = debug
 
     def is_accumulated(self):
         if self.tri == 4:
+            if self.debug:
+                print("Value is accumulated")
             return True
         else:
             return False
@@ -194,13 +202,23 @@ class Grib1Variable(object):
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
-        par = int(eccodes.codes_get(gid, "indicatorOfParameter"))
-        lev = int(eccodes.codes_get(gid, "level"))
-        typ = str(eccodes.codes_get(gid, "levelType")).strip("")
-        tri = int(eccodes.codes_get(gid, "timeRangeIndicator"))
+        version = int(eccodes.codes_get(gid, "editionNumber"))
+        if version == 1:
+            par = int(eccodes.codes_get_long(gid, "indicatorOfParameter"))
+            lev = int(eccodes.codes_get_long(gid, "level"))
+            typ = int(eccodes.codes_get_long(gid, "levelType"))
+            tri = int(eccodes.codes_get_long(gid, "timeRangeIndicator"))
 
-        if self.par == par and self.level == lev and self.typ == typ and self.tri == tri:
-            return True
+            if self.debug:
+                print("Checking grib1 record: ", par, typ, lev, tri)
+                print(":" + str(par) + ":" + str(typ) + ":" + str(lev) + ":" + str(tri) + ":")
+                print(self.generate_grib_id())
+            if self.par == par and self.level == lev and self.typ == typ and self.tri == tri:
+                if self.debug:
+                    print("Found matching grib1 record: ",  par, lev, typ, tri)
+                return True
+            else:
+                return False
         else:
             return False
 
@@ -212,50 +230,69 @@ class Grib1Variable(object):
         print("level:", self.level)
         print("timeRangeIndicator:", self.tri)
 
+    def generate_grib_id(self):
+        par = self.par
+        typ = self.typ
+        level = self.level
+        tri = self.tri
+        return ":%d:%d:%d:%d:" % (par, typ, level, tri)
+
 
 class Grib2Variable(object):
-    def __init__(self, discipline, pc, pn, lt, lev, tsp=-1):
+    def __init__(self, discipline, pc, pn, lt, lev, tsp=-1, debug=False):
         self.version = 2
-        self.discipline = discipline
-        self.parameterCategory = pc
-        self.parameterNumber = pn
-        self.levelType = lt
-        self.level = lev
-        self.typeOfStatisticalProcessing = tsp
+        self.discipline = int(discipline)
+        self.parameterCategory = int(pc)
+        self.parameterNumber = int(pn)
+        self.levelType = int(lt)
+        self.level = int(lev)
+        self.typeOfStatisticalProcessing = int(tsp)
+        self.debug = debug
 
     def matches(self, gid):
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
-        discipline = int(eccodes.codes_get(gid, "discipline"))
-        parameter_category = int(eccodes.codes_get(gid, "parameterCategory"))
-        parameter_number = int(eccodes.codes_get(gid, "parameterNumber"))
-        level_type = int(eccodes.codes_get_long(gid, "levelType"))
-        level = int(eccodes.codes_get(gid, "level"))
-        try:
-            type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")
-        except gribapi.errors.KeyValueNotFoundError:
-            type_of_statistical_processing = -1
+        version = int(eccodes.codes_get(gid, "editionNumber"))
+        if version == 2:
+            discipline = int(eccodes.codes_get(gid, "discipline"))
+            parameter_category = int(eccodes.codes_get(gid, "parameterCategory"))
+            parameter_number = int(eccodes.codes_get(gid, "parameterNumber"))
+            level_type = int(eccodes.codes_get_long(gid, "levelType"))
+            level = int(eccodes.codes_get(gid, "level"))
+            try:
+                type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")
+                type_of_statistical_processing = int(type_of_statistical_processing)
+            except gribapi.errors.KeyValueNotFoundError:
+                type_of_statistical_processing = -1
 
-        # print("Matching ")
-        # print(self.discipline, discipline)
-        # print(self.parameterCategory, parameter_category)
-        # print(self.parameterNumber, parameter_number)
-        # print(self.levelType, level_type)
-        # print(self.level, level)
-        # print(self.typeOfStatisticalProcessing, type_of_statistical_processing)
-        if self.discipline == discipline and \
-                self.parameterCategory == parameter_category and \
-                self.parameterNumber == parameter_number and \
-                self.levelType == level_type and \
-                self.level == level and \
-                self.typeOfStatisticalProcessing == type_of_statistical_processing:
-            return True
+            if self.debug:
+                print("Checking grib2 record: ", discipline, parameter_category, parameter_number, level_type, level,
+                      type_of_statistical_processing)
+                print(":" + str(discipline) + ":" + str(parameter_category) + ":" + str(parameter_number) + ":" +
+                      str(level_type) + ":" + str(level) + ":" + str(type_of_statistical_processing) + ":")
+                print(self.generate_grib_id())
+            if self.discipline == discipline and \
+                    self.parameterCategory == parameter_category and \
+                    self.parameterNumber == parameter_number and \
+                    self.levelType == level_type and \
+                    self.level == level and \
+                    self.typeOfStatisticalProcessing == type_of_statistical_processing:
+                if self.debug:
+                    print("Found matching grib2 record: ", discipline, parameter_category, parameter_number,
+                          level_type, level)
+                return True
+            else:
+                return False
         else:
+            if self.debug:
+                print("Record is not grib2")
             return False
 
     def is_accumulated(self):
         if self.typeOfStatisticalProcessing == 1:
+            if self.debug:
+                print("Parameter is accumulated")
             return True
         else:
             return False
@@ -270,40 +307,11 @@ class Grib2Variable(object):
         print("level:", self.level)
         print("typeOfStatisticalProcessing:", self.typeOfStatisticalProcessing)
 
-
-def print_grib_id(gid):
-    if eccodes is None:
-        raise Exception("eccodes not found. Needed for reading grib files")
-
-    version = eccodes.codes_get(gid, "edition")
-    print("edition:", version)
-    if version == 1:
-        par = eccodes.codes_get(gid, "indicatorOfParameter")
-        lev = eccodes.codes_get(gid, "level")
-        typ = eccodes.codes_get(gid, "indicatorOfTypeOfLevel")
-        tri = eccodes.codes_get(gid, "timeRangeIndicator")
-
-        print("indicatorOfParameter:", par)
-        print("indicatorOfTypeOfLevel", typ)
-        print("level:", lev)
-        print("timeRangeIndicator:", tri)
-
-    elif version == 2:
-        discipline = eccodes.codes_get(gid, "discipline")
-        parameter_category = eccodes.codes_get(gid, "parameterCategory")
-        parameter_number = eccodes.codes_get(gid, "parameterNumber")
-        level_type = eccodes.codes_get(gid, "levelType")
-        level = eccodes.codes_get(gid, "level")
-        try:
-            type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")
-        except gribapi.errors.KeyValueNotFoundError:
-            type_of_statistical_processing = -1
-
-        print("discipline:", discipline)
-        print("parameterCategory:", parameter_category)
-        print("parameterNumber:", parameter_number)
-        print("levelType:", level_type)
-        print("level:", level)
-        print("typeOfStatisticalProcessing:", type_of_statistical_processing)
-    else:
-        print("Unknown grib version")
+    def generate_grib_id(self):
+        dis = self.discipline
+        pc = self.parameterCategory
+        pn = self.parameterNumber
+        lt = self.levelType
+        lev = self.level
+        tsp = self.typeOfStatisticalProcessing
+        return ":%d:%d:%d:%s:%d:%d:" % (dis, pc, pn, lt, lev, tsp)

@@ -588,7 +588,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
     fh.close()
 
 
-def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
+def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
 
     def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
 
@@ -611,25 +611,29 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
     ny = -1
     i = 0
 
+    t2m_var = None
+    rh2m_var = None
+    sd_var = None
     if t2m is not None:
         t2m_fh = netCDF4.Dataset(t2m["file"], "r")
-        print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
+        if debug:
+            print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
         t2m_var = t2m_fh.variables[t2m["var"]][:]
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, t2m_fh.variables[t2m["var"]].shape[1],
                                                 t2m_fh.variables[t2m["var"]].shape[0])
-        print(t2m_var.shape, nx*ny)
+        if debug:
+            print(t2m_var.shape, nx*ny)
         t2m_var = np.reshape(t2m_var, ny * nx, order="F")
         mask = np.ma.is_masked(t2m_var)
         t2m_var[mask] = 999.
         t2m_var = t2m_var.tolist()
-    else:
-        t2m_var = [999] * (nx * ny)
 
     if rh2m is not None:
         rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
-        print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
+        if debug:
+            print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[1],
@@ -639,12 +643,11 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         mask = np.ma.is_masked(rh2m_var)
         rh2m_var[mask] = 999.
         rh2m_var = rh2m_var.tolist()
-    else:
-        rh2m_var = [999] * (nx * ny)
 
     if sd is not None:
         sd_fh = netCDF4.Dataset(sd["file"], "r")
-        print(sd["var"], sd_fh.variables[sd["var"]].shape)
+        if debug:
+            print(sd["var"], sd_fh.variables[sd["var"]].shape)
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, sd_fh.variables[sd["var"]].shape[1],
@@ -655,11 +658,16 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
         mask = np.ma.is_masked(sd_var)
         sd_var[mask] = 999.
         sd_var = sd_var.tolist()
-    else:
-        sd_var = [999] * (nx * ny)
 
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
+
+    if t2m_var is None:
+        t2m_var = [999] * (nx * ny)
+    if rh2m_var is None:
+        rh2m_var = [999] * (nx * ny)
+    if sd_var is None:
+        sd_var = [999] * (nx * ny)
 
     if output is None:
         out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
@@ -668,6 +676,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None):
 
     for i in range(0, nx*ny):
         out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
-        print("i", i)
+        if debug:
+            print("i", i)
 
     out.close()

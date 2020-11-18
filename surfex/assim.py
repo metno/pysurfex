@@ -7,11 +7,15 @@ except ImportError:
 
 def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
                   vlength=10000., wlength=0.5, elev_gradient=0, structure_function="Barnes",
-                  land_only=False, max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None, interpol="bilinear"):
+                  max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None,
+                  interpol="bilinear", debug=False):
 
     if gridpp is None:
         raise Exception("You need gridpp to perform OI")
 
+    if debug:
+        print(gridpp.__file__)
+        print(gridpp.__version__)
     glats = geo.lats
     glons = geo.lons
 
@@ -26,7 +30,6 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
     glons = np.transpose(glons)
     background = np.transpose(background)
     gelevs = np.transpose(gelevs)
-    glafs = np.transpose(glafs)
 
     bgrid = gridpp.Grid(glats, glons, gelevs)
     points = gridpp.Points(lats, lons, elevs)
@@ -39,9 +42,6 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
     variance_ratios = np.full(points.size(), epsilon)
 
     if structure_function == "Barnes":
-        # No land/sea weight when land_only = True
-        if land_only:
-            wlength = 0.
         structure = gridpp.BarnesStructure(hlength, vlength, wlength)
     else:
         raise NotImplementedError
@@ -53,7 +53,4 @@ def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
         field[field < minvalue] = minvalue
     if maxvalue is not None:
         field[field > maxvalue] = maxvalue
-    if land_only:
-        no_land = np.where(glafs == 0)
-        field[no_land] = background[no_land]
     return np.transpose(field)

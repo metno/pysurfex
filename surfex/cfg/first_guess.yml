@@ -7,6 +7,7 @@ grib2:
   fcint: 3
   file_inc: 1
   offset: 0
+  typeOfStatisticalProcessing: -1
 netcdf:
   fcint: 3
   file_inc: 1
@@ -25,18 +26,18 @@ air_temperature_2m:
     converter:
       none:
         parameter: 11
-        type: sfc
+        type: 105
         level: 2
         tri: 0
       tap:
         tap1:
           par: 11
-          typ: sfc
+          typ: 105
           lev: 832
           tri: 0
         tap2:
           par: 11
-          typ: sfc
+          typ: 105
           lev: 842
           tri: 0
   grib2:
@@ -45,7 +46,7 @@ air_temperature_2m:
         discipline: 0
         parameterCategory: 0
         parameterNumber: 0
-        levelType: sfc
+        levelType: 103
         level: 2
   netcdf:
     converter:
@@ -65,18 +66,18 @@ relative_humidity_2m:
     converter:
       none:
         parameter: 52
-        type: sfc
+        type: 105
         level: 2
         tri: 0
       rhp:
         rhp1:
           par: 52
-          typ: sfc
+          typ: 105
           lev: 832
           tri: 0
         rhp2:
           par: 52
-          typ: sfc
+          typ: 105
           lev: 842
           tri: 0
   grib2:
@@ -85,7 +86,7 @@ relative_humidity_2m:
         discipline: 0
         parameterCategory: 1
         parameterNumber: 192
-        levelType: sfc
+        levelType: 103
         level: 2
   netcdf:
     converter:
@@ -105,34 +106,34 @@ surface_snow_thickness:
     converter:
       none:
         parameter: 66
-        type: sfc
+        type: 105
         level: 0
         tri: 0
       sweclim:
         parameter: 65
-        type: sfc
+        type: 105
         level: 0
         tri: 0
       swe2sd:
         swe:
           parameter: 13
-          type: sfc
+          type: 105
           level: 800
           tri: 0
         rho:
           parameter: 191
-          type: sfc
+          type: 105
           level: 800
           tri: 0
       sdp:
         sdp1:
           par: 66
-          typ: sfc
+          typ: 105
           lev: 832
           tri: 0
         sdp2:
           par: 66
-          typ: sfc
+          typ: 105
           lev: 842
           tri: 0
 
@@ -142,14 +143,14 @@ surface_snow_thickness:
         discipline: 0
         parameterCategory: 1
         parameterNumber: 60
-        levelType: sfc
+        levelType: 103
         level: 0
       sweclim:
         swe:
           discipline: 0
           parameterCategory: 1
           parameterNumber: 60
-          levelType: sfc
+          levelType: 103
           level: 0
   netcdf:
     converter:
@@ -172,13 +173,13 @@ altitude:
     converter:
       none:
         parameter: -1
-        type: sfc
+        type: 105
         level: 0
         tri: 0
       phi2m:
         phi:
           parameter: 6
-          type: sfc
+          type: 105
           level: 0
           tri: 0
   grib2:
@@ -189,7 +190,7 @@ altitude:
           discipline: 0
           parameterCategory: 3
           parameterNumber: 4
-          levelType: sfc
+          levelType: 103
           level: 0
   netcdf:
     converter:
@@ -211,19 +212,24 @@ land_area_fraction:
   grib1:
     converter:
       none:
-        parameter: -1
-        type: sfc
+        parameter: 81
+        type: 105
         level: 0
         tri: 0
       sea2land:
         sea:
-          parameter: 1
-          type: pt
+          parameter: -1
+          type: -1
           level: 0
           tri: 0
   grib2:
     converter:
       none:
+        discipline: 2
+        parameterCategory: 0
+        parameterNumber: 0
+        levelType: 103
+        level: 0
       sea2land:
         sea:
   netcdf:

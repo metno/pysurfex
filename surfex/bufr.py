@@ -18,7 +18,8 @@ except:
 
 
 class BufrObservationSet(surfex.obs.ObservationSet):
-    def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, label=""):
+    def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, debug=False,
+                 label="bufr"):
 
         if lonrange is None:
             lonrange = [-180, 180]
@@ -238,7 +239,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         # close the file
         f.close()
 
-        surfex.obs.ObservationSet.__init__(self, observations, label=label)
+        surfex.obs.ObservationSet.__init__(self, observations, debug=debug, label=label)
 
     @staticmethod
     def td2rh(td, t, kelvin=True):

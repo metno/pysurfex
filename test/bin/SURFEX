@@ -1,0 +1,56 @@
+#!/bin/bash
+
+basename=`basename $0`
+mode=`echo $basename | awk -F '_' '{print $1}'`
+filetype=`echo $basename | awk -F '_' '{print $2}'`
+
+case $filetype in 
+  "NC")
+    suffix=".nc"
+  ;;
+  "FA")
+    suffix=".fa"
+  ;;
+  "ASCII")
+    suffix=".txt"
+  ;;
+  *)
+    echo "Not a valid filetype $filetype"
+    exit 1
+  ;;
+esac
+
+pgd=0
+prep=0
+offline=0
+soda=0
+case $mode in 
+  "PGD")
+    pgd=1
+    outfile="PGD$suffix"
+  ;;
+  "PREP")
+    prep=1
+    outfile="PREP$suffix"
+  ;;
+  "OFFLINE")
+    offline=1
+    outfile="SURFOUT$suffix"
+  ;;
+  "SODA")
+    soda=1
+    outfile="SURFOUT$suffix"
+  ;;
+  *)
+    echo "Not defined $mode"
+    exit 1
+  ;;
+esac
+
+if [ ! -f OPTIONS.nam ]; then
+  echo Namelist is missing""
+  exit 1
+fi
+
+touch $outfile
+exit 0

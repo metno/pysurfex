@@ -120,7 +120,8 @@ setup(
             "coverage",
             "coveralls",
             "pep8",
-            "nose"
+            "nose",
+            "nose-timer"
         ],
         'plot': ['matplotlib'],
         'plot_on_map': ['cartopy'],
@@ -157,7 +158,6 @@ setup(
         'bin/create_forcing',
         'bin/qc2obsmon',
         'bin/create_forcing',
-        'bin/create_surfex_json_namelist',
         'bin/FirstGuess4gridpp',
         'bin/gridpp',
         'bin/json-gui2toml',
@@ -173,7 +173,6 @@ setup(
         'bin/plot_field',
         'bin/plot_timeseries',
         'bin/prep',
-        'bin/set_assimilation_input',
         'bin/set_geo_from_obs_set',
         'bin/set_geo_from_stationlist',
         'bin/set_domain',

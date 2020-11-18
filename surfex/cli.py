@@ -1,12 +1,16 @@
 import sys
 import surfex
 from argparse import ArgumentParser, Action
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import yaml
 import toml
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    plt = None
 
 
 class LoadFromFile(Action):
@@ -146,7 +150,7 @@ def parse_args_create_forcing(argv):
 
     user_config = {}
     if "user_config" in kwargs and kwargs["user_config"] is not None:
-        user_config = yaml.load(open(kwargs["user_config"])) or {}
+        user_config = yaml.safe_load(open(kwargs["user_config"])) or {}
     kwargs.update({"user_config": user_config})
 
     # Read point/domain config
@@ -163,15 +167,9 @@ def parse_args_create_forcing(argv):
     base = os.path.dirname(os.path.abspath(root))
     yaml_config = base + "/cfg/config.yml"
 
-    default_conf = yaml.load(open(yaml_config)) or sys.exit(1)
+    default_conf = yaml.safe_load(open(yaml_config)) or sys.exit(1)
     kwargs.update({"config": default_conf})
     return kwargs
-
-
-def run_create_forcing(**kwargs):
-
-    options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
-    surfex.forcing.run_time_loop(options, var_objs, att_objs)
 
 
 def parse_args_qc2obsmon(argv):
@@ -184,195 +182,26 @@ def parse_args_qc2obsmon(argv):
     parser.add_argument('--fg_file', type=str, help="First guess file", required=True)
     parser.add_argument('--an_file', type=str, help="Analysis file", required=True)
     parser.add_argument('--file_var', type=str, help="File variable", required=True)
-    parser.add_argument('-o', dest="output", type=str, help="output file", default="ecma.db")
-    parser.add_argument('--version', action='version', version=surfex.__version__)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_args_create_surfex_json_namelist(argv):
-
-    """Parse the command line input arguments."""
-    parser = ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
-
-    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--config', '-c', type=str, nargs="?", required=True, help="Input TOML file")
-    parser.add_argument('--path', '-p', type=str, nargs="?", required=True, help="Path to input settings")
-    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--namelist', '-n', required=False, default="options.json", nargs='?', help="")
-    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP")
-    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
-    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
-                        help="Input PGD file for PREP input file")
-    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False,
-                        default=None,
-                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
-    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
-                        help="DTG (YYYYMMDDHH)")
-    parser.add_argument('--forc_zs',  action="store_true", help="Set surfex orography to forcing height")
-    parser.add_argument('program', help="For which program you should create the JSON file",
-                        choices=["pgd", "prep", "offline", "soda"])
+    parser.add_argument('-o', dest="output", type=str, nargs='?', help="output file", default="ecma.db")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
-        sys.exit()
+        sys.exit(1)
 
     args = parser.parse_args(argv)
     kwargs = {}
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
-
-
-def create_surfex_json_namelist(**kwargs):
-
-    program = kwargs["program"]
-    input_path = kwargs["path"]
-    indent = kwargs["indent"]
-    name_of_namelist = kwargs["namelist"]
-    args = {
-        "forc_zs": kwargs["forc_zs"],
-        "prep_file": kwargs["prep_file"],
-        "prep_filetype": kwargs["prep_filetype"],
-        "prep_pgdfile": kwargs["prep_pgdfile"],
-        "prep_pgdfiletype": kwargs["prep_pgdfiletype"]
-    }
-    args.update({"dtg": kwargs["dtg"]})
-    if kwargs["dtg"] is not None:
-        args.update({"dtg": datetime.strptime(kwargs["dtg"], "%Y%m%d%H")})
-
-    settings_file = kwargs["config"]
-    if os.path.exists(settings_file):
-        print("Read toml settings from " + settings_file)
-        settings = surfex.toml_load(settings_file)
-        # print(settings)
-    else:
-        raise FileNotFoundError("Input file does not exist: " + settings_file)
-
-    # kwargs.update({"settings": settings})
-    config = surfex.Configuration(settings, {})
-
-    namelist = surfex.BaseNamelist(program, config, input_path, **args)
-    merged_json_settings = namelist.get_namelist()
-
-    # Namelist settings
-    print("\nNamelist: ")
-    for key in merged_json_settings:
-        print(key, ":", merged_json_settings[key])
-
-    # Dump namelist as json
-    namelist.nml2ascii(merged_json_settings, name_of_namelist, indent=indent)
-
-
-def parse_args_create_surfex_json_input(argv):
-
-    """Parse the command line input arguments."""
-    parser = ArgumentParser("Creating the namelists in JSON format to be able to run SURFEX")
-
-    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
-    parser.add_argument('--config', '-c', type=str, nargs="?", required=True, help="Input TOML file")
-    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
-    parser.add_argument('--system', '-s', required=True, default="system.json", nargs='?', help="")
-    parser.add_argument('--files', '-f', type=str, nargs="?", required=False, default="surfex_input_files.json",
-                        help="Input json file for SURFEX binaries")
-    parser.add_argument('--prep.file',  dest="prep_file", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP")
-    parser.add_argument('--prep.filetype', dest="prep_filetype", type=str, nargs="?", required=False, default=None,
-                        help="Input file for PREP", choices=["GRIB", "FA", "ASCII", "LFI", "NC", "json"])
-    parser.add_argument('--prep.pgdfile', dest="prep_pgdfile", type=str, nargs="?", required=False, default=None,
-                        help="Input PGD file for PREP input file")
-    parser.add_argument('--prep.pgdfiletype', dest="prep_pgdfiletype", type=str, nargs="?", required=False,
-                        default=None,
-                        help="Fileformat for PGD file provided as --prep.pgdfile", choices=["FA", "ASCII", "LFI", "NC"])
-    parser.add_argument('--dtg', dest="dtg", type=str, nargs="?", required=False, default=None,
-                        help="DTG (YYYYMMDDHH)")
-
-    parser.add_argument('program', help="For which program you should create the JSON file",
-                        choices=["pgd", "prep", "offline", "soda"])
-    parser.add_argument('--sfx_first_guess', type=str, nargs="?", required=False, default=None,
-                        help="")
-    parser.add_argument('--ua_first_guess', type=str, nargs="?", required=False, default=None,
-                        help="")
-    parser.add_argument('--perturbed_runs', type=str, nargs="*", required=False, default=None,
-                        help="")
-    parser.add_argument('--lsmfile', type=str, nargs="?", required=False, default=None,
-                        help="")
-    parser.add_argument('--climfile', type=str, nargs="?", required=False, default=None,
-                        help="")
-    parser.add_argument('--ascatfile', type=str, nargs="?", required=False, default=None,
-                        help="")
-    parser.add_argument('--version', action='version', version=surfex.__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def create_surfex_json_input(**kwargs):
-
-    program = kwargs["program"]
-    indent = kwargs["indent"]
-    del(kwargs["indent"])
-    system_settings = kwargs["system"]
-    name_of_input_files = kwargs["files"]
-    dtg = None
-    if kwargs["dtg"] is not None:
-        dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
-    kwargs.update({"dtg": dtg})
-
-    settings_file = kwargs["config"]
-    if os.path.exists(settings_file):
-        print("Read toml settings from " + settings_file)
-        settings = surfex.toml_load(settings_file)
-        # print(settings)
-    else:
-        raise FileNotFoundError("Input file does not exist: " + settings_file)
-
-    kwargs.update({"config": surfex.Configuration(settings, {})})
-    if os.path.exists(system_settings):
-        kwargs.update({"system_file_paths": surfex.SystemFilePathsFromFile(system_settings)})
-    else:
-        raise FileNotFoundError("System settings not found " + system_settings)
-
-    config = kwargs["config"]
-    system_file_paths = kwargs["system_file_paths"]
-    del(kwargs["config"])
-    del(kwargs["system_file_paths"])
-
-    if program == "pgd":
-        input_for_surfex_json = surfex.PgdInputData(config, system_file_paths, **kwargs)
-    elif program == "prep":
-        input_for_surfex_json = surfex.PrepInputData(config, system_file_paths, **kwargs)
-    elif program == "offline":
-        input_for_surfex_json = surfex.OfflineInputData(config, system_file_paths, **kwargs)
-    elif program == "soda":
-        input_for_surfex_json = surfex.SodaInputData(config, system_file_paths, **kwargs)
-    else:
-        raise NotImplementedError
-
-    # Input files for SURFEX binary
-    print("\nInput files: ", input_for_surfex_json.data)
-    json.dump(input_for_surfex_json.data, open(name_of_input_files, "w"), indent=indent)
 
 
 def parse_args_first_guess_for_oi(argv):
     parser = ArgumentParser(description="Create first guess file for gridpp")
     parser.add_argument('-dtg', dest="dtg", type=str, help="Date (YYYYMMDDHH)", required=True)
     parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
-    parser.add_argument('-if', dest="inputformat", type=str, help="output file", default="grib2")
+    parser.add_argument('-if', dest="inputformat", type=str, help="Input file format", default="grib2")
     parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
 
     parser.add_argument('-t2m_file', type=str, default=None, help="File with T2M", nargs="?")
@@ -410,71 +239,96 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('variables', nargs="+", choices=["air_temperature_2m", "relative_humidity_2m",
                                                          "surface_snow_thickness"],
                         help="Variables to create first guess for")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def first_guess_for_oi(args):
+def first_guess_for_oi(**kwargs):
 
-    if not os.path.exists(args.config):
-        raise FileNotFoundError(args.config)
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
 
-    if os.path.exists(args.domain):
-        geo = surfex.geo.get_geo_object(json.load(open(args.domain, "r")))
+    config_file = kwargs["config"]
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(config_file)
+
+    domain = kwargs["domain"]
+    if os.path.exists(domain):
+        geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
     else:
-        raise FileNotFoundError(args.domain)
+        raise FileNotFoundError(domain)
 
-    validtime = datetime.strptime(args.dtg, "%Y%m%d%H")
-    variables = args.variables
+    if "output" in kwargs:
+        output = kwargs["output"]
+    else:
+        raise Exception("No output file provided")
+
+    dtg = kwargs["dtg"]
+    validtime = datetime.strptime(dtg, "%Y%m%d%H")
+    variables = kwargs["variables"]
     variables = variables + ["altitude", "land_area_fraction"]
 
     cache = surfex.cache.Cache(True, 3600)
     fg = None
     for var in variables:
 
-        inputfile = args.inputfile
-        fileformat = args.inputformat
+        inputfile = None
+        if "inputfile" in kwargs:
+            inputfile = kwargs["inputfile"]
+        fileformat = None
+        if "inputformat" in kwargs:
+            fileformat = kwargs["inputformat"]
+        if debug:
+            print(inputfile)
+            print(fileformat)
+
         converter = "none"
         if var == "air_temperature_2m":
-            if args.t2m_file is not None:
-                inputfile = args.t2m_file
-            if args.t2m_format is not None:
-                fileformat = args.t2m_format
-            if args.t2m_converter is not None:
-                converter = args.t2m_converter
+            if "t2m_file" in kwargs and kwargs["t2m_file"] is not None:
+                inputfile = kwargs["t2m_file"]
+            if "t2m_format" in kwargs and kwargs["t2m_format"] is not None:
+                fileformat = kwargs["t2m_format"]
+            if "t2m_converter" in kwargs and kwargs["t2m_converter"] is not None:
+                converter = kwargs["t2m_converter"]
         elif var == "relative_humidity_2m":
-            if args.rh2m_file is not None:
-                inputfile = args.rh2m_file
-            if args.rh2m_format is not None:
-                fileformat = args.rh2m_format
-            if args.rh2m_converter is not None:
-                converter = args.rh2m_converter
+            if "rh2m_file" in kwargs and kwargs["rh2m_file"] is not None:
+                inputfile = kwargs["rh2m_file"]
+            if "rh2m_format" in kwargs and kwargs["rh2m_format"] is not None:
+                fileformat = kwargs["rh2m_format"]
+            if "rh2m_converter" in kwargs and kwargs["rh2m_converter"] is not None:
+                converter = kwargs["rh2m_converter"]
         elif var == "surface_snow_thickness":
-            if args.sd_file is not None:
-                inputfile = args.sd_file
-            if args.sd_format is not None:
-                fileformat = args.sd_format
-            if args.sd_converter is not None:
-                converter = args.sd_converter
+            if "sd_file" in kwargs and kwargs["sd_file"] is not None:
+                inputfile = kwargs["sd_file"]
+            if "sd_format" in kwargs and kwargs["sd_format"] is not None:
+                fileformat = kwargs["sd_format"]
+            if "sd_converter" in kwargs and kwargs["sd_converter"] is not None:
+                converter = kwargs["sd_converter"]
         elif var == "altitude":
-            if args.altitude_file is not None:
-                inputfile = args.altitude_file
-            if args.altitude_format is not None:
-                fileformat = args.altitude_format
-            if args.altitude_converter is not None:
-                converter = args.altitude_converter
+            if "altitude_file" in kwargs and kwargs["altitude_file"] is not None:
+                inputfile = kwargs["altitude_file"]
+            if "altitude_format" in kwargs and kwargs["altitude_format"] is not None:
+                fileformat = kwargs["altitude_format"]
+            if "altitude_converter" in kwargs and kwargs["altitude_converter"] is not None:
+                converter = kwargs["altitude_converter"]
         elif var == "land_area_fraction":
-            if args.laf_file is not None:
-                inputfile = args.laf_file
-            if args.laf_format is not None:
-                fileformat = args.laf_format
-            if args.laf_converter is not None:
-                converter = args.laf_converter
+            if "laf_file" in kwargs and kwargs["laf_file"] is not None:
+                inputfile = kwargs["laf_file"]
+            if "laf_format" in kwargs and kwargs["laf_format"] is not None:
+                fileformat = kwargs["laf_format"]
+            if "laf_converter" in kwargs and kwargs["laf_converter"] is not None:
+                converter = kwargs["laf_converter"]
         else:
             raise NotImplementedError("Variable not implemented " + var)
 
@@ -484,16 +338,18 @@ def first_guess_for_oi(args):
         if fileformat is None:
             raise Exception("You must set file format")
 
-        config = yaml.load(open(args.config, "r"))
+        config = yaml.safe_load(open(config_file, "r"))
         defs = config[fileformat]
         defs.update({"filepattern": inputfile})
 
-        print(var, fileformat)
+        if debug:
+            print(var, fileformat)
         converter_conf = config[var][fileformat]["converter"]
         if converter not in config[var][fileformat]["converter"]:
-            raise Exception("No converter " + converter + " definition found in " + args.config + "!")
+            raise Exception("No converter " + converter + " definition found in " + config + "!")
 
-        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime,
+                                          debug=debug)
         field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
         field = np.reshape(field, [geo.nlons, geo.nlats])
 
@@ -501,7 +357,7 @@ def first_guess_for_oi(args):
         if fg is None:
             nx = geo.nlons
             ny = geo.nlats
-            fg = surfex.create_netcdf_first_guess_template(variables, nx, ny, args.output)
+            fg = surfex.create_netcdf_first_guess_template(variables, nx, ny, output)
             fg.variables["time"][:] = float(validtime.strftime("%s"))
             fg.variables["longitude"][:] = np.transpose(geo.lons)
             fg.variables["latitude"][:] = np.transpose(geo.lats)
@@ -523,6 +379,7 @@ def parse_args_masterodb(argv):
     parser = ArgumentParser(description="SURFEX for MASTERRODB")
 
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
     parser.add_argument('--harmonie', action="store_true", default=False,
                         help="Surfex configuration created from Harmonie environment")
@@ -543,7 +400,6 @@ def parse_args_masterodb(argv):
                         help="JSON file with archive output")
     parser.add_argument('--binary', '-b', required=False, default=None, nargs='?',
                         help="Full path of MASTERODB binary")
-    parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
         parser.print_help()
@@ -558,7 +414,12 @@ def parse_args_masterodb(argv):
 
 def run_masterodb(**kwargs):
 
-    print("ARGS: ", kwargs)
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    if debug:
+        print("ARGS: ", kwargs)
 
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
@@ -713,6 +574,7 @@ def parse_args_surfex_binary(argv, mode):
 
     parser = ArgumentParser(description=desc)
     parser.add_argument('--version', action='version', version=surfex.__version__)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
     if need_pgd:
         parser.add_argument('--pgd', type=str, nargs="?", required=True, help="Name of the PGD file")
@@ -757,7 +619,12 @@ def parse_args_surfex_binary(argv, mode):
 
 def run_surfex_binary(mode, **kwargs):
 
-    print("ARGS: ", kwargs)
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    if debug:
+        print("ARGS: ", kwargs)
 
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
@@ -927,50 +794,79 @@ def parse_args_gridpp(argv):
     parser.add_argument('-hor', dest='hlength', type=float, required=True)
     parser.add_argument('-vert', dest='vlength', type=float, default=100000, required=False)
     parser.add_argument('--wlength', dest='wlength', type=float, default=0., required=False)
-    parser.add_argument('--landOnly', dest='land_only', action="store_true", default=False)
     parser.add_argument('--maxLocations', dest='max_locations', type=int, default=20, required=False)
-    parser.add_argument('--elevGradient', dest='elev_gradient', type=float, default=-0.0065, required=False,
+    parser.add_argument('--elevGradient', dest='elev_gradient', type=float, default=0, required=False,
                         choices=[0, -0.0065])
-    parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.5, required=False)
+    parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.25, required=False)
     parser.add_argument('--minvalue', dest='minvalue', type=float, default=None, required=False)
     parser.add_argument('--maxvalue', dest='maxvalue', type=float, default=None, required=False)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
-    if len(sys.argv) == 0:
+    if len(argv) == 0:
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def run_gridpp(args):
+def run_gridpp(**kwargs):
 
-    var = args.var
-    input_file = args.input_file
-    output_file = args.output_file
-    hlength = args.hlength
-    vlength = args.vlength
-    wlength = args.wlength
-    land_only = args.land_only
-    max_locations = args.max_locations
-    elev_gradient = args.elev_gradient
-    epsilon = args.epsilon
-    minvalue = args.minvalue
-    maxvalue = args.maxvalue
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    var = kwargs["var"]
+    input_file = kwargs["input_file"]
+    output_file = None
+    if "output_file" in kwargs:
+        output_file = kwargs["output_file"]
+    hlength = kwargs["hlength"]
+    vlength = 100000
+    if "vlength" in kwargs:
+        vlength = kwargs["vlength"]
+    wlength = 0
+    if "wlength" in kwargs:
+        wlength = kwargs["wlength"]
+    max_locations = 20
+    if "max_locations" in kwargs:
+        max_locations = kwargs["max_locations"]
+    elev_gradient = 0
+    if "elev_gradient" in kwargs:
+        elev_gradient = kwargs["elev_gradient"]
+    if elev_gradient != -0.0065 and elev_gradient != 0:
+        raise Exception("Not a valid elevation gradient")
+    epsilon = 0.25
+    if "epsilon" in kwargs:
+        epsilon = kwargs["epsilon"]
+    minvalue = None
+    if "minvalue" in kwargs:
+        minvalue = kwargs["minvalue"]
+    maxvalue = None
+    if "maxvalue" in kwargs:
+        maxvalue = kwargs["maxvalue"]
+    obs_file = kwargs["obs_file"]
 
     # Get input fields
     geo, validtime, background, glafs, gelevs = surfex.read_first_guess_netcdf_file(input_file, var)
 
     an_time = validtime
     # Read OK observations
-    observations = surfex.dataset_from_file(an_time, args.obs_file,  qc_flag=0)
+    observations = surfex.dataset_from_file(an_time, obs_file,  qc_flag=0)
+    print("Found " + str(len(observations.lons)) + " observations with QC flag == 0")
 
     field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs, hlength=hlength,
                                  vlength=vlength, wlength=wlength, structure_function="Barnes",
-                                 land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
-                                 epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue,  interpol="bilinear")
+                                 max_locations=max_locations, elev_gradient=elev_gradient,
+                                 epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue,  interpol="bilinear",
+                                 debug=debug)
 
-    surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
+    if output_file is not None:
+        surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
 
 
 def parse_args_titan(argv):
@@ -985,8 +881,10 @@ def parse_args_titan(argv):
     parser.add_argument('--harmonie', action="store_true", default=False,
                         help="Surfex configuration created from Harmonie environment")
     parser.add_argument('tests', nargs='+', type=str, help="Which tests to run and order to run")
-    parser.add_argument('--blacklist', type=str, required=False, default=None, help="JSON file with blacklist")
+    parser.add_argument('--blacklist', dest="blacklist_file", type=str, required=False, default=None,
+                        help="JSON file with blacklist")
     parser.add_argument('--domain', type=str, required=False, default=None, help="JSON file with domain")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
@@ -1002,6 +900,10 @@ def parse_args_titan(argv):
 
 def run_titan(**kwargs):
 
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
     domain_geo = None
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
@@ -1015,8 +917,7 @@ def run_titan(**kwargs):
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
         domain_geo = config.get_setting("GEOMETRY#GEO")
     elif "domain" in kwargs:
-        if kwargs["domain"] is not None:
-            domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+        domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
         del(kwargs["domain"])
 
     # Set domain geo if set
@@ -1024,19 +925,31 @@ def run_titan(**kwargs):
 
     blacklist = None
     if "blacklist" in kwargs:
-        if kwargs["blacklist"] is not None:
-            blacklist = json.load(open(kwargs["blacklist"], "r"))
+        blacklist = kwargs["blacklist"]
+    elif "blacklist_file" in kwargs:
+        if kwargs["blacklist_file"] is not None:
+            blacklist = json.load(open(kwargs["blacklist_file"], "r"))
     kwargs.update({"blacklist": blacklist})
 
-    input_file = kwargs["input_file"]
-    if os.path.exists(input_file):
-        settings = json.load(open(input_file, "r"))
+    if "input_file" in kwargs:
+        input_file = kwargs["input_file"]
+        if os.path.exists(input_file):
+            settings = json.load(open(input_file, "r"))
+        else:
+            raise FileNotFoundError("Could not find input file " + input_file)
     else:
-        raise FileNotFoundError("Could not find input file " + input_file)
-    tests = kwargs["tests"]
+        if "input_data" in kwargs:
+            settings = kwargs["input_data"]
+        else:
+            raise Exception("You must specify input_file or input_data")
 
-    output_file = kwargs["output_file"]
-    indent = kwargs["indent"]
+    tests = kwargs["tests"]
+    output_file = None
+    if "output_file" in kwargs:
+        output_file = kwargs["output_file"]
+    indent = None
+    if "indent" in kwargs:
+        indent = kwargs["indent"]
 
     an_time = kwargs["dtg"]
     if isinstance(an_time, str):
@@ -1044,14 +957,15 @@ def run_titan(**kwargs):
     kwargs.update({"an_time": an_time})
     var = kwargs["variable"]
 
-    tests = surfex.titan.define_quality_control(tests, settings[var], an_time, domain_geo=domain_geo,
-                                                blacklist=blacklist)
-    # print(settings)
-    datasources = surfex.obs.get_datasources(an_time, settings[var]["sets"])
-    data_set = surfex.TitanDataSet(var, settings[var], tests, datasources, an_time, debug=True)
+    tests = surfex.define_quality_control(tests, settings[var], an_time, domain_geo=domain_geo, blacklist=blacklist,
+                                          debug=debug)
+    print(settings)
+    datasources = surfex.get_datasources(an_time, settings[var]["sets"])
+    data_set = surfex.TitanDataSet(var, settings[var], tests, datasources, an_time, debug=debug)
     data_set.perform_tests()
 
-    data_set.write_output(output_file, indent=indent)
+    if output_file is not None:
+        data_set.write_output(output_file, indent=indent)
 
 
 def parse_args_oi2soda(argv):
@@ -1067,34 +981,43 @@ def parse_args_oi2soda(argv):
                         default="surface_snow_thickness")
     parser.add_argument('dtg', nargs="?", type=str, help="DTG", default=None)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 3:
         parser.print_help()
         sys.exit(1)
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
 
 
-def run_oi2soda(args):
+def run_oi2soda(**kwargs):
 
-    t2m_file = args.t2m_file
-    rh2m_file = args.rh2m_file
-    sd_file = args.sd_file
-    output = args.output
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    t2m_file = kwargs["t2m_file"]
+    rh2m_file = kwargs["rh2m_file"]
+    sd_file = kwargs["sd_file"]
+    output = kwargs["output"]
 
     t2m = None
     if t2m_file is not None:
-        t2m = {"file": t2m_file, "var": args.t2m_var}
+        t2m = {"file": t2m_file, "var": kwargs["t2m_var"]}
     rh2m = None
     if rh2m_file is not None:
-        rh2m = {"file": rh2m_file, "var": args.rh2m_var}
+        rh2m = {"file": rh2m_file, "var": kwargs["rh2m_var"]}
     sd = None
     if sd_file is not None:
-        sd = {"file": sd_file, "var": args.sd_var}
+        sd = {"file": sd_file, "var": kwargs["sd_var"]}
 
-    dtg = datetime.strptime(args.dtg, "%Y%m%d%H")
-    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output)
+    dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output, debug=debug)
 
 
 def parse_lsm_file_assim(argv):
@@ -1107,6 +1030,7 @@ def parse_lsm_file_assim(argv):
     parser.add_argument('--dtg', type=str, help="DTG", default=None, required=False)
     parser.add_argument('--domain', type=str, help="Domain", required=True)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) < 3:
@@ -1132,6 +1056,10 @@ def parse_lsm_file_assim(argv):
 
 
 def lsm_file_assim(**kwargs):
+
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
 
     validtime = kwargs["dtg"]
     cache = surfex.cache.Cache(True, 3600)
@@ -1160,7 +1088,7 @@ def lsm_file_assim(**kwargs):
     }
 
     var = "LSM"
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime, debug=debug)
     field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [geo.nlons, geo.nlats])
     field = np.transpose(field)
@@ -1173,28 +1101,536 @@ def lsm_file_assim(**kwargs):
     fh.close()
 
 
+def parse_args_hm2pysurfex(argv):
+    parser = ArgumentParser("hm2pysurfex")
+    parser.add_argument("-c", dest="config", type=str, required=True, help="PySurfex config file")
+    parser.add_argument("-e", dest="environment", type=str, required=False, default=None,
+                        help="Environment if not taken from running environment")
+    parser.add_argument("-o", dest="output", type=str, required=False, default=None, help="Output toml file")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
 def hm2pysurfex(**kwargs):
-    # surfex.Configuration
 
-    wd = "/home/trygveasp/sfx_home/new_ana/"
-    config = surfex.toml_load(wd + "/config/config.toml")
-    print(config)
-    config_files = {}
-    for f in config["config_files"]:
-        # EPS settings already in environment in HM
-        if f != "config_exp_eps.toml":
-            toml_dict = surfex.toml_load(wd + "/config/" + f)
-            config_files.update({f: {"toml": toml_dict, "blocks": config[f]["blocks"]}})
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
 
-    all_merged_settings = surfex.merge_toml_env_from_config_dicts(config_files)
-    # merged_config, member_merged_config = surfex.process_merged_settings(all_merged_settings)
+    pysurfex_config = kwargs["config"]
+    if os.path.exists(pysurfex_config):
+        pysurfex_config = toml.load(open(pysurfex_config, "r"))
+    else:
+        raise FileNotFoundError("Could not find " + pysurfex_config)
 
-    system_file_paths = json.load(open(wd + "/Env_input_paths", "r"))
+    output = None
+    if "output" in kwargs:
+        output = kwargs["output"]
+
+    environment = os.environ
+    if "environment" in kwargs:
+        environment_file = kwargs["environment"]
+        environment.update(json.load(open(environment_file, "r")))
+
     # Create configuration
-    config = surfex.ConfigurationFromHarmonie(os.environ, all_merged_settings)
+    config = surfex.ConfigurationFromHarmonie(environment, pysurfex_config, debug=debug)
 
-    namelist = surfex.BaseNamelist("pgd", config, wd + "/nam").get_namelist()
-    # namelist, eco, inp = surfex.set_json_namelist_from_toml_env("pgd", config, wd + "/nam", system_file_paths)
-    print(namelist)
-    inp = surfex.PgdInputData(config=config, system_file_paths=system_file_paths)
-    print(inp.data)
+    if output is None:
+        print(config.settings)
+    else:
+        toml.dump(config.settings, open(output, "w"))
+
+
+def parse_args_bufr2json(argv):
+    parser = ArgumentParser("bufr2json")
+    parser.add_argument("-b", dest="bufr", type=str, required=True, help="Bufr file")
+    parser.add_argument("-v", dest="vars", nargs="+", type=str, required=True, help="Variables")
+    parser.add_argument("-o", dest="output", type=str, required=True, help="Output JSON file")
+    parser.add_argument("-dtg", dest="dtg", type=str, required=True, help="DTG (YYYYMMDHH)")
+    parser.add_argument("--indent", dest="indent", type=int, required=False, default=None, help="Indent")
+    parser.add_argument("-range", dest="valid_range", type=str, help="Valid range in seconds", default=3600)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_bufr2json(**kwargs):
+
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    variables = kwargs["vars"]
+    bufrfile = kwargs["bufr"]
+    output = kwargs["output"]
+    valid_dtg = kwargs["dtg"]
+    valid_range = kwargs["valid_range"]
+    indent = None
+    if "indent" in kwargs:
+        indent = kwargs["indent"]
+    lonrange = None
+    if "lonrange" in kwargs:
+        lonrange = kwargs["lonrange"]
+    latrange = None
+    if "latrange" in kwargs:
+        latrange = kwargs["latrange"]
+
+    valid_dtg = datetime.strptime(valid_dtg, "%Y%m%d%H")
+    valid_range = timedelta(seconds=int(valid_range))
+    bufr_set = surfex.BufrObservationSet(bufrfile, variables, valid_dtg, valid_range, lonrange=lonrange,
+                                         latrange=latrange, label="bufr", debug=debug)
+
+    bufr_set.write_json_file(output, indent=indent)
+
+
+def parse_args_plot_field(argv):
+    parser = ArgumentParser("Plot field")
+    parser.add_argument('-g', '--geo', dest="geo", type=str, help="Domain/points json geometry definition file",
+                        default=None, required=False)
+    parser.add_argument('-v', '--variable', dest="variable", type=str, help="Variable name", required=False)
+    parser.add_argument('-i', '--inputfile', dest="inputfile", type=str, help="Input file", default=None,
+                        required=False)
+    parser.add_argument('-it', '--inputtype', dest="inputtype", type=str, help="Filetype", default="surfex",
+                        required=False, choices=["netcdf", "grib1", "grib2", "surfex", "obs"])
+    parser.add_argument('-t', '--validtime', dest="validtime", type=str, help="Valid time", default=None,
+                        required=False)
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output file", default=None,
+                        required=False)
+
+    grib = parser.add_argument_group('grib', 'Grib1/2 settings (-it grib1 or -it grib2)')
+    grib.add_argument('--indicatorOfParameter', type=int, help="Indicator of parameter [grib1]", default=None)
+    grib.add_argument('--timeRangeIndicator', type=int, help="Time range indicator [grib1]", default=0)
+    grib.add_argument('--levelType', type=str, help="Level type [grib1/grib2]", default="sfc")
+    grib.add_argument('--level', type=int, help="Level [grib1/grib2]", default=0)
+    grib.add_argument('--discipline', type=int, help="Discipline [grib2]", default=None)
+    grib.add_argument('--parameterCategory', type=int, help="Parameter category [grib2]", default=None)
+    grib.add_argument('--parameterNumber', type=int, help="ParameterNumber [grib2]", default=None)
+    grib.add_argument('--typeOfStatisticalProcessing', type=int, help="TypeOfStatisticalProcessing [grib2]",
+                      default=-1)
+
+    sfx = parser.add_argument_group('Surfex', 'Surfex settings (-it surfex)')
+    sfx.add_argument('--sfx_type', type=str,  help="Surfex file type", default=None,
+                     choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"])
+
+    sfx.add_argument('--sfx_patches', type=int, help="Patches [ascii/texte]", default=-1)
+    sfx.add_argument('--sfx_layers', type=int, help="Layers [ascii/texte]", default=-1)
+    sfx.add_argument('--sfx_datatype', type=str, help="Datatype [ascii]", choices=["string", "float", "integer"],
+                     default="float")
+    sfx.add_argument('--sfx_interval', type=str, help="Interval [texte]", default=None)
+    sfx.add_argument('--sfx_basetime', type=str, help="Basetime [texte]", default=None)
+    sfx.add_argument('--sfx_geo_input', type=str, default=None,
+                     help="JSON file with domain defintion [forcing/netcdf/texte]")
+
+    obs = parser.add_argument_group('Observations', 'Observation settings (scatter plot)')
+    obs.add_argument('--obs_type', type=str, help="Observation source type (-it obs)",
+                     choices=[None, "json", "bufr", "frost", "netatmo"], default=None)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_plot_field(**kwargs):
+
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    geo_file = None
+    if "geo" in kwargs:
+        geo_file = kwargs["geo"]
+    validtime = None
+    if kwargs["validtime"] is not None:
+        validtime = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
+    variable = None
+    if "variable" in kwargs:
+        variable = kwargs["variable"]
+    filepattern = None
+    if "inputfile" in kwargs:
+        filepattern = kwargs["inputfile"]
+    inputtype = kwargs["inputtype"]
+    output = kwargs["output"]
+
+    geo = None
+    if geo_file is not None:
+        domain_json = json.load(open(geo_file, "r"))
+        geo = surfex.geo.get_geo_object(domain_json)
+
+    contour = True
+    var = "field_to_read"
+    if inputtype == "grib1":
+
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        par = kwargs["indicatorOfParameter"]
+        lt = kwargs["levelType"]
+        lev = kwargs["level"]
+        tri = kwargs["timeRangeIndicator"]
+
+        gribvar = surfex.Grib1Variable(par, lt, lev, tri)
+        title = "grib1:" + gribvar.generate_grib_id() + " " + validtime.strftime("%Y%m%d%H")
+        var_dict = {
+            "filepattern": filepattern,
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0,
+            "parameter": par,
+            "type": lt,
+            "level": lev,
+            "tri": tri
+        }
+
+    elif inputtype == "grib2":
+
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        discipline = kwargs["discipline"]
+        parameter_category = kwargs["parameterCategory"]
+        parameter_number = kwargs["parameterNumber"]
+        level_type = kwargs["levelType"]
+        level = kwargs["level"]
+        type_of_statistical_processing = kwargs["typeOfStatisticalProcessing"]
+
+        gribvar = surfex.grib.Grib2Variable(discipline, parameter_category, parameter_number, level_type, level,
+                                            tsp=type_of_statistical_processing, debug=debug)
+        print(inputtype)
+        print(gribvar)
+        print(validtime)
+        title = inputtype + ": " + gribvar.generate_grib_id() + " " + validtime.strftime("%Y%m%d%H")
+
+        var_dict = {
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0,
+            "filepattern": filepattern,
+            "discipline": discipline,
+            "parameterCategory": parameter_category,
+            "parameterNumber": parameter_number,
+            "levelType": level_type,
+            "level": level,
+            "typeOfStatisticalProcessing": type_of_statistical_processing
+        }
+
+    elif inputtype == "netcdf":
+
+        if variable is None:
+            raise Exception("You must provide a variable")
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        title = "netcdf: "+variable + " " + validtime.strftime("%Y%m%d%H")
+        var_dict = {
+            "name": variable,
+            "filepattern": filepattern,
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+
+    elif inputtype == "surfex":
+
+        if variable is None:
+            raise Exception("You must provide a variable")
+        if filepattern is None:
+            raise Exception("You must provide a filepattern")
+
+        basetime = kwargs["sfx_basetime"]
+        patches = kwargs["sfx_patches"]
+        layers = kwargs["sfx_layers"]
+        datatype = kwargs["sfx_datatype"]
+        interval = kwargs["sfx_interval"]
+        geo_sfx_input = kwargs["sfx_geo_input"]
+
+        sfx_var = surfex.SurfexFileVariable(variable, validtime=validtime, patches=patches, layers=layers,
+                                            basetime=basetime, interval=interval, datatype=datatype)
+
+        title = inputtype + ": " + sfx_var.print_var()
+        var_dict = {
+            "varname": variable,
+            "filepattern": filepattern,
+            "patches": patches,
+            "layers": layers,
+            "datatype": datatype,
+            "interval": interval,
+            "basetime": basetime,
+            "geo_input": geo_sfx_input,
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+
+    elif inputtype == "obs":
+
+        contour = False
+        if variable is None:
+            raise Exception("You must provide a variable")
+
+        obs_input_type = kwargs["obs_type"]
+        if obs_input_type is None:
+            raise Exception("You must provide an obs type")
+
+        if geo is None:
+            geo = surfex.set_geo_from_obs_set(**kwargs)
+
+        var_dict = {
+            "filetype": obs_input_type,
+            "varname": variable,
+            "filepattern": filepattern,
+            "filenames": [filepattern],
+            "fcint": 10800,
+            "file_inc": 10800,
+            "offset": 0
+        }
+        title = inputtype + ": var=" + variable + " type=" + obs_input_type
+
+    else:
+        raise NotImplementedError
+
+    defs = {
+        var: {
+            inputtype: {
+                "converter": {
+                    "none": var_dict
+                }
+            }
+
+        }
+    }
+    converter_conf = defs[var][inputtype]["converter"]
+
+    if geo is None:
+        raise Exception("No geo is set")
+
+    cache = None
+    converter = "none"
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, validtime, debug=debug)
+    field = surfex.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    # field = np.reshape(field, [geo.nlons, geo.nlats])
+
+    if field is None:
+        raise Exception("No field read")
+
+    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+        if contour:
+            field = np.reshape(field, [geo.nlons, geo.nlats])
+    else:
+        contour = False
+
+    if plt is None:
+        raise Exception("Matplotlib is needed to plot")
+    if contour:
+        plt.contourf(geo.lons, geo.lats, field)
+    else:
+        plt.scatter(geo.lonlist, geo.latlist, c=field)
+
+    plt.title(title)
+    plt.colorbar()
+    if output is None:
+        plt.show()
+    else:
+        print("Saving figure in " + output)
+        plt.savefig(output)
+
+
+def parse_plot_timeseries_args(argv):
+    parser = ArgumentParser("Plot timeseries from JSON time series file")
+    parser.add_argument('filename', type=str, default=None, help="JSON time series file")
+    parser.add_argument('-lon', type=float, default=None, help="Longitude", required=False)
+    parser.add_argument('-lat', type=float, default=None, help="Latitude", required=False)
+    parser.add_argument('-stid', type=str, default=None, help="Station id", required=False)
+    parser.add_argument('-stationlist', type=str, default=None, help="Station list", required=False)
+    parser.add_argument('-start', type=str, default=None, help="Start time (YYYYMMDDHH)", required=False)
+    parser.add_argument('-end', type=str, default=None, help="End time (YYYYMMDDHH)", required=False)
+    parser.add_argument('-interval', type=int, default=None, help="Interval", required=False)
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Input format", default=None,
+                        required=False)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) < 3:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_plot_timeseries_from_json(**kwargs):
+
+
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    lon = kwargs["lon"]
+    lat = kwargs["lat"]
+    stid = kwargs["stid"]
+    stationlist = kwargs["stationlist"]
+    starttime = kwargs["start"]
+    if starttime is not None:
+        starttime = datetime.strptime(kwargs["start"], "%Y%m%d%H")
+    endtime = kwargs["end"]
+    if endtime is not None:
+        endtime = datetime.strptime(kwargs["end"], "%Y%m%d%H")
+    interval = kwargs["interval"]
+    filename = kwargs["filename"]
+    output = kwargs["output"]
+
+    if lon is None and lat is None:
+        if stid is None:
+            raise Exception("You must provide lon and lat or stid")
+        if stationlist is None:
+            raise Exception("You must provide a stationlist with the stid")
+        lons, lats = surfex.Observation.get_pos_from_stid(stationlist, [stid])
+        lon = lons[0]
+        lat = lats[0]
+
+    ts = surfex.TimeSeriesFromJson(filename, lons=[lon], lats=[lat], starttime=starttime, endtime=endtime,
+                                   interval=interval)
+
+    nt = len(ts.times)
+    vals = np.zeros(nt)
+    for i in range(0, nt):
+        vals[i] = ts.values[i][0]
+
+    ts_stid = str(ts.stids[0])
+    if ts_stid == "NA" and stid is not None:
+        ts_stid = stid
+
+    if plt is None:
+        raise Exception("Matplotlib is needed to plot")
+
+    plt.title("var= " + ts.varname + " lon: " + str(lon) + " lat: " + str(lat) + " stid: " + ts_stid)
+    plt.plot(ts.times, vals)
+    if output is None:
+        plt.show()
+    else:
+        plt.savefig(output)
+
+
+def parse_args_set_geo_from_obs_set(argv):
+    parser = ArgumentParser()
+    parser.add_argument("-v", type=str, dest="variable", help="Variable name", required=True)
+    parser.add_argument("-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True)
+    parser.add_argument("-i", type=str, dest="inputfile", help="Input file", required=False)
+    parser.add_argument("-it", type=str, dest="obs_type", help="Input type", required=True,
+                        choices=["netatmo", "frost", "bufr", "json"])
+    parser.add_argument("--lonrange", type=str,  dest="lonrange", help="Longitude range", default=None, required=False)
+    parser.add_argument("--latrange", type=str, dest="latrange", help="Latitude range", default=None, required=False)
+    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def parse_args_set_geo_from_stationlist(argv):
+    parser = ArgumentParser()
+    parser.add_argument('stationlist', type=str, help="Station list")
+    parser.add_argument("--lonrange", type=str,  dest="lonrange", help="Longitude range", default=None, required=False)
+    parser.add_argument("--latrange", type=str, dest="latrange", help="Latitude range", default=None, required=False)
+    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def set_geo_from_stationlist(**kwargs):
+
+
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+
+    stationlist = kwargs["stationlist"]
+    lonrange = None
+    if "lonrange" in kwargs:
+        lonrange = kwargs["lonrange"]
+    latrange = None
+    if "latrange" in kwargs:
+        latrange = kwargs["latrange"]
+    if lonrange is None:
+        lonrange = [-180, 180]
+    if latrange is None:
+        latrange = [-90, 90]
+
+    lons = []
+    lats = []
+    if os.path.exists(stationlist):
+        stids = json.load(open(stationlist, "r"))
+    else:
+        raise FileNotFoundError("Station list does not exist!")
+
+    for stid in stids:
+        lon, lat = surfex.Observation.get_pos_from_stid(stationlist, [stid])
+        lon = lon[0]
+        lat = lat[0]
+        if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
+            lon = round(lon, 5)
+            lat = round(lat, 5)
+            # print(i, lon, lat)
+            lons.append(lon)
+            lats.append(lat)
+
+    dx = ["0.3"] * len(lons)
+    geo_json = {
+        "nam_pgd_grid": {
+            "cgrid": "LONLATVAL"
+        },
+        "nam_lonlatval": {
+            "xx": lons,
+            "xy": lats,
+            "xdx": dx,
+            "xdy": dx
+        }
+    }
+    return surfex.LonLatVal(geo_json)
