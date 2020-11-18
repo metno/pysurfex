@@ -47,6 +47,7 @@ jobs:
 
   documentation:
     needs: build
+    steps:
     - name: Coveralls
       run: |
         CLIENTID=${{ secrets.CLIENTID }} ./create_coverage.sh
