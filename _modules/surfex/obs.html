@@ -43,6 +43,10 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">glob</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">cfunits</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">cfunits</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="Observation"><a class="viewcode-back" href="../../index.html#surfex.Observation">[docs]</a><span class="k">class</span> <span class="nc">Observation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -132,6 +136,16 @@
     <span class="n">nmissing</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">datasources</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">obs_set</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]})</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">obs_set</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;debug&quot;</span><span class="p">]})</span>
+
         <span class="n">tolerate_nmissing</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="s2">&quot;tolerate_missing&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
             <span class="n">tolerate_nmissing</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;tolerate_nmissing&quot;</span><span class="p">]</span>
@@ -150,18 +164,20 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set variable name&quot;</span><span class="p">)</span>
 
-                <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
-                    <span class="n">lonrange</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]</span>
-                <span class="n">latrange</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;lonrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]})</span>
                 <span class="k">if</span> <span class="s2">&quot;latrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
-                    <span class="n">latrange</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;latrange&quot;</span><span class="p">]</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;latrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;latrange&quot;</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="s2">&quot;dt&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;dt&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="mi">1800</span>
 
-                <span class="n">valid_range</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;kwargs&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">valid_range</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
                     <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">bufr</span><span class="o">.</span><span class="n">BufrObservationSet</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="p">[</span><span class="n">varname</span><span class="p">],</span> <span class="n">obs_time</span><span class="p">,</span>
-                                                                      <span class="n">valid_range</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="n">lonrange</span><span class="p">,</span>
-                                                                      <span class="n">latrange</span><span class="o">=</span><span class="n">latrange</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">obs_set</span><span class="p">))</span>
+                                                                      <span class="n">valid_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: filename &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; not set. Not added.&quot;</span><span class="p">)</span>
 
@@ -180,12 +196,13 @@
                             <span class="n">pos_t_range</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;pos_t_range&quot;</span><span class="p">]</span>
 
                         <span class="n">dtg</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">neg_t_range</span><span class="p">))</span>
-                        <span class="n">end_dtg</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">pos_t_range</span><span class="p">))</span>
+                        <span class="n">end_dtg</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">pos_t_range</span><span class="p">))</span>
 
                         <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
                         <span class="k">while</span> <span class="n">dtg</span> <span class="o">&lt;</span> <span class="n">end_dtg</span><span class="p">:</span>
                             <span class="n">fname</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parse_filepattern</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">dtg</span><span class="p">)</span>
                             <span class="n">fname</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+                            <span class="c1"># print(fname)</span>
                             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                                 <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="ow">and</span> <span class="n">fname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
@@ -198,17 +215,17 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set varname to read NETATMO JSON files&quot;</span><span class="p">)</span>
 
-                <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
-                    <span class="n">lonrange</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]</span>
-                <span class="n">latrange</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;lonrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]})</span>
                 <span class="k">if</span> <span class="s2">&quot;latrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
-                    <span class="n">latrange</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;latrange&quot;</span><span class="p">]</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;latrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;latrange&quot;</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="s2">&quot;dt&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;dt&quot;</span><span class="p">]})</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="mi">1800</span><span class="p">})</span>
 
                 <span class="k">if</span> <span class="n">filenames</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NetatmoObservationSet</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">obs_time</span><span class="p">,</span>
-                                                             <span class="n">dt</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">obs_set</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="n">lonrange</span><span class="p">,</span>
-                                                             <span class="n">latrange</span><span class="o">=</span><span class="n">latrange</span><span class="p">))</span>
+                    <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NetatmoObservationSet</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">obs_time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: filenames not set. Not added.&quot;</span><span class="p">)</span>
 
@@ -217,15 +234,26 @@
                     <span class="n">varname</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set variable name&quot;</span><span class="p">)</span>
-                <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MetFrostObservations</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">obs_time</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;lonrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="s2">&quot;latrange&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;latrange&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;latrange&quot;</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="s2">&quot;unit&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;unit&quot;</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;level&quot;</span><span class="p">]})</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;validtime&quot;</span><span class="p">:</span> <span class="n">obs_time</span><span class="p">})</span>
+                <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MetFrostObservations</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
                 <span class="n">filename</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parse_filepattern</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">obs_time</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
                 <span class="n">varname</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="s2">&quot;varname&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
                     <span class="n">varname</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
 
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="n">varname</span><span class="p">})</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-                    <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">JsonObservationSet</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">obs_set</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">varname</span><span class="p">))</span>
+                    <span class="n">datasources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">JsonObservationSet</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: filename &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; not existing. Not added.&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -236,12 +264,13 @@
 
 
 <div class="viewcode-block" id="ObservationSet"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet">[docs]</a><span class="k">class</span> <span class="nc">ObservationSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observations</span> <span class="o">=</span> <span class="n">observations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
 
     <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
         <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">)</span>
@@ -261,7 +290,8 @@
 
     <span class="k">def</span> <span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">obs2vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">Observation</span><span class="o">.</span><span class="n">obs2vectors</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Obs dim&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Obs dim&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">times</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">varnames</span> <span class="o">=</span> <span class="n">obs2vectors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span>
 
@@ -349,8 +379,9 @@
 
 <div class="viewcode-block" id="NetatmoObservationSet"><a class="viewcode-back" href="../../index.html#surfex.NetatmoObservationSet">[docs]</a><span class="k">class</span> <span class="nc">NetatmoObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">target_time</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">re</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+                 <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;netatmo&quot;</span><span class="p">):</span>
 
+        <span class="c1"># print(filenames, variable, target_time)</span>
         <span class="k">if</span> <span class="n">lonrange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">lonrange</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -468,7 +499,7 @@
                     <span class="n">curr_time</span> <span class="o">=</span> <span class="n">curr_times</span><span class="p">[</span><span class="n">ibest</span><span class="p">]</span>
                     <span class="n">elev</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="n">my_id</span><span class="p">][</span><span class="s2">&quot;elev&quot;</span><span class="p">]</span>
                     <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">curr_time</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="n">my_id</span><span class="p">][</span><span class="s2">&quot;lon&quot;</span><span class="p">],</span> <span class="n">metadata</span><span class="p">[</span><span class="n">my_id</span><span class="p">][</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span>
-                                                    <span class="n">data</span><span class="p">[</span><span class="n">my_id</span><span class="p">][</span><span class="n">ibest</span><span class="p">],</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">))</span>
+                                                    <span class="n">data</span><span class="p">[</span><span class="n">my_id</span><span class="p">][</span><span class="n">ibest</span><span class="p">],</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">variable</span><span class="p">))</span>
                     <span class="n">num_valid_stations</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">num_valid_stations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -485,59 +516,14 @@
                 <span class="n">extra</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   </span><span class="si">%d</span><span class="s2"> missing elev</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_missing_elev</span><span class="p">,</span> <span class="n">extra</span><span class="p">))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="MetKlappObservations"><a class="viewcode-back" href="../../index.html#surfex.MetKlappObservations">[docs]</a><span class="k">class</span> <span class="nc">MetKlappObservations</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">h</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nob</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">nod</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
-                 <span class="n">elev</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
-        <span class="n">url</span> <span class="o">=</span> \
-            <span class="s2">&quot;http://klapp/metnopub/production/metno?re=17&amp;ddel=dot&amp;del=semicolon&amp;ct=text/plain&amp;nod=NOD&amp;nob=NOB&quot;</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;s=&quot;</span> <span class="o">+</span> <span class="n">station</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;p=&quot;</span> <span class="o">+</span> <span class="n">varname</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;fd=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">.%m.%Y&#39;</span><span class="p">))</span>
-        <span class="c1"># url = url + &quot;&amp;h=6&quot;</span>
-        <span class="k">if</span> <span class="n">h</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;h=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">h</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;td=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">.%m.%Y&#39;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">utc</span><span class="p">:</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;nmt=0&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;&amp;nmt=1&quot;</span>
-
-        <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># print url</span>
-        <span class="n">dtypes</span> <span class="o">=</span> <span class="s2">&quot;i4,i4,i4,i4,i4,|U3&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">iter_lines</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtypes</span><span class="p">,</span> <span class="n">skip_header</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">request</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="mi">1</span>
-
-        <span class="n">recs</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">recs</span><span class="p">):</span>
-            <span class="n">year</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">mm</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">dd</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
-            <span class="n">hh</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
-
-            <span class="n">dtg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0:0&gt;4}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:0&gt;2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:0&gt;2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:0&gt;2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
-            <span class="n">obstime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">dtg</span><span class="p">),</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;NOB&quot;</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">nob</span>
-            <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;NOD&quot;</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">nod</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-
-            <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">station</span><span class="p">),</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">))</span>
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;kdvh&quot;</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MetFrostObservations"><a class="viewcode-back" href="../../index.html#surfex.MetFrostObservations">[docs]</a><span class="k">class</span> <span class="nc">MetFrostObservations</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_tries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wmo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">providers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xproviders</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">3600</span><span class="p">):</span>
+                 <span class="n">providers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xproviders</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;frost&quot;</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">blacklist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -559,11 +545,21 @@
             <span class="c1"># first get all the stations within a polygon or in a country?</span>
             <span class="c1"># &#39;geometry&#39;: &#39;POLYGON((10 60, 10 59, 11 60, 11 59))&#39; # area around Oslo</span>
             <span class="c1"># &#39;country&#39;: &#39;NO&#39; # everything in Norway</span>
-            <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;types&#39;</span><span class="p">:</span> <span class="s1">&#39;SensorSystem&#39;</span><span class="p">,</span> <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="s1">&#39;id,geometry,masl,wmoid,stationholders&#39;</span><span class="p">}</span>
 
+            <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;types&#39;</span><span class="p">:</span> <span class="s1">&#39;SensorSystem&#39;</span><span class="p">,</span> <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="s1">&#39;id,geometry,masl,wmoid,stationholders&#39;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">lonrange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">latrange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="s2">&quot;POLYGON((&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span>
+                                               <span class="s2">&quot; ))&quot;</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Request parameters: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
             <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://frost.met.no/sources/v0.jsonld&#39;</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
                              <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Request https://frost.met.no/sources/v0.jsonld returned &quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
             <span class="c1"># extract list of stations (if response was valid)</span>
             <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
@@ -645,6 +641,7 @@
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of stations discarded: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_discard</span><span class="p">))</span>
                     <span class="c1"># print(station_dict)</span>
                 <span class="k">break</span>
+
             <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;STATUS: No data was found for the list of query Ids.&#39;</span><span class="p">)</span>
                 <span class="k">break</span>
@@ -691,13 +688,13 @@
                     <span class="n">parameters2</span><span class="p">[</span><span class="s1">&#39;maxage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PT30M&#39;</span>
                     <span class="n">parameters2</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
-                <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">parameters2</span><span class="p">[</span><span class="s1">&#39;levels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-
-                <span class="c1"># print(&#39;Request parameters: &#39; + str(parameters2))</span>
+                <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Request parameters2: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">parameters2</span><span class="p">))</span>
                 <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://frost.met.no/observations/v0.jsonld&#39;</span><span class="p">,</span> <span class="n">parameters2</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
                                  <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 
+                <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Request https://frost.met.no/observations/v0.jsonld returned &quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
@@ -714,18 +711,59 @@
                                             <span class="n">second</span><span class="o">=</span><span class="n">ref_sec</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ref_time&quot;</span><span class="p">,</span> <span class="n">ref_time</span><span class="p">,</span> <span class="s2">&quot;validtime&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ref_time</span> <span class="o">-</span> <span class="n">validtime</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">dt</span><span class="p">:</span>
+
+                        <span class="n">read_unit</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">levels_ok</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">if</span> <span class="s2">&quot;observations&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                            <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;observations&quot;</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="s2">&quot;unit&quot;</span> <span class="ow">in</span> <span class="n">obs</span><span class="p">:</span>
+                                    <span class="n">read_unit</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;unit&quot;</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="n">obs</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">])</span>
+                                        <span class="n">all_found</span> <span class="o">=</span> <span class="kc">True</span>
+                                        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                                            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]:</span>
+                                                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">level</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]):</span>
+                                                    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                                        <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot; != &quot;</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+                                                    <span class="n">all_found</span> <span class="o">=</span> <span class="kc">False</span>
+                                                <span class="k">else</span><span class="p">:</span>
+                                                    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                                        <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot; == &quot;</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+                                        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_found</span><span class="p">:</span>
+                                            <span class="n">levels_ok</span> <span class="o">=</span> <span class="kc">False</span>
+
+                        <span class="n">keep_this_obs</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">if</span> <span class="n">levels_ok</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ref_time</span> <span class="o">-</span> <span class="n">validtime</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">dt</span><span class="p">:</span>
+                                <span class="n">keep_this_obs</span> <span class="o">=</span> <span class="kc">True</span>
+
+                        <span class="k">if</span> <span class="n">keep_this_obs</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Keep this obs&quot;</span><span class="p">)</span>
                             <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;observations&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
                             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># not all stations have observations</span>
                                 <span class="n">source_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;sourceId&#39;</span><span class="p">])</span>
                                 <span class="n">my_id</span> <span class="o">=</span> <span class="n">source_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">read_unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">cfunits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;cfunits not loaded!&quot;</span><span class="p">)</span>
+                                        <span class="n">read_unit</span> <span class="o">=</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="n">read_unit</span><span class="p">)</span>
+                                        <span class="n">unit</span> <span class="o">=</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+                                        <span class="n">value</span> <span class="o">=</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">conform</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">read_unit</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Did not read a unit to convert!&quot;</span><span class="p">)</span>
                                 <span class="n">ids_obs_dict</span><span class="p">[</span><span class="n">my_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
                             <span class="c1"># print(ids_obs_dict)</span>
 
                     <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Station list length: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_id_list</span><span class="p">))</span> <span class="o">+</span>
                               <span class="s1">&#39;, total number of observations retrieved: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids_obs_dict</span><span class="p">)))</span>
-
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;STATUS: No data was found for the list of query Ids.&#39;</span><span class="p">)</span>
@@ -735,20 +773,18 @@
 
             <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">ids_obs_dict</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ids_obs_dict</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">varname</span> <span class="o">==</span> <span class="s2">&quot;surface_snow_thickness&quot;</span><span class="p">:</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
                 <span class="n">id_info</span> <span class="o">=</span> <span class="n">station_dict</span><span class="p">[</span><span class="n">station</span><span class="p">]</span>
                 <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">station</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span>
                 <span class="n">lat</span> <span class="o">=</span> <span class="n">id_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">lon</span> <span class="o">=</span> <span class="n">id_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">elev</span> <span class="o">=</span> <span class="n">id_info</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">),</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">))</span>
+                <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">),</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">varname</span><span class="p">))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;frost&quot;</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JsonObservationSet"><a class="viewcode-back" href="../../index.html#surfex.JsonObservationSet">[docs]</a><span class="k">class</span> <span class="nc">JsonObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">obs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -770,11 +806,11 @@
             <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">var</span> <span class="o">==</span> <span class="n">varname</span><span class="p">:</span>
                 <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">varname</span><span class="p">))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservationFromTitanJsonFile"><a class="viewcode-back" href="../../index.html#surfex.ObservationFromTitanJsonFile">[docs]</a><span class="k">class</span> <span class="nc">ObservationFromTitanJsonFile</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">qc_obs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -782,7 +818,66 @@
             <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">qc_obs</span><span class="o">.</span><span class="n">obstimes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                             <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">set_geo_from_obs_set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">obs_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;validtime&quot;</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+    <span class="n">obs_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;obs_type&quot;</span><span class="p">]</span>
+    <span class="n">varname</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">]</span>
+    <span class="n">inputfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;inputfile&quot;</span><span class="p">]</span>
+    <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">lonrange</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]</span>
+    <span class="n">latrange</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">latrange</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">latrange</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;latrange&quot;</span><span class="p">]</span>
+
+    <span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;obs&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;varname&quot;</span><span class="p">:</span> <span class="n">varname</span><span class="p">,</span>
+            <span class="s2">&quot;filetype&quot;</span><span class="p">:</span> <span class="n">obs_type</span><span class="p">,</span>
+            <span class="s2">&quot;inputfile&quot;</span><span class="p">:</span> <span class="n">inputfile</span><span class="p">,</span>
+            <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">inputfile</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">lonrange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lonrange</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">latrange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">latrange</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Get data source&quot;</span><span class="p">)</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">varnames</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_obs</span><span class="p">()</span>
+
+    <span class="n">selected_lons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">selected_lats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lon</span> <span class="o">&lt;=</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="c1"># print(i, lon, lat)</span>
+            <span class="n">selected_lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+            <span class="n">selected_lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;0.3&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected_lons</span><span class="p">)</span>
+    <span class="n">geo_json</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;LONLATVAL&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;nam_lonlatval&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;xx&quot;</span><span class="p">:</span> <span class="n">selected_lons</span><span class="p">,</span>
+            <span class="s2">&quot;xy&quot;</span><span class="p">:</span> <span class="n">selected_lats</span><span class="p">,</span>
+            <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">dx</span><span class="p">,</span>
+            <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">dx</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">LonLatVal</span><span class="p">(</span><span class="n">geo_json</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">geo</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -818,7 +913,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

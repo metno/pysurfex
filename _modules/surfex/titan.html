@@ -260,13 +260,17 @@
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Obs operator&quot;</span><span class="p">)</span>
         <span class="n">fraction</span> <span class="o">=</span> <span class="n">ObsOperator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fraction_field</span><span class="p">,</span>
                                <span class="n">max_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span><span class="p">)</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_obs_value&quot;</span><span class="p">)</span>
         <span class="n">fraction_vals</span> <span class="o">=</span> <span class="n">fraction</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">()</span>
         <span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;setup&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
             <span class="n">minval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
             <span class="n">maxval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
@@ -277,7 +281,9 @@
         <span class="n">minvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">minvals</span><span class="p">)</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">maxvals</span><span class="p">)</span>
         <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Do test&quot;</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="n">tit</span><span class="o">.</span><span class="n">range_check</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">minvals</span><span class="p">,</span> <span class="n">maxvals</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done test&quot;</span><span class="p">)</span>
 
         <span class="n">global_flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
@@ -763,7 +769,7 @@
         <span class="k">return</span> <span class="n">flags</span></div>
 
 
-<div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#surfex.define_quality_control">[docs]</a><span class="k">def</span> <span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#surfex.define_quality_control">[docs]</a><span class="k">def</span> <span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Method to define different QC test from a dict</span>
 
@@ -773,6 +779,7 @@
 <span class="sd">        an_time(datetime.datetime): Analysis time</span>
 <span class="sd">        domain_geo(surfex.Geo): Geo object</span>
 <span class="sd">        blacklist(dict): Optional blacklist. Needd for blacklist test</span>
+<span class="sd">        debug(bool): Turn on debugging</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tests(list): List of QualityControl objects</span>
@@ -780,7 +787,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tests</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">test_list</span><span class="p">:</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Set up test: &quot;</span> <span class="o">+</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">debug</span><span class="p">}</span>
         <span class="n">test_options</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
             <span class="n">test_options</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
@@ -796,39 +804,63 @@
         <span class="k">elif</span> <span class="n">t</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;firstguess&quot;</span><span class="p">:</span>
             <span class="n">fg_file</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">fg_var</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">fg_field</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">fg_geo</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">&quot;fg_file&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                     <span class="n">fg_file</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fg_file&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="s2">&quot;fg_var&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                     <span class="n">fg_var</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fg_var&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;fg_field&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
+                    <span class="n">fg_field</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fg_field&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;fg_geo&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
+                    <span class="n">fg_geo</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fg_geo&quot;</span><span class="p">]</span>
                 <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;negdiff&quot;</span><span class="p">,</span> <span class="s2">&quot;posdiff&quot;</span><span class="p">,</span> <span class="s2">&quot;max_distance&quot;</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">opt</span><span class="p">:</span> <span class="n">test_options</span><span class="p">[</span><span class="n">opt</span><span class="p">]})</span>
-            <span class="k">if</span> <span class="n">fg_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fg_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set the name of fg file and variable&quot;</span><span class="p">)</span>
-
-            <span class="n">geo_in</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="n">fg_var</span><span class="p">)</span>
-            <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FirstGuess</span><span class="p">(</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">fg_geo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fg_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fg_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fg_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set the name of fg file and variable&quot;</span><span class="p">)</span>
+                <span class="n">fg_geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="n">fg_var</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fg_geo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fg_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set both fg_field and fg_geo&quot;</span><span class="p">)</span>
+            <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FirstGuess</span><span class="p">(</span><span class="n">fg_geo</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">t</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;minval&quot;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                <span class="s2">&quot;maxval&quot;</span><span class="p">:</span> <span class="mf">1.01</span>
+            <span class="p">})</span>
             <span class="n">fraction_var</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">fraction_file</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">fraction_field</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">fraction_geo</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">&quot;fraction_file&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                     <span class="n">fraction_file</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fraction_file&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="s2">&quot;fraction_var&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                     <span class="n">fraction_var</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fraction_var&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;fraction_field&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
+                    <span class="n">fraction_field</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fraction_field&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;fraction_geo&quot;</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
+                    <span class="n">fraction_geo</span> <span class="o">=</span> <span class="n">test_options</span><span class="p">[</span><span class="s2">&quot;fraction_geo&quot;</span><span class="p">]</span>
                 <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;minval&quot;</span><span class="p">,</span> <span class="s2">&quot;maxval&quot;</span><span class="p">,</span> <span class="s2">&quot;max_distance&quot;</span><span class="p">,</span> <span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">test_options</span><span class="p">:</span>
                         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">opt</span><span class="p">:</span> <span class="n">test_options</span><span class="p">[</span><span class="n">opt</span><span class="p">]})</span>
-            <span class="k">if</span> <span class="n">fraction_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fraction_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set the name of fraction file and variable&quot;</span><span class="p">)</span>
 
-            <span class="n">geo_in</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span> <span class="o">=</span> \
-                <span class="n">surfex</span><span class="o">.</span><span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">fraction_file</span><span class="p">,</span> <span class="n">fraction_var</span><span class="p">)</span>
-            <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Fraction</span><span class="p">(</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">fraction_geo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fraction_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fraction_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fraction_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set the name of fraction file and variable&quot;</span><span class="p">)</span>
+
+                <span class="n">fraction_geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span> <span class="o">=</span> \
+                    <span class="n">surfex</span><span class="o">.</span><span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">fraction_file</span><span class="p">,</span> <span class="n">fraction_var</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fraction_field</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fraction_geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set both fraction_field and fraction_geo&quot;</span><span class="p">)</span>
+            <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Fraction</span><span class="p">(</span><span class="n">fraction_geo</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">t</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;buddy&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1124,10 +1156,12 @@
                 <span class="k">if</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Observations set for quality control are assumed to have a label&quot;</span><span class="p">)</span>
 
-                <span class="c1"># print(&quot;obs_set&quot;, obs_set.label)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obs_set&quot;</span><span class="p">,</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">size</span>
 
                 <span class="n">do_test</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="s2">&quot;do_test&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+                    <span class="n">do_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s2">&quot;do_test&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
                         <span class="n">do_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
@@ -1137,11 +1171,12 @@
                     <span class="k">if</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">]:</span>
                         <span class="k">if</span> <span class="s2">&quot;tests&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">]:</span>
                             <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">]:</span>
-                                <span class="n">test_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">][</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                                <span class="n">test_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">][</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
                 <span class="n">do_test</span> <span class="o">=</span> <span class="n">test_settings</span><span class="p">[</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">do_test</span><span class="p">:</span>
                     <span class="k">del</span><span class="p">(</span><span class="n">test_settings</span><span class="p">[</span><span class="s2">&quot;do_test&quot;</span><span class="p">])</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">findex</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
                     <span class="n">lmask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">findex</span><span class="p">:</span><span class="n">findex</span><span class="o">+</span><span class="n">size</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lmask</span><span class="p">)):</span>
@@ -1216,6 +1251,7 @@
         <span class="n">lats</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">)</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting up </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">operator</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> observation operator for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; points&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
             <span class="n">obs_values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">:</span>
@@ -1414,7 +1450,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>
