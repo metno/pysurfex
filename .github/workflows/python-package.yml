@@ -46,7 +46,7 @@ jobs:
         CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
       run: |
-        CLIENTID=${{ secrets.CLIENTID } ./create_coverage.sh
+        CLIENTID=${{ secrets.CLIENTID }} ./create_coverage.sh
         COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
     - name: Create documentation
       run: |
