@@ -45,17 +45,17 @@ jobs:
         unzip -o testdata.zip
         CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
-      if: ${{ python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.7 }}
       run: |
         CLIENTID=${{ secrets.CLIENTID }} ./create_coverage.sh
         COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
     - name: Create documentation
-      if: ${{ python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.7 }}
       run: |
         cd docs
         make html
     - name: Commit documentation changes
-      if: ${{ python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.7 }}
       run: |
         git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
         cp -r docs/build/html/* gh-pages/
@@ -67,7 +67,7 @@ jobs:
         # The above command will fail if no changes were present, so we ignore
         # the return code.
     - name: Push changes
-      if: ${{ python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.7 }}
       uses: ad-m/github-push-action@master
       with:
         branch: gh-pages
