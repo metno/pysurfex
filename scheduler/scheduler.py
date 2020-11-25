@@ -1190,10 +1190,9 @@ def init_run(exp, stream=None):
     rsync = system.get_var("RSYNC", "0", stream=stream)
     lib0 = system.get_var("SFX_EXP_LIB", "0", stream=stream)
     rev = exp.rev
-    # system.get_var("REV", "0", stream=stream)
     host_name0 = system.get_var("HOST_NAME", "0", stream=stream)
     if host_name0 != "":
-        host_name0 = host_name0 + ":"
+        host_name0 = os.environ["USER"] + "@" + host_name0 + ":"
 
     # Sync CONF to LIB0
     if not exp.experiment_is_locked:
@@ -1204,7 +1203,7 @@ def init_run(exp, stream=None):
                   " --exclude=.git --exclude=nam --exclude=toml --exclude=config --exclude=ecf " + \
                   "--exclude=__pycache__ --exclude='*.pyc'"
             print(cmd)
-            ret = subprocess.call(cmd.split())
+            ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
 
@@ -1213,7 +1212,7 @@ def init_run(exp, stream=None):
             cmd = rsync + " " + exp.conf + "/scheduler/" + d + "/ " + host_name0 + lib0 + "/" + d + \
                   " --exclude=.git --exclude=__pycache__ --exclude='*.pyc'"
             print(cmd)
-            ret = subprocess.call(cmd.split())
+            ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
     else:
@@ -1226,7 +1225,7 @@ def init_run(exp, stream=None):
             # print(lib0)
             cmd = rsync + " " + rev + "/ " + host_name0 + lib0 + " --exclude=.git"
             print(cmd)
-            ret = subprocess.call(cmd.split())
+            ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
         else:
@@ -1239,7 +1238,7 @@ def init_run(exp, stream=None):
     if wd != lib0:
         cmd = rsync + " " + wd + "/ " + host_name0 + lib0 + " --exclude=.git"
         print(cmd)
-        ret = subprocess.call(cmd.split())
+        ret = subprocess.call(cmd, shell=True)
         if ret != 0:
             raise Exception
 
@@ -1255,18 +1254,18 @@ def init_run(exp, stream=None):
             ssh = ""
             if host_namen != "":
                 ssh = "ssh " + host_namen
-                host_namen = host_namen + ":"
+                host_namen = os.environ["USER"] + "@" + host_namen + ":"
 
             cmd = mkdirn + " " + datan
             print(cmd)
-            ret = subprocess.call(cmd.split())
+            ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
             cmd = mkdirn + " " + libn
             if ssh != "":
                 cmd = ssh + " \"" + mkdirn + " " + libn + "\""
             print(cmd)
-            subprocess.call(cmd.split(), shell=True)
+            subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
             cmd = rsync + " " + host_name0 + lib0 + "/ " + host_namen + libn + " --exclude=.git"

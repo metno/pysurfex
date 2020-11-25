@@ -18,7 +18,7 @@ class SystemFilePaths(object):
         self.system_variables = None
 
     def get_system_path(self, dtype, **kwargs):
-        print(kwargs)
+        # print(kwargs)
         default_dir = None
         if "default_dir" in kwargs:
             default_dir = kwargs["default_dir"]
@@ -35,11 +35,11 @@ class SystemFilePaths(object):
             else:
                 data_dir = self.find_matching_data_dir(default_dir, **kwargs)
                 print("DEFAULT")
-        print(data_dir)
+        # print(data_dir)
         return data_dir
 
     def find_matching_data_dir(self, dtype, **kwargs):
-        print("match" , kwargs)
+        # print("match ", kwargs)
         default_dir = None
         if "default_dir" in kwargs:
             default_dir = kwargs["default_dir"]
@@ -183,7 +183,7 @@ class SystemFilePaths(object):
                 setting = str(setting).replace("@VAR@", var)
 
             if sfx_exp_vars is not None:
-                print(sfx_exp_vars)
+                # print(sfx_exp_vars)
                 for sfx_exp_var in sfx_exp_vars:
                     setting = str(setting).replace("@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
 

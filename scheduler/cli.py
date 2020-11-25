@@ -194,9 +194,9 @@ def kill_cmd(**kwargs):
 
     task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid, submission_id)
     task_settings = scheduler.TaskSettings(task, env_submit, jobout_dirs)
-    print(task.submission_id)
+    # print(task.submission_id)
     sub = scheduler.get_submission_object(task, task_settings)
-    print(sub)
+    # print(sub)
     sub.kill()
     server.force_aborted(task)
 
@@ -384,7 +384,7 @@ def surfex_script(**kwargs):
         sfx_exp.setup_files(host)
 
         exp_domain_file = sfx_exp.get_file_name(wd, "domain", full_path=True)
-        print(domain_file, exp_domain_file)
+        # print(domain_file, exp_domain_file)
         if domain_file is None:
             if domain_name is not None:
                 domain_json = surfex.set_domain(json.load(open(wd + "/config/domains/Harmonie_domains.json", "r")),
