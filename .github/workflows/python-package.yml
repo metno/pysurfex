@@ -29,7 +29,7 @@ jobs:
         libarmadillo-dev libgsl-dev ecflow-server ecflow-client python3-ecflow python3-setuptools python3-nose \
         python3-numpy python3-scipy python3-pyproj
         ls -l /usr/lib/python3/dist-packages/ecflow
-        python3 -c "import sys: print(sys.path)"
+        python3 -c "import sys; print(sys.path)"
         PYTHONPATH="/usr/lib/python3/dist-packages/" && LD_LIBRARY_PATH="/usr/lib/python3/dist-packages/ecflow:$LD_LIBRARY_PATH" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
         python -m pip install --upgrade pip
         pip install flake8 pytest
