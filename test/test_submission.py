@@ -106,7 +106,7 @@ class TestSubmit(unittest.TestCase):
             "scalar": {
                 "HOST": "1",
                 "SUBMIT_TYPE": "slurm",
-                "SSH": "ssh localhost",
+                "SSH": "ssh " + os.environ["USER"] + "@localhost",
                 "INTERPRETER": "#!/usr/bin/env python3",
                 "WRAPPER": "wrapper",
                 "Not_existing_task": {
