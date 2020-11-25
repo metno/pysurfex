@@ -106,13 +106,14 @@ class EcflowServer(Server):
         print("Start EcFlow server")
         try:
             self.ecf_client.ping()
+            self.ecf_client.restart_server()
             print("EcFlow server is already running")
         except RuntimeError:
             print("Re-Start EcFlow server")
             try:
                 # Start server
                 # self.ecf_client.restart_server()
-                cmd = "ecflow_start.sh -p " + str(self.ecf_port)
+                cmd = "ecflow_start -p " + str(self.ecf_port)
                 print(cmd)
                 ret = subprocess.call(cmd.split())
                 if ret != 0:

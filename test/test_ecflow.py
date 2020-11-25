@@ -47,11 +47,9 @@ class EcflowTest(unittest.TestCase):
             "--suite", "unittest"
         ]
         kwargs = scheduler.parse_surfex_script(argv)
-        # kwargs.update({"begin": False})
         scheduler.surfex_script(**kwargs)
 
         # Test if init run has synced
-        test_file = wd + "/experiment_is_locked"
         test_file = "/tmp/host1/scratch/hm_home/" + exp + "/unittest_ok"
         found = False
         for t in range(0, 15):
@@ -80,9 +78,8 @@ class EcflowTest(unittest.TestCase):
         ecf_rid = None
         submission_id = None
 
-        
         # job_file = "/tmp/host1/job/" + exp + "/SleepingBeauty.job1"
-        #for line in open(job_file):
+        # for line in open(job_file):
         #    for match in re.finditer("^ecf_name = ", line):
         #        print(match)
         #        print(line)

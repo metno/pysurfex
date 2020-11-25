@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.6]
@@ -49,7 +49,15 @@ jobs:
         ls -l /usr/lib/python3/dist-packages/ecflow
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
+        mkdir -p ~/.ssh
+        echo "Host *" > ~/.ssh/config
+        echo "   StrictHostKeyChecking no" >> ~/.ssh/config
+        echo "   UserKnownHostsFile=/dev/null" >> ~/.ssh/config
+        ssh-keygen -t rsa -f .ssh/id_rsa -P ""
+        cat .ssh/id_rsa.pub > ~/.ssh/authorized_keys
         ./prepare_testdata.sh
+        ls -l /usr/bin/start_ecflow.sh || echo "/usr/bin/start_ecflow.sh not found"
+        ls -l /usr/sbin/ecflow_start || echo "/usr/sbin/ecflow_start not found"
         export PATH=$PWD/test/bin:/usr/bin/:$PATH && CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
       if: ${{ matrix.python-version == 3.7 }}
