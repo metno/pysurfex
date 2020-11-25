@@ -3,6 +3,7 @@
 
 set -x
 ./prepare_testdata.sh || exit 1
+
 export PATH=$PWD/test/bin:$PATH
 nosetests --with-timer --with-coverage --cover-erase --cover-html --cover-html-dir=coverage \
 --cover-package=surfex \

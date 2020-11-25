@@ -1,6 +1,10 @@
 #!/bin/bash
 
+rm -rf /tmp/host0 /tmp/host1
+mkdir -p /tmp/host0/job
 mkdir -p /tmp/host1
+ln -s /tmp/host0/job /tmp/host1/job
+
 cp -r testdata /tmp/host1/.
 mkdir -p /tmp/host1/testdata/input_paths/ecoclimap_bin_dir
 touch /tmp/host1/testdata/input_paths/ecoclimap_bin_dir/ecoclimapI_covers_param.bin

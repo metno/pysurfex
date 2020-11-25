@@ -26,11 +26,6 @@ class EcflowTest(unittest.TestCase):
         wd = "/tmp/host0/hm_wd/" + exp
         self._create_exp(wd)
 
-        if not os.path.islink("/tmp/host1/job/" + exp):
-            os.makedirs("/tmp/host1/job/", exist_ok=True)
-            os.symlink("/tmp/host0/job/" + exp, "/tmp/host1/job/" + exp)
-
-
         # Dry submit
         argv = [
             "-exp", exp,
@@ -85,22 +80,21 @@ class EcflowTest(unittest.TestCase):
         ecf_rid = None
         submission_id = None
 
-        '''
-        job_file = "/tmp/host1/job/" + exp + "/SleepingBeauty.job1"
-        for line in open(job_file):
-            for match in re.finditer("^ecf_name = ", line):
-                print(match)
-                print(line)
-                ecf_name = line.split()[2].replace('"', '')
-            for match in re.finditer("^ecf_pass = ", line):
-                ecf_pass = line.split()[2].replace('"', '')
-            for match in re.finditer("^ecf_tryno = ", line):
-                ecf_tryno = line.split()[2].replace('"', '')
-            for match in re.finditer("^ecf_rid = ", line):
-                ecf_rid = line.split()[2].replace('"', '')
-            for match in re.finditer("^submission_id = ", line):
-                submission_id = line.split()[2].replace('"', '')
-        '''
+        
+        # job_file = "/tmp/host1/job/" + exp + "/SleepingBeauty.job1"
+        #for line in open(job_file):
+        #    for match in re.finditer("^ecf_name = ", line):
+        #        print(match)
+        #        print(line)
+        #        ecf_name = line.split()[2].replace('"', '')
+        #    for match in re.finditer("^ecf_pass = ", line):
+        #        ecf_pass = line.split()[2].replace('"', '')
+        #    for match in re.finditer("^ecf_tryno = ", line):
+        #        ecf_tryno = line.split()[2].replace('"', '')
+        #    for match in re.finditer("^ecf_rid = ", line):
+        #        ecf_rid = line.split()[2].replace('"', '')
+        #    for match in re.finditer("^submission_id = ", line):
+        #        submission_id = line.split()[2].replace('"', '')
 
         # Find sleeping beauty information from job file
         sfx_exp = scheduler.ExpFromFiles(exp, wd)
@@ -152,10 +146,6 @@ class EcflowTest(unittest.TestCase):
         wd = "/tmp/host0/hm_wd/" + exp
         self._create_exp(wd)
 
-        if not os.path.islink("/tmp/host1/job/" + exp):
-            os.makedirs("/tmp/host1/job/", exist_ok=True)
-            os.symlink("/tmp/host0/job/" + exp, "/tmp/host1/job/" + exp)
-
         argv = [
             "start",
             "--wd", wd,
@@ -169,3 +159,63 @@ class EcflowTest(unittest.TestCase):
     # TODO
     def test_parse_surfex_definition(self):
         pass
+
+    @staticmethod
+    def test_ecflow_client():
+
+        ecf_host = "localhost"
+        ecf_port = (int(os.getuid()) + 1500)
+        logfile = "unittest_ECF.log"
+        server = scheduler.EcflowServer(ecf_host, ecf_port, logfile)
+
+        def_file = "unittest_test_ecflow.def"
+        suite_name = "test_ecflow"
+        suite = scheduler.EcflowSuite(suite_name, def_file=def_file)
+        fam = scheduler.EcflowSuiteFamily("My_family", suite)
+        var = scheduler.EcflowSuiteVariable("ECF_PASS", "FREE")
+        scheduler.EcflowSuiteTask("My_task", fam, variables=var)
+
+        suite.save_as_defs()
+        server.start_server()
+        server.replace(suite_name, def_file)
+        server.begin_suite(suite_name)
+
+        ecf_name = "/test_ecflow/My_family/My_task"
+        ecf_pass = "FREE"
+        ecf_tryno = "1"
+        task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid=None)
+
+        with scheduler.EcflowClient(server, task) as ci:
+            print("Running task ")
+            task.submission_id = "test.12345"
+            server.update_submission_id(task)
+            server.update_log("Hello log")
+
+    def test_ecflow_client_failed(self):
+
+        ecf_host = "localhost"
+        ecf_port = (int(os.getuid()) + 1500)
+        logfile = "unittest_ECF_failed.log"
+        server = scheduler.EcflowServer(ecf_host, ecf_port, logfile)
+
+        def_file = "unittest_test_ecflow_failed.def"
+        suite_name = "test_ecflow_failed"
+        suite = scheduler.EcflowSuite(suite_name, def_file=def_file)
+        fam = scheduler.EcflowSuiteFamily("My_family", suite)
+        var = scheduler.EcflowSuiteVariable("ECF_PASS", "FREE")
+        scheduler.EcflowSuiteTask("My_task", fam, variables=var)
+
+        suite.save_as_defs()
+        server.start_server()
+        server.replace(suite_name, def_file)
+        server.begin_suite(suite_name)
+
+        ecf_name = "/test_ecflow_failed/My_family/My_task"
+        ecf_pass = "FREE"
+        ecf_tryno = "1"
+        task = scheduler.EcflowTask(ecf_name, ecf_tryno, ecf_pass, ecf_rid=None)
+
+        with self.assertRaises(Exception) as cm:
+            with scheduler.EcflowClient(server, task) as ci:
+                print("Running task ")
+                raise Exception()

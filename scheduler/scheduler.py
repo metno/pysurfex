@@ -34,7 +34,7 @@ class Server(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def replace(self, def_file):
+    def replace(self, suite_name, def_file):
         raise NotImplementedError
 
     @abstractmethod
@@ -42,9 +42,9 @@ class Server(ABC):
         raise NotImplementedError
 
     def start_exp(self, config, exp, suite_type, def_file, stream=None, begin=True):
-        self.create_suite(config, exp, suite_type, def_file, stream=stream)
+        suite_name = self.create_suite(config, exp, suite_type, def_file, stream=stream)
         self.start_server()
-        self.replace(def_file)
+        self.replace(suite_name, def_file)
         if begin:
             self.begin_suite(exp.name)
 
@@ -58,7 +58,6 @@ class EcflowServer(Server):
         self.ecf_port = ecf_port
         self.logfile = logfile
         self.ecf_client = ecflow.Client(self.ecf_host, self.ecf_port)
-        self.suite_name = None
 
     def create_suite(self, config, exp, suite_type, def_file, stream=None):
 
@@ -96,11 +95,11 @@ class EcflowServer(Server):
         else:
             raise Exception("Suite " + suite_type + " is not defined")
 
-        self.suite_name = suite.suite_name
         if suite is not None:
             suite.save_as_defs()
         else:
             raise Exception("The suite is not constructed")
+        return suite.suite_name
 
     def start_server(self):
         print("Start EcFlow server")
@@ -137,8 +136,7 @@ class EcflowServer(Server):
         print(task.ecf_name, "add", "variable", "SUBMISSION_ID", task.submission_id)
         self.ecf_client.alter(task.ecf_name, "add", "variable", "SUBMISSION_ID", task.submission_id)
 
-    def replace(self, def_file):
-        suite_name = self.suite_name
+    def replace(self, suite_name, def_file):
         print(suite_name, def_file)
         try:
             self.ecf_client.replace("/" + suite_name, def_file)

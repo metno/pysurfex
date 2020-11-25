@@ -3,11 +3,12 @@ import surfex
 import shutil
 import numpy as np
 from datetime import timedelta, datetime
-from netCDF4 import Dataset, num2date, chartostring
+# from netCDF4 import Dataset, num2date, chartostring
+import netCDF4
 import re
 import abc
 import pyproj
-
+print(netCDF4.__file__)
 
 class SurfexIO(object):
     def __init__(self, filename, geo, extension):
@@ -464,8 +465,8 @@ class NCSurfexFile(SurfexIO):
 
     def get_geo(self):
 
-        fh = Dataset(self.filename, "r")
-        cgrid = str(chartostring(fh["GRID_TYPE"][:])).strip()
+        fh = netCDF4.Dataset(self.filename, "r")
+        cgrid = str(netCDF4.chartostring(fh["GRID_TYPE"][:])).strip()
         # print(":" + cgrid + ":")
         if cgrid == "CONF PROJ":
             lon0 = fh["LON0"][:]
@@ -549,7 +550,7 @@ class NCSurfexFile(SurfexIO):
 
     def field(self, var, validtime=None):
 
-        fh = Dataset(self.filename, "r")
+        fh = netCDF4.Dataset(self.filename, "r")
         if validtime is None:
             pass
         elif type(validtime) != datetime:
@@ -684,7 +685,7 @@ class NetCDFSurfexFile(SurfexIO):
     """
 
     def __init__(self, filename, geo):
-        self.fh = Dataset(filename, "r")
+        self.fh = netCDF4.Dataset(filename, "r")
         SurfexIO.__init__(self, filename, geo, "nc")
 
     def read(self, var, times):
@@ -731,7 +732,7 @@ class NetCDFSurfexFile(SurfexIO):
 
                     indices = []
                     [indices.append(i) for i in range(0, dimlen)]
-                    times_for_var = num2date(times_for_var[indices], units=units, calendar=t_cal)
+                    times_for_var = netCDF4.num2date(times_for_var[indices], units=units, calendar=t_cal)
                     if len(times) > 0:
                         for t_to_find in range(0, len(times)):
                             for t in range(0, len(indices)):
@@ -961,7 +962,7 @@ class ForcingFileNetCDF(SurfexIO):
 
     def __init__(self, fname, geo):
         self.fname = fname
-        self.fh = Dataset(fname, "r")
+        self.fh = netCDF4.Dataset(fname, "r")
         self.lons = self.fh.variables["LON"]
         self.lats = self.fh.variables["LAT"]
         self.nx = self.lons.shape[0]
@@ -996,7 +997,7 @@ class ForcingFileNetCDF(SurfexIO):
 
                         indices = []
                         [indices.append(i) for i in range(0, dimlen)]
-                        times_for_var = num2date(times_for_var[indices], units=units, calendar=t_cal)
+                        times_for_var = netCDF4.num2date(times_for_var[indices], units=units, calendar=t_cal)
                         # print(times_for_var)
                         for times_to_read in range(0, len(times)):
                             # print(times_to_read, times[times_to_read])
