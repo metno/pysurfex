@@ -329,7 +329,7 @@ class SubmissionBaseClass(ABC):
             if logfile is None:
                 subfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
                 subfile = open(subfile, "w")
-                print(cmd.split())
+                print(cmd)
                 process = subprocess.Popen(cmd, stdout=subfile, stderr=subfile, shell=True)
                 process.wait()
                 subfile.close()
