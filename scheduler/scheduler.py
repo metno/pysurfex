@@ -1253,7 +1253,7 @@ def init_run(exp, stream=None):
             host_namen = system.get_var("HOST_NAME", host, stream=stream)
             ssh = ""
             if host_namen != "":
-                ssh = "ssh " + host_namen
+                ssh = "ssh " + os.environ["USER"] + "@" + host_namen
                 host_namen = os.environ["USER"] + "@" + host_namen + ":"
 
             cmd = mkdirn + " " + datan
