@@ -30,7 +30,7 @@ jobs:
         python3-numpy python3-scipy python3-pyproj
         ls -l /usr/lib/python3/dist-packages/ecflow
         export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
-        export PYTHONPATH="/usr/lib/python3/dist-packages/" && export LD_LIBRARY_PATH="/usr/lib/python3/dist-packages/ecflow:$LD_LIBRARY_PATH" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
+        export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
         python -m pip install --upgrade pip
         pip install flake8 pytest
         pip install sphinx
