@@ -49,7 +49,7 @@ jobs:
         ls -l /usr/lib/python3/dist-packages/ecflow
         export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
         export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
-        export PYTHONPATH="/usr/lib/python3/dist-packages/" && && CLIENTID=${{ secrets.CLIENTID }} nosetests
+        export PYTHONPATH="/usr/lib/python3/dist-packages/" && CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
       if: ${{ matrix.python-version == 3.7 }}
       run: |
