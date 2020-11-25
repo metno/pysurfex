@@ -1,7 +1,5 @@
-import sys
 __version__ = '0.0.1a5'
 
-sys.path.append("/usr/lib/python3/dist-packages/")
 from .file import *
 from .geo import *
 from .read import *

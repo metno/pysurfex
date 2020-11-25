@@ -1,8 +1,4 @@
 from abc import ABC, abstractmethod
-try:
-    import ecflow
-except ModuleNotFoundError:
-    ecflow = None
 import subprocess
 import scheduler
 import surfex
@@ -18,6 +14,11 @@ import tomlkit
 import json
 # import math
 from distutils.dir_util import copy_tree
+sys.path.insert(0, "/usr/lib/python3/dist-packages/")
+try:
+    import ecflow
+except ModuleNotFoundError:
+    ecflow = None
 
 
 # Base Scheduler server class

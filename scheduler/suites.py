@@ -1,9 +1,11 @@
+import sys
+import os
+from datetime import datetime, timedelta
+sys.path.insert(0, "/usr/lib/python3/dist-packages/")
 try:
     import ecflow
 except ImportError:
     ecflow = None
-import os
-from datetime import datetime, timedelta
 
 
 class SuiteDefinition(object):
