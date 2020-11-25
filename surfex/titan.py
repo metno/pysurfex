@@ -94,7 +94,7 @@ class Plausibility(QualityControl):
 
         if self.debug:
             for i in range(0, len(mask)):
-                print(self.name, i, mask[i], dataset.values[mask[i]], flags[mask[i]], global_flags[mask[i]])
+                print(self.name, i, mask[i], dataset.values[mask[i]], flags[i], global_flags[mask[i]])
 
         return global_flags
 

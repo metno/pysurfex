@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "Your job sge.12345 ("name") has been submitted"

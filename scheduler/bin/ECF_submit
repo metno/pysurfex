@@ -2,4 +2,5 @@
 import sys
 import scheduler
 
-args = scheduler.submit_cmd(sys.argv[1:])
+kwargs = scheduler.parse_submit_cmd(sys.argv[1:], exp=False)
+scheduler.submit_cmd(**kwargs)

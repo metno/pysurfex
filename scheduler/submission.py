@@ -5,12 +5,14 @@ from abc import ABC, abstractmethod
 
 
 class EcflowSubmitTask(object):
-    def __init__(self, exp, task,
+    def __init__(self, task, env_submit, server, joboutdir,
                  stream=None, dbfile=None, interpreter="#!/usr/bin/env python3",
-                 ensmbr=None, submit_exceptions=None, coldstart=False):
+                 ensmbr=None, submit_exceptions=None, coldstart=False, env_file=None, communication=True):
         self.task = task
-        self.ecflow_server = exp.server
+        self.env_file = env_file
+        self.ecflow_server = server
         self.coldstart = coldstart
+        self.communication = communication
 
         self.ensmbr = ensmbr
         if self.ensmbr is not None:
@@ -20,12 +22,10 @@ class EcflowSubmitTask(object):
         self.db_file = dbfile
         self.stream = stream
         self.complete = False
-        self.env_file = exp.get_file_name(exp.wd, "env", full_path=True)
 
         # Parse Env_submit
-        self.task_settings = TaskSettings(self.task, exp.env_submit, exp.system, interpreter=interpreter,
+        self.task_settings = TaskSettings(self.task, env_submit, joboutdir, interpreter=interpreter,
                                           submit_exceptions=submit_exceptions, coldstart=False)
-
         self.sub = get_submission_object(self.task, self.task_settings, db_file=self.db_file)
 
     def write_header(self, fh):
@@ -40,11 +40,12 @@ class EcflowSubmitTask(object):
                     fh.write(str(self.task_settings.header[setting]) + "\n")
             
             # Host environment
-            fh.write("\n# Host specific environment settings in python syntax:\n")
-            fh_env = open(self.env_file, "r")
-            for line in fh_env.readlines():
-                fh.write(line)
-            fh_env.close()
+            if self.env_file is not None:
+                fh.write("\n# Host specific environment settings in python syntax:\n")
+                fh_env = open(self.env_file, "r")
+                for line in fh_env.readlines():
+                    fh.write(line)
+                fh_env.close()
 
             fh.write("\n# Task specific settings:\n")
             for setting in self.task_settings.header:
@@ -107,8 +108,8 @@ class EcflowSubmitTask(object):
 
 class TaskSettings(object):
 
-    def __init__(self, task, submission_defs, system, submit_exceptions=None, interpreter="#!/usr/bin/env python3",
-                 complete=False, coldstart=False, host="0"):
+    def __init__(self, task, submission_defs, joboutdirs, submit_exceptions=None, interpreter="#!/usr/bin/env python3",
+                 complete=False, coldstart=False):
         self.task = task
         self.submission_defs = submission_defs
         self.header = {}
@@ -121,17 +122,25 @@ class TaskSettings(object):
         self.remote_status_cmd = None
         self.remote_kill_cmd = None
         self.coldstart = coldstart
-        self.host = host
+        self.host = None
         if submit_exceptions is not None:
             self.check_exceptions(submit_exceptions)
         self.task_settings = self.parse_submission_defs()
         self.process_settings()
 
-        joboutdir = system.get_var("JOBOUTDIR", "0")
-        joboutdir_at_host = joboutdir
-        if self.host is not None:
-            if self.host != "0":
-                joboutdir_at_host = system.get_var("JOBOUTDIR", self.host)
+        if self.host is None:
+            raise Exception("Host number is mandatory!")
+
+        if "0" in joboutdirs:
+            joboutdir = joboutdirs["0"]
+        else:
+            raise Exception("No joboutdir defined for HOST 0")
+
+        print("Task HOST is ", self.host)
+        if self.host in joboutdirs:
+            joboutdir_at_host = joboutdirs[self.host]
+        else:
+            raise Exception("No joboutdir found for host " + self.host)
 
         self.joboutdir = joboutdir
         self.joboutdir_at_host = joboutdir_at_host
@@ -311,13 +320,17 @@ class SubmissionBaseClass(ABC):
         raise NotImplementedError
 
     def submit_job(self):
+        print(self.submit_cmd)
         if self.submit_cmd is not None:
             cmd = self.set_remote_cmd(self.submit_cmd, self.remote_submit_cmd)
             logfile = self.get_logfile()
+            print(cmd)
+            print(logfile)
             if logfile is None:
                 subfile = self.task.create_submission_log(self.task_settings.joboutdir_at_host)
                 subfile = open(subfile, "w")
-                process = subprocess.Popen(cmd.split(), stdout=subfile, stderr=subfile)
+                print(cmd.split())
+                process = subprocess.Popen(cmd, stdout=subfile, stderr=subfile, shell=True)
                 process.wait()
                 subfile.close()
                 ret = process.returncode
@@ -346,14 +359,18 @@ class SubmissionBaseClass(ABC):
             fh.close()
 
             stdout = open(killfile, "a")
-            process = subprocess.Popen(cmd.split(), stdout=stdout, stderr=stdout)
+            process = subprocess.Popen(cmd, stdout=stdout, stderr=stdout, shell=True)
             process.wait()
             ret = process.returncode
             if ret != 0:
                 raise RuntimeError("Kill command failed with error code " + str(ret))
 
-            logfile = self.task_settings.ecf_jobout
-            fh = open(logfile, "a")
+            logfile = self.task_settings.ecf_jobout_at_host
+            if os.path.exists(logfile):
+                mode = "a"
+            else:
+                mode = "w"
+            fh = open(logfile, mode)
             fh.write("\n\n*** KILLED BY ECF_kill ****")
             fh.flush()
             fh.close()
@@ -378,11 +395,12 @@ class SubmissionBaseClass(ABC):
             StatusException("Status command failed " + repr(error), self.task, self.task_settings)
 
     def job_status(self):
+        print(self.job_status_cmd)
         if self.job_status_cmd is not None:
             statusfile = self.task.create_status_log(self.task_settings.joboutdir_at_host)
             cmd = self.set_remote_cmd(self.job_status_cmd, self.remote_status_cmd)
             stdout = open(statusfile, "w")
-            process = subprocess.Popen(cmd.split(), stdout=stdout, stderr=stdout)
+            process = subprocess.Popen(cmd, stdout=stdout, stderr=stdout, shell=True)
             process.wait()
             ret = process.returncode
             if ret != 0:
@@ -500,11 +518,7 @@ class BatchSubmission(SubmissionBaseClass):
 
 
 class PBSSubmission(BatchSubmission):
-    def __init__(self, task, task_settings, db=None):
-        sub = "/home/trygveasp/hm_home/sandbox2/qsub"
-        stat = "qacct -j"
-        kill = "qdel"
-        prefix = "#PBS"
+    def __init__(self, task, task_settings, sub="qsub", stat="qacct -j", kill="qdel", prefix="#PBS", db=None):
         BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
         self.name = self.name[0:15]
 
@@ -519,12 +533,12 @@ class PBSSubmission(BatchSubmission):
         for line in lines:
             answer = line
 
-        expected_len = 5
+        expected_len = 7
         answer = answer.replace("\n", "")
         words = answer.split(" ")
         if len(words) == expected_len:
             # Set job id as the second element in answer
-            self.job_id = str(words[-1])
+            self.job_id = str(words[2])
         else:
             raise Exception("Expected " + str(expected_len) + " in output. Got " + str(len(words)))
 
@@ -534,11 +548,7 @@ class PBSSubmission(BatchSubmission):
 
 
 class SlurmSubmission(BatchSubmission):
-    def __init__(self, task, task_settings, db=None):
-        sub = "sbatch"
-        stat = "sacct -j"
-        kill = "scancel"
-        prefix = "#SBATCH"
+    def __init__(self, task, task_settings, sub="sbatch", stat="sacct -j", kill="scancel", prefix="#SBATCH", db=None):
         BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
         name = self.task.ecf_name.split("/")
         self.name = name[-1]
@@ -578,11 +588,7 @@ class SlurmSubmission(BatchSubmission):
 
 
 class GridEngineSubmission(BatchSubmission):
-    def __init__(self, task, task_settings, db=None):
-        sub = "qsub"
-        stat = "qacct -j"
-        kill = "qdel"
-        prefix = "#$"
+    def __init__(self, task, task_settings, db=None, sub="qsub", stat="qacct -j", kill="qdel", prefix="#$"):
         BatchSubmission.__init__(self, task, task_settings, db=db, sub=sub, stat=stat, kill=kill, prefix=prefix)
         name = self.task.ecf_name.split("/")
         self.name = name[-1]

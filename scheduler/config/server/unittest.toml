@@ -1,0 +1,3 @@
+ECF_HOST = "localhost"
+ECF_LOGSERVER = "localhost"
+ECF_LOGPORT = 44855

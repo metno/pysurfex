@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 from datetime import timedelta
 import shutil
+import time
 
 
 class AbstractTask(object):
@@ -426,9 +427,7 @@ class QualityControl(AbstractTask):
 
     def execute(self, **kwargs):
 
-        # geo = self.exp.geo
         an_time = self.dtg
-
         # archive_root = self.get_setting("archive_root")
         input_file = self.exp.wd + "/toml/qc_config.json"
         if os.path.exists(input_file):
@@ -438,47 +437,37 @@ class QualityControl(AbstractTask):
             settings.update({"domain": {"domain_file": sfx_lib + "/domain.json"}})
             fg_file = self.system_file_paths.get_system_file("archive_dir", "raw.nc", basedtg=self.dtg)
             settings.update({
-                "firstguess":
-                    {"fg_file": fg_file,
-                     "fg_var": self.var_name
-                     }
+                "firstguess": {
+                    "fg_file": fg_file,
+                    "fg_var": self.translation[self.var_name]
+                }
             })
         else:
             raise FileNotFoundError("Could not find input file " + input_file)
 
-        obsdir = self.system_file_paths.get_system_path("obs_dir", basedtg=self.dtg)
-        output = obsdir + "/qc_" + self.translation[self.var_name] + ".json"
-        qc_codes = self.exp.wd + "/pysurfex/surfex/cfg/qc_codes.json"
+        print(self.obsdir)
+        output = self.obsdir + "/qc_" + self.translation[self.var_name] + ".json"
         try:
             tests = self.config.get_setting("OBSERVATIONS#QC#" + self.var_name.upper() + "#TESTS")
         except Exception as e:
             tests = self.config.get_setting("OBSERVATIONS#QC#TESTS")
 
         indent = 2
-        test_flags = json.load(open(qc_codes, "r"))
-
-        tests = surfex.titan.define_quality_control(an_time, tests, settings)
+        blacklist = {}
+        debug = True
+        print(surfex.__file__)
+        tests = surfex.titan.define_quality_control(tests, settings, an_time, domain_geo=self.geo, debug=debug,
+                                                    blacklist=blacklist)
 
         if "netatmo" in settings["sets"]:
-            dt = 20
-            filenames = []
-            dtg_start = an_time - timedelta(minutes=dt)
-            dtg_end = an_time + timedelta(minutes=dt)
-            dtg = dtg_start
-            while dtg <= dtg_end:
-                print(dtg)
-                fname = self.config.get_setting("OBSERVATIONS#NETATMO_FILEPATTERN", basedtg=dtg)
-                print(fname, dtg)
-                if os.path.exists(fname):
-                    filenames.append(fname)
-                dtg = dtg + timedelta(minutes=1)
-            settings["sets"]["netatmo"].update({"filenames": filenames})
-            if len(filenames) == 0:
-                print("WARNING: no ntatmo files found")
+            filepattern = self.config.get_setting("OBSERVATIONS#NETATMO_FILEPATTERN", check_parsing=False)
+            settings["sets"]["netatmo"].update({"filepattern": filepattern})
+            print(filepattern)
+        if "bufr" in settings["sets"]:
+            settings["sets"]["bufr"].update({"filepattern": self.obsdir + "/ob@YYYY@@MM@@DD@@HH@"})
 
         datasources = surfex.obs.get_datasources(an_time, settings["sets"])
-        data_set = surfex.TitanDataSet(self.var_name, settings, tests, test_flags, datasources,
-                                       an_time)
+        data_set = surfex.TitanDataSet(self.var_name, settings, tests, datasources, an_time, debug=debug)
         data_set.perform_tests()
 
         data_set.write_output(output, indent=indent)
@@ -499,20 +488,22 @@ class OptimalInterpolation(AbstractTask):
         hlength = 30000
         vlength = 100000
         wlength = 0.5
-        land_only = True
         max_locations = 20
         elev_gradient = 0
         epsilon = 0.25
 
-        hlength = self.config.get_setting("OBSERVATIONS#OI#" + var + "#HLENGTH", default=hlength)
-        vlength = self.config.get_setting("OBSERVATIONS#OI#" + var + "#VLENGTH", default=vlength)
-        wlength = self.config.get_setting("OBSERVATIONS#OI#" + var + "#WLENGTH", default=wlength)
-        elev_gradient = self.config.get_setting("OBSERVATIONS#OI#" + var + "#GRADIENT", default=elev_gradient)
-        land_only = self.config.get_setting("OBSERVATIONS#OI#" + var + "#LAND_ONLY", default=land_only)
-        max_locations = self.config.get_setting("OBSERVATIONS#OI#" + var + "#MAX_LOCATIONS", default=max_locations)
-        epsilon = self.config.get_setting("OBSERVATIONS#OI#" + var + "#EPISLON", default=epsilon)
-        minvalue = self.config.get_setting("OBSERVATIONS#OI#" + var + "#MINVALUE", default=None, abort=False)
-        maxvalue = self.config.get_setting("OBSERVATIONS#OI#" + var + "#MAXVALUE", default=None, abort=False)
+        hlength = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#HLENGTH", default=hlength)
+        vlength = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#VLENGTH", default=vlength)
+        wlength = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#WLENGTH", default=wlength)
+        elev_gradient = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#GRADIENT",
+                                                default=elev_gradient)
+        max_locations = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#MAX_LOCATIONS",
+                                                default=max_locations)
+        epsilon = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#EPISLON", default=epsilon)
+        minvalue = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#MINVALUE", default=None,
+                                           abort=False)
+        maxvalue = self.config.get_setting("OBSERVATIONS#OI#" + self.var_name.upper() + "#MAXVALUE", default=None,
+                                           abort=False)
         input_file = self.archive + "/raw_" + var + ".nc"
         output_file = self.archive + "/an_" + var + ".nc"
 
@@ -526,7 +517,7 @@ class OptimalInterpolation(AbstractTask):
 
         field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs,
                                      hlength=hlength, vlength=vlength, wlength=wlength,
-                                     land_only=land_only, max_locations=max_locations, elev_gradient=elev_gradient,
+                                     max_locations=max_locations, elev_gradient=elev_gradient,
                                      epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue)
 
         if os.path.exists(output_file):
@@ -551,6 +542,12 @@ class Forcing(AbstractTask):
             user_config = yaml.load(open(kwargs["user_config"]))
             kwargs.update({"user_config": user_config})
 
+        # TODO
+        forcing_source = "testdata_grib2"
+
+        # TODO2
+        # Use cli interface???
+
         kwargs.update({"geo_out": self.geo})
 
         global_config = self.exp.wd + "/pysurfex/surfex/cfg/config.yml"
@@ -559,9 +556,6 @@ class Forcing(AbstractTask):
 
         kwargs.update({"dtg_start": dtg.strftime("%Y%m%d%H")})
         kwargs.update({"dtg_stop": (dtg + timedelta(hours=fcint)).strftime("%Y%m%d%H")})
-        kwargs.update({"input_format": "netcdf"})
-        kwargs.update({"pattern": "https://thredds.met.no/thredds/dodsC/meps25epsarchive/" +
-                                  "@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
 
         forcing_dir = self.system_file_paths.get_system_path("forcing_dir", basedtg=self.dtg)
         os.makedirs(forcing_dir, exist_ok=True)
@@ -569,15 +563,36 @@ class Forcing(AbstractTask):
 
         kwargs.update({"of": output})
         kwargs.update({"output_format": "netcdf"})
-        kwargs.update({"zref": "ml"})
-        kwargs.update({"zval": "constant"})
-        kwargs.update({"uref": "ml"})
-        kwargs.update({"uval": "constant"})
-        kwargs.update({"zsoro_converter": "phi2m"})
-        kwargs.update({"sca_sw": "constant"})
-        kwargs.update({"co2": "constant"})
-        kwargs.update({"wind_converter": "windspeed"})
-        kwargs.update({"wind_dir_converter": "winddir"})
+
+        if forcing_source == "thredds":
+            kwargs.update({"input_format": "netcdf"})
+            kwargs.update({"pattern": "https://thredds.met.no/thredds/dodsC/meps25epsarchive/" +
+                                      "@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
+            kwargs.update({"zref": "ml"})
+            kwargs.update({"zval": "constant"})
+            kwargs.update({"uref": "ml"})
+            kwargs.update({"uval": "constant"})
+            kwargs.update({"zsoro_converter": "phi2m"})
+            kwargs.update({"sca_sw": "constant"})
+            kwargs.update({"co2": "constant"})
+            kwargs.update({"rain_converter": "totalprec"})
+            kwargs.update({"wind_converter": "windspeed"})
+            kwargs.update({"wind_dir_converter": "winddir"})
+        elif forcing_source == "testdata_grib2":
+            data_path = "/tmp/host1/testdata/"
+            kwargs.update({"input_format": "grib2"})
+            kwargs.update({"pattern": data_path + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib2"})
+            kwargs.update({"rain_converter": "totalprec"})
+            kwargs.update({"zref": "ml"})
+            kwargs.update({"zval": "constant"})
+            kwargs.update({"uref": "ml"})
+            kwargs.update({"uval": "constant"})
+            kwargs.update({"zsoro_converter": "phi2m"})
+            kwargs.update({"sca_sw": "constant"})
+            kwargs.update({"co2": "constant"})
+            kwargs.update({"wind_converter": "windspeed"})
+            kwargs.update({"wind_dir_converter": "winddir"})
+            kwargs.update({"debug": True})
 
         if os.path.exists(output):
             print("Output already exists: " + output)
@@ -713,8 +728,7 @@ class Qc2obsmon(AbstractTask):
                     kwargs.update({"fg_file": self.archive + "/raw_" + var_name + ".nc"})
                     kwargs.update({"an_file": self.archive + "/an_" + var_name + ".nc"})
                     kwargs.update({"varname": var_in})
-                    kwargs.update({"an_var": var_name})
-                    kwargs.update({"fg_var": var_name})
+                    kwargs.update({"file_var": var_name})
                     surfex.write_obsmon_sqlite_file(**kwargs)
 
 
@@ -930,3 +944,57 @@ class PrepareLSM(AbstractTask):
         }
         print(kwargs)
         surfex.lsm_file_assim(**kwargs)
+
+
+# Two test cases
+class UnitTest(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        os.makedirs("/tmp/host0/job/test_start_and_run/", exist_ok=True)
+        fh = open("/tmp/host1/scratch/hm_home/test_start_and_run/unittest_ok", "w")
+        fh.write("ok")
+        fh.close()
+
+
+class SleepingBeauty(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        print("Sleeping beauty...")
+        print("Create /tmp/host1/scratch/hm_home/test_start_and_run/SleepingBeauty")
+        os.makedirs("/tmp/host0/job/test_start_and_run/", exist_ok=True)
+        fh = open("/tmp/host1/scratch/hm_home/test_start_and_run/SleepingBeauty", "w")
+        fh.write("SleepingBeauty")
+        fh.close()
+        for i in range(0, 20):
+            print("sleep.... ", i, "\n")
+            time.sleep(1)
+
+
+class SleepingBeauty2(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        print("Will the real Sleeping Beauty, please wake up! please wake up!")
+        print("Create /tmp/host1/scratch/hm_home/test_start_and_run/SleepingBeauty2")
+        os.makedirs("/tmp/host0/job/test_start_and_run/", exist_ok=True)
+        fh = open("/tmp/host1/scratch/hm_home/test_start_and_run/SleepingBeauty2", "w")
+        fh.write("SleepingBeauty")
+        fh.close()
+
+
+class WakeUpCall(AbstractTask):
+    def __init__(self, task, exp, **kwargs):
+        AbstractTask.__init__(self, task, exp, **kwargs)
+
+    def execute(self, **kwargs):
+        print("This job is default suspended and manually submitted!")
+        print("Create /tmp/host1/scratch/hm_home/test_start_and_run/test_submit")
+        os.makedirs("/tmp/host0/job/test_start_and_run/", exist_ok=True)
+        fh = open("/tmp/host1/scratch/hm_home/test_start_and_run/test_submit", "w")
+        fh.write("Job was submitted")
+        fh.close()

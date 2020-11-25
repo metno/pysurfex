@@ -16,7 +16,8 @@ import sys
 import shutil
 import tomlkit
 import json
-import math
+# import math
+from distutils.dir_util import copy_tree
 
 
 # Base Scheduler server class
@@ -36,14 +37,20 @@ class Server(ABC):
     def replace(self, def_file):
         raise NotImplementedError
 
-    def start_exp(self, config, exp, suite_type, def_file, stream=None):
+    @abstractmethod
+    def begin_suite(self, suite_name):
+        raise NotImplementedError
+
+    def start_exp(self, config, exp, suite_type, def_file, stream=None, begin=True):
         self.create_suite(config, exp, suite_type, def_file, stream=stream)
         self.start_server()
         self.replace(def_file)
+        if begin:
+            self.begin_suite(exp.name)
 
 
 class EcflowServer(Server):
-    def __init__(self, ecf_host, ecf_port, logfile):
+    def __init__(self, ecf_host, ecf_port, logfile, ):
         if ecflow is None:
             raise Exception("Ecflow was not found")
         Server.__init__(self)
@@ -81,6 +88,8 @@ class EcflowServer(Server):
 
             suite = scheduler.SurfexSuite(exp, dtgs, def_file, dtgbeg=dtgbeg)
 
+        elif suite_type == "unittest":
+            suite = scheduler.UnitTestSuite(exp, def_file)
         elif suite_type == "testbed":
             raise NotImplementedError
             # suite = scheduler.SurfexTestbedSuite(config, exp, def_file)
@@ -111,6 +120,9 @@ class EcflowServer(Server):
             except RuntimeError:
                 raise Exception("Could not restart server!")
 
+    def begin_suite(self, suite_name):
+        self.ecf_client.begin_suite(suite_name)
+
     def force_complete(self, task):
         ecf_name = task.ecf_name
         self.ecf_client.force_state(ecf_name, ecflow.State.complete)
@@ -127,6 +139,7 @@ class EcflowServer(Server):
 
     def replace(self, def_file):
         suite_name = self.suite_name
+        print(suite_name, def_file)
         try:
             self.ecf_client.replace("/" + suite_name, def_file)
         except RuntimeError:
@@ -326,12 +339,14 @@ class System(object):
                 self.hosts = host_system["HOST_SYSTEM"]["HOSTS"]
             elif var == "HOST":
                 pass
+                ''' Now in Exp class
             elif var == "WD":
                 self.wd = host_system["HOST_SYSTEM"]["WD"]
             elif var == "CONF":
                 self.conf = host_system["HOST_SYSTEM"]["CONF"]
             elif var == "REV":
                 self.rev = host_system["HOST_SYSTEM"]["REV"]
+                '''
             else:
                 if var in host_system["HOST_SYSTEM"]:
                     system0.update({var: host_system["HOST_SYSTEM"][var]})
@@ -468,10 +483,11 @@ class Exp(object):
 
     def setup_files(self, host):
 
-        rev_file = Exp.get_file_name(self.wd, "rev")
-        conf_file = Exp.get_file_name(self.wd, "conf")
+        rev_file = Exp.get_file_name(self.wd, "rev", full_path=True)
+        conf_file = Exp.get_file_name(self.wd, "conf", full_path=True)
         open(rev_file, "w").write(self.rev + "\n")
         open(conf_file, "w").write(self.conf + "\n")
+        print("rev", self.rev, rev_file, "conf", self.conf, conf_file)
 
         env_system = Exp.get_file_name(self.wd, "system", full_path=False)
         env = Exp.get_file_name(self.wd, "env", full_path=False)
@@ -580,7 +596,8 @@ class Exp(object):
             rdir = self.conf + "/scheduler/" + exp_dir
             ldir = self.wd + "/" + exp_dir
             print("Copy " + rdir + " -> " + ldir)
-            shutil.copytree(rdir, ldir)
+            # shutil.copytree(rdir, ldir)
+            copy_tree(rdir, ldir)
 
     def merge_testbed_submit(self, testbed_submit, decomposition="2D"):
         if os.path.exists(testbed_submit):
@@ -796,15 +813,21 @@ class Progress(object):
                 else:
                     raise Exception("Can not set DTGBEG")
             if dtgbeg is not None:
-                self.dtgbeg = datetime.strptime(dtgbeg, "%Y%m%d%H")
+                if isinstance(dtgbeg, str):
+                    dtgbeg = datetime.strptime(dtgbeg, "%Y%m%d%H")
+                self.dtgbeg = dtgbeg
             else:
                 self.dtgbeg = None
             if dtg is not None:
-                self.dtg = datetime.strptime(dtg, "%Y%m%d%H")
+                if isinstance(dtg, str):
+                    dtg = datetime.strptime(dtg, "%Y%m%d%H")
+                self.dtg = dtg
             else:
                 self.dtg = None
             if dtgend is not None:
-                self.dtgend = datetime.strptime(dtgend, "%Y%m%d%H")
+                if isinstance(dtgend, str):
+                    dtgend = datetime.strptime(dtgend, "%Y%m%d%H")
+                self.dtgend = dtgend
             else:
                 self.dtgend = None
         else:
@@ -817,7 +840,11 @@ class Progress(object):
         elif "DTG" in progress:
             dtgpp = progress["DTG"]
         if dtgpp is not None:
-            self.dtgpp = datetime.strptime(dtgpp, "%Y%m%d%H")
+            if isinstance(dtgpp, str):
+                dtgpp = datetime.strptime(dtgpp, "%Y%m%d%H")
+            self.dtgpp = dtgpp
+
+        print("DTGEND", self.dtgend)
 
     def export_to_file(self, fname):
         fh = open(fname, "w")
@@ -902,6 +929,7 @@ class ProgressFromFile(Progress):
             surfex.toml_dump(updated_progress, self.progress_file)
 
 
+''''
 class Domain(surfex.ConfProj):
     """
     HARMONIE way of creating a domain
@@ -1072,6 +1100,7 @@ class Domain(surfex.ConfProj):
                 return False
         else:
             return True
+'''
 
 
 class SystemFilePathsFromSystem(surfex.SystemFilePaths):
@@ -1089,25 +1118,33 @@ class SystemFilePathsFromSystem(surfex.SystemFilePaths):
         stream = None
         if "stream" in kwargs:
             stream = kwargs["stream"]
+        verbosity = 0
 
         # override paths from system file
         sfx_data = self.substitute_string(system.get_var("SFX_EXP_DATA", host=host, stream=stream))
         sfx_lib = self.substitute_string(system.get_var("SFX_EXP_LIB", host=host, stream=stream))
+        self.sfx_exp_vars = {
+            "SFX_EXP_DATA": sfx_data,
+            "SFX_EXP_LIB": sfx_lib
+        }
+
         os.makedirs(sfx_data, exist_ok=True)
         os.makedirs(sfx_lib, exist_ok=True)
         self.system_variables = {"SFX_EXP_DATA": sfx_data, "SFX_EXP_LIB": sfx_lib}
 
         self.add_system_file_path("sfx_exp_data", sfx_data)
         self.add_system_file_path("sfx_exp_lib", sfx_lib)
-        self.add_system_file_path("archive_dir", sfx_data + "/archive/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
+        self.add_system_file_path("default_archive_dir", sfx_data + "/archive/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
                                   check_parsing=False)
+        archive_dir = self.get_system_path("archive_dir",
+                                           default_dir="default_archive_dir", verbosity=verbosity, check_parsing=False)
+        self.add_system_file_path("archive_dir", archive_dir, check_parsing=False)
+        self.sfx_exp_vars.update({"ARCHIVE": archive_dir})
+
         self.add_system_file_path("extrarch_dir", sfx_data + "/archive/extract/@EEE@/", check_parsing=False)
         self.add_system_file_path("climdir", sfx_data + "/climate/@EEE@/", check_parsing=False)
-        try:
-            bindir = self.get_system_path("bin_dir")
-        except Exception:
-            bindir = sfx_data + "/bin/"
-        self.add_system_file_path("bin_dir", bindir, check_parsing=False)
+        bindir = self.get_system_path("bin_dir", default_dir=sfx_data + "/bin/")
+        self.add_system_file_path("bin_dir", bindir)
         self.add_system_file_path("wrk_dir", sfx_data + "/@YYYY@@MM@@DD@_@HH@/@EEE@/", check_parsing=False)
         self.add_system_file_path("forcing_dir", sfx_data + "/forcing/@YYYY@@MM@@DD@@HH@/@EEE@/", check_parsing=False)
 
@@ -1115,10 +1152,20 @@ class SystemFilePathsFromSystem(surfex.SystemFilePaths):
         self.add_system_file_path("pgd_dir", climdir, check_parsing=False)
         archive = self.get_system_path("archive_dir", check_parsing=False)
         self.add_system_file_path("prep_dir", archive, check_parsing=False)
-        self.add_system_file_path("obs_dir", sfx_data + "/archive/observations/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
+        self.add_system_file_path("default_obs_dir", sfx_data + "/archive/observations/@YYYY@/@MM@/@DD@/@HH@/@EEE@/",
                                   check_parsing=False)
+        obs_dir = self.get_system_path("obs_dir", default_dir="default_obs_dir", verbosity=verbosity,
+                                       check_parsing=False)
+        self.sfx_exp_vars.update({"OBDIR": obs_dir})
+        self.add_system_file_path("obs_dir", obs_dir)
         first_guess_dir = self.get_system_path("archive_dir", check_parsing=False)
         self.add_system_file_path("first_guess_dir", first_guess_dir, check_parsing=False)
+
+    def get_system_path(self, dtype, **kwargs):
+        kwargs.update({
+            "sfx_exp_vars": self.sfx_exp_vars
+        })
+        return surfex.SystemFilePaths.get_system_path(self,  dtype, **kwargs)
 
 
 class SystemFilePathsFromSystemFile(SystemFilePathsFromSystem):
@@ -1151,7 +1198,7 @@ def init_run(exp, stream=None):
     # Sync CONF to LIB0
     if not exp.experiment_is_locked:
         os.makedirs(lib0 + "/pysurfex", exist_ok=True)
-        dirs = ["surfex", "scheduler", "bin"]
+        dirs = ["surfex", "scheduler", "bin", "test"]
         for d in dirs:
             cmd = rsync + " " + exp.conf + "/" + d + "/ " + host_name0 + lib0 + "/pysurfex/" + d + \
                   " --exclude=.git --exclude=nam --exclude=toml --exclude=config --exclude=ecf " + \
@@ -1201,9 +1248,8 @@ def init_run(exp, stream=None):
         for host in range(1, len(hosts)):
             host = str(host)
             print("Syncing to HOST" + host)
-            # hm_w
             libn = system.get_var("SFX_EXP_LIB", host, stream=stream)
-            datan = system.get_var("SFX_EXP__DATA", host, stream=stream)
+            datan = system.get_var("SFX_EXP_DATA", host, stream=stream)
             mkdirn = system.get_var("MKDIR", host, stream=stream)
             host_namen = system.get_var("HOST_NAME", host, stream=stream)
             ssh = ""

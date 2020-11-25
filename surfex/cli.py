@@ -1489,7 +1489,6 @@ def parse_plot_timeseries_args(argv):
 
 def run_plot_timeseries_from_json(**kwargs):
 
-
     debug = False
     if "debug" in kwargs:
         debug = kwargs["debug"]
@@ -1518,7 +1517,7 @@ def run_plot_timeseries_from_json(**kwargs):
         lat = lats[0]
 
     ts = surfex.TimeSeriesFromJson(filename, lons=[lon], lats=[lat], starttime=starttime, endtime=endtime,
-                                   interval=interval)
+                                   interval=interval, debug=debug)
 
     nt = len(ts.times)
     vals = np.zeros(nt)
@@ -1585,7 +1584,6 @@ def parse_args_set_geo_from_stationlist(argv):
 
 
 def set_geo_from_stationlist(**kwargs):
-
 
     debug = False
     if "debug" in kwargs:

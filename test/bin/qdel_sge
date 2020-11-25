@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Kill job id $1"
+if [ "$1" != "sge.12345" ]; then
+  echo "$1 != sge.12345"
+  exit 1
+fi
+

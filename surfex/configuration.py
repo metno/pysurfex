@@ -173,6 +173,7 @@ class Configuration(object):
 
         if keys[0] in settings:
             this_setting = settings[keys[0]]
+            # print(this_setting)
             if len(keys) > 1:
                 for key in keys[1:]:
                     if key in this_setting:

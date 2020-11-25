@@ -1,12 +1,7 @@
 {
   "t2m": {
-    "domain": {
-      "domain_file": "@SFX_EXP_DATA@/domain.json"
-    },
     "sets": {
       "netatmo": {
-        "filepattern": "not_used",
-        "filenames": ["file1"],
         "varname": "Temperature",
         "filetype": "netatmo",
         "tests": {
@@ -32,13 +27,8 @@
     } 
   },
   "rh2m": {
-    "domain": {
-      "domain_file": "@SFX_EXP_DATA@/domain.json"
-    },
     "sets": {
       "netatmo": {
-        "filepattern": "not_used",
-        "filenames": ["file1"],
         "varname": "Humidity",
         "filetype": "netatmo",
         "tests": {
@@ -56,20 +46,18 @@
           },
           "plausibility": {
             "do_test": true,
-            "maxval": 0,
-            "minval": 100
+            "minval": 0,
+            "maxval": 100
           }
         }
       }
     }
   },
   "sd": {
-    "domain": {
-      "domain_file": "@SFX_EXP_DATA@/domain.json"
-    },
     "sets": {
       "bufr": {
-        "filepattern": "@OBDIR@/ob@YYYY@@MM@@DD@@HH@",
+        "filetype": "bufr",
+        "varname": "totalSnowDepth",
         "tests": {
           "nometa": {
             "do_test": true
@@ -85,8 +73,8 @@
           },
           "plausibility": {
             "do_test": true,
-            "maxval": 0,
-            "minval": 10000
+            "minval": 0,
+            "maxval": 10000
           }
         }
       }

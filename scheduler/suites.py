@@ -7,128 +7,96 @@ from datetime import datetime, timedelta
 
 
 class SuiteDefinition(object):
-    def __init__(self, config, exp, def_file, host="0", stream=None):
+    def __init__(self, exp, def_file):
 
         if ecflow is None:
             raise Exception("Ecflow not loaded properly")
 
-        self.config = config
-        self.def_file = def_file
-        self.stream = stream
-        self.exp = exp
-
-        data = self.config.system.get_var("SFX_EXP_DATA", host)
-        self.ecf_wd = self.exp.wd + "/ecf"
-        lib = self.config.system.get_var("SFX_EXP_LIB", host, stream=stream)
-        print(self.exp.name, self.exp.wd, lib, data)
-
-        # Date/time settings
-        ymd = self.config.progress.dtg.strftime("%Y%m%d")
-        hh = self.config.progress.dtg.strftime("%H")
-
-        print(self.config.progress.dtg)
-        self.startdate = self.config.progress.dtg.strftime("%Y%m%d")
-        self.enddate = self.config.progress.dtgend.strftime("%Y%m%d")
-        self.starthour = self.config.progress.dtg.strftime("%H")
-        self.endhour = self.config.progress.dtgend.strftime("%H")
-        self.hh_list = self.set_actual_hh_list()
-        print(self.hh_list)
+        self.suite_name = exp.name
 
         # Scheduler settings
-        ecf_host = self.exp.server.get_var("ECF_HOST")
-        rev = self.exp.rev
-        joboutdir = self.config.system.get_var("JOBOUTDIR", host)
-        # ecf_loghost = self.exp.server.get_var("ECF_LOGHOST")
-        # ecf_logport = self.exp.server.get_var("ECF_LOGPORT")
+        host = "0"
+        joboutdir = exp.system.get_var("JOBOUTDIR", host)
 
-        ecf_include = lib + "/scheduler/ecf"
-        ecf_files = lib + "/scheduler/ecf"
+        # TODO use SFX_DATA
+        lib = exp.wd + ""
+
+        ecf_include = lib + "/ecf"
+        self.ecf_files = lib + "/ecf"
         ecf_home = joboutdir
         ecf_out = joboutdir
         ecf_jobout = joboutdir + "/%ECF_NAME%.%ECF_TRYNO%"
-        ecf_job_cmd = "export PYTHONPATH=%LIB%/pysurfex/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
-                      "%LIB%/pysurfex/scheduler/bin/ECF_submit -e %ENSMBR% -ymd %YMD% -hh %HH% " + \
-                      "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID% " + \
-                      ">> %DATA%/ECF.log 2>&1"
+        # server_log = exp.get_file_name(lib, "server_log", full_path=True)
 
-        self.defs = ecflow.Defs({})
-        suite_name = self.exp.name
-        if self.stream is not None:
-            stream = self.stream
-            suite_name = suite_name + self.stream
-        else:
-            stream = ""
+        pythonpath = "export PYTHONPATH="
+        pythonpath = pythonpath + "%LIB%/pysurfex/:"
+        pythonpath = pythonpath + "" + exp.wd + "/pysurfex/:"
+        pythonpath = pythonpath + "" + exp.conf
+        if "PYTHONPATH" in os.environ:
+            pythonpath = pythonpath + ":" + os.path.expandvars(os.environ["PYTHONPATH"])
+        pythonpath = pythonpath + ";"
 
-        self.suite_name = suite_name
-        print(stream)
-        suite = self.defs.add_suite(self.suite_name)
-        suite.add_variable("COMPLETE", 0)
-        suite.add_variable("EXP", self.exp.name)
-        suite.add_variable("STREAM", stream)
-        suite.add_variable("ARGS", "")
-        suite.add_variable("ENVT", "")
-        suite.add_variable("YMD", ymd)
-        suite.add_variable("HH", hh)
-        # suite.add_variable("Env_system", env_system)
-        suite.add_variable("REV", rev)
-        suite.add_variable("PP", "")
-        suite.add_variable("ENSMBR", -1)
-        suite.add_variable("ENSMBR_STRING", "")
-        enssize = 0
-        if self.config.members is not None:
-            enssize = len(self.config.members)
-        suite.add_variable("ENSSIZE", enssize)
-        suite.add_variable("WD", self.exp.wd)
-        suite.add_variable("DATA", data)
-        suite.add_variable("LIB", lib)
-        suite.add_variable("SYSTEM", lib + "/system.toml")
-        # suite.add_variable("DTGBEG", self.progress.dtgbeg.strftime("%Y%m%d%H"))
-        # suite.add_variable("DTGEND", self.progressdtgend.strftime("%Y%m%d%H"))
-        suite.add_variable("LBCN", 0)
-        suite.add_variable("ECF_EXTN", ".py")
-        suite.add_variable("SUBMISSION_ID", "")
-        suite.add_variable("ECF_HOST", ecf_host)
-        suite.add_variable("ECF_INCLUDE", ecf_include)
-        suite.add_variable("ECF_FILES", ecf_files)
-        suite.add_variable("ECF_TRIES", 1)
-        suite.add_variable("ECF_HOME", ecf_home)
-        ecf_kill_cmd = "export PYTHONPATH=%LIB%/pysurfex/:" + os.path.expandvars(os.environ["PYTHONPATH"]) + "; " \
-                       "%LIB%/pysurfex/scheduler/bin/ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_PASS% %ECF_TRYNO% " \
-                       "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
-        suite.add_variable("ECF_KILL_CMD", ecf_kill_cmd)
-        suite.add_variable("ECF_OUT", ecf_out)
-        suite.add_variable("ECF_JOBOUT", ecf_jobout)
-        suite.add_variable("ECF_JOB_CMD", ecf_job_cmd)
-        # suite.add_variable("ECF_LOGHOST", ecf_loghost)
-        # suite.add_variable("ECF_LOGPORT", ecf_logport)
-        self.suite = suite
+        path = "export PATH="
+        path = path + "%LIB%/pysurfex/scheduler/bin:"
+        path = path + "" + exp.wd + "/pysurfex/scheduler/bin:"
+        path = path + "" + exp.conf + "/scheduler/bin"
+        path = path + ":$PATH;"
 
-    def set_actual_hh_list(self):
+        ecf_job_cmd = pythonpath + " " + path + " " + \
+                                   "ECF_submit_exp " \
+                                   "-ensmbr %ENSMBR% " \
+                                   "-dtg %DTG% " + \
+                                   "-exp %EXP% " \
+                                   "-lib %LIB% " \
+                                   "-ecf_name %ECF_NAME% " \
+                                   "-ecf_tryno %ECF_TRYNO% " \
+                                   "-ecf_pass %ECF_PASS% " \
+                                   "-ecf_rid %ECF_RID%"
+        ecf_kill_cmd = pythonpath + " " + path + " " + \
+                                    "ECF_kill_exp " \
+                                    "-exp %EXP% " \
+                                    "-lib %LIB% " \
+                                    "-ecf_name %ECF_NAME% " \
+                                    "-ecf_tryno %ECF_TRYNO% " \
+                                    "-ecf_pass %ECF_PASS% " + \
+                                    "-ecf_rid %ECF_RID% " \
+                                    "-submission_id %SUBMISSION_ID%"
+        ecf_status_cmd = pythonpath + " " + path + " " + \
+                                      "ECF_status_exp " \
+                                      "-exp %EXP% " \
+                                      "-lib %LIB% " \
+                                      "-ecf_name %ECF_NAME% " \
+                                      "-ecf_tryno %ECF_TRYNO% " \
+                                      "-ecf_pass %ECF_PASS% " + \
+                                      "-ecf_rid %ECF_RID% " \
+                                      "-submission_id %SUBMISSION_ID%"
+        variables = [EcflowSuiteVariable("LIB", lib),
+                     EcflowSuiteVariable("EXP", exp.name),
+                     EcflowSuiteVariable("DTG", "2020010100"),
+                     EcflowSuiteVariable("DTGBEG", "2020010100"),
+                     EcflowSuiteVariable("ECF_EXTN", ".py"),
+                     EcflowSuiteVariable("STREAM", ""),
+                     EcflowSuiteVariable("ENSMBR", ""),
+                     EcflowSuiteVariable("ECF_FILES", self.ecf_files),
+                     EcflowSuiteVariable("ECF_INCLUDE", ecf_include),
+                     EcflowSuiteVariable("ECF_TRIES", 1),
+                     EcflowSuiteVariable("SUBMISSION_ID", ""),
+                     EcflowSuiteVariable("ECF_HOME", ecf_home),
+                     EcflowSuiteVariable("ECF_KILL_CMD", ecf_kill_cmd),
+                     EcflowSuiteVariable("ECF_JOB_CMD", ecf_job_cmd),
+                     EcflowSuiteVariable("ECF_STATUS_CMD", ecf_status_cmd),
+                     EcflowSuiteVariable("ECF_OUT", ecf_out),
+                     EcflowSuiteVariable("ECF_JOBOUT", ecf_jobout),
+                     EcflowSuiteVariable("ARGS", "")
+                     ]
 
-        hh_list = self.config.get_total_unique_hh_list()
-        print(hh_list)
-
-        actual_hh_list = []
-        # Check if the HHs are inside our time frame
-        for hh in hh_list:
-            this_time = datetime.strptime(self.startdate, "%Y%m%d") + timedelta(hours=int(hh))
-            if self.config.progress.dtg <= this_time <= self.config.progress.dtgend:
-                actual_hh_list.append(hh)
-            else:
-                this_time = datetime.strptime(self.enddate, "%Y%m%d") + timedelta(hours=int(hh))
-                if self.config.progress.dtg <= this_time <= self.config.progress.dtgend:
-                    actual_hh_list.append(hh)
-
-        # print(actual_hh_list)
-        return actual_hh_list
+        self.suite = EcflowSuite(self.suite_name, def_file=def_file, variables=variables)
 
     def save_as_defs(self):
-
-        # self.defs.save_as_defs(self.def_file)
-        self.defs.save_as_defs(self.def_file)
-        print("def file saved to " + self.def_file)
+        self.suite.save_as_defs()
 
 
+# TODO use SuiteDefiniton as parent
 class SurfexSuite(object):
 
     def __init__(self, exp, dtgs, def_file, dtgbeg=None):
@@ -171,14 +139,33 @@ class SurfexSuite(object):
         path = path + ":$PATH;"
 
         ecf_job_cmd = pythonpath + " " + path + " " + \
-                                   "ECF_submit -e %ENSMBR% -dtg %DTG% " + \
-                                   "%EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% -ecf_rid %ECF_RID%"
+                                   "ECF_submit_exp " \
+                                   "-ensmbr %ENSMBR% " \
+                                   "-dtg %DTG% " + \
+                                   "-exp %EXP% " \
+                                   "-lib %LIB% " \
+                                   "-ecf_name %ECF_NAME% " \
+                                   "-ecf_tryno %ECF_TRYNO% " \
+                                   "-ecf_pass %ECF_PASS% " \
+                                   "-ecf_rid %ECF_RID%"
         ecf_kill_cmd = pythonpath + " " + path + " " + \
-                                    "ECF_kill %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
-                                    "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
+                                    "ECF_kill_exp " \
+                                    "-exp %EXP% " \
+                                    "-lib %LIB% " \
+                                    "-ecf_name %ECF_NAME%" \
+                                    "-ecf_tryno %ECF_TRYNO% " \
+                                    "-ecf_pass %ECF_PASS% " \
+                                    "-ecf_rid %ECF_RID% " \
+                                    "-submission_id %SUBMISSION_ID%"
         ecf_status_cmd = pythonpath + " " + path + " " + \
-                                      "ECF_status %EXP% %LIB% %ECF_NAME% %ECF_TRYNO% %ECF_PASS% " + \
-                                      "-ecf_rid %ECF_RID% -submission_id %SUBMISSION_ID%"
+                                      "ECF_status_exp " \
+                                      "-exp %EXP% " \
+                                      "-lib %LIB% " \
+                                      "-ecf_name %ECF_NAME% " \
+                                      "-ecf_tryno %ECF_TRYNO% "\
+                                      "-ecf_pass %ECF_PASS% " \
+                                      "-ecf_rid %ECF_RID% " \
+                                      "-submission_id %SUBMISSION_ID%"
         variables = [EcflowSuiteVariable("LIB", lib),
                      EcflowSuiteVariable("EXP", exp.name),
                      EcflowSuiteVariable("ECF_EXTN", ".py"),
@@ -433,6 +420,23 @@ class SurfexSuite(object):
 
     def save_as_defs(self):
         self.suite.save_as_defs()
+
+
+class UnitTestSuite(SuiteDefinition):
+    def __init__(self, exp, def_file):
+        SuiteDefinition.__init__(self, exp, def_file)
+        init_run = EcflowSuiteTask("InitRun", self.suite, ecf_files=self.ecf_files)
+        triggers = EcflowSuiteTriggers(EcflowSuiteTrigger(init_run))
+        unit_test = EcflowSuiteTask("UnitTest", self.suite, ecf_files=self.ecf_files, triggers=triggers)
+
+        triggers = EcflowSuiteTriggers(EcflowSuiteTrigger(unit_test))
+        job_to_manipulate = EcflowSuiteTask("SleepingBeauty", self.suite, ecf_files=self.ecf_files, triggers=triggers)
+        # job_to_manipulate.ecf_node.add_defstatus(ecflow.Defstatus("suspended"))
+
+        triggers = EcflowSuiteTriggers(EcflowSuiteTrigger(job_to_manipulate, "aborted"))
+        EcflowSuiteTask("SleepingBeauty2", self.suite, ecf_files=self.ecf_files, triggers=triggers)
+        wakeup_call = EcflowSuiteTask("WakeUpCall", self.suite, ecf_files=self.ecf_files, triggers=triggers)
+        wakeup_call.ecf_node.add_defstatus(ecflow.Defstatus("suspended"))
 
 
 class EcflowNode(object):

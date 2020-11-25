@@ -18,6 +18,7 @@ class SystemFilePaths(object):
         self.system_variables = None
 
     def get_system_path(self, dtype, **kwargs):
+        print(kwargs)
         default_dir = None
         if "default_dir" in kwargs:
             default_dir = kwargs["default_dir"]
@@ -33,9 +34,12 @@ class SystemFilePaths(object):
                 raise Exception("No system path found for " + dtype)
             else:
                 data_dir = self.find_matching_data_dir(default_dir, **kwargs)
+                print("DEFAULT")
+        print(data_dir)
         return data_dir
 
     def find_matching_data_dir(self, dtype, **kwargs):
+        print("match" , kwargs)
         default_dir = None
         if "default_dir" in kwargs:
             default_dir = kwargs["default_dir"]
@@ -126,6 +130,9 @@ class SystemFilePaths(object):
             var = None
             if "var" in kwargs:
                 var = kwargs["var"]
+            sfx_exp_vars = None
+            if "sfx_exp_vars" in kwargs:
+                sfx_exp_vars = kwargs["sfx_exp_vars"]
 
             if basedtg is not None:
                 if isinstance(basedtg, str):
@@ -174,6 +181,11 @@ class SystemFilePaths(object):
 
             if var is not None:
                 setting = str(setting).replace("@VAR@", var)
+
+            if sfx_exp_vars is not None:
+                print(sfx_exp_vars)
+                for sfx_exp_var in sfx_exp_vars:
+                    setting = str(setting).replace("@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
 
             if "check_parsing" in kwargs:
                 check_parsing = kwargs["check_parsing"]
@@ -867,7 +879,7 @@ class EcoclimapSG(Ecoclimap):
         self.cover_dir = "ecoclimap_sg_cover_dir"
         self.decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
 
-    def set_bin_files(self):
+    def set_bin_files(self, check_existence=True):
         pass
 
     def set_input(self, check_existence=True):

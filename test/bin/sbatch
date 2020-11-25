@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "Submitted batch job slurm.12345"

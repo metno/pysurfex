@@ -14,7 +14,6 @@ if stream == "":
 if mbr == "" or int(mbr) < 0:
     mbr = None
 
-# InitRun always runs from HOST0
 progress = {"DTG": dtg, "DTGBEG": dtgbeg}
 progress_pp = {"DTGPP": dtg}
 progress = scheduler.Progress(progress, progress_pp)

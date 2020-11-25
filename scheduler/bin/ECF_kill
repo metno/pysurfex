@@ -2,4 +2,5 @@
 import sys
 import scheduler
 
-args = scheduler.kill_cmd(sys.argv[1:])
+kwargs = scheduler.parse_kill_cmd(sys.argv[1:], exp=False)
+scheduler.kill_cmd(**kwargs)

@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+import sys
+import scheduler
+
+kwargs = scheduler.parse_kill_cmd(sys.argv[1:], exp=True)
+scheduler.kill_cmd_exp(**kwargs)

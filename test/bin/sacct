@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Info about job id $2"
+if [ "$2" != "slurm.12345" ]; then
+  echo "$2 != slurm.12345"
+  exit 1
+fi
+

@@ -1,0 +1,14 @@
+{
+  "scratch": "@SFX_EXP_DATA@",
+  "sand_dir": "/tmp/host1/testdata/input_paths/sand_dir",
+  "clay_dir": "/tmp/host1/testdata/input_paths/clay_dir",
+  "soc_top_dir": "/tmp/host1/testdata/input_paths/soc_top_dir",
+  "soc_sub_dir": "/tmp/host1/testdata/input_paths/soc_sub_dir",
+  "flake_dir": "/tmp/host1/testdata/input_paths/flake_dir",
+  "ecoclimap_dir": "/tmp/host1/testdata/input_paths/ecoclimap_dir",
+  "ecoclimap_cover_dir": "/tmp/host1/testdata/input_paths/ecoclimap_cover_dir",
+  "ecoclimap_bin_dir": "/tmp/host1/testdata/input_paths/ecoclimap_bin_dir",
+  "oro_dir": "/tmp/host1/testdata/input_paths/oro_dir",
+  "obs_dir": "/tmp/host1/testdata/",
+  "bin_dir": "@SFX_EXP_LIB@/pysurfex/test/bin"
+}

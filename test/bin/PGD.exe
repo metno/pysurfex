@@ -1,0 +1,8 @@
+#!/bin/bash
+
+basename=`basename $0`
+cmd=`echo $basename | awk -F '.' '{print $1}'`
+dirname=`dirname $0`
+
+${dirname}/${cmd}_NC || exit 1
+
