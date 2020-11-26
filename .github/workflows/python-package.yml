@@ -56,6 +56,9 @@ jobs:
         echo "   UserKnownHostsFile=/dev/null" >> ~/.ssh/config
         ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ""
         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+        echo "ssh localhost"
+        ssh $USER@localhost "pwd"
+        echo "Testdata"
         ./prepare_testdata.sh
         ls -l /usr/bin/start_ecflow.sh || echo "/usr/bin/start_ecflow.sh not found"
         ls -l /usr/sbin/ecflow_start || echo "/usr/sbin/ecflow_start not found"
