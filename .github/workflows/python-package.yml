@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.6]
-        #python-version: [3.6, 3.7]
+        # python-version: [3.6]
+        python-version: [3.6, 3.7]
 
     steps:
     - uses: actions/checkout@v2
@@ -60,6 +60,7 @@ jobs:
         libarmadillo-dev libgsl-dev ecflow-server ecflow-client python3-ecflow python3-setuptools python3-nose \
         python3-numpy python3-scipy python3-pyproj
 
+        # Start the server manually
         ecflow_start
         ecflow_client --port $(( `id -u` + 1500 )) --ping
 
