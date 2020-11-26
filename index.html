@@ -58,20 +58,26 @@
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <div class="section" id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
-<p>Install the required pacakges:</p>
+<p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
 <span class="c1"># Python tools</span>
-sudo apt-get install python3-setuptools python3-numpy python3-scipy
+sudo apt-get install python3-setuptools python3-numpy python3-scipy python3-nose
 <span class="c1"># Cfunits</span>
 sudo apt-get install libudunits2-dev
+<span class="c1"># Projection</span>
+sudo apt-get install python3-pyproj
+<span class="c1"># Eccodes for bufr/grib1/grib2</span>
+sudo apt-get install libeccodes0 libeccodes-dev
+<span class="c1"># Ecflow for user experiements</span>
+sudo apt-get install ecflow-server ecflow-client python3-ecflow
 <span class="c1"># Titanlib</span>
 sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
 </div>
-<div class="section" id="general-dependencies">
-<h2>General dependencies<a class="headerlink" href="#general-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="general-dependencies-from-pypi">
+<h2>General dependencies from pypi<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
 netCDF4
@@ -121,7 +127,7 @@ cartopy
 <p>For testing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
 nose
-Testdata from https://drive.google.com/open?id<span class="o">=</span>1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
+Testdata from https://docs.google.com/uc?export<span class="o">=</span>download<span class="p">&amp;</span><span class="nv">id</span><span class="o">=</span>1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
 </pre></div>
 </div>
 <p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
@@ -147,22 +153,11 @@ make latexpdf
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
 </div>
 </div>
 <div class="section" id="running-an-experiment-in-ecflow">
 <h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
-<p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
-<span class="nb">cd</span> sfx_home
-mkdir sandbox
-<span class="nb">cd</span> sandbox
-PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-label --domain your-domain
-PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
-</pre></div>
-</div>
-</div>
-<div class="section" id="id1">
-<h1>Running an experiment in EcFlow<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
 <span class="nb">cd</span> sfx_home
@@ -3959,14 +3954,13 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
 <li><a class="reference internal" href="#">PYSURFEX documentation</a></li>
 <li><a class="reference internal" href="#python-api-to-surfex-pysurfex">Python API to SURFEX (pysurfex)</a><ul>
 <li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
-<li><a class="reference internal" href="#general-dependencies">General dependencies</a></li>
+<li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies from pypi</a></li>
 <li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
 <li><a class="reference internal" href="#create-documentation">Create documentation</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#running-an-experiment-in-ecflow">Running an experiment in EcFlow</a></li>
-<li><a class="reference internal" href="#id1">Running an experiment in EcFlow</a><ul>
+<li><a class="reference internal" href="#running-an-experiment-in-ecflow">Running an experiment in EcFlow</a><ul>
 <li><a class="reference internal" href="#classes">Classes</a></li>
 <li><a class="reference internal" href="#class-methods">Class methods</a></li>
 <li><a class="reference internal" href="#methods">Methods</a></li>
