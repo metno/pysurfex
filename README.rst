@@ -1,6 +1,7 @@
 .. _README:
 
 .. image:: https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master
+
 https://coveralls.io/github/metno/pysurfex
 
 Python API to SURFEX (pysurfex)
@@ -20,22 +21,28 @@ See online documentation in https://metno.github.io/pysurfex/
 Installation on debian based Linux system
 --------------------------------------------
 
-Install the required pacakges:
+Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):
 
 .. code-block:: bash
 
   sudo apt-get update
   # Python tools
-  sudo apt-get install python3-setuptools python3-numpy python3-scipy
+  sudo apt-get install python3-setuptools python3-numpy python3-scipy python3-nose
   # Cfunits
   sudo apt-get install libudunits2-dev
+  # Projection
+  sudo apt-get install python3-pyproj
+  # Eccodes for bufr/grib1/grib2
+  sudo apt-get install libeccodes0 libeccodes-dev
+  # Ecflow for user experiements
+  sudo apt-get install ecflow-server ecflow-client python3-ecflow
   # Titanlib
   sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 
 The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.
 
-General dependencies
----------------------
+General dependencies from pypi
+--------------------------------
 
 .. code-block:: bash
 
@@ -103,7 +110,7 @@ For testing:
 
   unittest
   nose
-  Testdata from https://drive.google.com/open?id=1CCcKqRUp7fwZKGzWHXMjBxaXKVWWQiTO
+  Testdata from https://docs.google.com/uc?export=download&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
 
 Download the source code, then install ``pysurfex`` by executing the following inside the extracted
 folder:
@@ -132,6 +139,4 @@ Create documentation
 Examples
 -----------------------
 
-.. include:: docs/example.rst
-
-
+See https://metno.github.io/pysurfex/#examples
