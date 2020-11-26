@@ -57,8 +57,11 @@ jobs:
         ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
         chmod 600 ~/.ssh/authorized_keys
-        echo "ssh localhost"
-        ssh $USER@localhost "pwd"
+        ls -lra ~/.
+        ls -lra ~/.ssh/.
+        ls -l ~/.ssh/authorized_keys
+        echo "ssh -vvv $USER@localhost"
+        ssh -vvv $USER@localhost "pwd"
         echo "Testdata"
         ./prepare_testdata.sh
         ls -l /usr/bin/start_ecflow.sh || echo "/usr/bin/start_ecflow.sh not found"
