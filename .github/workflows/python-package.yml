@@ -59,6 +59,10 @@ jobs:
         sudo apt update && sudo apt install libudunits2-dev libboost-dev libproj-dev libeccodes0 libeccodes-dev \
         libarmadillo-dev libgsl-dev ecflow-server ecflow-client python3-ecflow python3-setuptools python3-nose \
         python3-numpy python3-scipy python3-pyproj
+
+        ecflow_start
+        ecflow_client --port $(( `id -u` + 1500 )) --ping
+
         python -m pip install --upgrade pip
         pip install flake8 pytest
         pip install sphinx

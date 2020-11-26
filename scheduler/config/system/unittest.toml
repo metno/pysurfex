@@ -17,7 +17,7 @@ JOBOUTDIR = "/tmp/host0/job"
 HM_CS = "gfortran"
 PARCH = ""
 MKDIR = "mkdir -p"
-RSYNC = "rsync -avh -e \"ssh -i ~/.ssh/id_rsa -vvv\""
+RSYNC = "rsync -avh -e \"ssh -i ~/.ssh/id_rsa\""
 SURFEX_CONFIG = "my_harmonie_config"
 
 [HOST_SYSTEM.HOST1]
