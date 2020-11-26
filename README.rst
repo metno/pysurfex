@@ -18,6 +18,22 @@ An API in python to the external surface model SURFEX.
 
 See online documentation in https://metno.github.io/pysurfex/
 
+Installation of pregenerated packages from pypi (pip)
+---------------------------------------------------------
+
+.. code-block:: bash
+
+    pip3 install pysurfex --use-feature=2020-resolver
+
+User installation:
+
+.. code-block:: bash
+
+    pip3 install pysurfex --user --use-feature=2020-resolver
+
+
+
+
 Installation on debian based Linux system
 --------------------------------------------
 
@@ -41,8 +57,8 @@ Install the required pacakges (some might be obsolete if the pip packages contai
 
 The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.
 
-General dependencies from pypi
---------------------------------
+General dependencies (from pypi)
+---------------------------------
 
 .. code-block:: bash
 
@@ -121,6 +137,11 @@ Install pysurfex
 
   sudo pip install -e .
 
+or
+
+.. code-block:: bash
+
+  sudo pip install -e . --user
 
 Create documentation
 ---------------------------------------------

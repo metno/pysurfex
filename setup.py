@@ -88,7 +88,7 @@ setup(
         "scipy",
         "netCDF4",
         "cfunits",
-        "pyproj",
+        #"pyproj",
         "pyyaml",
         "toml",
         "netCDF4",
@@ -178,6 +178,13 @@ setup(
         'bin/set_domain',
         'bin/soda',
         'bin/titan',
-        'bin/bufr2json'
+        'bin/bufr2json',
+        "scheduler/bin/PySurfex",
+        "scheduler/bin/ECF_submit",
+        "scheduler/bin/ECF_submit_exp",
+        "scheduler/bin/ECF_status",
+        "scheduler/bin/ECF_status_exp",
+        "scheduler/bin/ECF_kill",
+        "scheduler/bin/ECF_kill_exp",
     ],
 )
