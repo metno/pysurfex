@@ -56,6 +56,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">system_variables</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">get_system_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># print(kwargs)</span>
         <span class="n">default_dir</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;default_dir&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">default_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default_dir&quot;</span><span class="p">]</span>
@@ -71,9 +72,12 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No system path found for &quot;</span> <span class="o">+</span> <span class="n">dtype</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_matching_data_dir</span><span class="p">(</span><span class="n">default_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DEFAULT&quot;</span><span class="p">)</span>
+        <span class="c1"># print(data_dir)</span>
         <span class="k">return</span> <span class="n">data_dir</span>
 
     <span class="k">def</span> <span class="nf">find_matching_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># print(&quot;match &quot;, kwargs)</span>
         <span class="n">default_dir</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;default_dir&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">default_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default_dir&quot;</span><span class="p">]</span>
@@ -164,6 +168,9 @@
             <span class="n">var</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="s2">&quot;var&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="n">var</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
+            <span class="n">sfx_exp_vars</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;sfx_exp_vars&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">sfx_exp_vars</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sfx_exp_vars&quot;</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="n">basedtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basedtg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -212,6 +219,11 @@
 
             <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@VAR@&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">sfx_exp_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># print(sfx_exp_vars)</span>
+                <span class="k">for</span> <span class="n">sfx_exp_var</span> <span class="ow">in</span> <span class="n">sfx_exp_vars</span><span class="p">:</span>
+                    <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">sfx_exp_var</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="n">sfx_exp_vars</span><span class="p">[</span><span class="n">sfx_exp_var</span><span class="p">])</span>
 
             <span class="k">if</span> <span class="s2">&quot;check_parsing&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="n">check_parsing</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;check_parsing&quot;</span><span class="p">]</span>
@@ -905,7 +917,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cover_dir</span> <span class="o">=</span> <span class="s2">&quot;ecoclimap_sg_cover_dir&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ALBNIR_SOIL&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBNIR_VEG&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBVIS_SOIL&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBVIS_VEG&quot;</span><span class="p">,</span> <span class="s2">&quot;LAI&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>

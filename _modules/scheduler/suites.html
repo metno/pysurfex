@@ -36,137 +36,107 @@
           <div class="body" role="main">
             
   <h1>Source code for scheduler.suites</h1><div class="highlight"><pre>
-<span></span><span class="k">try</span><span class="p">:</span>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/usr/lib/python3/dist-packages/&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ecflow</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">ecflow</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 
 
 <div class="viewcode-block" id="SuiteDefinition"><a class="viewcode-back" href="../../index.html#scheduler.SuiteDefinition">[docs]</a><span class="k">class</span> <span class="nc">SuiteDefinition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">ecflow</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Ecflow not loaded properly&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">def_file</span> <span class="o">=</span> <span class="n">def_file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="n">exp</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;SFX_EXP_DATA&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_wd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/ecf&quot;</span>
-        <span class="n">lib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;SFX_EXP_LIB&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">wd</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-
-        <span class="c1"># Date/time settings</span>
-        <span class="n">ymd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">hh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">startdate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">enddate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">starthour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">endhour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_actual_hh_list</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hh_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span>
 
         <span class="c1"># Scheduler settings</span>
-        <span class="n">ecf_host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;ECF_HOST&quot;</span><span class="p">)</span>
-        <span class="n">rev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">rev</span>
-        <span class="n">joboutdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;JOBOUTDIR&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
-        <span class="c1"># ecf_loghost = self.exp.server.get_var(&quot;ECF_LOGHOST&quot;)</span>
-        <span class="c1"># ecf_logport = self.exp.server.get_var(&quot;ECF_LOGPORT&quot;)</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+        <span class="n">joboutdir</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_var</span><span class="p">(</span><span class="s2">&quot;JOBOUTDIR&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
 
-        <span class="n">ecf_include</span> <span class="o">=</span> <span class="n">lib</span> <span class="o">+</span> <span class="s2">&quot;/scheduler/ecf&quot;</span>
-        <span class="n">ecf_files</span> <span class="o">=</span> <span class="n">lib</span> <span class="o">+</span> <span class="s2">&quot;/scheduler/ecf&quot;</span>
+        <span class="c1"># TODO use SFX_DATA</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">ecf_include</span> <span class="o">=</span> <span class="n">lib</span> <span class="o">+</span> <span class="s2">&quot;/ecf&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span> <span class="o">=</span> <span class="n">lib</span> <span class="o">+</span> <span class="s2">&quot;/ecf&quot;</span>
         <span class="n">ecf_home</span> <span class="o">=</span> <span class="n">joboutdir</span>
         <span class="n">ecf_out</span> <span class="o">=</span> <span class="n">joboutdir</span>
         <span class="n">ecf_jobout</span> <span class="o">=</span> <span class="n">joboutdir</span> <span class="o">+</span> <span class="s2">&quot;/</span><span class="si">%E</span><span class="s2">CF_NAME%.</span><span class="si">%E</span><span class="s2">CF_TRYNO%&quot;</span>
-        <span class="n">ecf_job_cmd</span> <span class="o">=</span> <span class="s2">&quot;export PYTHONPATH=%LIB%/pysurfex/:&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span> \
-                      <span class="s2">&quot;%LIB%/pysurfex/scheduler/bin/ECF_submit -e </span><span class="si">%E</span><span class="s2">NSMBR% -ymd %YMD% -hh %HH% &quot;</span> <span class="o">+</span> \
-                      <span class="s2">&quot;</span><span class="si">%E</span><span class="s2">XP</span><span class="si">% %</span><span class="s2">LIB</span><span class="si">% %</span><span class="s2">ECF_NAME</span><span class="si">% %</span><span class="s2">ECF_TRYNO</span><span class="si">% %</span><span class="s2">ECF_PASS</span><span class="si">% -e</span><span class="s2">cf_rid </span><span class="si">%E</span><span class="s2">CF_RID% &quot;</span> <span class="o">+</span> \
-                      <span class="s2">&quot;&gt;&gt; %DATA%/ECF.log 2&gt;&amp;1&quot;</span>
+        <span class="c1"># server_log = exp.get_file_name(lib, &quot;server_log&quot;, full_path=True)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">defs</span> <span class="o">=</span> <span class="n">ecflow</span><span class="o">.</span><span class="n">Defs</span><span class="p">({})</span>
-        <span class="n">suite_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span>
-            <span class="n">suite_name</span> <span class="o">=</span> <span class="n">suite_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">stream</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">pythonpath</span> <span class="o">=</span> <span class="s2">&quot;export PYTHONPATH=&quot;</span>
+        <span class="n">pythonpath</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot;%LIB%/pysurfex/:&quot;</span>
+        <span class="n">pythonpath</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/pysurfex/:&quot;</span>
+        <span class="n">pythonpath</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">conf</span>
+        <span class="k">if</span> <span class="s2">&quot;PYTHONPATH&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="n">pythonpath</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">])</span>
+        <span class="n">pythonpath</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span> <span class="o">=</span> <span class="n">suite_name</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-        <span class="n">suite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defs</span><span class="o">.</span><span class="n">add_suite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;EXP&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;STREAM&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ARGS&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ENVT&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;YMD&quot;</span><span class="p">,</span> <span class="n">ymd</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="n">hh</span><span class="p">)</span>
-        <span class="c1"># suite.add_variable(&quot;Env_system&quot;, env_system)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;REV&quot;</span><span class="p">,</span> <span class="n">rev</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;PP&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ENSMBR&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ENSMBR_STRING&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">enssize</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">enssize</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ENSSIZE&quot;</span><span class="p">,</span> <span class="n">enssize</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;WD&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">wd</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;DATA&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;LIB&quot;</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;SYSTEM&quot;</span><span class="p">,</span> <span class="n">lib</span> <span class="o">+</span> <span class="s2">&quot;/system.toml&quot;</span><span class="p">)</span>
-        <span class="c1"># suite.add_variable(&quot;DTGBEG&quot;, self.progress.dtgbeg.strftime(&quot;%Y%m%d%H&quot;))</span>
-        <span class="c1"># suite.add_variable(&quot;DTGEND&quot;, self.progressdtgend.strftime(&quot;%Y%m%d%H&quot;))</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;LBCN&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_EXTN&quot;</span><span class="p">,</span> <span class="s2">&quot;.py&quot;</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;SUBMISSION_ID&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_HOST&quot;</span><span class="p">,</span> <span class="n">ecf_host</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_INCLUDE&quot;</span><span class="p">,</span> <span class="n">ecf_include</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_FILES&quot;</span><span class="p">,</span> <span class="n">ecf_files</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_TRIES&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_HOME&quot;</span><span class="p">,</span> <span class="n">ecf_home</span><span class="p">)</span>
-        <span class="n">ecf_kill_cmd</span> <span class="o">=</span> <span class="s2">&quot;export PYTHONPATH=%LIB%/pysurfex/:&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span> \
-                       <span class="s2">&quot;%LIB%/pysurfex/scheduler/bin/ECF_kill </span><span class="si">%E</span><span class="s2">XP</span><span class="si">% %</span><span class="s2">LIB</span><span class="si">% %</span><span class="s2">ECF_NAME</span><span class="si">% %</span><span class="s2">ECF_PASS</span><span class="si">% %</span><span class="s2">ECF_TRYNO% &quot;</span> \
-                       <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID</span><span class="si">% -s</span><span class="s2">ubmission_id %SUBMISSION_ID%&quot;</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_KILL_CMD&quot;</span><span class="p">,</span> <span class="n">ecf_kill_cmd</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_OUT&quot;</span><span class="p">,</span> <span class="n">ecf_out</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_JOBOUT&quot;</span><span class="p">,</span> <span class="n">ecf_jobout</span><span class="p">)</span>
-        <span class="n">suite</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;ECF_JOB_CMD&quot;</span><span class="p">,</span> <span class="n">ecf_job_cmd</span><span class="p">)</span>
-        <span class="c1"># suite.add_variable(&quot;ECF_LOGHOST&quot;, ecf_loghost)</span>
-        <span class="c1"># suite.add_variable(&quot;ECF_LOGPORT&quot;, ecf_logport)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">suite</span> <span class="o">=</span> <span class="n">suite</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;export PATH=&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;%LIB%/pysurfex/scheduler/bin:&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">wd</span> <span class="o">+</span> <span class="s2">&quot;/pysurfex/scheduler/bin:&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">conf</span> <span class="o">+</span> <span class="s2">&quot;/scheduler/bin&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;:$PATH;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">set_actual_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ecf_job_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                                   <span class="s2">&quot;ECF_submit_exp &quot;</span> \
+                                   <span class="s2">&quot;-ensmbr </span><span class="si">%E</span><span class="s2">NSMBR% &quot;</span> \
+                                   <span class="s2">&quot;-dtg %DTG% &quot;</span> <span class="o">+</span> \
+                                   <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                   <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID%&quot;</span>
+        <span class="n">ecf_kill_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                                    <span class="s2">&quot;ECF_kill_exp &quot;</span> \
+                                    <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                    <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> <span class="o">+</span> \
+                                    <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID% &quot;</span> \
+                                    <span class="s2">&quot;-submission_id %SUBMISSION_ID%&quot;</span>
+        <span class="n">ecf_status_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                                      <span class="s2">&quot;ECF_status_exp &quot;</span> \
+                                      <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                      <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> <span class="o">+</span> \
+                                      <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID% &quot;</span> \
+                                      <span class="s2">&quot;-submission_id %SUBMISSION_ID%&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;LIB&quot;</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;EXP&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;DTG&quot;</span><span class="p">,</span> <span class="s2">&quot;2020010100&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;DTGBEG&quot;</span><span class="p">,</span> <span class="s2">&quot;2020010100&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_EXTN&quot;</span><span class="p">,</span> <span class="s2">&quot;.py&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;STREAM&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ENSMBR&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_FILES&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_INCLUDE&quot;</span><span class="p">,</span> <span class="n">ecf_include</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_TRIES&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;SUBMISSION_ID&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_HOME&quot;</span><span class="p">,</span> <span class="n">ecf_home</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_KILL_CMD&quot;</span><span class="p">,</span> <span class="n">ecf_kill_cmd</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_JOB_CMD&quot;</span><span class="p">,</span> <span class="n">ecf_job_cmd</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_STATUS_CMD&quot;</span><span class="p">,</span> <span class="n">ecf_status_cmd</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_OUT&quot;</span><span class="p">,</span> <span class="n">ecf_out</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_JOBOUT&quot;</span><span class="p">,</span> <span class="n">ecf_jobout</span><span class="p">),</span>
+                     <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ARGS&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                     <span class="p">]</span>
 
-        <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_total_unique_hh_list</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)</span>
-
-        <span class="n">actual_hh_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># Check if the HHs are inside our time frame</span>
-        <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="n">hh_list</span><span class="p">:</span>
-            <span class="n">this_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startdate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span> <span class="o">&lt;=</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span><span class="p">:</span>
-                <span class="n">actual_hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">this_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">enddate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtg</span> <span class="o">&lt;=</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">progress</span><span class="o">.</span><span class="n">dtgend</span><span class="p">:</span>
-                    <span class="n">actual_hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
-
-        <span class="c1"># print(actual_hh_list)</span>
-        <span class="k">return</span> <span class="n">actual_hh_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suite</span> <span class="o">=</span> <span class="n">EcflowSuite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suite_name</span><span class="p">,</span> <span class="n">def_file</span><span class="o">=</span><span class="n">def_file</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">save_as_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
-        <span class="c1"># self.defs.save_as_defs(self.def_file)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">defs</span><span class="o">.</span><span class="n">save_as_defs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">def_file</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;def file saved to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_file</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="o">.</span><span class="n">save_as_defs</span><span class="p">()</span></div>
 
 
+<span class="c1"># TODO use SuiteDefiniton as parent</span>
 <div class="viewcode-block" id="SurfexSuite"><a class="viewcode-back" href="../../index.html#scheduler.SurfexSuite">[docs]</a><span class="k">class</span> <span class="nc">SurfexSuite</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">dtgs</span><span class="p">,</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">dtgbeg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -209,14 +179,33 @@
         <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;:$PATH;&quot;</span>
 
         <span class="n">ecf_job_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
-                                   <span class="s2">&quot;ECF_submit -e </span><span class="si">%E</span><span class="s2">NSMBR</span><span class="si">% -d</span><span class="s2">tg %DTG% &quot;</span> <span class="o">+</span> \
-                                   <span class="s2">&quot;</span><span class="si">%E</span><span class="s2">XP</span><span class="si">% %</span><span class="s2">LIB</span><span class="si">% %</span><span class="s2">ECF_NAME</span><span class="si">% %</span><span class="s2">ECF_TRYNO</span><span class="si">% %</span><span class="s2">ECF_PASS</span><span class="si">% -e</span><span class="s2">cf_rid </span><span class="si">%E</span><span class="s2">CF_RID%&quot;</span>
+                                   <span class="s2">&quot;ECF_submit_exp &quot;</span> \
+                                   <span class="s2">&quot;-ensmbr </span><span class="si">%E</span><span class="s2">NSMBR% &quot;</span> \
+                                   <span class="s2">&quot;-dtg %DTG% &quot;</span> <span class="o">+</span> \
+                                   <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                   <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> \
+                                   <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID%&quot;</span>
         <span class="n">ecf_kill_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
-                                    <span class="s2">&quot;ECF_kill </span><span class="si">%E</span><span class="s2">XP</span><span class="si">% %</span><span class="s2">LIB</span><span class="si">% %</span><span class="s2">ECF_NAME</span><span class="si">% %</span><span class="s2">ECF_TRYNO</span><span class="si">% %</span><span class="s2">ECF_PASS% &quot;</span> <span class="o">+</span> \
-                                    <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID</span><span class="si">% -s</span><span class="s2">ubmission_id %SUBMISSION_ID%&quot;</span>
+                                    <span class="s2">&quot;ECF_kill_exp &quot;</span> \
+                                    <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                    <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME%&quot;</span> \
+                                    <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> \
+                                    <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID% &quot;</span> \
+                                    <span class="s2">&quot;-submission_id %SUBMISSION_ID%&quot;</span>
         <span class="n">ecf_status_cmd</span> <span class="o">=</span> <span class="n">pythonpath</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
-                                      <span class="s2">&quot;ECF_status </span><span class="si">%E</span><span class="s2">XP</span><span class="si">% %</span><span class="s2">LIB</span><span class="si">% %</span><span class="s2">ECF_NAME</span><span class="si">% %</span><span class="s2">ECF_TRYNO</span><span class="si">% %</span><span class="s2">ECF_PASS% &quot;</span> <span class="o">+</span> \
-                                      <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID</span><span class="si">% -s</span><span class="s2">ubmission_id %SUBMISSION_ID%&quot;</span>
+                                      <span class="s2">&quot;ECF_status_exp &quot;</span> \
+                                      <span class="s2">&quot;-exp </span><span class="si">%E</span><span class="s2">XP% &quot;</span> \
+                                      <span class="s2">&quot;-lib %LIB% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_name </span><span class="si">%E</span><span class="s2">CF_NAME% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_tryno </span><span class="si">%E</span><span class="s2">CF_TRYNO% &quot;</span>\
+                                      <span class="s2">&quot;-ecf_pass </span><span class="si">%E</span><span class="s2">CF_PASS% &quot;</span> \
+                                      <span class="s2">&quot;-ecf_rid </span><span class="si">%E</span><span class="s2">CF_RID% &quot;</span> \
+                                      <span class="s2">&quot;-submission_id %SUBMISSION_ID%&quot;</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;LIB&quot;</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span>
                      <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;EXP&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
                      <span class="n">EcflowSuiteVariable</span><span class="p">(</span><span class="s2">&quot;ECF_EXTN&quot;</span><span class="p">,</span> <span class="s2">&quot;.py&quot;</span><span class="p">),</span>
@@ -471,6 +460,23 @@
 
     <span class="k">def</span> <span class="nf">save_as_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="o">.</span><span class="n">save_as_defs</span><span class="p">()</span></div>
+
+
+<span class="k">class</span> <span class="nc">UnitTestSuite</span><span class="p">(</span><span class="n">SuiteDefinition</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">):</span>
+        <span class="n">SuiteDefinition</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">def_file</span><span class="p">)</span>
+        <span class="n">init_run</span> <span class="o">=</span> <span class="n">EcflowSuiteTask</span><span class="p">(</span><span class="s2">&quot;InitRun&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="p">,</span> <span class="n">ecf_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">)</span>
+        <span class="n">triggers</span> <span class="o">=</span> <span class="n">EcflowSuiteTriggers</span><span class="p">(</span><span class="n">EcflowSuiteTrigger</span><span class="p">(</span><span class="n">init_run</span><span class="p">))</span>
+        <span class="n">unit_test</span> <span class="o">=</span> <span class="n">EcflowSuiteTask</span><span class="p">(</span><span class="s2">&quot;UnitTest&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="p">,</span> <span class="n">ecf_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">,</span> <span class="n">triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+
+        <span class="n">triggers</span> <span class="o">=</span> <span class="n">EcflowSuiteTriggers</span><span class="p">(</span><span class="n">EcflowSuiteTrigger</span><span class="p">(</span><span class="n">unit_test</span><span class="p">))</span>
+        <span class="n">job_to_manipulate</span> <span class="o">=</span> <span class="n">EcflowSuiteTask</span><span class="p">(</span><span class="s2">&quot;SleepingBeauty&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="p">,</span> <span class="n">ecf_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">,</span> <span class="n">triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+        <span class="c1"># job_to_manipulate.ecf_node.add_defstatus(ecflow.Defstatus(&quot;suspended&quot;))</span>
+
+        <span class="n">triggers</span> <span class="o">=</span> <span class="n">EcflowSuiteTriggers</span><span class="p">(</span><span class="n">EcflowSuiteTrigger</span><span class="p">(</span><span class="n">job_to_manipulate</span><span class="p">,</span> <span class="s2">&quot;aborted&quot;</span><span class="p">))</span>
+        <span class="n">EcflowSuiteTask</span><span class="p">(</span><span class="s2">&quot;SleepingBeauty2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="p">,</span> <span class="n">ecf_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">,</span> <span class="n">triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+        <span class="n">wakeup_call</span> <span class="o">=</span> <span class="n">EcflowSuiteTask</span><span class="p">(</span><span class="s2">&quot;WakeUpCall&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suite</span><span class="p">,</span> <span class="n">ecf_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ecf_files</span><span class="p">,</span> <span class="n">triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+        <span class="n">wakeup_call</span><span class="o">.</span><span class="n">ecf_node</span><span class="o">.</span><span class="n">add_defstatus</span><span class="p">(</span><span class="n">ecflow</span><span class="o">.</span><span class="n">Defstatus</span><span class="p">(</span><span class="s2">&quot;suspended&quot;</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="EcflowNode"><a class="viewcode-back" href="../../index.html#scheduler.EcflowNode">[docs]</a><span class="k">class</span> <span class="nc">EcflowNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
