@@ -50,6 +50,7 @@ jobs:
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
         mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         echo "Host *" > ~/.ssh/config
         echo "   StrictHostKeyChecking no" >> ~/.ssh/config
         echo "   UserKnownHostsFile=/dev/null" >> ~/.ssh/config
