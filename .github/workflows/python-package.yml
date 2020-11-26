@@ -50,13 +50,15 @@ jobs:
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
         # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
         mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
+        chmod 0700 ~/.ssh
         echo "Host *" > ~/.ssh/config
         echo "   StrictHostKeyChecking no" >> ~/.ssh/config
         echo "   UserKnownHostsFile=/dev/null" >> ~/.ssh/config
         ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-        chmod 600 ~/.ssh/authorized_keys
+        chmod 0600 ~/.ssh/authorized_keys
+        chmod 0600 ~/.ssh/*
+        chmod 0644 ~/.ssh/*.pub
         ls -lra ~/.
         ls -lra ~/.ssh/.
         ls -l ~/.ssh/authorized_keys
