@@ -106,14 +106,18 @@ class EcflowServer(Server):
         print("Start EcFlow server")
         try:
             self.ecf_client.ping()
-            self.ecf_client.restart_server()
             print("EcFlow server is already running")
         except RuntimeError:
             print("Re-Start EcFlow server")
             try:
                 # Start server
                 # self.ecf_client.restart_server()
-                cmd = "ecflow_start -p " + str(self.ecf_port)
+                cmd = shutil.which("ecflow_start")
+                if cmd is None:
+                    cmd = shutil.which("ecflow_start.sh")
+                if cmd is None:
+                    raise Exception("ecflow_start not found")
+                cmd = cmd + " -p " + str(self.ecf_port)
                 print(cmd)
                 ret = subprocess.call(cmd.split())
                 if ret != 0:
@@ -1187,7 +1191,7 @@ def init_run(exp, stream=None):
     hosts = exp.system.hosts
     wd = exp.wd
 
-    rsync = system.get_var("RSYNC", "0", stream=stream)
+    rsync = str(system.get_var("RSYNC", "0", stream=stream))
     lib0 = system.get_var("SFX_EXP_LIB", "0", stream=stream)
     rev = exp.rev
     host_name0 = system.get_var("HOST_NAME", "0", stream=stream)
@@ -1270,7 +1274,7 @@ def init_run(exp, stream=None):
                 raise Exception
             cmd = rsync + " " + host_name0 + lib0 + "/ " + host_namen + libn + " --exclude=.git"
             print(cmd)
-            subprocess.call(cmd.split())
+            subprocess.call(cmd, shell=True)
             if ret != 0:
                 raise Exception
 
