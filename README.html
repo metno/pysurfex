@@ -51,6 +51,16 @@
 </dd>
 </dl>
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
+<div class="section" id="installation-of-pregenerated-packages-from-pypi-pip">
+<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+</pre></div>
+</div>
+<p>User installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --user --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+</pre></div>
+</div>
+</div>
 <div class="section" id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
@@ -72,7 +82,7 @@ sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
 </div>
 <div class="section" id="general-dependencies-from-pypi">
-<h2>General dependencies from pypi<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
+<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
 netCDF4
@@ -133,6 +143,10 @@ folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
 </pre></div>
 </div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e . --user
+</pre></div>
+</div>
 </div>
 <div class="section" id="create-documentation">
 <h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this headline">¶</a></h2>
@@ -162,8 +176,9 @@ make latexpdf
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Python API to SURFEX (pysurfex)</a><ul>
+<li><a class="reference internal" href="#installation-of-pregenerated-packages-from-pypi-pip">Installation of pregenerated packages from pypi (pip)</a></li>
 <li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
-<li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies from pypi</a></li>
+<li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies (from pypi)</a></li>
 <li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
 <li><a class="reference internal" href="#create-documentation">Create documentation</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
