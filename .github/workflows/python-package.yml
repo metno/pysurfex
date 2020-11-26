@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        # python-version: [3.6]
-        python-version: [3.6, 3.7]
+        python-version: [3.6]
+        # python-version: [3.6, 3.7]
 
     steps:
     - uses: actions/checkout@v2
@@ -90,17 +90,17 @@ jobs:
         ls -l /usr/sbin/ecflow_start || echo "/usr/sbin/ecflow_start not found"
         export PATH=$PWD/test/bin:/usr/bin/:$PATH && CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.6 }}
       run: |
         CLIENTID=${{ secrets.CLIENTID }} ./create_coverage.sh
         COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
     - name: Create documentation
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.6 }}
       run: |
         cd docs
         make html
     - name: Commit documentation changes
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.6 }}
       run: |
         git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
         cp -r docs/build/html/* gh-pages/
@@ -112,7 +112,7 @@ jobs:
         # The above command will fail if no changes were present, so we ignore
         # the return code.
     - name: Push changes
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.6 }}
       uses: ad-m/github-push-action@master
       with:
         branch: gh-pages
