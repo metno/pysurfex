@@ -308,14 +308,26 @@
                         <span class="n">do_soda</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="n">do_snow_ass</span> <span class="o">=</span> <span class="kc">False</span>
-                <span class="n">snow_ass</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">snow_ass</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">hh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">))</span>
-                    <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snow_ass</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">hh</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">sn</span><span class="p">):</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Do snow assimilation for &quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="p">)</span>
-                            <span class="n">do_soda</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">nnco</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ivar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nnco</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">nnco</span><span class="p">[</span><span class="n">ivar</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="k">elif</span> <span class="n">ivar</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
                             <span class="n">do_snow_ass</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">if</span> <span class="n">do_snow_ass</span><span class="p">:</span>
+                    <span class="n">do_snow_ass</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">snow_ass</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">snow_ass</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">hh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snow_ass</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">hh</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">sn</span><span class="p">):</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Do snow assimilation for &quot;</span><span class="p">,</span> <span class="n">dtg</span><span class="p">)</span>
+                                <span class="n">do_soda</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="n">do_snow_ass</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="n">triggers</span> <span class="o">=</span> <span class="n">EcflowSuiteTriggers</span><span class="p">(</span><span class="n">prep_complete</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">do_soda</span><span class="p">:</span>
