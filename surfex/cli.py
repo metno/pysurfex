@@ -1050,7 +1050,7 @@ def parse_lsm_file_assim(argv):
     else:
         raise FileNotFoundError(domain)
     dtg = kwargs["dtg"]
-    if dtg is not None:
+    if dtg is not None and isinstance(dtg, str):
         kwargs.update({"dtg": datetime.strptime(dtg, "%Y%m%d%H")})
     return kwargs
 
@@ -1585,10 +1585,6 @@ def parse_args_set_geo_from_stationlist(argv):
 
 def set_geo_from_stationlist(**kwargs):
 
-    debug = False
-    if "debug" in kwargs:
-        debug = kwargs["debug"]
-
     stationlist = kwargs["stationlist"]
     lonrange = None
     if "lonrange" in kwargs:
@@ -1632,3 +1628,222 @@ def set_geo_from_stationlist(**kwargs):
         }
     }
     return surfex.LonLatVal(geo_json)
+
+
+def parse_merge_namelist_settings(argv):
+    """Parse the command line input arguments."""
+    parser = ArgumentParser()
+
+    parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
+    parser.add_argument('--json', '-j', type=str, nargs="+", required=True, help="A JSON file with run options")
+    parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+
+    if len(argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_merge_namelist_settings(**kwargs):
+    my_files = kwargs["json"]
+    my_indent = kwargs["indent"]
+    my_output = kwargs["output"]
+
+    json_settings = {}
+    for f in my_files:
+        if os.path.exists(f):
+            surfex.Namelist.merge_json_namelist_file(json_settings, f)
+        else:
+            raise FileNotFoundError
+
+    surfex.Namelist.nml2ascii(json_settings, my_output, indent=my_indent)
+
+
+def parse_merge_toml_settings(argv):
+    """Parse the command line input arguments."""
+    parser = ArgumentParser("Merge toml files")
+
+    parser.add_argument('--toml', '-t', type=str, nargs="+", required=True, help="TOML files with run options")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_merge_toml_settings(**kwargs):
+
+    my_files = kwargs["toml"]
+    my_output = kwargs["output"]
+
+    merged_settings = surfex.merge_toml_env_from_files(my_files)
+
+    # Write merged settigns
+    toml.dump(merged_settings, open(my_output, "w"))
+
+
+def parse_args_merge_qc_data(argv):
+    parser = ArgumentParser()
+    parser.add_argument("-i", type=str, nargs="+", dest="filenames", help="Input QC JSON files", required=True)
+    parser.add_argument("-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True)
+    parser.add_argument("--indent", type=int, help="Indent in output", default=None)
+    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def merge_qc_data(kwargs):
+    an_time = kwargs["validtime"]
+    filenames = kwargs["filenames"]
+    output = kwargs["output"]
+    indent = kwargs["indent"]
+
+    qc_data = surfex.merge_json_qc_data_sets(an_time, filenames)
+    qc_data.write_output(output, indent=indent)
+
+
+def parse_timeseries2json(argv):
+    parser = ArgumentParser("Plot field")
+    parser.add_argument('-v', '--varname', dest="varname", type=str, help="Variable name", required=True)
+    parser.add_argument('-lons', dest="lons", type=float, nargs="+", help="Longitudes", default=None, required=False)
+    parser.add_argument('-lats', dest="lats", type=float, nargs="+", help="Latitudes", default=None, required=False)
+    parser.add_argument('-stids', dest="stations", type=str, nargs="+", help="Longitudes", default=None, required=False)
+    parser.add_argument('-stations', dest="stationlist", type=str, help="Longitudes", default=None,
+                        required=False)
+    parser.add_argument('-i', '--filepattern', dest="filepattern", type=str, help="Input file", default="",
+                        required=False)
+    parser.add_argument('-it', '--inputtype', dest="inputtype", type=str, help="Input type (format)", default="surfex",
+                        required=False, choices=["netcdf", "grib1", "grib2", "surfex", "obs"])
+    parser.add_argument('-start', dest="start", type=str, help="Start time (YYYYMMDDHH)", required=True)
+    parser.add_argument('-end', dest="end", type=str, help="End time (YYYYMMDDHH)", required=True)
+    parser.add_argument('-int', dest="interval", type=int, help="Interval in seconds", required=False, default=3600)
+    parser.add_argument('-indent', dest="indent", type=int, help="Indent", required=False, default=None)
+    parser.add_argument('-fcint', dest="fcint", type=int, help="Interval between analysis in seconds", required=False,
+                        default=3*3600)
+    parser.add_argument('-file_inc', dest="file_inc", type=int, help="Interval between analysis in seconds",
+                        required=False, default=3*3600)
+    parser.add_argument('-offset', dest="offset", type=int, help="Offset into next forecast by  seconds",
+                        required=False, default=0)
+    parser.add_argument('-sfx', dest="sfx_type", type=str, help="Input type for surfex files", default=None,
+                        required=False, choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"])
+    parser.add_argument('-geo', dest="geo_in", type=str,
+                        help="JSON file with geometry needed for some surfex file types",
+                        required=False, default=None)
+    parser.add_argument('-obs', dest="obs_set", type=str, help="Input type", default=None,
+                        required=False, choices=[None, "json", "bufr", "frost", "netatmo", "titan"])
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output image", default=None,
+                        required=False)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_timeseries2json(**kwargs):
+    lons = kwargs["lons"]
+    lats = kwargs["lats"]
+    stations = kwargs["stations"]
+    stationlist = kwargs["stationlist"]
+    starttime = kwargs["start"]
+    endtime = kwargs["end"]
+    interval = kwargs["interval"]
+    varname = kwargs["varname"]
+    inputtype = kwargs["inputtype"]
+    file_inc = kwargs["file_inc"]
+    fcint = kwargs["fcint"]
+    offset = kwargs["offset"]
+    filepattern = kwargs["filepattern"]
+    indent = kwargs["indent"]
+    sfx_type = kwargs["sfx_type"]
+    obs_set = kwargs["obs_set"]
+    start = datetime.strptime(starttime, "%Y%m%d%H")
+    end = datetime.strptime(endtime, "%Y%m%d%H")
+    geo_in = kwargs["geo_in"]
+
+    # Get lon and lats from station list
+    if lons is None and lats is None:
+        if stations is None:
+            raise Exception("You must provide a station list if no stations are provided")
+        lons, lats = surfex.Observation.get_pos_from_stid(stationlist, stations)
+
+    if len(lons) != len(lats):
+        raise Exception("Mismatch in longitudes and latitudes")
+
+    delta = [0.1] * len(lons)
+    geo_json = {
+        "nam_pgd_grid": {
+            "cgrid": "LONLATVAL"
+        },
+        "nam_lonlatval": {
+            "xx": lons,
+            "xy": lats,
+            "xdx": delta,
+            "xdy": delta
+        }
+    }
+    geo = surfex.LonLatVal(geo_json)
+
+    settings = {}
+    if inputtype == "surfex":
+        settings.update({
+            "varname": varname,
+            "filetype": sfx_type
+        })
+    elif inputtype == "obs":
+        settings.update({
+            "varname": varname,
+            "filetype": obs_set,
+            "fcint": fcint,
+            "file_inc": file_inc,
+            "offset": offset,
+            "filepattern": filepattern
+        })
+
+    conf = {
+        varname: {
+            inputtype: {
+                "converter": {
+                    "none": settings
+                }
+            }
+        }
+    }
+
+    cache = surfex.Cache(False, 7200)
+
+    # Create var
+    converter = "none"
+    if geo_in is not None:
+        geo_in = surfex.get_geo_object(geo_in)
+
+    ts1 = surfex.TimeSeriesFromConverter(varname, inputtype, conf, geo, converter, start, end, cache=cache,
+                                         interval=interval, geo_in=geo_in,
+                                         stids_file=stationlist)
+
+    ts1.write_json("ts.json", indent=indent)

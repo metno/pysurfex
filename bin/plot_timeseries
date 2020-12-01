@@ -3,6 +3,5 @@
 import surfex
 import sys
 
-
 kwargs = surfex.parse_plot_timeseries_args(sys.argv[1:])
 surfex.run_plot_timeseries_from_json(**kwargs)

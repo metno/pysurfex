@@ -751,9 +751,10 @@ class BaseNamelist(object):
             new_dict.update({key.lower(): lower_case_dict})
         return new_dict
 
-    def merge_namelist_dicts(self, old_dict, new_dict):
-        old_dict = self.capitalize_namelist_dict(old_dict)
-        new_dict = self.capitalize_namelist_dict(new_dict)
+    @staticmethod
+    def merge_namelist_dicts(old_dict, new_dict):
+        old_dict = Namelist.capitalize_namelist_dict(old_dict)
+        new_dict = Namelist.capitalize_namelist_dict(new_dict)
         merged_dict = old_dict
 
         for new_key in new_dict:
@@ -795,7 +796,8 @@ class BaseNamelist(object):
             input_data = input_data.todict(complex_tuple=True)
             yaml.dump(input_data, output_file, default_flow_style=False)
 
-    def merge_json_namelist_file(self, old_dict, my_file):
+    @staticmethod
+    def merge_json_namelist_file(old_dict, my_file):
 
         print(my_file)
         if os.path.exists(my_file):
@@ -803,7 +805,7 @@ class BaseNamelist(object):
         else:
             raise FileNotFoundError
 
-        return self.merge_namelist_dicts(old_dict, new_dict)
+        return Namelist.merge_namelist_dicts(old_dict, new_dict)
 
     def get_namelist(self):
         print("Constructing namelist:")

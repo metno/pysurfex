@@ -4,7 +4,7 @@ import json
 
 
 class TimeSeries(object):
-    def __init__(self, times, values, lons, lats, stids, stids_file=None, varname="NA"):
+    def __init__(self, times, values, lons, lats, stids, stids_file=None, varname="NA", debug=False):
         self.times = times
         self.values = values
         self.lons = lons
@@ -52,7 +52,7 @@ class TimeSeries(object):
 
 
 class TimeSeriesFromJson(TimeSeries):
-    def __init__(self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None):
+    def __init__(self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None, debug=False):
         data = json.load(open(filename, "r"))
         times = []
         values = []
@@ -117,7 +117,7 @@ class TimeSeriesFromJson(TimeSeries):
             if validtime is not None:
                 if interval is not None:
                     validtime = validtime + timedelta(seconds=interval)
-        TimeSeries.__init__(self, times, values, lons1, lats1, stids1, varname=varname)
+        TimeSeries.__init__(self, times, values, lons1, lats1, stids1, varname=varname, debug=debug)
 
 
 class TimeSeriesFromConverter(TimeSeries):
@@ -127,7 +127,7 @@ class TimeSeriesFromConverter(TimeSeries):
     """
 
     def __init__(self, var, fileformat, conf, geo, converter, start, end, interval=3600, geo_in=None, cache=None,
-                 stids_file=None):
+                 stids_file=None, debug=False):
 
         validtime = start
         basetime = start
@@ -154,4 +154,5 @@ class TimeSeriesFromConverter(TimeSeries):
         else:
             stids = ["NA"] * geo.nlons
 
-        TimeSeries.__init__(self, times, values, geo.lonlist, geo.latlist, stids, stids_file=stids_file, varname=var)
+        TimeSeries.__init__(self, times, values, geo.lonlist, geo.latlist, stids, stids_file=stids_file, varname=var,
+                            debug=debug)
