@@ -270,14 +270,26 @@ class SurfexSuite(object):
                         do_soda = True
 
                 do_snow_ass = False
-                snow_ass = exp.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
-                if len(snow_ass) > 0:
-                    hh = int(dtg.strftime("%H"))
-                    for sn in snow_ass:
-                        if hh == int(sn):
-                            print("Do snow assimilation for ", dtg)
-                            do_soda = True
+                nnco = exp.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+                for ivar in range(0, len(nnco)):
+                    if nnco[ivar] == 0:
+                        if ivar == 0:
+                            pass
+                        elif ivar == 1:
+                            pass
+                        elif ivar == 4:
                             do_snow_ass = True
+
+                if do_snow_ass:
+                    do_snow_ass = False
+                    snow_ass = exp.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
+                    if len(snow_ass) > 0:
+                        hh = int(dtg.strftime("%H"))
+                        for sn in snow_ass:
+                            if hh == int(sn):
+                                print("Do snow assimilation for ", dtg)
+                                do_soda = True
+                                do_snow_ass = True
 
                 triggers = EcflowSuiteTriggers(prep_complete)
                 if not do_soda:

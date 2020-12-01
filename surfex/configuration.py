@@ -247,13 +247,16 @@ class Configuration(object):
     def get_fcint(self, cycle, mbr=None):
         hh_list = self.get_hh_list(mbr=mbr)
         fcint = None
-        for hh in range(0, len(hh_list)):
-            h = int(hh_list[hh]) % 24
-            if h == int(cycle) % 24:
-                if hh == 0:
-                    fcint = (int(hh_list[0]) - int(hh_list[len(hh_list) - 1])) % 24
-                else:
-                    fcint = int(hh_list[hh]) - int(hh_list[hh - 1])
+        if len(hh_list) > 1:
+            for hh in range(0, len(hh_list)):
+                h = int(hh_list[hh]) % 24
+                if h == int(cycle) % 24:
+                    if hh == 0:
+                        fcint = (int(hh_list[0]) - int(hh_list[len(hh_list) - 1])) % 24
+                    else:
+                        fcint = int(hh_list[hh]) - int(hh_list[hh - 1])
+        else:
+            fcint = 24
         return fcint
 
     def get_hh_list(self, mbr=None):
@@ -431,18 +434,17 @@ def merge_config_files_dict(config_files, configuration=None, testbed_configurat
         if configuration is not None:
             f = this_config_file.split("/")[-1]
             if f == "config_exp.toml":
-                block_config.add(tomlkit.comment("\n# HARMONIE experiment configuration file\n#" +
-                                                 "\n# Please read the documentation on " +
-                                                 "https://hirlam.org/trac/wiki/HarmonieSystemDocumentation " +
-                                                 "first\n#"))
+                block_config.add(tomlkit.comment("\n# SURFEX experiment configuration file\n#"))
 
         for block in config_files[this_config_file]["blocks"]:
             if configuration is not None:
                 # print(configuration)
-                if type(configuration) is not dict:
-                    raise Exception("Configuration should be a dict here!")
+                # print(type(configuration))
+                # if type(configuration) is not dict:
+                #     raise Exception("Configuration should be a dict here!")
                 if block in configuration:
                     merged_config = merge_toml_env(hm_exp[block], configuration[block])
+                    print("Merged: ", block, configuration[block])
                 else:
                     merged_config = hm_exp[block]
 
@@ -450,8 +452,8 @@ def merge_config_files_dict(config_files, configuration=None, testbed_configurat
 
             if testbed_configuration is not None:
                 # print("testbed", testbed_configuration)
-                if type(testbed_configuration) is not dict:
-                    raise Exception("Testbed configuration should be a dict here!")
+                # if type(testbed_configuration) is not dict:
+                #    raise Exception("Testbed configuration should be a dict here!")
                 if block in testbed_configuration:
                     hm_testbed = merge_toml_env(block_config[block], testbed_configuration[block])
                 else:
@@ -467,7 +469,7 @@ def merge_config_files_dict(config_files, configuration=None, testbed_configurat
                     block_config.update({block: user})
 
         config_files.update({this_config_file: {"toml": block_config}})
-        return config_files
+    return config_files
 
 
 def merge_toml_env_from_config_dicts(config_files):

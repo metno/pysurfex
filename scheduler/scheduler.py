@@ -76,12 +76,16 @@ class EcflowServer(Server):
                 dtgs.append(dtg)
                 hh = dtg.strftime("%H")
                 fcint = None
-                for h in range(0, len(hh_list)):
-                    if int(hh_list[h]) == int(hh):
-                        if h == len(hh_list) - 1:
-                            fcint = ((int(hh_list[len(hh_list) - 1]) % 24) - int(hh_list[0])) % 24
-                        else:
-                            fcint = int(hh_list[h + 1]) - int(hh_list[h])
+                if len(hh_list) > 1:
+                    for h in range(0, len(hh_list)):
+                        print(h, hh_list[h], hh)
+                        if int(hh_list[h]) == int(hh):
+                            if h == len(hh_list) - 1:
+                                fcint = ((int(hh_list[len(hh_list) - 1]) % 24) - int(hh_list[0])) % 24
+                            else:
+                                fcint = int(hh_list[h + 1]) - int(hh_list[h])
+                else:
+                   fcint = 24
                 if fcint is None:
                     raise Exception
                 dtg = dtg + timedelta(hours=fcint)
@@ -412,7 +416,7 @@ class SystemFromFile(System):
 
 class Exp(object):
     def __init__(self, name, wdir, rev, conf, experiment_is_locked, system_file_paths=None, system=None, server=None,
-                 configuration=None, geo=None, env_submit=None,  write_config_files=False, progress=None):
+                 configuration=None, configuration_file=None, geo=None, env_submit=None,  write_config_files=False, progress=None):
 
         self.name = name
         self.wd = wdir
@@ -452,13 +456,22 @@ class Exp(object):
         self.config_files = config_files
 
         do_merge = False
+        conf = None
         if configuration is not None:
-            do_merge = True
+            print("Using configuration ", configuration)
             conf = self.wd + "/config/configurations/" + configuration.lower() + ".toml"
             if not os.path.exists(conf):
                 conf = self.conf + "/scheduler/config/configurations/" + configuration.lower() + ".toml"
-                if not os.path.exists(conf):
-                    raise Exception("Can not find configuration " + configuration + " in: " + conf)
+            print("Configuration file ", configuration_file)
+        elif configuration_file is not None:
+            print("Using configuration from file ", configuration_file)
+            conf = configuration_file
+
+        if conf is not None:
+            write_config_files = True
+            do_merge = True
+            if not os.path.exists(conf):
+                raise Exception("Can not find configuration " + configuration + " in: " + conf)
             configuration = surfex.toml_load(conf)
 
         if do_merge:
@@ -633,7 +646,9 @@ class Exp(object):
                                    user_settings=None,
                                    write_config_files=True):
 
-        self.config_files = surfex.merge_config_files_dict(self.config_files, configuration=configuration,
+        # print(self.config_files)
+        config_files = self.config_files.copy()
+        self.config_files = surfex.merge_config_files_dict(config_files, configuration=configuration,
                                                            testbed_configuration=testbed_configuration,
                                                            user_settings=user_settings)
 
@@ -987,7 +1002,7 @@ class SystemFilePathsFromSystem(surfex.SystemFilePaths):
         obs_dir = self.get_system_path("obs_dir", default_dir="default_obs_dir", verbosity=verbosity,
                                        check_parsing=False)
         self.sfx_exp_vars.update({"OBDIR": obs_dir})
-        self.add_system_file_path("obs_dir", obs_dir)
+        self.add_system_file_path("obs_dir", obs_dir, check_parsing=False)
         first_guess_dir = self.get_system_path("archive_dir", check_parsing=False)
         self.add_system_file_path("first_guess_dir", first_guess_dir, check_parsing=False)
 

@@ -542,14 +542,7 @@ class Forcing(AbstractTask):
             user_config = yaml.load(open(kwargs["user_config"]))
             kwargs.update({"user_config": user_config})
 
-        # TODO
-        forcing_source = "testdata_grib2"
-
-        # TODO2
-        # Use cli interface???
-
         kwargs.update({"geo_out": self.geo})
-
         global_config = self.exp.wd + "/pysurfex/surfex/cfg/config.yml"
         global_config = yaml.load(open(global_config, "r"))
         kwargs.update({"config": global_config})
@@ -559,40 +552,43 @@ class Forcing(AbstractTask):
 
         forcing_dir = self.system_file_paths.get_system_path("forcing_dir", basedtg=self.dtg)
         os.makedirs(forcing_dir, exist_ok=True)
-        output = self.system_file_paths.get_system_file("forcing_dir", "FORCING.nc", basedtg=self.dtg)
+
+        output_format = self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE").lower()
+        if output_format == "netcdf":
+             output = self.system_file_paths.get_system_file("forcing_dir", "FORCING.nc", basedtg=self.dtg)
+        else:
+             raise NotImplementedError(output_format)
 
         kwargs.update({"of": output})
-        kwargs.update({"output_format": "netcdf"})
+        kwargs.update({"output_format": output_format})
 
-        if forcing_source == "thredds":
-            kwargs.update({"input_format": "netcdf"})
-            kwargs.update({"pattern": "https://thredds.met.no/thredds/dodsC/meps25epsarchive/" +
-                                      "@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc"})
-            kwargs.update({"zref": "ml"})
-            kwargs.update({"zval": "constant"})
-            kwargs.update({"uref": "ml"})
-            kwargs.update({"uval": "constant"})
-            kwargs.update({"zsoro_converter": "phi2m"})
-            kwargs.update({"sca_sw": "constant"})
-            kwargs.update({"co2": "constant"})
-            kwargs.update({"rain_converter": "totalprec"})
-            kwargs.update({"wind_converter": "windspeed"})
-            kwargs.update({"wind_dir_converter": "winddir"})
-        elif forcing_source == "testdata_grib2":
-            data_path = "/tmp/host1/testdata/"
-            kwargs.update({"input_format": "grib2"})
-            kwargs.update({"pattern": data_path + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib2"})
-            kwargs.update({"rain_converter": "totalprec"})
-            kwargs.update({"zref": "ml"})
-            kwargs.update({"zval": "constant"})
-            kwargs.update({"uref": "ml"})
-            kwargs.update({"uval": "constant"})
-            kwargs.update({"zsoro_converter": "phi2m"})
-            kwargs.update({"sca_sw": "constant"})
-            kwargs.update({"co2": "constant"})
-            kwargs.update({"wind_converter": "windspeed"})
-            kwargs.update({"wind_dir_converter": "winddir"})
-            kwargs.update({"debug": True})
+        pattern = self.config.get_setting("FORCING#PATTERN", check_parsing=False)
+        input_format = self.config.get_setting("FORCING#INPUT_FORMAT")
+        zref = self.config.get_setting("FORCING#ZREF")
+        zval = self.config.get_setting("FORCING#ZVAL")
+        uref = self.config.get_setting("FORCING#UREF")
+        uval = self.config.get_setting("FORCING#UVAL")
+        zsoro_converter = self.config.get_setting("FORCING#ZSORO_CONVERTER")
+        sca_sw = self.config.get_setting("FORCING#SCA_SW")
+        co2 = self.config.get_setting("FORCING#CO2")
+        rain_converter = self.config.get_setting("FORCING#RAIN_CONVERTER")
+        wind_converter = self.config.get_setting("FORCING#WIND_CONVERTER")
+        wind_dir_converter = self.config.get_setting("FORCING#WINDDIR_CONVERTER")
+        debug = self.config.get_setting("FORCING#DEBUG")
+
+        kwargs.update({"input_format": input_format})
+        kwargs.update({"pattern": pattern})
+        kwargs.update({"zref": zref})
+        kwargs.update({"zval": zval})
+        kwargs.update({"uref": uref})
+        kwargs.update({"uval": uval})
+        kwargs.update({"zsoro_converter": zsoro_converter})
+        kwargs.update({"sca_sw": sca_sw})
+        kwargs.update({"co2": co2})
+        kwargs.update({"rain_converter": rain_converter})
+        kwargs.update({"wind_converter": wind_converter})
+        kwargs.update({"wind_dir_converter": wind_dir_converter})
+        kwargs.update({"debug": debug})
 
         if os.path.exists(output):
             print("Output already exists: " + output)

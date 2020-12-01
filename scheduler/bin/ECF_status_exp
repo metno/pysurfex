@@ -2,5 +2,5 @@
 import sys
 import scheduler
 
-kwargs = scheduler.parse_status_cmd_exp(sys.argv[1:])
+kwargs = scheduler.parse_status_cmd(sys.argv[1:], exp=True)
 scheduler.status_cmd_exp(**kwargs)

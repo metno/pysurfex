@@ -9,16 +9,22 @@
     ]
   },
   "ppi_research_queue": {
+    "HOST": "0",
     "SUBMIT_TYPE": "grid_engine",
-    "VMEM": "#$ -l h_vmem=500M",
+    "VMEM": "#$ -l h_vmem=5000M",
     "PE": "#$ -pe shmem-1 1",
     "QUEUE": "#$ -q research-el7.q",
-    "WALLTIME": "#$ -l h_rt=00:01:00",
-    "INTERPRETER":  "#!/usr/bin/env python3",
+    "WALLTIME": "#$ -l h_rt=00:45:00",
+    "INTERPRETER":  "#!/modules/centos7/python/3.6.8/bin/python3",
+    "SH": "#$ -S /modules/centos7/python/3.6.8/bin/python3",
+    "V": "#$ -V",
     "tasks": [
     ]
   },
   "task_exceptions": {
+     "Forecast": {
+       "WALLTIME": "#$ -l h_rt=00:15:00"
+     }
   }
 }
 

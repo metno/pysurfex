@@ -19,6 +19,6 @@ JOBOUTDIR = "/lustre/storeB/users/$USER/sfx_data/$EXP/job"
 HM_CS = "gfortran"
 PARCH = ""
 MKDIR = "mkdir -p"
-RSYNC = "rsync -avh"
+RSYNC = "rsync  -rltgoDvh"
 SURFEX_CONFIG = "my_surfex_config"
 

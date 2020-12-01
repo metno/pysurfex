@@ -1,7 +1,7 @@
 config_files = ["config_exp.toml", "config_exp_observations.toml", "config_exp_surfex.toml"]
 
 ["config_exp.toml"]
-blocks = ["GENERAL", "COMPILE", "GEOMETRY", "CLIMATE", "INITIAL_CONDITIONS", "FORECAST", "SYSTEM"]
+blocks = ["GENERAL", "COMPILE", "GEOMETRY", "INITIAL_CONDITIONS", "FORECAST", "SYSTEM"]
 
 ["config_exp_observations.toml"]
 blocks = ["OBSERVATIONS"]

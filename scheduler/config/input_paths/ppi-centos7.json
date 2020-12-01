@@ -1,0 +1,13 @@
+{
+  "scratch": "@SFX_EXP_DATA@",
+  "sand_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "clay_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "soc_top_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "soc_sub_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "flake_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "ecoclimap_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "ecoclimap_cover_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "ecoclimap_bin_dir": "/modules/SOURCES/centos7-SOURCES/surfex/cy43_develop/util/offline/MY_RUN/ECOCLIMAP/",
+  "oro_dir": "/lustre/storeB/project/nwp/surfex/PGD/",
+  "bin_dir": "/modules/centos7/user-apps/suv/surfex/cy43-dev//bin/"
+}

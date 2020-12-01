@@ -309,6 +309,7 @@ def parse_surfex_script(argv):
     parser.add_argument('--domain_name', help="Domain name", type=str, required=False, default=None)
     parser.add_argument('--domain_file', help="Domain file", type=str, required=False, default=None)
     parser.add_argument('--config', help="Config", type=str, required=False, default=None)
+    parser.add_argument('--config_file', help="Config file", type=str, required=False, default=None)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
     if len(argv) == 0:
@@ -341,6 +342,13 @@ def surfex_script(**kwargs):
         conf = kwargs["conf"]
     host = kwargs["host"]
     config = kwargs["config"]
+    config = None
+    if "config" in kwargs:
+        config = kwargs["config"]
+    config_file = None
+    if "config_file" in kwargs:
+        config_file = kwargs["config_file"]
+
     domain_name = None
     if "domain_name" in kwargs:
         domain_name = kwargs["domain_name"]
@@ -370,6 +378,11 @@ def surfex_script(**kwargs):
         exp = wd.split("/")[-1]
         print("EXP = " + exp)
 
+    print(wd + "/pysurfex")
+    if os.path.exists(wd + "/pysurfex"):
+        sys.path.insert(0, wd + "/pysurfex")
+        print("Set first in system path: ", wd + "/pysurfex")
+
     if action == "setup":
         # Copy files to WD from REV
         if rev is None:
@@ -380,7 +393,7 @@ def surfex_script(**kwargs):
             conf = rev
 
         experiment_is_locked = False
-        sfx_exp = scheduler.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config)
+        sfx_exp = scheduler.Exp(exp, wd, rev, conf, experiment_is_locked, configuration=config, configuration_file=config_file)
         sfx_exp.setup_files(host)
 
         exp_domain_file = sfx_exp.get_file_name(wd, "domain", full_path=True)
