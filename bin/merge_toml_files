@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 
-import toml
-import argparse
+import surfex
 import sys
-import collections
-import os
-import copy
-
 
 if __name__ == "__main__":
 
