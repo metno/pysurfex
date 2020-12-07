@@ -1,8 +1,0 @@
-{
-  "submit_types": ["background"],
-  "default_submit_type": "background",
-  "background": {
-    "HOST": "0",
-    "SUBMIT": ""
-  }
-}

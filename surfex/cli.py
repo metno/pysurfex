@@ -911,7 +911,7 @@ def run_titan(**kwargs):
             if kwargs["config"] is not None:
                 config_exp = kwargs["config"]
         if config_exp is None:
-            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
@@ -1283,6 +1283,7 @@ def run_plot_field(**kwargs):
         domain_json = json.load(open(geo_file, "r"))
         geo = surfex.geo.get_geo_object(domain_json)
 
+    geo_input = None
     contour = True
     var = "field_to_read"
     if inputtype == "grib1":
@@ -1369,6 +1370,10 @@ def run_plot_field(**kwargs):
         datatype = kwargs["sfx_datatype"]
         interval = kwargs["sfx_interval"]
         geo_sfx_input = kwargs["sfx_geo_input"]
+        geo_input = None
+        if geo_sfx_input is not None:
+            domain_json = json.load(open(geo_sfx_input, "r"))
+            geo_input = surfex.geo.get_geo_object(domain_json)
 
         sfx_var = surfex.SurfexFileVariable(variable, validtime=validtime, patches=patches, layers=layers,
                                             basetime=basetime, interval=interval, datatype=datatype)
@@ -1382,7 +1387,7 @@ def run_plot_field(**kwargs):
             "datatype": datatype,
             "interval": interval,
             "basetime": basetime,
-            "geo_input": geo_sfx_input,
+            "geo_input": geo_input,
             "fcint": 10800,
             "file_inc": 10800,
             "offset": 0

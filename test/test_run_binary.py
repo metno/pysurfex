@@ -11,15 +11,11 @@ class RunTestNC(unittest.TestCase):
         print("SETUP")
         self.testdata = "testdata/"
         self.rootdir = os.path.abspath(os.curdir)
-        self.config_exp = self.rootdir + "/scheduler/config/config_exp.toml"
-        self.config_exp_surfex = self.rootdir + "/scheduler/config/config_exp_surfex.toml"
+        self.config_exp = self.rootdir + "/surfex/cfg/config_exp.toml"
+        self.config_exp_surfex = self.rootdir + "/surfex/cfg/config_exp_surfex.toml"
         self.grid = "conf_proj"
         self.domain = self.rootdir + "/test/settings/" + self.grid + "_test.json"
         host_name = socket.gethostname()
-        if host_name == "pc4384" or host_name == "pc4495":
-            self.system = self.rootdir + "/scheduler/config/input_paths/" + host_name + ".json"
-        else:
-            self.system = self.rootdir + "/test/settings/test_system.json"
         self.system = self.rootdir + "/test/settings/test_system.json"
 
     def tearDown(self):
@@ -146,7 +142,7 @@ class RunTestNC(unittest.TestCase):
             "-c", config_file,
             "--domain", self.domain,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,
@@ -173,12 +169,12 @@ class RunTestNC(unittest.TestCase):
             "-w", "",
             "--domain", self.domain,
             "--pgd", pgd,
-            "--prep_file", self.rootdir + "/scheduler/nam/prep_from_namelist_values.json",
+            "--prep_file", self.rootdir + "/test/nam/prep_from_namelist_values.json",
             "--prep_filetype", "json",
             "--dtg", "2020022000",
             "-c", config_file,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,
@@ -208,7 +204,7 @@ class RunTestNC(unittest.TestCase):
             "--prep", prep,
             "-c", config_file,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,
@@ -241,7 +237,7 @@ class RunTestNC(unittest.TestCase):
             "--dtg", "2020022003",
             "-c", config_file,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,
@@ -285,7 +281,7 @@ class RunTestNC(unittest.TestCase):
             "--prep", prep,
             "-c", config_file,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,
@@ -311,7 +307,7 @@ class RunTestNC(unittest.TestCase):
             "--dtg", "2020022003",
             "-c", config_file,
             "-s", self.system,
-            "-n", self.rootdir + "/scheduler/nam/",
+            "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
             "-o", output,

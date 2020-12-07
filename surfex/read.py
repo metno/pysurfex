@@ -225,17 +225,17 @@ class Converter:
         # var.print_variable_info()
         return var
 
-    def read_time_step(self, geo, validtime, cache, geo_in=None):
+    def read_time_step(self, geo, validtime, cache):
         # print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         gravity = 9.81
         field = np.empty(geo.npoints)
         # Specific reading for each converter
         if self.name == "none":
-            field = self.var.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
-            field_x = self.x.read_variable(geo, validtime, cache, geo_in=geo_in)
-            field_y = self.y.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field_x = self.x.read_variable(geo, validtime, cache)
+            field_y = self.y.read_variable(geo, validtime, cache)
             # field_y = self.y.read_variable(geo,validtime,cache)
             if self.name == "windspeed":
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
@@ -245,9 +245,9 @@ class Converter:
                 field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180, 360)
 
         elif self.name == "rh2q":
-            field_rh = self.rh.read_variable(geo, validtime, cache, geo_in=geo_in)  # %
-            field_t = self.t.read_variable(geo, validtime, cache, geo_in=geo_in)  # In K
-            field_p = self.p.read_variable(geo, validtime, cache, geo_in=geo_in)  # In Pa
+            field_rh = self.rh.read_variable(geo, validtime, cache)  # %
+            field_t = self.t.read_variable(geo, validtime, cache)  # In K
+            field_p = self.p.read_variable(geo, validtime, cache)  # In Pa
 
             field_p_mb = np.divide(field_p, 100.)
             field_t_c = np.subtract(field_t, 273.15)
@@ -261,16 +261,16 @@ class Converter:
             # ZRATIO = 0.622 * ZE / (ZPRES / 100.)
             # RH2Q = 1. / (1. / ZRATIO + 1.)
         elif self.name == "totalprec":
-            field_totalprec = self.totalprec.read_variable(geo, validtime, cache, geo_in=geo_in)
-            field_snow = self.snow.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
+            field_snow = self.snow.read_variable(geo, validtime, cache)
             field = np.subtract(field_totalprec, field_snow)
         elif self.name == "calcrain":
-            field_totalprec = self.totalprec.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_t = self.t.read_variable(geo, validtime, cache)
             field = field_totalprec
             field[field_t < 1] = 0
         elif self.name == "calcsnow":
-            field_totalprec = self.totalprec.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             # field_rh = self.rh.read_variable(geo, validtime,cache) #
             field_t = self.t.read_variable(geo, validtime, cache)  # In K
             # field_p = self.p.read_variable(geo, validtime,cache)   # In Pa
@@ -286,15 +286,15 @@ class Converter:
             field = field_totalprec
             field[field_t > 1] = 0
         elif self.name == "phi2m":
-            field = self.phi.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = self.phi.read_variable(geo, validtime, cache)
             field = np.divide(field, gravity)
             field[(field < 0)] = 0.
         elif self.name == "swe2sd":
-            field = self.swe.read_variable(geo, validtime, cache, geo_in=geo_in)
-            rho = self.swe.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = self.swe.read_variable(geo, validtime, cache)
+            rho = self.swe.read_variable(geo, validtime, cache)
             field = np.divide(field, rho)
         elif self.name == "sweclim":
-            field = self.swe.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = self.swe.read_variable(geo, validtime, cache)
             rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312., "07": 312., "08": 143.,
                        "09": 143., "10": 161., "11": 182., "12": 213.}
             month = validtime.strftime("%m")
@@ -303,19 +303,19 @@ class Converter:
             else:
                 raise Exception("Could not found climatological mean for month " + str(month))
         elif self.name == "sea2land":
-            field = self.sea.read_variable(geo, validtime, cache, geo_in=geo_in)
+            field = self.sea.read_variable(geo, validtime, cache)
             field = np.subtract(1, field)
         elif self.name == "tap":
-            tap1 = self.tap1.read_variable(geo, validtime, cache, geo_in=geo_in)
-            tap2 = self.tap2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            tap1 = self.tap1.read_variable(geo, validtime, cache)
+            tap2 = self.tap2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(tap1), tap2, tap1)
         elif self.name == "rhp":
-            rhp1 = self.rhp1.read_variable(geo, validtime, cache, geo_in=geo_in)
-            rhp2 = self.rhp2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            rhp1 = self.rhp1.read_variable(geo, validtime, cache)
+            rhp2 = self.rhp2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(rhp1), rhp2, rhp1)
         elif self.name == "sdp":
-            sdp1 = self.rhp1.read_variable(geo, validtime, cache, geo_in=geo_in)
-            sdp2 = self.rhp2.read_variable(geo, validtime, cache, geo_in=geo_in)
+            sdp1 = self.rhp1.read_variable(geo, validtime, cache)
+            sdp2 = self.rhp2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(sdp1), sdp2, sdp1)
         else:
             print("Converter " + self.name + " not implemented")

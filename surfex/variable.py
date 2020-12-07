@@ -42,7 +42,7 @@ class Variable(object):
             print("Constructed " + self.__class__.__name__ + " for " + str(self.var_dict))
 
     @abc.abstractmethod
-    def read_variable(self, geo, validtime, cache, geo_in=None):
+    def read_variable(self, geo, validtime, cache):
         raise NotImplementedError('users must define read_variable to use this base class')
 
     @abc.abstractmethod
@@ -165,7 +165,7 @@ class NetcdfVariable(Variable):
 
         Variable.__init__(self, basetime, validtime, var_dict, debug)
 
-    def read_variable(self, geo, validtime, cache, geo_in=None):
+    def read_variable(self, geo, validtime, cache):
 
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
@@ -281,7 +281,7 @@ class GribVariable(Variable):
         else:
             raise NotImplementedError
 
-    def read_variable(self, geo, validtime, cache, geo_in=None):
+    def read_variable(self, geo, validtime, cache):
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
@@ -396,11 +396,15 @@ class SurfexVariable(Variable):
 
         Variable.__init__(self, basetime, validtime, var_dict, debug)
 
-    def read_variable(self, geo, validtime, cache, geo_in=None):
+    def read_variable(self, geo, validtime, cache):
 
         self.validtime = validtime
         if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
                               int(self.var_dict["file_inc"])):
+
+            geo_in = None
+            if "geo_input" in self.var_dict:
+                geo_in = self.var_dict["geo_input"]
 
             # print "Updating filehandler for "+self.print_variable_info()
             if cache is not None and cache.file_open(self.filename):
@@ -578,7 +582,7 @@ class FaVariable(Variable):
                         self.file_handler.fname = self.previousfilename
                         previous_field, intp = self.file_handler.points(var_name,  geo,
                                                                         validtime=self.previoustime,
-                                                                        interpolation=int_type, cache=cache)
+                                                                        interpolation=int_type)
                         if cache is not None:
                             cache.save_field(id_str, previous_field)
                         # Change filename back in handler. Ready to read this time step

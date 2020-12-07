@@ -57,12 +57,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update && sudo apt install libudunits2-dev libboost-dev libproj-dev libeccodes0 libeccodes-dev \
-        libarmadillo-dev libgsl-dev ecflow-server ecflow-client python3-ecflow python3-setuptools python3-nose \
-        python3-numpy python3-scipy python3-pyproj
-
-        # Start the server manually
-        ecflow_start
-        ecflow_client --port $(( `id -u` + 1500 )) --ping
+        libarmadillo-dev libgsl-dev python3-setuptools python3-nose python3-numpy python3-scipy python3-pyproj
 
         python -m pip install --upgrade pip
         pip install flake8 pytest
@@ -81,13 +76,8 @@ jobs:
       run: |
         wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV" -O testdata.zip && rm -rf /tmp/cookies.txt
         unzip -o testdata.zip
-        ls -l /usr/lib/python3/dist-packages/ecflow
-        # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c "import sys; print(sys.path)"
-        # export PYTHONPATH="/usr/lib/python3/dist-packages/" && python3 -c 'import ecflow; print("ecflow version ", ecflow.__version__)'
         echo "Testdata"
         ./prepare_testdata.sh
-        ls -l /usr/bin/start_ecflow.sh || echo "/usr/bin/start_ecflow.sh not found"
-        ls -l /usr/sbin/ecflow_start || echo "/usr/sbin/ecflow_start not found"
         export PATH=$PWD/test/bin:/usr/bin/:$PATH && CLIENTID=${{ secrets.CLIENTID }} nosetests
     - name: Coveralls
       if: ${{ matrix.python-version == 3.6 }}
