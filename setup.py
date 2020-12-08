@@ -88,7 +88,7 @@ setup(
         "scipy",
         "netCDF4",
         "cfunits",
-        "pyproj==2.2",
+        "pyproj == 2.2",
         "pyyaml",
         "toml",
         "netCDF4",
@@ -132,9 +132,10 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_dir={'forcing': 'forcing'},
+    package_dir={'forcing': 'forcing', "config": "config"},
     package_data={
         'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml', 'cfg/first_guess.yml'],
+        "config": ["cfg/config_exp.toml", "cfg/config_exp_surfex.toml"],
     },
     include_package_data=True,
 
