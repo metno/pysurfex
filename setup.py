@@ -90,6 +90,7 @@ setup(
         "cfunits",
         "pyproj == 2.2",
         "pyyaml",
+        "tomlkit",
         "toml",
         "netCDF4",
         "jsonmerge",
