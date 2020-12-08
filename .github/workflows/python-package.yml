@@ -60,6 +60,7 @@ jobs:
         libarmadillo-dev libgsl-dev python3-setuptools python3-nose python3-numpy python3-scipy python3-pyproj
 
         python --version
+        pip install numpy
         python -c "import numpy"
         python -m pip install --upgrade pip
         pip install flake8 pytest
