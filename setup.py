@@ -133,12 +133,12 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_dir={'forcing': 'forcing', "config": "config"},
+    # package_dir={'forcing': 'forcing', "config": "config"},
     package_data={
-        'forcing': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml', 'cfg/first_guess.yml'],
-        "config": ["cfg/config_exp.toml", "cfg/config_exp_surfex.toml"],
+        'surfex': ['cfg/config.yml', 'cfg/area.yml', 'cfg/user.yml', 'cfg/first_guess.yml',
+                   "cfg/config_exp.toml", "cfg/config_exp_surfex.toml"],
     },
-    include_package_data=True,
+    # include_package_data=True,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

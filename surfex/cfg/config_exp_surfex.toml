@@ -98,7 +98,7 @@ SCHEME = "NONE"                     # SSO scheme used in SURFEX "NONE"|"'Z01D'"|
 [SURFEX.TREEDRAG]
 TREEDATA_FILE = ""                # Name of tree height data file (with *.llv suffix)
 XSCALE_H_TREE = 1.0                 # Scale the tree height with this factor
-XALLEN_TERM  = 2.5                  # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
+XALLEN_TERM = 2.5                  # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
 XGRASS_H_DNM = 3.0                  # grass: z0=0.13*LAI/XGRASS_H_DNM; default=6.0
 
 ########
@@ -158,7 +158,7 @@ XSWEPSMIN = 500.0
 [SURFEX.ASSIM.ISBA.OI]
 CFILE_FORMAT_CLIM = "ASCII"         # File format for file containing climatological fields
 CFILE_FORMAT_FG = "ASCII"           # File format of upper air first guess
-COEFFS="POLYNOMES_ISBA"             # Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
+COEFFS = "POLYNOMES_ISBA"             # Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
                                     # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
 XSIGT2MO = 1.0                      # SIGMA O for T2M in oi_cacsts
 XSIGH2MO = 0.1                      # SIGMA O for RH2M in oi_cacsts
