@@ -105,6 +105,7 @@ class NetCDFOutput(SurfexForcing):
             print(this_obj.var_name)
             tic = time.time()
             field = this_obj.read_time_step(this_time, cache)
+            field = field.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             toc = time.time()
             print("# read_time_step: ", toc - tic)
             self.forcing_file[self.translation[this_var]][self.time_step, :] = field

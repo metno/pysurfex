@@ -10,6 +10,7 @@ import abc
 import pyproj
 print(netCDF4.__file__)
 
+
 class SurfexIO(object):
     def __init__(self, filename, geo, extension):
         self.filename = filename
