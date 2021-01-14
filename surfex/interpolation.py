@@ -77,6 +77,8 @@ class NearestNeighbour(Interpolation):
             cached_interpolator = cache.get_interpolator("nearest", geo_in, geo_out)
 
         print(geo_in.identifier())
+        if geo_out is None:
+            geo_out = geo_in
         print(geo_out.identifier())
         if cached_interpolator is not None:
             print("Using cached interpolator")
@@ -156,8 +158,7 @@ class NearestNeighbour(Interpolation):
                 values_vec = np.arange(nx * ny)
                 x = np.floor_divide(values_vec, ny)
                 y = np.mod(values_vec, ny)
-                grid_points =  np.column_stack((x, y))
-
+                grid_points = np.column_stack((x, y))
 
             Interpolation.__init__(self, "nearest", nx, ny, var_lons, var_lats)
             self.index = grid_points

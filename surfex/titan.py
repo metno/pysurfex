@@ -384,7 +384,8 @@ class Sct(QualityControl):
             lons = np.asarray(lons)
             elevs = np.asarray(elevs)
             values = np.asarray(values)
-            answer = tit.sct(lats, lons, elevs, values, self.num_min, self.num_max, self.inner_radius,
+            points = tit.Points(lats, lons, elevs)
+            answer = tit.sct(points, values, self.num_min, self.num_max, self.inner_radius,
                              self.outer_radius, self.num_iterations, self.num_min_prof, self.min_elev_diff,
                              self.min_horizonal_scale, self.vertical_scale, self.pos, self.neg, self.eps2)
 
@@ -492,7 +493,8 @@ class Buddy(QualityControl):
             elevs.append(dataset.elevs[i])
             values.append(dataset.values[i])
 
-        status, flags = tit.buddy_check(lats, lons, elevs, values,
+        points = tit.Points(lats, lons, elevs)
+        status, flags = tit.buddy_check(points, values,
                                         self.distance_lim, self.priorities,
                                         self.buddies_min, self.thresholds, self.diff_elev_max,
                                         self.adjust_for_elev_diff, self.obs_to_check)
@@ -563,7 +565,8 @@ class Climatology(QualityControl):
             val = dataset.values[mask[o]] + self.offset[o]
             values.append(val)
 
-        flags = tit.range_check_climatology(lats, lons, elevs, values, self.unixtime, self.maxvals, self.minvals)
+        points = tit.Points(lats, lons, elevs)
+        flags = tit.range_check_climatology(points, values, self.unixtime, self.maxvals, self.minvals)
 
         global_flags = dataset.flags
         for i in range(0, len(mask)):
@@ -1094,7 +1097,8 @@ class TitanDataSet(QCDataSet):
         for i in range(0, len(lons)):
             observations.append(surfex.Observation(obstimes[i], lons[i], lats[i], values[i], elev=elevs[i],
                                                    stid=stids[i], varname=varnames[i]))
-        self.titan_dataset = tit.Dataset(lats, lons, elevs, values)
+        points = tit.Points(lats, lons, elevs)
+        self.titan_dataset = tit.Dataset(points, values)
         if passed_tests is None:
             passed_tests = []
             for i in range(0, len(lons)):

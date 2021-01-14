@@ -5,5 +5,5 @@ import surfex
 
 if __name__ == "__main__":
 
-    args = surfex.parse_args_oi2soda(sys.argv[1:])
-    surfex.run_oi2soda(args)
+    kwargs = surfex.parse_args_oi2soda(sys.argv[1:])
+    surfex.run_oi2soda(**kwargs)

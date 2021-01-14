@@ -27,6 +27,18 @@ class ReadData(object):
         raise NotImplementedError('users must define read_time_step to use this base class')
 
 
+class Points(object):
+    def __init__(self, values, interpolator):
+        self.values = values
+        self.interpolator = interpolator
+
+
+class TwoDField(object):
+    def __init__(self, values, geo):
+        self.values = values
+        self.geo = geo
+
+
 # Direct data can be ead with this class with converter = None
 class ConvertedInput(ReadData):
     """
@@ -105,7 +117,7 @@ def remove_existing_file(f_in, f_out):
 #######################################################
 
 
-class Converter:
+class Converter(object):
     """
     Main interface to read a field is done through a converter.
     The converter name is default "None" to read a plain field without any conversion.
@@ -229,7 +241,8 @@ class Converter:
         # print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         gravity = 9.81
-        field = np.empty(geo.npoints)
+        field = None
+        # field = np.empty(geo.npoints)
         # Specific reading for each converter
         if self.name == "none":
             field = self.var.read_variable(geo, validtime, cache)

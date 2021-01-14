@@ -427,7 +427,7 @@ def run_masterodb(**kwargs):
             if kwargs["config"] is not None:
                 config_exp = kwargs["config"]
         if config_exp is None:
-            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
@@ -1202,8 +1202,8 @@ def run_bufr2json(**kwargs):
     bufr_set.write_json_file(output, indent=indent)
 
 
-def parse_args_plot_field(argv):
-    parser = ArgumentParser("Plot field")
+def parse_args_plot_points(argv):
+    parser = ArgumentParser("Plot points")
     parser.add_argument('-g', '--geo', dest="geo", type=str, help="Domain/points json geometry definition file",
                         default=None, required=False)
     parser.add_argument('-v', '--variable', dest="variable", type=str, help="Variable name", required=False)
@@ -1215,7 +1215,7 @@ def parse_args_plot_field(argv):
                         required=False)
     parser.add_argument('-o', '--output', dest="output", type=str, help="Output file", default=None,
                         required=False)
-
+    parser.add_argument("--interpolator", type=str, default="nearest", required=False, help="Interpolator")
     grib = parser.add_argument_group('grib', 'Grib1/2 settings (-it grib1 or -it grib2)')
     grib.add_argument('--indicatorOfParameter', type=int, help="Indicator of parameter [grib1]", default=None)
     grib.add_argument('--timeRangeIndicator', type=int, help="Time range indicator [grib1]", default=0)
@@ -1257,7 +1257,7 @@ def parse_args_plot_field(argv):
     return kwargs
 
 
-def run_plot_field(**kwargs):
+def run_plot_points(**kwargs):
 
     debug = False
     if "debug" in kwargs:
@@ -1277,13 +1277,15 @@ def run_plot_field(**kwargs):
         filepattern = kwargs["inputfile"]
     inputtype = kwargs["inputtype"]
     output = kwargs["output"]
+    interpolator = "nearest"
+    if "interpolator" in kwargs:
+        interpolator = kwargs["interpolator"]
 
     geo = None
     if geo_file is not None:
         domain_json = json.load(open(geo_file, "r"))
         geo = surfex.geo.get_geo_object(domain_json)
 
-    geo_input = None
     contour = True
     var = "field_to_read"
     if inputtype == "grib1":
@@ -1306,7 +1308,8 @@ def run_plot_field(**kwargs):
             "parameter": par,
             "type": lt,
             "level": lev,
-            "tri": tri
+            "tri": tri,
+            "interpolator": interpolator
         }
 
     elif inputtype == "grib2":
@@ -1354,7 +1357,8 @@ def run_plot_field(**kwargs):
             "filepattern": filepattern,
             "fcint": 10800,
             "file_inc": 10800,
-            "offset": 0
+            "offset": 0,
+            "interpolator": interpolator
         }
 
     elif inputtype == "surfex":
@@ -1390,7 +1394,8 @@ def run_plot_field(**kwargs):
             "geo_input": geo_input,
             "fcint": 10800,
             "file_inc": 10800,
-            "offset": 0
+            "offset": 0,
+            "interpolator": interpolator
         }
 
     elif inputtype == "obs":
@@ -1439,7 +1444,6 @@ def run_plot_field(**kwargs):
     converter = "none"
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, validtime, debug=debug)
     field = surfex.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
-    # field = np.reshape(field, [geo.nlons, geo.nlats])
 
     if field is None:
         raise Exception("No field read")
@@ -1789,7 +1793,11 @@ def run_timeseries2json(**kwargs):
     obs_set = kwargs["obs_set"]
     start = datetime.strptime(starttime, "%Y%m%d%H")
     end = datetime.strptime(endtime, "%Y%m%d%H")
-    geo_in = kwargs["geo_in"]
+    geo_in = None
+    if "geo_in" in kwargs:
+        geo_in = kwargs["geo_in"]
+    if isinstance(geo_in, str):
+        geo_in = json.load(open(geo_in, "r"))
 
     # Get lon and lats from station list
     if lons is None and lats is None:

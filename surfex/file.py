@@ -1047,6 +1047,7 @@ class ForcingFileNetCDF(SurfexIO):
 
         points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
                                                           cache=cache)
+
         return points, interpolator
 
 

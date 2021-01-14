@@ -172,6 +172,7 @@ setup(
         'bin/perturbed_offline',
         'bin/pgd',
         'bin/plot_field',
+        'bin/plot_points',
         'bin/plot_timeseries',
         'bin/prep',
         'bin/set_geo_from_obs_set',
