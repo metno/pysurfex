@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -63,6 +62,18 @@
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">Points</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span> <span class="o">=</span> <span class="n">interpolator</span>
+
+
+<span class="k">class</span> <span class="nc">TwoDField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
 
 
 <span class="c1"># Direct data can be ead with this class with converter = None</span>
@@ -143,7 +154,7 @@
 <span class="c1">#######################################################</span>
 
 
-<div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#surfex.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">:</span>
+<div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#surfex.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main interface to read a field is done through a converter.</span>
 <span class="sd">    The converter name is default &quot;None&quot; to read a plain field without any conversion.</span>
@@ -267,7 +278,8 @@
         <span class="c1"># print(&quot;Time in converter: &quot;+self.name+&quot; &quot;+validtime.strftime(&#39;%Y%m%d%H&#39;))</span>
 
         <span class="n">gravity</span> <span class="o">=</span> <span class="mf">9.81</span>
-        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># field = np.empty(geo.npoints)</span>
         <span class="c1"># Specific reading for each converter</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
@@ -394,7 +406,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>
