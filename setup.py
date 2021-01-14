@@ -104,7 +104,7 @@ setup(
         "eccodes",
         "python-csv",
         "db-sqlite3",
-        "titanlib >= 0.2.1",
+        "titanlib >= 0.3.0.dev3",
         "gridpp >= 0.5.0.post1"
     ],
 
