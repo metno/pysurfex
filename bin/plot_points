@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+import surfex
+import sys
+
+kwargs = surfex.parse_args_plot_points(sys.argv[1:])
+surfex.run_plot_points(**kwargs)
