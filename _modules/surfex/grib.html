@@ -158,6 +158,10 @@
                         <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
                         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
 
+                        <span class="k">if</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;bitmapPresent&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">missing_value</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;missingValue&quot;</span><span class="p">)</span>
+                            <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">==</span> <span class="n">missing_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
                         <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
                                 <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -387,7 +391,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

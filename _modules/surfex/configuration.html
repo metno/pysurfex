@@ -667,7 +667,7 @@
 
         <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX (must be .FALSE. for NPATCH&gt;1)</span>
         <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
             <span class="n">canopy</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">canopy</span> <span class="o">=</span> <span class="kc">False</span>
@@ -726,14 +726,24 @@
         <span class="c1"># Treeheight</span>
         <span class="k">if</span> <span class="s2">&quot;H_TREE_FILE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;H_TREE_FILE&quot;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="c1"># XRIMAX Maximum allowed Richardson number in the surface layer (cy40h default was 0.0)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XRIMAX&quot;</span><span class="p">]))</span>
 
         <span class="c1"># XSCALE_H_TREE  Scale the tree height with this factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#XSCALE_H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSCALE_H_TREE&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;LFAKETREE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
+                <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#FAKETREES&quot;</span><span class="p">,</span> <span class="n">lfaketree</span><span class="p">)</span>
+
+        <span class="c1"># Heat capacity</span>
+        <span class="k">if</span> <span class="s2">&quot;XCGMAX&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#XCGMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XCGMAX&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="s2">&quot;XCSMAX&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#XCSMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XCSMAX&quot;</span><span class="p">]))</span>
 
         <span class="c1"># CFORCING_FILETYPE Offline surfex forcing format (NETCDF/ASCII)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CFORCING_FILETYPE&quot;</span><span class="p">])</span>
@@ -749,7 +759,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">,</span> <span class="n">ana_sea</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;LECSST&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="n">lecsst</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
@@ -786,11 +800,20 @@
         <span class="c1"># # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#COEFFS&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANASURF_OI_COEFF&quot;</span><span class="p">])</span>
 
+        <span class="c1"># Always set SURFEX#IO#LSPLIT_PATCH False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSPLIT_PATCH&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
         <span class="c1"># Always use FA format as input</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#CFILE_FORMAT_SST&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_OI_MAIN&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_EKF_SURFEX&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#LSWE&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">,</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#LSWE&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;06&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">&quot;SNOW_CYCLES&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
@@ -874,7 +897,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

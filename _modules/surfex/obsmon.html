@@ -129,20 +129,24 @@
         <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
             <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
 
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM usage where longitude ==&quot;</span> <span class="o">+</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot; AND latitude ==&quot;</span> <span class="o">+</span> <span class="n">lat</span> <span class="o">+</span> <span class="s2">&quot; AND varname == </span><span class="se">\&quot;</span><span class="s2">&quot;</span> \
-              <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-        <span class="n">records</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">records</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;UPDATE usage SET fg_dep=&quot;</span> <span class="o">+</span> <span class="n">fg_dep</span> <span class="o">+</span> <span class="s2">&quot;,an_dep=&quot;</span> <span class="o">+</span> <span class="n">an_dep</span> <span class="o">+</span> <span class="s2">&quot;,anflag=&quot;</span> <span class="o">+</span> <span class="n">status</span> <span class="o">+</span> \
-                  <span class="s2">&quot; WHERE longitude == &quot;</span> <span class="o">+</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot; AND latitude == &quot;</span> <span class="o">+</span> <span class="n">lat</span> <span class="o">+</span> <span class="s2">&quot; AND varname == </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-        <span class="k">elif</span> <span class="n">records</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO usage VALUES(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">obnumber</span> <span class="o">+</span> <span class="s2">&quot;,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">obname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">satname</span> \
-                  <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,&quot;</span> <span class="o">+</span> <span class="n">level</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">lat</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">stid</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">value</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> \
-                  <span class="n">fg_dep</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">an_dep</span> <span class="o">+</span> <span class="s2">&quot;,0,0,0,0,0,&quot;</span> <span class="o">+</span> <span class="n">status</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You should not have &quot;</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="s2">&quot; in your database for longitude=&quot;</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="s2">&quot; latitude=&quot;</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        #cmd = &quot;SELECT * FROM usage where longitude ==&quot; + lon + &quot; AND latitude ==&quot; + lat + &quot; AND varname == \&quot;&quot; \</span>
+<span class="sd">        #      + varname + &quot;\&quot;&quot;</span>
+<span class="sd">        #c.execute(cmd)</span>
+<span class="sd">        #records = len(c.fetchall())</span>
+<span class="sd">        #if records == 1:</span>
+<span class="sd">        #    cmd = &quot;UPDATE usage SET fg_dep=&quot; + fg_dep + &quot;,an_dep=&quot; + an_dep + &quot;,anflag=&quot; + status + \</span>
+<span class="sd">        #          &quot; WHERE longitude == &quot; + lon + &quot; AND latitude == &quot; + lat + &quot; AND varname == \&quot;&quot; + varname + &quot;\&quot;&quot;</span>
+<span class="sd">        #elif records == 0:</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO usage VALUES(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">obnumber</span> <span class="o">+</span> <span class="s2">&quot;,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">obname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">satname</span> \
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">,&quot;</span> <span class="o">+</span> <span class="n">level</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">lat</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">stid</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">value</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> \
+            <span class="n">fg_dep</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">an_dep</span> <span class="o">+</span> <span class="s2">&quot;,0,0,0,0,0,&quot;</span> <span class="o">+</span> <span class="n">status</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        #else:</span>
+<span class="sd">        #    print(cmd)</span>
+<span class="sd">        #    raise Exception(&quot;You should not have &quot;, records, &quot; in your database for longitude=&quot;, lon, &quot; latitude=&quot;, lat)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
@@ -371,7 +375,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>
