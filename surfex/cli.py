@@ -202,7 +202,9 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('-dtg', dest="dtg", type=str, help="Date (YYYYMMDDHH)", required=True)
     parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
     parser.add_argument('-if', dest="inputformat", type=str, help="Input file format", default="grib2")
-    parser.add_argument('-d', dest="domain", type=str, help="Domain", required=True)
+    parser.add_argument('-d', dest="domain", type=str, help="Domain", required=False, default=None)
+    parser.add_argument('--harmonie', action="store_true", default=False,
+                        help="Surfex configuration (domain) created from Harmonie environment")
 
     parser.add_argument('-t2m_file', type=str, default=None, help="File with T2M", nargs="?")
     parser.add_argument('-t2m_format', type=str, default=None, help="File format for file with T2M", nargs="?",
@@ -259,15 +261,30 @@ def first_guess_for_oi(**kwargs):
     if "debug" in kwargs:
         debug = kwargs["debug"]
 
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config_exp" in kwargs:
+            if kwargs["config_exp"] is not None:
+                config_exp = kwargs["config_exp"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
+        print("Using default config from: " + config_exp)
+        input_data = toml.load(open(config_exp, "r"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        geo = config.get_setting("GEOMETRY")
+    else:
+        if "domain" in kwargs:
+            domain = kwargs["domain"]
+            if os.path.exists(domain):
+                geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
+            else:
+                raise FileNotFoundError(domain)
+        else:
+            raise Exception("Domain is needed")
+
     config_file = kwargs["config"]
     if not os.path.exists(config_file):
         raise FileNotFoundError(config_file)
-
-    domain = kwargs["domain"]
-    if os.path.exists(domain):
-        geo = surfex.geo.get_geo_object(json.load(open(domain, "r")))
-    else:
-        raise FileNotFoundError(domain)
 
     if "output" in kwargs:
         output = kwargs["output"]
@@ -352,6 +369,11 @@ def first_guess_for_oi(**kwargs):
                                           debug=debug)
         field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
         field = np.reshape(field, [geo.nlons, geo.nlats])
+
+        fill_nan_value = 0.
+        if np.isnan(np.sum(field)):
+            print("Field " + var + " got Nan")
+            field = np.nan_to_num(field, fill_nan_value)
 
         # Create file
         if fg is None:
@@ -632,7 +654,7 @@ def run_surfex_binary(mode, **kwargs):
             if kwargs["config"] is not None:
                 config_exp = kwargs["config"]
         if config_exp is None:
-            config_exp = surfex.__path__[0] + "/../scheduler/config/config_exp_surfex.toml"
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
@@ -917,7 +939,8 @@ def run_titan(**kwargs):
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
         domain_geo = config.get_setting("GEOMETRY#GEO")
     elif "domain" in kwargs:
-        domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+        if kwargs["domain"] is not None:
+            domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
         del(kwargs["domain"])
 
     # Set domain geo if set

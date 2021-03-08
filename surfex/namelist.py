@@ -245,10 +245,13 @@ class ExternalSurfexInputFile(object):
 
         if fname.endswith(".dir"):
             basename = os.path.splitext(os.path.basename(fname))[0]
+            linkbasename = basename
+            if "linkbasename" in kwargs:
+                linkbasename = kwargs["linkbasename"]
             basedir = self.system_file_paths.get_system_path(dtype, **kwargs)
             hdr_file = basedir + "/" + basename + ".hdr"
             dir_file = basedir + "/" + basename + ".dir"
-            return {basename + ".hdr": hdr_file, basename + ".dir": dir_file}
+            return {linkbasename + ".hdr": hdr_file, linkbasename + ".dir": dir_file}
         elif fname.endswith(".json"):
             return {}
         else:
@@ -460,6 +463,19 @@ class BaseNamelist(object):
             self.input_list.append({"json": {"NAM_PGD_ARRANGE_COVER": {"LTOWN_TO_ROCK": True}}})
             self.input_list.append({"json": {"NAM_PGD_SCHEMES": {"TOWN": "NONE"}}})
 
+        if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
+            self.input_list.append({
+                "json": {
+                    "NAM_DATA_FLAKE": {
+                        "YWATER_DEPTH": "GlobalLakeDepth",
+                        "YWATER_DEPTHFILETYPE": "DIRECT",
+                        "YWATER_DEPTH_STATUS": "GlobalLakeStatus"
+                    }
+                }
+            })
+            self.input_list.append(
+                self.set_dirtyp_data_namelist("NAM_DATA_FLAKE", "YWATER_DEPTH_STATUSFILETYPE", "DIRECT"))
+
     def set_prep_namelist(self, prep_file=None, prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None):
 
         if prep_file is not None and prep_filetype is None:
@@ -526,6 +542,7 @@ class BaseNamelist(object):
             self.input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF":
                                                            self.config.get_setting("SURFEX#ISBA#PERTSURF")}}})
             self.input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": self.config.get_setting("SURFEX#ISBA#XCGMAX")}}})
+            self.input_list.append({"json": {"NAM_ISBAn": {"XCSMAX": self.config.get_setting("SURFEX#ISBA#XCSMAX")}}})
 
         # SSO
         self.input_list.append({"json": {"NAM_SSON": {"CROUGH": self.config.get_setting("SURFEX#SSO#SCHEME")}}})
@@ -686,8 +703,9 @@ class BaseNamelist(object):
         if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
             self.input_list.append({"file": self.input_path + "/sice.json"})
 
-        if self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
-            self.input_list.append({"file": self.input_path + "/treedrag.json"})
+        self.input_list.append({"file": self.input_path + "/treedrag.json"})
+        self.input_list.append({"json": {"NAM_TREEDRAG": {"LFAKETREE":
+                                                          self.config.get_setting("SURFEX#TREEDRAG#FAKETREES")}}})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             self.input_list.append({"file": self.input_path + "/flake.json"})
@@ -909,10 +927,8 @@ class EcoclimapSG(Ecoclimap):
     @staticmethod
     def parse_fnames(filepattern, decade):
         filename = filepattern
-        add = 1
-        if decade % 3 == 0:
-            add = 0
-        mm = int(decade / 3) + add
+        decade = decade - 1
+        mm = int(decade / 3) + 1
         mm = "{:02d}".format(mm)
         cdd = ((decade % 3) * 10) + 5
         cdd = "{:02d}".format(cdd)
@@ -946,9 +962,13 @@ class PgdInputData(surfex.JsonInputData):
                 version = "_V" + version
             datadir = "flake_dir"
             fname = "GlobalLakeDepth" + version + ".dir"
-            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir", **kwargs))
+            linkbasename = "GlobalLakeDepth"
+            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
+                                                            linkbasename=linkbasename, **kwargs))
             fname = "GlobalLakeStatus" + version + ".dir"
-            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir", **kwargs))
+            linkbasename = "GlobalLakeStatus"
+            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
+                                                            linkbasename= linkbasename, **kwargs))
 
         possible_direct_data = {
             "ISBA": {
@@ -1131,7 +1151,7 @@ class SodaInputData(surfex.JsonInputData):
             hh = self.dtg.strftime("%H")
             target = "OBSERVATIONS_" + yy + mm + dd + "H" + hh + ".DAT"
         elif cfile_format_obs == "FA":
-            target = "CANARI"
+            target = "ICMSHANAL+0000"
         else:
             raise NotImplementedError(cfile_format_obs)
 

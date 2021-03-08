@@ -630,7 +630,7 @@ class ConfigurationFromHarmonie(Configuration):
 
         # LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX (must be .FALSE. for NPATCH>1)
         canopy = env["LISBA_CANOPY"]
-        if canopy.strip().lower() == ".true.":
+        if canopy.strip().lower() == ".true." or canopy.strip().lower() == ".t.":
             canopy = True
         else:
             canopy = False
@@ -689,14 +689,24 @@ class ConfigurationFromHarmonie(Configuration):
         # Treeheight
         if "H_TREE_FILE" in env:
             self.update_setting("SURFEX#COVER#H_TREE", env["H_TREE_FILE"])
-        else:
-            self.update_setting("SURFEX#COVER#H_TREE", "")
 
         # XRIMAX Maximum allowed Richardson number in the surface layer (cy40h default was 0.0)
         self.update_setting("SURFEX#PARAMETERS#XRIMAX", float(env["XRIMAX"]))
 
         # XSCALE_H_TREE  Scale the tree height with this factor
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
+        if "LFAKETREE" in env:
+            if env["LFAKETREE"].strip().lower() == ".true." or env["LFAKETREE"].strip().lower() == ".t.":
+                lfaketree = True
+            else:
+                lfaketree = False
+            self.update_setting("SURFEX#TREEDRAG#FAKETREES", lfaketree)
+
+        # Heat capacity
+        if "XCGMAX" in env:
+            self.update_setting("SURFEX#ISBA#XCGMAX", float(env["XCGMAX"]))
+        if "XCSMAX" in env:
+            self.update_setting("SURFEX#ISBA#XCSMAX", float(env["XCSMAX"]))
 
         # CFORCING_FILETYPE Offline surfex forcing format (NETCDF/ASCII)
         self.update_setting("SURFEX#IO#CFORCING_FILETYPE", env["CFORCING_FILETYPE"])
@@ -712,7 +722,11 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ASSIM#SCHEMES#SEA", ana_sea)
 
         if "LECSST" in env:
-            self.update_setting("SURFEX#ASSIM#SEA#LECSST", env["LECSST"])
+            if env["LECSST"].lower().strip() == ".true.":
+                lecsst = True
+            else:
+                lecsst = False
+            self.update_setting("SURFEX#ASSIM#SEA#LECSST", lecsst)
         else:
             self.update_setting("SURFEX#ASSIM#SEA#LECSST", True)
 
@@ -749,11 +763,20 @@ class ConfigurationFromHarmonie(Configuration):
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
         self.update_setting("SURFEX#ASSIM#ISBA#OI#COEFFS", env["ANASURF_OI_COEFF"])
 
+        # Always set SURFEX#IO#LSPLIT_PATCH False
+        self.update_setting("SURFEX#IO#LSPLIT_PATCH", False)
+
         # Always use FA format as input
         self.update_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM", "FA")
         self.update_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST", "FA")
         self.update_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG", "FA")
         self.update_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM", "FA")
+        if anasurf == "CANARI_OI_MAIN" or anasurf == "CANARI_EKF_SURFEX":
+            self.update_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS", "FA")
+            self.update_setting("SURFEX#ASSIM#OBS#LSWE", True)
+        else:
+            self.update_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS", "ASCII")
+            self.update_setting("SURFEX#ASSIM#OBS#LSWE", False)
 
         snow_cycles = ["06"]
         if "SNOW_CYCLES" in env:

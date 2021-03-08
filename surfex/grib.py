@@ -121,6 +121,10 @@ class Grib(object):
                         lonc, latc = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xc, yc)
                         field = np.reshape(values, [nx, ny], order="F")
 
+                        if geo["bitmapPresent"] == 1:
+                            missing_value = eccodes.codes_get(gid, "missingValue")
+                            field[field == missing_value] = np.nan
+
                         if geo_out is None:
                             domain = {
                                 "nam_conf_proj": {

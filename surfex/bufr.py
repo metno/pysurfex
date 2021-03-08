@@ -19,7 +19,7 @@ except:
 
 class BufrObservationSet(surfex.obs.ObservationSet):
     def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, debug=False,
-                 label="bufr"):
+                 label="bufr", use_first=False):
 
         if lonrange is None:
             lonrange = [-180, 180]
@@ -34,8 +34,6 @@ class BufrObservationSet(surfex.obs.ObservationSet):
 
         # define the keys to be printed
         keys = [
-            # 'blockNumber',
-            # 'stationNumber',
             'latitude',
             'longitude',
             'year',
@@ -57,6 +55,14 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             if var == "relativeHumidityAt2M":
                 keys.append("airTemperatureAt2M")
                 keys.append("dewpointTemperatureAt2M")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/dewpointTemperature")
+            elif var == "airTemperatureAt2M":
+                keys.append("airTemperatureAt2M")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature")
+                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature")
             else:
                 keys.append(var)
             nerror.update({var: 0})
@@ -64,15 +70,6 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             nundef.update({var: 0})
             ndomain.update({var: 0})
             nobs.update({var: 0})
-
-        # The cloud information is stored in several blocks in the
-        # SYNOP message and the same key means a different thing in different
-        # parts of the message. In this example we will read the first
-        # cloud block introduced by the key
-        # verticalSignificanceSurfaceObservations=1.
-        # We know that this is the first occurrence of the keys we want to
-        # read so in the list above we used the # (occurrence) operator
-        # accordingly.
 
         print("Reading " + bufrfile)
         print("Looking for keys: " + str(keys))
@@ -86,6 +83,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         # ntime = 0
         not_decoded = 0
         # removed = 0
+        registry = {}
         while 1:
             # get handle for message
             bufr = eccodes.codes_bufr_new_from_file(f)
@@ -120,14 +118,12 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 block_number = -1
                 t2m = np.nan
                 td2m = np.nan
-                # rh2m = np.nan
                 sd = np.nan
-                # all_found = True
+                t = np.nan
+                td = np.nan
                 for key in keys:
                     try:
                         val = eccodes.codes_get(bufr, key)
-                        # if val != CODES_MISSING_DOUBLE:
-                        #    print('  %s: %s' % (key,val))
                         if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
                             val = np.nan
                         if key == "latitude":
@@ -154,8 +150,14 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             block_number = val
                         if key == "airTemperatureAt2M":
                             t2m = val
+                        if key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature" or \
+                                key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature":
+                            t = val
                         if key == "dewpointTemperatureAt2M":
                             td2m = val
+                        if key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature" or \
+                                key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/dewpointTemperature":
+                            td = val
                         if key == "totalSnowDepth":
                             sd = val
 
@@ -165,17 +167,34 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
                 # Assign value to var
+                pos = "{:.5f}".format(lon) + ":" + "{:.5f}".format(lat)
                 for var in variables:
-                    if var == "relativeHumidityAt2M":
-                        if not np.isnan(t2m) and not np.isnan(td2m):
-                            value = self.td2rh(td2m, t2m)
-                        value = value * 0.01
-                    elif var == "airTemperatureAt2M":
-                        value = t2m
-                    elif var == "totalSnowDepth":
-                        value = sd
-                    else:
-                        raise NotImplementedError("Var " + var + " is not coded! Please do it!")
+                    exists = False
+                    if use_first:
+                        if pos in registry:
+                            if var in registry[pos]:
+                                exists = registry[pos][var]
+                        else:
+                            registry.update({pos: {}})
+                    if not exists:
+                        if var == "relativeHumidityAt2M":
+                            if not np.isnan(t2m) and not np.isnan(td2m):
+                                value = self.td2rh(td2m, t2m)
+                                value = value * 0.01
+                            else:
+                                if not np.isnan(t) and not np.isnan(td):
+                                    value = self.td2rh(td, t)
+                                    value = value * 0.01
+                        elif var == "airTemperatureAt2M":
+                            if np.isnan(t2m):
+                                if not np.isnan(t):
+                                    value = t
+                            else:
+                                value = t2m
+                        elif var == "totalSnowDepth":
+                            value = sd
+                        else:
+                            raise NotImplementedError("Var " + var + " is not coded! Please do it!")
 
                     all_found = True
                     if np.isnan(lat):
@@ -196,7 +215,6 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         all_found = False
                     if np.isnan(value):
                         all_found = False
-
                     if not all_found:
                         nerror.update({var: nerror[var] + 1})
 
@@ -211,6 +229,8 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                                     stid = str((block_number * 1000) + station_number)
                                 observations.append(surfex.obs.Observation(obs_dtg, lon, lat, value,
                                                                            elev=elev, stid=stid, varname=var))
+                                if use_first:
+                                    registry[pos].update({var: True})
                                 nobs.update({var: nobs[var] + 1})
                             else:
                                 ntime.update({var: ntime[var] + 1})

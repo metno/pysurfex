@@ -6,5 +6,5 @@ import surfex
 
 if __name__ == "__main__":
 
-    args = surfex.parse_args_first_guess_for_oi(sys.argv[1:])
-    surfex.first_guess_for_oi(args)
+    kwargs = surfex.parse_args_first_guess_for_oi(sys.argv[1:])
+    surfex.first_guess_for_oi(**kwargs)

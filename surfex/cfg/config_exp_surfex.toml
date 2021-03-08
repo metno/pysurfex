@@ -89,6 +89,7 @@ YCLAY = "clay_fao.dir"              # Soil texture input data: "clay_fao.dir"|"C
                                     # suffix json assumes namelist values provided as a json file
 PERTSURF = false                    # Perturb surface parameters
 XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
+XCSMAX = 2.0E-4                     # Maximum value for snow heat capacity; default=2.0E-4
 
 # Sub-grid-scale orography settings
 [SURFEX.SSO]
@@ -96,10 +97,11 @@ SCHEME = "NONE"                     # SSO scheme used in SURFEX "NONE"|"'Z01D'"|
 
 # Tree height treatment
 [SURFEX.TREEDRAG]
-TREEDATA_FILE = ""                # Name of tree height data file (with *.llv suffix)
+TREEDATA_FILE = ""                  # Name of tree height data file (with *.llv suffix)
 XSCALE_H_TREE = 1.0                 # Scale the tree height with this factor
-XALLEN_TERM = 2.5                  # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
+XALLEN_TERM = 2.5                   # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
 XGRASS_H_DNM = 3.0                  # grass: z0=0.13*LAI/XGRASS_H_DNM; default=6.0
+FAKETREES = false                   # Fake trees
 
 ########
 # TOWN #

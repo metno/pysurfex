@@ -1303,7 +1303,7 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
     fg_deps = []
     an_deps = []
     passed_tests = []
-    icounter = -1
+    # icounter = -1
     for i in data:
         add = False
         if qc_flag is not None:
@@ -1319,7 +1319,7 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
                     add = False
 
         if add:
-            icounter = icounter + 1
+            # icounter = icounter + 1
             obstime = datetime.strptime(data[i]["obstime"], "%Y%m%d%H%M%S")
             lon = data[i]["lon"]
             lat = data[i]["lat"]
@@ -1336,14 +1336,14 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
             cis.append(data[i]["ci"])
             lafs.append(data[i]["laf"])
             if fg_dep is not None:
-                fg_deps.append(fg_dep[icounter])
+                fg_deps.append(fg_dep[int(i)])
             else:
                 if "fg_dep" in data[i]:
                     fg_deps.append(data[i]["fg_dep"])
                 else:
                     fg_deps.append(np.nan)
             if an_dep is not None:
-                an_deps.append(an_dep[icounter])
+                an_deps.append(an_dep[int(i)])
             else:
                 if "an_dep" in data[i]:
                     an_deps.append(data[i]["an_dep"])
