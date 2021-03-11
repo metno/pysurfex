@@ -575,6 +575,8 @@ class BaseNamelist(object):
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
+        if len(nnco) != len(cobs_m):
+            raise Exception("Mismatch in nnco/cobs_m")
         for ob in range(0, len(nnco)):
             self.input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
             self.input_list.append({"json": {"NAM_OBS": {"COBS_M(" + str(ob + 1) + ")": cobs_m[ob]}}})
@@ -601,6 +603,11 @@ class BaseNamelist(object):
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
+        xerrobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#XERROBS_M")
+        print(nnco, cobs_m, xerrobs_m)
+        if len(nnco) != len(cobs_m) or  len(nnco) != len(xerrobs_m):
+            raise Exception("Mismatch in nnco/cobs_m/xerrobs_m")
+
         for ob in range(0, len(nnco)):
             self.input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
             self.input_list.append({"json": {"NAM_OBS": {"COBS_M(" + str(ob + 1) + ")": cobs_m[ob]}}})
@@ -686,6 +693,8 @@ class BaseNamelist(object):
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+            if len(nncv) != len(cvar_m) or len(nncv) != len(xsigma_m) or len(nncv) != len(xtprt_m):
+                raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
             for var in range(0, len(cvar_m)):
                 self.input_list.append(
                     {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
@@ -1282,11 +1291,9 @@ class SodaInputData(surfex.JsonInputData):
         fg = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
         if csurf_filetype == "ascii":
             fg_file = surfex.AsciiSurfexFile(fg, geo=geo)
-            extension = fg_file.extension
             fg = fg_file.filename
         elif csurf_filetype == "nc":
             fg_file = surfex.NCSurfexFile(fg, geo=geo)
-            extension = fg_file.extension
             fg = fg_file.filename
         elif csurf_filetype == "fa":
             lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
@@ -1295,7 +1302,6 @@ class SodaInputData(surfex.JsonInputData):
             if "masterodb" in kwargs:
                 masterodb = kwargs["masterodb"]
             fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
-            extension = fg_file.extension
             fg = fg_file.filename
         else:
             raise NotImplementedError
@@ -1304,6 +1310,12 @@ class SodaInputData(surfex.JsonInputData):
         first_guess = self.system_file_paths.get_system_file(data_dir, fg, default_dir="assim_dir",
                                                              validtime=self.dtg, basedtg=fg_dtg,
                                                              check_existence=check_existence)
+
+        # We newer run inline model for perturbations or in SODA
+        extension = fg_file.extension.type
+        if csurf_filetype == "fa":
+            extension = "fa"
+
         ekf_settings.update({"PREP_INIT." + extension: first_guess})
         ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
 
@@ -1321,20 +1333,18 @@ class SodaInputData(surfex.JsonInputData):
                 exists = True
 
             if exists:
-                # We newer run inline model for perturbations
-                if csurf_filetype == "fa":
-                    extension = "fa"
 
                 data_dir = "perturbed_run_dir"
                 if "perturbed_file_pattern" in kwargs:
                     perturbed_file_pattern = kwargs["perturbed_file_pattern"]
                 else:
                     print("Use default CSURFFILE for perturbed file names")
-                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE") + "." + extension
+                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
+                                             + "." + extension
 
                 # TODO depending on when perturbations are run
                 perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
-                                                                       validtime=self.dtg, basedtg=self.dtg,
+                                                                       validtime=self.dtg, basedtg=fg_dtg,
                                                                        check_existence=check_existence,
                                                                        default_dir="assim_dir",
                                                                        pert=pert_input)

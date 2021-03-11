@@ -625,7 +625,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
                                                 t2m_fh.variables[t2m["var"]].shape[0])
         if debug:
             print(t2m_var.shape, nx*ny)
-        t2m_var = np.reshape(t2m_var, ny * nx, order="F")
+        t2m_var = np.reshape(t2m_var, ny * nx, order="C")
         mask = np.ma.is_masked(t2m_var)
         t2m_var[mask] = 999.
         t2m_var = t2m_var.tolist()
@@ -639,7 +639,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
         nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[1],
                                                 rh2m_fh.variables[rh2m["var"]].shape[0])
         rh2m_var = rh2m_fh.variables[rh2m["var"]][:]
-        rh2m_var = rh2m_var.reshape([ny * nx], order="F")
+        rh2m_var = rh2m_var.reshape([ny * nx], order="C")
         mask = np.ma.is_masked(rh2m_var)
         rh2m_var[mask] = 999.
         rh2m_var = rh2m_var.tolist()
@@ -654,7 +654,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
                                                 sd_fh.variables[sd["var"]].shape[0])
 
         sd_var = sd_fh.variables[sd["var"]][:]
-        sd_var = sd_var.reshape([ny * nx], order="F")
+        sd_var = sd_var.reshape([ny * nx], order="C")
         mask = np.ma.is_masked(sd_var)
         sd_var[mask] = 999.
         sd_var = sd_var.tolist()

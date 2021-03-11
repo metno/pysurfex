@@ -762,7 +762,7 @@ class ConfigurationFromHarmonie(Configuration):
         if "XSIGMA_M" in env:
             xsigma_m = env["XSIGMA_M"]
             xsigma_m = list(map(float, xsigma_m.split(",")))
-            self.update_setting("SURFEX#ASSIMS#ISBA#EKF#XSIGMA_M", xsigma_m)
+            self.update_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M", xsigma_m)
 
         if "XTPRT_M" in env:
             xtprt_m = env["XTPRT_M"]

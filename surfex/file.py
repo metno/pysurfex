@@ -8,7 +8,7 @@ import netCDF4
 import re
 import abc
 import pyproj
-print(netCDF4.__file__)
+# print(netCDF4.__file__)
 
 
 class SurfexIO(object):
