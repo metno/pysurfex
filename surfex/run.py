@@ -126,10 +126,14 @@ class SURFEXBinary(object):
 
 class PerturbedOffline(SURFEXBinary):
     def __init__(self, binary, batch, io, pert_number, settings, input_data, surfout=None,
-                 archive_data=None, pgdfile=None, print_namelist=False):
+                 archive_data=None, pgdfile=None, print_namelist=False, negpert=False):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
         settings['nam_var']['nivar'] = int(pert_number)
+        if negpert:
+            key = 'xtprt_m(' + str(pert_number) + ')'
+            val = settings['nam_var'][key]
+            settings['nam_var'][key] = -val
         SURFEXBinary.__init__(self, binary, batch, io, settings, input_data, surfout=surfout,
                               archive_data=archive_data, pgdfile=pgdfile, print_namelist=print_namelist)
 

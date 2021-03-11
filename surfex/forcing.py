@@ -5,6 +5,9 @@ import time
 import copy
 import shutil
 import surfex
+import toml
+import os
+import json
 from datetime import datetime, timedelta
 
 
@@ -462,7 +465,20 @@ def set_forcing_config(**kwargs):
 
     debug = False
     fb = None
-    geo_out = None
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config_exp_surfex" in kwargs:
+            if kwargs["config_exp_surfex"] is not None:
+                config_exp = kwargs["config_exp_surfex"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
+        print("Using default config from: " + config_exp)
+        input_data = toml.load(open(config_exp, "r"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        geo_out = config.get_setting("GEOMETRY#GEO")
+    elif "domain" in kwargs and kwargs["domain"] is not None:
+        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+
     user_config = {}
     pattern = None
     timestep = 3600

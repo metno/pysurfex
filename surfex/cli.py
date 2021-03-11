@@ -30,7 +30,13 @@ def parse_args_create_forcing(argv):
     parser = ArgumentParser(description="Create offline forcing")
     parser.add_argument('dtg_start', type=str, help="Start DTG", nargs="?")
     parser.add_argument('dtg_stop', type=str, help="Stop DTG", nargs="?")
-    parser.add_argument('area', type=str, help="Configuration file describing the points or locations", nargs="?")
+    parser.add_argument('-d', dest="domain", type=str, help="Domain file describing the points or locations",
+                        nargs="?", required=False, default=None)
+    parser.add_argument('--harmonie', action="store_true", default=False,
+                        help="Surfex configuration (domain) created from Harmonie environment")
+    parser.add_argument('--config_exp_surfex', dest="config_exp_surfex", type=str,
+                        help="Toml configuration file for surfex settings potentially used if --harmomie is set",
+                        default=None, nargs="?")
     parser.add_argument('-fb', type=str, help="First base time unless equal to dtg_start", default=None)
     parser.add_argument('--options', type=open, action=LoadFromFile)
     parser.add_argument('-c', '--config', dest="user_config", type=str,
@@ -144,21 +150,12 @@ def parse_args_create_forcing(argv):
     args = parser.parse_args(argv)
     kwargs = {}
     for arg in vars(args):
-        # print
-        # arg, getattr(args, arg)
         kwargs.update({arg: getattr(args, arg)})
 
     user_config = {}
     if "user_config" in kwargs and kwargs["user_config"] is not None:
         user_config = yaml.safe_load(open(kwargs["user_config"])) or {}
     kwargs.update({"user_config": user_config})
-
-    # Read point/domain config
-    if "area" in kwargs:
-        geo_out = surfex.geo.get_geo_object(json.load(open(kwargs["area"], "r")))
-    else:
-        raise Exception("You must provide an json area file")
-    kwargs.update({"geo_out": geo_out})
 
     # Find name of global config file
     root = __file__
@@ -271,7 +268,7 @@ def first_guess_for_oi(**kwargs):
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.get_setting("GEOMETRY")
+        geo = config.get_setting("GEOMETRY#GEO")
     else:
         if "domain" in kwargs:
             domain = kwargs["domain"]
@@ -624,6 +621,7 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--dtg', type=str, required=False, default=None)
     if pert:
         parser.add_argument('--pert', '-p', type=int, required=False, default=None)
+        parser.add_argument('--negpert', action="store_true", default=False, help="Negative perturbation")
     parser.add_argument('--archive', '-a', type=str, required=False, default=None, nargs='?',
                         help="JSON file with archive output")
     parser.add_argument('binary', type=str, help="Command to run")
@@ -741,8 +739,11 @@ def run_surfex_binary(mode, **kwargs):
         prep_file_path = kwargs["prep"]
 
     pert = None
-    if pert:
+    if "pert" in kwargs:
         pert = kwargs["pert"]
+    negpert = False
+    if "negpert" in kwargs:
+        negpert = kwargs["negpert"]
 
     if os.path.exists(rte):
         my_batch = surfex.BatchJob(json.load(open(rte, "r")), wrapper=wrapper)
@@ -787,7 +788,7 @@ def run_surfex_binary(mode, **kwargs):
         if perturbed:
             surfex.PerturbedOffline(binary, my_batch, my_prepfile, pert, my_settings, input_data,
                                     pgdfile=my_pgdfile, surfout=surffile, archive_data=my_archive,
-                                    print_namelist=print_namelist)
+                                    print_namelist=print_namelist, negpert=negpert)
         elif pgd:
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path,
                                              archive_file=output, lfagmap=lfagmap, masterodb=masterodb)

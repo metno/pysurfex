@@ -9,7 +9,8 @@ class ForcingTest(unittest.TestCase):
 
     def test_forcing_nc(self):
 
-        argv = ["2020111303", "2020111306", "test/settings/conf_proj_test.json",
+        argv = ["2020111303", "2020111306",
+                "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc",
                 "-i", "netcdf",
                 "--zref", "ml",
@@ -27,7 +28,8 @@ class ForcingTest(unittest.TestCase):
 
     def test_forcing_grib1(self):
 
-        argv = ["2020111303", "2020111306", "test/settings/conf_proj_test.json",
+        argv = ["2020111303", "2020111306",
+                "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib1",
                 "-i", "grib1",
                 "--zref", "ml",
@@ -45,7 +47,8 @@ class ForcingTest(unittest.TestCase):
 
     def test_forcing_grib2(self):
 
-        argv = ["2020111303", "2020111306", "test/settings/conf_proj_test.json",
+        argv = ["2020111303", "2020111306",
+                "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib2",
                 "-i", "grib2",
                 "--zref", "ml",

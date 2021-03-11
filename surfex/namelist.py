@@ -473,8 +473,9 @@ class BaseNamelist(object):
                     }
                 }
             })
-            self.input_list.append(
-                self.set_dirtyp_data_namelist("NAM_DATA_FLAKE", "YWATER_DEPTH_STATUSFILETYPE", "DIRECT"))
+
+        # Sea
+        self.input_list.append({"file": self.input_path + "/sea.json"})
 
     def set_prep_namelist(self, prep_file=None, prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None):
 
@@ -559,20 +560,24 @@ class BaseNamelist(object):
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-            xprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XPRT_M")
-            for ob in range(0, len(cvar_m)):
-                self.input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": cvar_m[ob]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": nncv[ob]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": xprt_m[ob]}}})
-                if nncv[ob] == 1:
+            xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
+            xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
+            for var in range(0, len(cvar_m)):
+                self.input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
+                if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
         # TODO the need for this in forecast must be removed!
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         for ob in range(0, len(nnco)):
             self.input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
+            self.input_list.append({"json": {"NAM_OBS": {"COBS_M(" + str(ob + 1) + ")": cobs_m[ob]}}})
             if nnco[ob] == 1:
                 nobstype += 1
         self.input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
@@ -595,8 +600,10 @@ class BaseNamelist(object):
                                                      self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")}}})
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         for ob in range(0, len(nnco)):
             self.input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
+            self.input_list.append({"json": {"NAM_OBS": {"COBS_M(" + str(ob + 1) + ")": cobs_m[ob]}}})
             if nnco[ob] == 1:
                 nobstype += 1
         self.input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
@@ -671,17 +678,21 @@ class BaseNamelist(object):
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
             nvar = 0
+            llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")
+            self.input_list.append({"json": {"NAM_ASSIM": {"LLINCHECK": llincheck}}})
+            xalpha = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XALPHA")
+            self.input_list.append({"json": {"NAM_VAR": {"XALPHA": xalpha}}})
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M")
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
-            xprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XPRT_M")
+            xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-            for ob in range(0, len(cvar_m)):
+            for var in range(0, len(cvar_m)):
                 self.input_list.append(
-                    {"json": {"NAM_VAR": {"CVAR_M(" + str(ob + 1) + ")": cvar_m[ob]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(ob + 1) + ")": xsigma_m[ob]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(ob + 1) + ")": xprt_m[ob]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(ob + 1) + ")": nncv[ob]}}})
-                if nncv[ob] == 1:
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})

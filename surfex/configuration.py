@@ -610,9 +610,9 @@ class ConfigurationFromHarmonie(Configuration):
         cnmexp = os.environ["CNMEXP"]
         self.update_setting("SURFEX#IO#CPGDFILE", "Const.Clim")
         self.update_setting("SURFEX#IO#CPREPFILE", "ICMSH" + cnmexp + "INIT")
-        self.update_setting("SURFEX#IO#CSURFFILE", "ICMSH" + cnmexp + "@LLLL@")
+        self.update_setting("SURFEX#IO#CSURFFILE", "ICMSH" + cnmexp + "+@LLLL@")
         self.update_setting("SURFEX#IO#CSURF_FILETYPE", "FA")
-        self.update_setting("SURFEX#IO#CCTIMESERIES_FILETYPE", "FA")
+        self.update_setting("SURFEX#IO#CTIMESERIES_FILETYPE", "FA")
         self.update_setting("SURFEX#IO#LFAGMAP", True)
         lselect = False
         if os.environ["SURFEX_LSELECT"] == "yes":
@@ -748,16 +748,50 @@ class ConfigurationFromHarmonie(Configuration):
         if anasurf == "EKF" or anasurf == "CANARI_EKF_SURFEX":
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
 
-        # NNCV = "1,1,1,1"  # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
-        nncv = env["NNCV"]
-        nncv = list(map(int, nncv.split(",")))
-        self.update_setting("SURFEX#ASSIMS#ISBA#EKF", nncv)
+        # Active EKF control variables from CVAR_M
+        if "NNCV" in env:
+            nncv = env["NNCV"]
+            nncv = list(map(int, nncv.split(",")))
+            self.update_setting("SURFEX#ASSIM#ISBA#EKF#NNCV", nncv)
 
-        # NNCO = "1,1,0,0,1"  # Active observation types (Element 1=T2m, element 2=RH2m and element 3=Soil moisture,
-        # element 5=SWE)
+        if "CVAR_M" in env:
+            cvar_m = env["CVAR_M"]
+            cvar_m = list(map(str, cvar_m.split(",")))
+            self.update_setting("SURFEX#ASSIM#ISBA#EKF#CVAR_M", cvar_m)
+
+        if "XSIGMA_M" in env:
+            xsigma_m = env["XSIGMA_M"]
+            xsigma_m = list(map(float, xsigma_m.split(",")))
+            self.update_setting("SURFEX#ASSIMS#ISBA#EKF#XSIGMA_M", xsigma_m)
+
+        if "XTPRT_M" in env:
+            xtprt_m = env["XTPRT_M"]
+            xtprt_m = list(map(float, xtprt_m.split(",")))
+            self.update_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M", xtprt_m)
+
+        if "LLINCHECK" in env:
+            llincheck = env["LLINCHECK"]
+            if llincheck == "TRUE":
+                self.update_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK", True)
+            else:
+                self.update_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK", False)
+
+        if "XALPHA" in env:
+            xalpha = env["XALPHA"]
+            self.update_setting("SURFEX#ASSIM#ISBA#EKF#XALPHA", float(xalpha))
+
+        # Observations
         nnco = env["NNCO"]
         nnco = list(map(int, nnco.split(",")))
-        self.update_setting("SURFEX#ASSIMS#OBS#NNCO", nnco)
+        self.update_setting("SURFEX#ASSIM#OBS#NNCO", nnco)
+        if "COBS_M" in env:
+            cobs_m = env["COBS_M"]
+            cobs_m = list(map(str, cobs_m.split(",")))
+            self.update_setting("SURFEX#ASSIM#OBS#COBS_M", cobs_m)
+        if "XERROBS_M" in env:
+            xerrobs_m = env["XERROBS_M"]
+            xerrobs_m = list(map(float, xerrobs_m.split(",")))
+            self.update_setting("SURFEX#ASSIM#OBS#XERROBS_M", xerrobs_m)
 
         # ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
