@@ -134,7 +134,7 @@ CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when 
 LOBSNAT = false                             # Observation ASCII file only contains nature points
 COBS_M = ["T2M","HU2M","WG2 ","LAI","SWE"]  # Observation types
 NNCO = [1, 1, 0, 0, 1]                      # Active observation types
-XERROBS_M = [1.0, 0.1, 0.1, 0.1, 0.1, 20.0] # Observation error (used in EKF)
+XERROBS_M = [1.0, 0.1, 0.1, 0.1, 20.0]      # Observation error (used in EKF)
 LSWE = false                                # Assimilate SWE, if false assimilate snow depth
 
 [SURFEX.ASSIM.SEA]

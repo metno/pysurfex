@@ -1311,8 +1311,9 @@ class SodaInputData(surfex.JsonInputData):
                                                              validtime=self.dtg, basedtg=fg_dtg,
                                                              check_existence=check_existence)
 
+        print(fg, fg_file)
         # We newer run inline model for perturbations or in SODA
-        extension = fg_file.extension.type
+        extension = fg_file.extension
         if csurf_filetype == "fa":
             extension = "fa"
 
@@ -1340,7 +1341,7 @@ class SodaInputData(surfex.JsonInputData):
                 else:
                     print("Use default CSURFFILE for perturbed file names")
                     perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
-                                             + "." + extension
+                        + "." + extension
 
                 # TODO depending on when perturbations are run
                 perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
