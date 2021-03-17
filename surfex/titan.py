@@ -1303,7 +1303,6 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
     fg_deps = []
     an_deps = []
     passed_tests = []
-    # icounter = -1
     for i in data:
         add = False
         if qc_flag is not None:
@@ -1319,7 +1318,6 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
                     add = False
 
         if add:
-            # icounter = icounter + 1
             obstime = datetime.strptime(data[i]["obstime"], "%Y%m%d%H%M%S")
             lon = data[i]["lon"]
             lat = data[i]["lat"]

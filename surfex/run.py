@@ -130,10 +130,24 @@ class PerturbedOffline(SURFEXBinary):
         self.pert_number = pert_number
         settings['nam_io_varassim']['LPRT'] = True
         settings['nam_var']['nivar'] = int(pert_number)
+        # Handle negative pertubations
         if negpert:
-            key = 'xtprt_m(' + str(pert_number) + ')'
-            val = settings['nam_var'][key]
-            settings['nam_var'][key] = -val
+            nvar = int(settings['nam_var']['nvar'])
+            ipert = 0
+            npert = 1
+            for n in range(0, nvar):
+                key = 'nncv(' + str(n + 1) + ')'
+                val = int(settings['nam_var'][key])
+                # Check if active
+                if val == 1:
+                    npert = 1
+                else:
+                    npert = npert + 1
+                for n in range(0,npert):
+                    ipert = ipert + 1
+                    key = 'xtprt_m(' + str(ipert) + ')'
+                    val = settings['nam_var'][key]
+                    settings['nam_var'][key] = -val
         SURFEXBinary.__init__(self, binary, batch, io, settings, input_data, surfout=surfout,
                               archive_data=archive_data, pgdfile=pgdfile, print_namelist=print_namelist)
 

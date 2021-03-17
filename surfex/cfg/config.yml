@@ -90,7 +90,7 @@ ZREF:
         none:
           parameter: 11
           type: 109
-          level: 0
+          level: 65
           tri: 0
     grib2:
       converter:
@@ -121,7 +121,7 @@ UREF:
         none:
           parameter: -1
           type: 109
-          level: 0
+          level: 65
           tri: 0
     grib2:
       converter:

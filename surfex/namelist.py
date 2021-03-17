@@ -415,6 +415,8 @@ class BaseNamelist(object):
         # Set ISBA properties
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
             self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}})
+            if os.path.exists(self.input_path + "/isba_dif.json"):
+                self.input_list.append({"file": self.input_path + "/isba_dif.json" })
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
             self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "3-L", "NGROUND_LAYER": 3}}})
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "2-L":
@@ -512,6 +514,11 @@ class BaseNamelist(object):
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             self.input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE":
                                                                 self.config.get_setting("SURFEX#FLAKE#LCLIM")}}})
+
+        # Set extra ISBA-DIF properties (Not needed in prep?)
+        if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
+            if os.path.exists(self.input_path + "/isba_dif.json"):
+                self.input_list.append({"file": self.input_path + "/isba_dif.json" })
 
         # ISBA CANOPY
         self.input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY":
@@ -611,6 +618,7 @@ class BaseNamelist(object):
         for ob in range(0, len(nnco)):
             self.input_list.append({"json": {"NAM_OBS": {"NNCO(" + str(ob + 1) + ")": nnco[ob]}}})
             self.input_list.append({"json": {"NAM_OBS": {"COBS_M(" + str(ob + 1) + ")": cobs_m[ob]}}})
+            self.input_list.append({"json": {"NAM_OBS": {"XERROBS_M(" + str(ob + 1) + ")": xerrobs_m[ob]}}})
             if nnco[ob] == 1:
                 nobstype += 1
         self.input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
@@ -1311,9 +1319,8 @@ class SodaInputData(surfex.JsonInputData):
                                                              validtime=self.dtg, basedtg=fg_dtg,
                                                              check_existence=check_existence)
 
-        print(fg, fg_file)
         # We newer run inline model for perturbations or in SODA
-        extension = fg_file.extension
+        extension = fg_file.extension.type
         if csurf_filetype == "fa":
             extension = "fa"
 
@@ -1321,27 +1328,32 @@ class SodaInputData(surfex.JsonInputData):
         ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-        # lnncv = nncv.count(1) + 1
+        llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")
+        lnncv = len(nncv) + 1
+        if llincheck:
+            lnncv = (len(nncv) * 2) + 1
         pert_ekf = 0
         pert_input = 0
-        for p in range(0, len(nncv) + 1):
+        for p in range(0, lnncv):
             exists = False
             if p > 0:
-                if nncv[p-1] == 1:
+                pp = p
+                if llincheck and p > len(nncv):
+                    pp = p - len(nncv)
+                if nncv[pp-1] == 1:
                     exists = True
                     pert_input = p
             else:
                 exists = True
 
             if exists:
-
                 data_dir = "perturbed_run_dir"
                 if "perturbed_file_pattern" in kwargs:
                     perturbed_file_pattern = kwargs["perturbed_file_pattern"]
                 else:
                     print("Use default CSURFFILE for perturbed file names")
                     perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
-                        + "." + extension
+                                             + "." + extension
 
                 # TODO depending on when perturbations are run
                 perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,

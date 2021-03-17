@@ -92,25 +92,9 @@ def populate_usage_db(conn, dtg, varname, observations):
         if status == "0":
             status = "1"
 
-        '''
-        #cmd = "SELECT * FROM usage where longitude ==" + lon + " AND latitude ==" + lat + " AND varname == \"" \
-        #      + varname + "\""
-        #c.execute(cmd)
-        #records = len(c.fetchall())
-        #if records == 1:
-        #    cmd = "UPDATE usage SET fg_dep=" + fg_dep + ",an_dep=" + an_dep + ",anflag=" + status + \
-        #          " WHERE longitude == " + lon + " AND latitude == " + lat + " AND varname == \"" + varname + "\""
-        #elif records == 0:
-        '''
         cmd = "INSERT INTO usage VALUES(" + str(dtg) + "," + obnumber + ",\"" + obname + "\",\"" + satname \
             + "\",\"" + varname + "\"," + level + "," + lat + "," + lon + "," + stid + "," + value + "," + \
             fg_dep + "," + an_dep + ",0,0,0,0,0," + status + ")"
-        '''
-        #else:
-        #    print(cmd)
-        #    raise Exception("You should not have ", records, " in your database for longitude=", lon, " latitude=", lat)
-        '''
-
         print(cmd)
         c.execute(cmd)
 

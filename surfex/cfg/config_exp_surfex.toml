@@ -167,7 +167,7 @@ XSIGH2MO = 0.1                      # SIGMA O for RH2M in oi_cacsts
 
 # EKF settings
 [SURFEX.ASSIM.ISBA.EKF]
-NNCV = [0,1,0,1]                             # Active EKF control variables. 1=WG2 2=WG1 3=TG2 4=TG1
+NNCV = [0,1,0,1]                             # Active EKF control variables
 XSIGMA_M = [2.0, 2.0, 0.1 , 0.15]            # Background error
 CVAR_M = ["TG1", "TG2", "WG1" , "WG2"]       # Control variables
 XTPRT_M = [0.0001, 0.0001, 0.00001, 0.00001] # Perturbation magnitude

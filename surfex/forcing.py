@@ -609,7 +609,7 @@ def set_forcing_config(**kwargs):
         first_base_time = datetime.strptime(str.strip(str(fb)), '%Y%m%d%H')
 
     # Merge all settings with user all settings
-    merged_conf = surfex.util.data_merge(config, user_config)
+    merged_conf = surfex.deep_update(config, user_config)
 
     # Replace global settings from
     fileformat = input_format
