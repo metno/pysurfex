@@ -622,7 +622,7 @@ class ConfigurationFromHarmonie(Configuration):
         #  CISBA Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
         self.update_setting("SURFEX#ISBA#SCHEME", env["CISBA"])
         if env["CISBA"] == "DIF":
-            self.update_setting("SURFEX#ISBA#MEB", True])
+            self.update_setting("SURFEX#ISBA#MEB", True)
 
         # CSNOW Type of snow scheme in SURFEX. Options: "D95" and "3-L"
         self.update_setting("SURFEX#ISBA#SNOW", env["CSNOW"])

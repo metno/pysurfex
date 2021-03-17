@@ -1320,7 +1320,7 @@ class SodaInputData(surfex.JsonInputData):
                                                              check_existence=check_existence)
 
         # We newer run inline model for perturbations or in SODA
-        extension = fg_file.extension.type
+        extension = fg_file.extension
         if csurf_filetype == "fa":
             extension = "fa"
 
