@@ -1340,7 +1340,6 @@
     <span class="n">fg_deps</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">an_deps</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">passed_tests</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1"># icounter = -1</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
         <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">qc_flag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1356,7 +1355,6 @@
                     <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
-            <span class="c1"># icounter = icounter + 1</span>
             <span class="n">obstime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;obstime&quot;</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">)</span>
             <span class="n">lon</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span>
             <span class="n">lat</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span>

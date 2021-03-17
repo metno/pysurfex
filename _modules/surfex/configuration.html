@@ -658,6 +658,8 @@
 
         <span class="c1">#  CISBA Type of ISBA scheme in SURFEX. Options: &quot;3-L&quot;|&quot;2-L&quot;|&quot;DIF&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CISBA&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CISBA&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#MEB&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># CSNOW Type of snow scheme in SURFEX. Options: &quot;D95&quot; and &quot;3-L&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CSNOW&quot;</span><span class="p">])</span>
