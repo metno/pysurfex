@@ -873,6 +873,16 @@ class BaseNamelist(object):
         return self.ascii2nml(merged_json_settings)
 
 
+class Sfx81(BaseNamelist):
+    def __init__(self, program, config, input_path, **kwargs):
+        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+
+
+class Cy46(BaseNamelist):
+    def __init__(self, program, config, input_path, **kwargs):
+        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+
+
 class Cy43(BaseNamelist):
     def __init__(self, program, config, input_path, **kwargs):
         BaseNamelist.__init__(self, program, config, input_path, **kwargs)
@@ -883,11 +893,17 @@ class Cy40(BaseNamelist):
         BaseNamelist.__init__(self, program, config, input_path, **kwargs)
 
 
-class Namelist(Cy40, Cy43):
+class Namelist(Cy40, Cy43, Cy46, Sfx81, BaseNamelist):
     def __init__(self, cycle, program, config, input_path, **kwargs):
-        if cycle == "cy43":
+        if cycle.lower() == "base":
+            BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+        elif cycle.lower() == "sfx81":
+            Sfx81.__init__(self, program, config, input_path, **kwargs)
+        elif cycle.lower() == "cy46":
+            Cy46.__init__(self, program, config, input_path, **kwargs)
+        elif cycle.lower() == "cy43":
             Cy43.__init__(self, program, config, input_path, **kwargs)
-        elif cycle == "cy40":
+        elif cycle.lower() == "cy40":
             Cy40.__init__(self, program, config, input_path, **kwargs)
         else:
             raise Exception()

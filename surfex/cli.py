@@ -207,18 +207,18 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('-t2m_format', type=str, default=None, help="File format for file with T2M", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
     parser.add_argument('-t2m_converter', type=str, default="none", help="Converter for T2M", nargs="?",
-                        choices=["none"])
+                        choices=["none", "tap"])
     parser.add_argument('-rh2m_file', type=str, default=None, help="File with RH2M", nargs="?")
     parser.add_argument('-rh2m_format', type=str, default=None, help="File format for file with RH2M", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
     parser.add_argument('-rh2m_converter', type=str, default="none", help="Converter for RH2M", nargs="?",
-                        choices=["none"])
+                        choices=["none", "rhp"])
 
     parser.add_argument('-sd_file', type=str, default=None, help="Snow depth file", nargs="?")
     parser.add_argument('-sd_format', type=str, default=None, help="Snow depth file format", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
     parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?",
-                        choices=["none", "sweclim", "swe2sd"])
+                        choices=["none", "sweclim", "swe2sd", "sdp"])
 
     parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
     parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
@@ -738,6 +738,10 @@ def run_surfex_binary(mode, **kwargs):
     if need_prep:
         prep_file_path = kwargs["prep"]
 
+    sfx_version = "base"
+    if "sfx_version" in kwargs:
+        sfx_version = kwargs["sfx_version"]
+
     pert = None
     if "pert" in kwargs:
         pert = kwargs["pert"]
@@ -759,7 +763,7 @@ def run_surfex_binary(mode, **kwargs):
 
     if not os.path.exists(output) or force:
 
-        my_settings = surfex.BaseNamelist(mode, config, namelist_path, **kwargs).get_namelist()
+        my_settings = surfex.Namelist(sfx_version, mode, config, namelist_path, **kwargs).get_namelist()
         my_geo.update_namelist(my_settings)
 
         # Create input

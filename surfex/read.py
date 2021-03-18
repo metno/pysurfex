@@ -327,8 +327,8 @@ class Converter(object):
             rhp2 = self.rhp2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(rhp1), rhp2, rhp1)
         elif self.name == "sdp":
-            sdp1 = self.rhp1.read_variable(geo, validtime, cache)
-            sdp2 = self.rhp2.read_variable(geo, validtime, cache)
+            sdp1 = self.sdp1.read_variable(geo, validtime, cache)
+            sdp2 = self.sdp2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(sdp1), sdp2, sdp1)
         else:
             print("Converter " + self.name + " not implemented")
