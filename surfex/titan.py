@@ -1212,6 +1212,7 @@ class ObsOperator(object):
 
         grid_lons = np.transpose(geo.lons)
         grid_lats = np.transpose(geo.lats)
+        grid_values = np.transpose(grid_values)
 
         grid = gridpp.Grid(grid_lats, grid_lons)
         lons = dataset.lons
