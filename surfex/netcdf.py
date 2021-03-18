@@ -544,6 +544,10 @@ def read_first_guess_netcdf_file(input_file, var):
     background = np.array(np.reshape(background, [nx * ny]))
     background = np.reshape(background, [ny, nx])
     background = np.transpose(background)
+    fill_value = fh.variables[var]._FillValue
+    print("Field " + var + " got ", fill_value ,". Fill with nan")
+    background[background == fill_value] = np.nan
+
     # background = background.tolist()
     # background = np.asarray(background)
     glafs = fh["land_area_fraction"][:]
@@ -584,6 +588,10 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
         fh.variables["land_area_fraction"][:] = np.transpose(lafs)
 
     fh["time"][:] = float(validtime.strftime("%s"))
+    fill_value = fh.variables[var]._FillValue
+    print("Field " + var + " got nan. Fill with ", fill_value)
+    field[np.where(np.isnan(field))] = fill_value
+
     fh[var][:] = np.transpose(field)
     fh.close()
 
@@ -626,8 +634,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
         if debug:
             print(t2m_var.shape, nx*ny)
         t2m_var = np.reshape(t2m_var, ny * nx, order="C")
-        mask = np.ma.is_masked(t2m_var)
-        t2m_var[mask] = 999.
+        t2m_var = t2m_var.filled(fill_value = 999.)
         t2m_var = t2m_var.tolist()
 
     if rh2m is not None:
@@ -640,8 +647,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
                                                 rh2m_fh.variables[rh2m["var"]].shape[0])
         rh2m_var = rh2m_fh.variables[rh2m["var"]][:]
         rh2m_var = rh2m_var.reshape([ny * nx], order="C")
-        mask = np.ma.is_masked(rh2m_var)
-        rh2m_var[mask] = 999.
+        rh2m_var = rh2m_var.filled(fill_value = 999.)
         rh2m_var = rh2m_var.tolist()
 
     if sd is not None:
@@ -655,8 +661,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
 
         sd_var = sd_fh.variables[sd["var"]][:]
         sd_var = sd_var.reshape([ny * nx], order="C")
-        mask = np.ma.is_masked(sd_var)
-        sd_var[mask] = 999.
+        sd_var = sd_var.filled(fill_value = 999.)
         sd_var = sd_var.tolist()
 
     if i == 0:

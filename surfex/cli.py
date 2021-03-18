@@ -367,11 +367,6 @@ def first_guess_for_oi(**kwargs):
         field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
         field = np.reshape(field, [geo.nlons, geo.nlats])
 
-        fill_nan_value = 0.
-        if np.isnan(np.sum(field)):
-            print("Field " + var + " got Nan")
-            field = np.nan_to_num(field, fill_nan_value)
-
         # Create file
         if fg is None:
             nx = geo.nlons
@@ -386,6 +381,13 @@ def first_guess_for_oi(**kwargs):
         if var == "altitude":
             field[field < 0] = 0
 
+        if np.isnan(np.sum(field)):
+            print(fg.variables[var])
+            fill_nan_value = fg.variables[var]._FillValue
+            print("Field " + var + " got Nan. Fill with: ",fill_nan_value)
+            field[np.where(np.isnan(field))] = fill_nan_value
+
+        print(field)
         fg.variables[var][:] = np.transpose(field)
 
     if fg is not None:

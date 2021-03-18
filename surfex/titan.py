@@ -1210,8 +1210,9 @@ class TitanDataSet(QCDataSet):
 class ObsOperator(object):
     def __init__(self, operator, geo, dataset, grid_values, max_distance=5000):
 
-        grid_lons = np.asarray(geo.lons)
-        grid_lats = np.asarray(geo.lats)
+        grid_lons = np.transpose(geo.lons)
+        grid_lats = np.transpose(geo.lats)
+
         grid = gridpp.Grid(grid_lats, grid_lons)
         lons = dataset.lons
         lats = dataset.lats
