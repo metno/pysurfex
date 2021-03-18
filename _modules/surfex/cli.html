@@ -404,11 +404,6 @@
         <span class="n">field</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">])</span>
 
-        <span class="n">fill_nan_value</span> <span class="o">=</span> <span class="mf">0.</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">field</span><span class="p">)):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Field &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; got Nan&quot;</span><span class="p">)</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">fill_nan_value</span><span class="p">)</span>
-
         <span class="c1"># Create file</span>
         <span class="k">if</span> <span class="n">fg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nx</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span>
@@ -423,6 +418,13 @@
         <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;altitude&quot;</span><span class="p">:</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">field</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="n">fill_nan_value</span> <span class="o">=</span> <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">_FillValue</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Field &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; got Nan. Fill with: &quot;</span><span class="p">,</span><span class="n">fill_nan_value</span><span class="p">)</span>
+            <span class="n">field</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">field</span><span class="p">))]</span> <span class="o">=</span> <span class="n">fill_nan_value</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">fg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
