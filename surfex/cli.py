@@ -223,8 +223,8 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
     parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
-    parser.add_argument('--laf_converter', type=str, default="sea2land", help="", nargs="?",
-                        choices=["none", "sea2land"])
+    parser.add_argument('--laf_converter', type=str, default="nature_town", help="", nargs="?",
+                        choices=["none", "sea2land", "nature_town"])
 
     parser.add_argument('-altitude_file', type=str, default=None, help="SURFEX grib file", nargs="?")
     parser.add_argument('-altitude_format', type=str, default=None, help="Snow depth file format", nargs="?",
