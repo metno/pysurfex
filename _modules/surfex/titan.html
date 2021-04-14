@@ -627,7 +627,7 @@
     <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">115</span><span class="p">):</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
@@ -640,11 +640,17 @@
 
                 <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
                     <span class="n">obstime</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s2">&quot;obstime&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found a redundant observation &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">obstime1</span><span class="p">)</span>
                     <span class="c1"># New best position in time. Flag the previous</span>
                     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">an_time</span> <span class="o">-</span> <span class="n">obstime1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">an_time</span> <span class="o">-</span> <span class="n">obstime</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found a better redundant observation &quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">obstime1</span><span class="p">,</span> <span class="n">obstime</span><span class="p">)</span>
                         <span class="n">ind</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s2">&quot;index&quot;</span><span class="p">]</span>
                         <span class="n">flags</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
                         <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pos</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;obstime&quot;</span><span class="p">:</span> <span class="n">obstime</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">}})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pos</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;obstime&quot;</span><span class="p">:</span> <span class="n">obstime1</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">}})</span>
 
@@ -702,8 +708,12 @@
 
                 <span class="c1"># print(lon1, lat1, stid)</span>
                 <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blacklist_pos</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found blacklisted position: &quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
                     <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
                 <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blacklist_stid</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found blackisted stid: &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">))</span>
                     <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
@@ -1453,7 +1463,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

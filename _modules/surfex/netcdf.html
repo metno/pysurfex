@@ -722,6 +722,31 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
+    <span class="n">grid_lons</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">grid_lats</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">grid_snow_class</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">infiles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading: &quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">nc</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">nc</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">][:]</span>
+            <span class="n">grid_lats</span> <span class="o">=</span> <span class="n">nc</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">][:]</span>
+            <span class="n">grid_snow_class_read</span> <span class="o">=</span> <span class="n">nc</span><span class="p">[</span><span class="s2">&quot;classed_product&quot;</span><span class="p">][:]</span>
+            <span class="k">if</span> <span class="n">grid_snow_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">grid_snow_class</span> <span class="o">=</span> <span class="n">grid_snow_class_read</span>
+            <span class="n">grid_snow_class</span><span class="p">[</span><span class="n">grid_snow_class_read</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">grid_snow_class</span><span class="p">[</span><span class="n">grid_snow_class_read</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">nc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning file &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; does not exists&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">grid_lons</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">grid_lats</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">grid_snow_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No files were read properly&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">grid_snow_class</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -757,7 +782,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

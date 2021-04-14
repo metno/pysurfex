@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PYSURFEX documentation &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
@@ -34,14 +33,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="pysurfex-documentation">
+  <div class="section" id="pysurfex-documentation">
 <h1>PYSURFEX documentation<a class="headerlink" href="#pysurfex-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
 <p><a class="reference external" href="https://coveralls.io/github/metno/pysurfex">https://coveralls.io/github/metno/pysurfex</a></p>
-</section>
-<section id="python-api-to-surfex-pysurfex">
+</div>
+<div class="section" id="python-api-to-surfex-pysurfex">
 <h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this headline">¶</a></h1>
 <dl class="simple">
 <dt>An API in python to the external surface model SURFEX.</dt><dd><ul class="simple">
@@ -56,7 +55,7 @@
 </dd>
 </dl>
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
-<section id="installation-of-pregenerated-packages-from-pypi-pip">
+<div class="section" id="installation-of-pregenerated-packages-from-pypi-pip">
 <h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
@@ -65,8 +64,8 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --user --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
 </div>
-</section>
-<section id="installation-on-debian-based-linux-system">
+</div>
+<div class="section" id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
@@ -85,8 +84,8 @@ sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
-</section>
-<section id="general-dependencies-from-pypi">
+</div>
+<div class="section" id="general-dependencies-from-pypi">
 <h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
@@ -142,8 +141,8 @@ Testdata from https://docs.google.com/uc?export<span class="o">=</span>download<
 </div>
 <p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
 folder:</p>
-</section>
-<section id="install-pysurfex">
+</div>
+<div class="section" id="install-pysurfex">
 <h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
 </pre></div>
@@ -152,8 +151,8 @@ folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e . --user
 </pre></div>
 </div>
-</section>
-<section id="create-documentation">
+</div>
+<div class="section" id="create-documentation">
 <h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
 <span class="c1"># Create html documentation</span>
@@ -164,13 +163,13 @@ make latex
 make latexpdf
 </pre></div>
 </div>
-</section>
-<section id="examples">
+</div>
+<div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
-</section>
-</section>
-<section id="running-an-experiment-in-ecflow">
+</div>
+</div>
+<div class="section" id="running-an-experiment-in-ecflow">
 <h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
@@ -181,7 +180,7 @@ PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-
 PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
 </pre></div>
 </div>
-<section id="classes">
+<div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="surfex.Grib">
@@ -727,8 +726,8 @@ Uses internally the SystemFilePaths class</p>
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">JsonInputDataFromFile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/run.html#JsonInputDataFromFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.JsonInputDataFromFile" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="class-methods">
+</div>
+<div class="section" id="class-methods">
 <h2>Class methods<a class="headerlink" href="#class-methods" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="surfex.Grib.__init__">
@@ -904,7 +903,7 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py function">
 <dt id="surfex.Redundancy.test">
-<code class="sig-prename descclassname"><span class="pre">surfex.Redundancy.</span></code><code class="sig-name descname"><span class="pre">test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Redundancy.test" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Redundancy.</span></code><code class="sig-name descname"><span class="pre">test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">115</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Redundancy.test" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2320,8 +2319,8 @@ haversine formula. Values can be vectors.</p>
 <code class="sig-prename descclassname"><span class="pre">surfex.JsonInputDataFromFile.</span></code><code class="sig-name descname"><span class="pre">prepare_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.JsonInputDataFromFile.prepare_input" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="methods">
+</div>
+<div class="section" id="methods">
 <h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="surfex.define_quality_control">
@@ -2689,16 +2688,16 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
 </dl>
 </li>
 </ul>
-</section>
-</section>
-<section id="indices-and-tables">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</section>
+</div>
 
 
             <div class="clearer"></div>
@@ -2761,7 +2760,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

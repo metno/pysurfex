@@ -820,6 +820,78 @@
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
 
 
+<span class="k">def</span> <span class="nf">snow_pseudo_obs_cryoclim</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">grid_snow_class</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">fg_geo</span><span class="p">,</span> <span class="n">grid_snow_fg</span><span class="p">,</span>
+                             <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ny</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nx</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span>
+    <span class="n">ny</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ny</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span>
+
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">res_lons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">res_lats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">p_snow_class</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="p">):</span>
+        <span class="n">jj</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ny</span><span class="p">):</span>
+            <span class="n">res_lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">])</span>
+            <span class="n">res_lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid_lats</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">])</span>
+            <span class="n">p_snow_class</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">counter</span><span class="p">):</span> <span class="n">grid_snow_class</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]})</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">jj</span> <span class="o">=</span> <span class="n">jj</span> <span class="o">+</span> <span class="n">step</span>
+        <span class="n">ii</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">+</span> <span class="n">step</span>
+
+    <span class="c1"># TODO move from here</span>
+    <span class="kn">import</span> <span class="nn">gridpp</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">))</span>
+    <span class="n">fg_grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">fg_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">fg_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+    <span class="n">p_fg_snow_depth</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">bilinear</span><span class="p">(</span><span class="n">fg_grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">grid_snow_fg</span><span class="p">)</span>
+
+    <span class="c1"># Ordering of points must be the same.....</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lafs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">providers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">p_fg_snow_depth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+
+        <span class="n">p_snow_fg</span> <span class="o">=</span> <span class="n">p_fg_snow_depth</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># print(i, p_snow_fg, res_lons[i], res_lats[i])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_snow_fg</span><span class="p">):</span>
+            <span class="c1"># Check if in grid</span>
+            <span class="n">nn</span> <span class="o">=</span> <span class="n">fg_grid</span><span class="o">.</span><span class="n">get_num_neighbours</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">res_lons</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">res_lats</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="mf">2500.</span><span class="p">)</span>
+            <span class="c1"># print(float(res_lats[i]), float(res_lons[i]), nn)</span>
+            <span class="k">if</span> <span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">obs_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">p_snow_class</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">fg_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&lt;=</span> <span class="n">fg_threshold</span><span class="p">:</span>
+                                <span class="c1"># print(p_snow_fg)</span>
+                                <span class="n">obs_value</span> <span class="o">=</span> <span class="n">p_snow_fg</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">obs_value</span> <span class="o">=</span> <span class="n">p_snow_fg</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">obs_value</span> <span class="o">=</span> <span class="n">new_snow_depth</span>
+                <span class="k">elif</span> <span class="n">p_snow_class</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">obs_value</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">obs_value</span><span class="p">):</span>
+                    <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">cis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">lafs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">res_lons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">res_lats</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">obs_value</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Possible pesudo-observations: &quot;</span><span class="p">,</span> <span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pseudo-observations created: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs</span><span class="p">))</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">QCDataSet</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">cis</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">providers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span>
+
+
 <span class="k">def</span> <span class="nf">set_geo_from_obs_set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">obs_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;validtime&quot;</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
@@ -912,7 +984,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>
