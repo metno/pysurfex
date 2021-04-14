@@ -180,6 +180,7 @@ setup(
         'bin/set_domain',
         'bin/soda',
         'bin/titan',
-        'bin/bufr2json'
+        'bin/bufr2json',
+        'bin/cryoclim_pseudoobs'
     ],
 )
