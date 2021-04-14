@@ -1890,3 +1890,39 @@ def run_timeseries2json(**kwargs):
                                          stids_file=stationlist)
 
     ts1.write_json("ts.json", indent=indent)
+
+
+def parse_cryoclim_pseudoobs(argv):
+    parser = ArgumentParser("Create CRYOCLIM pseudo-obs")
+    parser.add_argument('-v', '--varname', dest="varname", type=str, help="Variable name",
+                        default="surface_snow_thickness", required=False)
+    parser.add_argument('-fg', dest="fg_file", type=str, help="First guess file", default=None, required=True)
+    parser.add_argument('-i', dest="infiles", type=str, nargs="+", help="Infiles", default=None, required=True)
+    parser.add_argument('-step', dest="thinning", type=int, help="Thinning step", required=False, default=4)
+    parser.add_argument('-indent', dest="indent", type=int, help="Indent", required=False, default=None)
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output image", default=None,
+                        required=False)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_cryoclim_pseuodoobs(**kwargs):
+    fg_file = kwargs["fg_file"]
+    infiles = kwargs["infiles"]
+    step = kwargs["thinning"]
+    output = kwargs["output"]
+    varname = kwargs["varname"]
+    indent = kwargs["indent"]
+
+    grid_lons, grid_lats, grid_snow_class = surfex.read_cryoclim_nc(infiles)
+    fg_geo, validtime, grid_snow_fg, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, varname)
+    qc = surfex.snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg)
+    qc.write_output(output, indent=indent)

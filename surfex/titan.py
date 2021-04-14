@@ -590,7 +590,7 @@ class Redundancy(QualityControl):
     def set_input(self, size, **kwargs):
         pass
 
-    def test(self, dataset, mask, code=1):
+    def test(self, dataset, mask, code=115):
 
         data = {}
         flags = dataset.flags
@@ -603,11 +603,17 @@ class Redundancy(QualityControl):
 
                 if pos in data:
                     obstime = data[pos]["obstime"]
+                    if self.debug:
+                        print("Found a redundant observation ", i, pos, dataset.stids[i], obstime1)
                     # New best position in time. Flag the previous
                     if abs(self.an_time - obstime1) < abs(self.an_time - obstime):
+                        if self.debug:
+                            print("Found a better redundant observation ", pos, obstime1, obstime)
                         ind = data[pos]["index"]
                         flags[ind] = code
                         data.update({pos: {"obstime": obstime, "index": i}})
+                    else:
+                        flags[i] = code
                 else:
                     data.update({pos: {"obstime": obstime1, "index": i}})
 
@@ -665,8 +671,12 @@ class Blacklist(QualityControl):
 
                 # print(lon1, lat1, stid)
                 if pos in self.blacklist_pos:
+                    if self.debug:
+                        print("Found blacklisted position: ", pos)
                     flags[i] = code
                 if str(stid) in self.blacklist_stid:
+                    if self.debug:
+                        print("Found blackisted stid: ", str(stid))
                     flags[i] = code
 
         if self.debug:

@@ -685,3 +685,28 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
             print("i", i)
 
     out.close()
+
+
+def read_cryoclim_nc(infiles):
+    grid_lons = None
+    grid_lats = None
+    grid_snow_class = None
+    for filename in infiles:
+        if os.path.exists(filename):
+            print("Reading: ", filename)
+            nc = netCDF4.Dataset(filename, "r")
+            grid_lons = nc["lon"][:]
+            grid_lats = nc["lat"][:]
+            grid_snow_class_read = nc["classed_product"][:]
+            if grid_snow_class is None:
+                grid_snow_class = grid_snow_class_read
+            grid_snow_class[grid_snow_class_read == 1] = 1
+            grid_snow_class[grid_snow_class_read == 0] = 0
+            nc.close()
+        else:
+            print("Warning file " + filename + " does not exists")
+
+    if grid_lons is None or grid_lats is None or grid_snow_class is None:
+        raise Exception("No files were read properly")
+
+    return grid_lons, grid_lats, grid_snow_class
