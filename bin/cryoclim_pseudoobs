@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+import surfex
+import sys
+
+if __name__ == "__main__":
+    kwargs = surfex.parse_cryoclim_pseudoobs(sys.argv[1:])
+    surfex.run_cryoclim_pseuodoobs(**kwargs)
