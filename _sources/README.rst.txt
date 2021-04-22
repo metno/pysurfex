@@ -43,7 +43,7 @@ Install the required pacakges (some might be obsolete if the pip packages contai
 
   sudo apt-get update
   # Python tools
-  sudo apt-get install python3-setuptools python3-numpy python3-scipy python3-nose
+  sudo apt-get install python3-setuptools python3-numpy python3-nose
   # Cfunits
   sudo apt-get install libudunits2-dev
   # Projection

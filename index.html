@@ -70,7 +70,7 @@
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
 <span class="c1"># Python tools</span>
-sudo apt-get install python3-setuptools python3-numpy python3-scipy python3-nose
+sudo apt-get install python3-setuptools python3-numpy python3-nose
 <span class="c1"># Cfunits</span>
 sudo apt-get install libudunits2-dev
 <span class="c1"># Projection</span>
@@ -169,15 +169,10 @@ make latexpdf
 <p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
 </div>
 </div>
-<div class="section" id="running-an-experiment-in-ecflow">
-<h1>Running an experiment in EcFlow<a class="headerlink" href="#running-an-experiment-in-ecflow" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h1>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir sfx_home
-<span class="nb">cd</span> sfx_home
-mkdir sandbox
-<span class="nb">cd</span> sandbox
-PySurfex setup -conf PySurfex-root-path -rev your-surfex-source-code -host host-label --domain_name your-domain
-PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">2020040112</span> --suite sandbox
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 <div class="section" id="classes">
@@ -349,22 +344,7 @@ PySurfex start -dtg <span class="m">2020033003</span> -dtgend <span class="m">20
 
 <dl class="py class">
 <dt id="surfex.Interpolation">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Interpolation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inttype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_lats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#Interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Interpolation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt id="surfex.NearestNeighbour">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">NearestNeighbour</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#NearestNeighbour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.NearestNeighbour" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt id="surfex.Linear">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Linear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#Linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Linear" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt id="surfex.NoInterpolation">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">NoInterpolation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#NoInterpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.NoInterpolation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Interpolation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/interpolation.html#Interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Interpolation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -623,9 +603,8 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py class">
 <dt id="surfex.SurfexForcing">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">SurfexForcing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_objs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/forcing.html#SurfexForcing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexForcing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Main output class for SURFEX forcing</p>
-</dd></dl>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">SurfexForcing</span></code><a class="reference internal" href="_modules/surfex/forcing.html#SurfexForcing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexForcing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt id="surfex.NetCDFOutput">
@@ -662,7 +641,7 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py class">
 <dt id="surfex.Netcdf">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Netcdf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#Netcdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Netcdf" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Netcdf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#Netcdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Netcdf" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -673,7 +652,7 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py class">
 <dt id="surfex.NetCDFFileVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">NetCDFFileVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#NetCDFFileVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.NetCDFFileVariable" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">NetCDFFileVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#NetCDFFileVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.NetCDFFileVariable" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -742,7 +721,7 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py function">
 <dt id="surfex.Grib.points">
-<code class="sig-prename descclassname"><span class="pre">surfex.Grib.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gribvar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Grib.points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Grib.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gribvar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Grib.points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a 2-D field and interpolates it to requested positions</p>
 <p>Arguments:</p>
 <dl class="field-list simple">
@@ -1276,18 +1255,18 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py function">
 <dt id="surfex.Interpolation.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inttype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_lats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="surfex.Interpolation.interpolate">
-<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">interpolate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.interpolate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">interpolate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field2d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.interpolate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="surfex.Interpolation.rotate_wind_to_geographic">
-<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">rotate_wind_to_geographic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.rotate_wind_to_geographic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Interpolation.</span></code><code class="sig-name descname"><span class="pre">rotate_wind_to_geographic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Interpolation.rotate_wind_to_geographic" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1303,39 +1282,6 @@ haversine formula. Values can be vectors.</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="surfex.NearestNeighbour.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.NearestNeighbour.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NearestNeighbour.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NearestNeighbour.interpolate">
-<code class="sig-prename descclassname"><span class="pre">surfex.NearestNeighbour.</span></code><code class="sig-name descname"><span class="pre">interpolate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field2d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NearestNeighbour.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.Linear.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.Linear.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Linear.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.Linear.interpolate">
-<code class="sig-prename descclassname"><span class="pre">surfex.Linear.</span></code><code class="sig-name descname"><span class="pre">interpolate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Linear.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NoInterpolation.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.NoInterpolation.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NoInterpolation.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NoInterpolation.interpolate">
-<code class="sig-prename descclassname"><span class="pre">surfex.NoInterpolation.</span></code><code class="sig-name descname"><span class="pre">interpolate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NoInterpolation.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt id="surfex.Fa.__init__">
 <code class="sig-prename descclassname"><span class="pre">surfex.Fa.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Fa.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
@@ -1348,7 +1294,7 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Fa.points">
-<code class="sig-prename descclassname"><span class="pre">surfex.Fa.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Fa.points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Fa.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Fa.points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a 2-D field and interpolates it to requested positions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1357,7 +1303,6 @@ haversine formula. Values can be vectors.</p>
 <li><p><strong>geo</strong> (<a class="reference internal" href="#surfex.Geo" title="surfex.Geo"><em>surfex.Geo</em></a>) – Geometry</p></li>
 <li><p><strong>validtime</strong> (<em>datetime.datetime</em>) – Validtime</p></li>
 <li><p><strong>interpolation</strong> (<em>str</em>) – Interpoaltion method</p></li>
-<li><p><strong>cache</strong> (<a class="reference internal" href="#surfex.Cache" title="surfex.Cache"><em>surfex.Cache</em></a>) – Cache</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1382,12 +1327,12 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.SurfexIO.points">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexIO.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexIO.points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.SurfexIO.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexIO.points" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="surfex.SurfexIO.interpolate_field">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexIO.</span></code><code class="sig-name descname"><span class="pre">interpolate_field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexIO.interpolate_field" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.SurfexIO.</span></code><code class="sig-name descname"><span class="pre">interpolate_field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexIO.interpolate_field" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2092,19 +2037,9 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.SurfexForcing.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexForcing.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_objs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexForcing.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.SurfexForcing.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexForcing.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
-
-<dl class="py function">
-<dt id="surfex.SurfexForcing._check_sanity">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexForcing.</span></code><code class="sig-name descname"><span class="pre">_check_sanity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexForcing._check_sanity" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.SurfexForcing.write_forcing">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexForcing.</span></code><code class="sig-name descname"><span class="pre">write_forcing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_objs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">this_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexForcing.write_forcing" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py function">
 <dt id="surfex.NetCDFOutput.__init__">
@@ -2188,7 +2123,7 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Netcdf.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.Netcdf.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Netcdf.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Netcdf.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Netcdf.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
@@ -2212,12 +2147,12 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Netcdf.field">
-<code class="sig-prename descclassname"><span class="pre">surfex.Netcdf.</span></code><code class="sig-name descname"><span class="pre">field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">member</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Netcdf.field" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Netcdf.</span></code><code class="sig-name descname"><span class="pre">field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">member</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Netcdf.field" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="surfex.NetCDFFileVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.NetCDFFileVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NetCDFFileVariable.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.NetCDFFileVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NetCDFFileVariable.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
@@ -2718,7 +2653,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#running-an-experiment-in-ecflow">Running an experiment in EcFlow</a><ul>
+<li><a class="reference internal" href="#id1">Examples</a><ul>
 <li><a class="reference internal" href="#classes">Classes</a></li>
 <li><a class="reference internal" href="#class-methods">Class methods</a></li>
 <li><a class="reference internal" href="#methods">Methods</a></li>

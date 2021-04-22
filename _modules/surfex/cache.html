@@ -80,7 +80,12 @@
         <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">inttype</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;identifier_out: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">identifier_out</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">identifier_out</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">identifier_in</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">]:</span>
                     <span class="k">return</span> <span class="kc">True</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -104,27 +109,40 @@
         <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update interpolator &quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
-        <span class="n">this_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update interpolator &quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
             <span class="n">out_geos</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">out_grid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
-                <span class="n">in_geos</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">]:</span>
-                    <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">f</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">][</span><span class="n">f</span><span class="p">]})</span>
-                <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_out</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
-                <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">out_grid</span><span class="p">:</span> <span class="n">in_geos</span><span class="p">})</span>
-            <span class="n">this_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">out_geos</span><span class="p">})</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">inttype</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">this_dict</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">this_dict</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">identifier_out</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">out_grid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
+                    <span class="n">in_geos</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found &quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">&quot; for grid &quot;</span><span class="p">,</span> <span class="n">out_grid</span><span class="p">)</span>
+                        <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">f</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">][</span><span class="n">f</span><span class="p">]})</span>
+                    <span class="k">if</span> <span class="n">identifier_out</span> <span class="o">==</span> <span class="n">out_grid</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update: &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="s2">&quot; for out geo&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                        <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+                    <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">out_grid</span><span class="p">:</span> <span class="n">in_geos</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting new: &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="s2">&quot; for out geo&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_out</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">}})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">out_geos</span><span class="p">})</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_out</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">}}})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updated interpolator: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">save_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">id_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span>
     
     <span class="k">def</span> <span class="nf">clean_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this_time</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Clean fields&quot;</span><span class="p">)</span>
         <span class="n">del_keys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
             <span class="n">yyyy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
@@ -140,7 +158,11 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">del_keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
 
     <span class="k">def</span> <span class="nf">is_saved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;is_saved: &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">id_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>

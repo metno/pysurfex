@@ -46,9 +46,10 @@
 
 
 <div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#surfex.Netcdf">[docs]</a><span class="k">class</span> <span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">num_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
@@ -62,7 +63,7 @@
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xcoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ycoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="n">deaccumulate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">instantanious</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lev_from_ind</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+              <span class="n">deaccumulate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">instantanious</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lev_from_ind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assembles a 5D field in order lon,lat,time,height,ensemble</span>
 
@@ -77,6 +78,7 @@
 <span class="sd">            instantanious (float): Scaling factor to make an accumulated value as instantanius</span>
 <span class="sd">            units (str): CF unit for the variable to be read</span>
 <span class="sd">            lev_from_ind (bool): level list are indices and not values</span>
+<span class="sd">            debug:</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">         np.array: 5D array with values</span>
@@ -103,10 +105,12 @@
                 <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Time provided in call as datetime objects&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">times_in_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">datetimes</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times_in_var</span><span class="p">)):</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">times</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">times</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)):</span>
                         <span class="c1"># Time steps requested</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
                         <span class="k">if</span> <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
                             <span class="n">times_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -126,7 +130,8 @@
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">prev_time_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;times to read&quot;</span><span class="p">,</span> <span class="n">times_to_read</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;times to read&quot;</span><span class="p">,</span> <span class="n">times_to_read</span><span class="p">)</span>
         <span class="n">levels_to_read</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -215,9 +220,10 @@
         <span class="k">if</span> <span class="n">deaccumulate</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deaccumulate previous dimensions: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">prev_dims</span><span class="p">),</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">])</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">][</span><span class="n">dims</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">conform</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">units</span><span class="p">),</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="n">units</span><span class="p">))</span>
@@ -254,7 +260,7 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Shape of output: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo</span>
 
-    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">validtime</span> <span class="o">=</span> <span class="p">[]</span>
@@ -263,14 +269,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">validtime</span> <span class="o">=</span> <span class="p">[</span><span class="n">validtime</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
         <span class="c1"># Reshape to fortran 2D style</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span>
 
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
-               <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+               <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assembles a 5D slice and interpolates it to requested positions</span>
@@ -285,20 +292,10 @@
 
         <span class="c1"># field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)</span>
         <span class="c1"># field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order=&quot;F&quot;))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
-        <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Nearest neighbour&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">NearestNeighbour</span><span class="p">(</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Linear interpolation&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No interpolation&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">NoInterpolation</span><span class="p">(</span><span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Interpolation type &quot;</span> <span class="o">+</span> <span class="n">interpolation</span> <span class="o">+</span> <span class="s2">&quot; not implemented!&quot;</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
@@ -319,9 +316,10 @@
 
 
 <div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">fh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -430,9 +428,11 @@
                 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)):</span>
                     <span class="n">epochtime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">conform</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">units</span><span class="p">),</span>
                                                           <span class="n">cfunits</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="s2">&quot;seconds since 1970-01-01 00:00:00&quot;</span><span class="p">)))</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">epochtime</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">epochtime</span><span class="p">)</span>
                     <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">epochtime</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
                     <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -574,7 +574,6 @@
     <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">))</span>
     <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">))</span>
 
-    <span class="c1"># print(lons.shape, lats.shape, type(lons))</span>
     <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Geo</span><span class="p">(</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
 
     <span class="n">background</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="n">var</span><span class="p">][:]</span>
@@ -582,23 +581,17 @@
     <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
     <span class="n">fill_value</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">_FillValue</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Field &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; got &quot;</span><span class="p">,</span> <span class="n">fill_value</span> <span class="p">,</span><span class="s2">&quot;. Fill with nan&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Field &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; got &quot;</span><span class="p">,</span> <span class="n">fill_value</span> <span class="p">,</span> <span class="s2">&quot;. Fill with nan&quot;</span><span class="p">)</span>
     <span class="n">background</span><span class="p">[</span><span class="n">background</span> <span class="o">==</span> <span class="n">fill_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="c1"># background = background.tolist()</span>
-    <span class="c1"># background = np.asarray(background)</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;land_area_fraction&quot;</span><span class="p">][:]</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">glafs</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">]))</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">glafs</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">glafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">glafs</span><span class="p">)</span>
-    <span class="c1"># glafs = glafs.tolist()</span>
-    <span class="c1"># glafs = np.asarray(glafs)</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">][:]</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gelevs</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">]))</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gelevs</span><span class="p">,</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">])</span>
     <span class="n">gelevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">gelevs</span><span class="p">)</span>
-    <span class="c1"># gelevs = gelevs.tolist()</span>
-    <span class="c1"># gelevs = np.asarray(gelevs)</span>
 
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span></div>

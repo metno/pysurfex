@@ -37,30 +37,48 @@
   <h1>Source code for surfex.interpolation</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">surfex</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">gridpp</span>
 
 
 <div class="viewcode-block" id="Interpolation"><a class="viewcode-back" href="../../index.html#surfex.Interpolation">[docs]</a><span class="k">class</span> <span class="nc">Interpolation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">var_lons</span><span class="p">,</span> <span class="n">var_lats</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">inttype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">=</span> <span class="n">nx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ny</span> <span class="o">=</span> <span class="n">ny</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span> <span class="o">=</span> <span class="n">var_lons</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span> <span class="o">=</span> <span class="n">var_lats</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Constructed interpolator &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define interpolator_ok to use this base class&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geo_in</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+        <span class="n">grid_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geo_in</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span> <span class="o">=</span> <span class="n">grid_lons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span> <span class="o">=</span> <span class="n">grid_lats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span> <span class="o">=</span> <span class="n">geo_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span> <span class="o">=</span> <span class="n">geo_out</span>
 
-    <span class="k">def</span> <span class="nf">rotate_wind_to_geographic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_grid_rot</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-        <span class="c1"># interpolated_field = field.flatten(order=&#39;F&#39;)[ind_n]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">grid_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">)</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geo_out</span><span class="o">.</span><span class="n">lonlist</span><span class="p">)</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geo_out</span><span class="o">.</span><span class="n">latlist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npoints</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">npoints</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-        <span class="c1"># TODO raise Exception(&quot;Alpha correction must be implemented&quot;)</span>
-        <span class="k">return</span> <span class="n">field</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field2d</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">field2d</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> interpolation for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; points&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
+            <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">field2d</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">:</span>
+            <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">bilinear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">field2d</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">interpolated_field</span>
+
+    <span class="k">def</span> <span class="nf">rotate_wind_to_geographic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">):</span>
@@ -99,204 +117,6 @@
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">dlon</span><span class="p">,</span> <span class="n">dlat</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">alpha</span></div>
-
-
-<div class="viewcode-block" id="NearestNeighbour"><a class="viewcode-back" href="../../index.html#surfex.NearestNeighbour">[docs]</a><span class="k">class</span> <span class="nc">NearestNeighbour</span><span class="p">(</span><span class="n">Interpolation</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distance_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="n">distance_limit</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">NearestNDInterpolator</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">can_interpolate</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The input geometry can not be interpolated&quot;</span><span class="p">)</span>
-
-        <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_interpolator</span><span class="p">(</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">geo_out</span> <span class="o">=</span> <span class="n">geo_in</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">cached_interpolator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using cached interpolator&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">type</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Mismatch in interpolators&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">index</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">nx</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ny</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">ny</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">var_lons</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">var_lats</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span> <span class="o">!=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">():</span>
-                <span class="n">interpolated_lons</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">lonlist</span>
-                <span class="n">interpolated_lats</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">latlist</span>
-
-                <span class="n">var_lons</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lons</span>
-                <span class="n">var_lats</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lats</span>
-
-                <span class="n">nx</span> <span class="o">=</span> <span class="n">var_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">ny</span> <span class="o">=</span> <span class="n">var_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">dim_x</span> <span class="o">=</span> <span class="n">var_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">dim_y</span> <span class="o">=</span> <span class="n">var_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-                <span class="n">lons_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">var_lons</span><span class="p">,</span> <span class="n">dim_x</span> <span class="o">*</span> <span class="n">dim_y</span><span class="p">)</span>
-                <span class="n">lats_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">var_lats</span><span class="p">,</span> <span class="n">dim_x</span> <span class="o">*</span> <span class="n">dim_y</span><span class="p">)</span>
-
-                <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">dim_x</span> <span class="o">*</span> <span class="n">dim_y</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-                <span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">lons_vec</span>
-                <span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lats_vec</span>
-
-                <span class="n">values_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">dim_x</span> <span class="o">*</span> <span class="n">dim_y</span><span class="p">)</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor_divide</span><span class="p">(</span><span class="n">values_vec</span><span class="p">,</span> <span class="n">dim_y</span><span class="p">)</span>
-                <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">values_vec</span><span class="p">,</span> <span class="n">dim_y</span><span class="p">)</span>
-
-                <span class="c1"># extract subdomain for faster interpolation</span>
-                <span class="n">llv</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">interpolated_lons</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">interpolated_lats</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="n">urv</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">interpolated_lons</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">interpolated_lats</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="n">test1</span> <span class="o">=</span> <span class="n">points</span> <span class="o">&gt;</span> <span class="n">llv</span>
-                <span class="n">test2</span> <span class="o">=</span> <span class="n">points</span> <span class="o">&lt;</span> <span class="n">urv</span>
-                <span class="n">subdom</span> <span class="o">=</span> <span class="n">test1</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">test1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">test2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">test2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-
-                <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interpolating...&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">interpolated_lons</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; points&quot;</span><span class="p">)</span>
-                <span class="c1"># nn = NearestNDInterpolator(points[subdom, :], values_vec[subdom])</span>
-
-                <span class="n">nn</span> <span class="o">=</span> <span class="n">NearestNDInterpolator</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">values_vec</span><span class="p">[:])</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interpolation finished&quot;</span><span class="p">)</span>
-
-                <span class="c1"># print(interpolated_lons, interpolated_lats)</span>
-                <span class="n">ii</span> <span class="o">=</span> <span class="n">nn</span><span class="p">(</span><span class="n">interpolated_lons</span><span class="p">,</span> <span class="n">interpolated_lats</span><span class="p">)</span>
-                <span class="n">i</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
-                <span class="n">j</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">interpolated_lons</span><span class="p">,</span> <span class="n">interpolated_lats</span><span class="p">,</span> <span class="n">lons_vec</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">lats_vec</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
-                <span class="c1"># Set max distance as sanity</span>
-                <span class="k">if</span> <span class="n">distance_check</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons_vec</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats_vec</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">max_distance</span> <span class="o">=</span> <span class="n">distance_limit</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">lons_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lats_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lons_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                                                      <span class="n">lats_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You only have one point is your input field!&quot;</span><span class="p">)</span>
-
-                    <span class="c1"># dist = self.distance(interpolated_lons, interpolated_lats, lons_vec[ii], lats_vec[ii])</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">max_distance</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">distance_check</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Point is too far away from nearest point: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span>
-                                            <span class="s2">&quot; Max distance=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_distance</span><span class="p">))</span>
-
-                <span class="n">grid_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No interpolation as domains are equal&quot;</span><span class="p">)</span>
-                <span class="n">nx</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">nlons</span>
-                <span class="n">ny</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">nlats</span>
-                <span class="n">var_lons</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">lonlist</span>
-                <span class="n">var_lats</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">latlist</span>
-                <span class="n">values_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor_divide</span><span class="p">(</span><span class="n">values_vec</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
-                <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">values_vec</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
-                <span class="n">grid_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
-
-            <span class="n">Interpolation</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">var_lons</span><span class="p">,</span> <span class="n">var_lats</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">grid_points</span>
-
-            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">cache</span><span class="o">.</span><span class="n">update_interpolator</span><span class="p">(</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field2d</span><span class="p">):</span>
-        <span class="n">ind_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">field2d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">field2d</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)[</span><span class="n">ind_n</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">interpolated_field</span></div>
-
-
-<div class="viewcode-block" id="Linear"><a class="viewcode-back" href="../../index.html#surfex.Linear">[docs]</a><span class="k">class</span> <span class="nc">Linear</span><span class="p">(</span><span class="n">Interpolation</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">can_interpolate</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The input geometry can not be interpolated&quot;</span><span class="p">)</span>
-
-        <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_interpolator</span><span class="p">(</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">cached_interpolator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using cached interpolator&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">cached_interpolator</span><span class="o">.</span><span class="n">index</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">var_lons</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lons</span>
-            <span class="n">var_lats</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lats</span>
-
-            <span class="n">nx</span> <span class="o">=</span> <span class="n">var_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">ny</span> <span class="o">=</span> <span class="n">var_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-            <span class="c1"># nx, ny = self.setup_weights(int_lons, int_lats, var_lons, var_lats)</span>
-
-            <span class="n">Interpolation</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">var_lons</span><span class="p">,</span> <span class="n">var_lats</span><span class="p">)</span>
-
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    def setup_weights(self, int_lons, int_lats, var_lons, var_lats):</span>
-<span class="sd">        info(&quot;Setup weights for linear interpolation&quot;)</span>
-
-<span class="sd">        # Posistions in input file</span>
-<span class="sd">        lons = var_lons</span>
-<span class="sd">        lats = var_lats</span>
-<span class="sd">        xy = np.zeros([lons.shape[0] * lons.shape[1], 2])</span>
-<span class="sd">        xy[:, 0] = lons.flatten()</span>
-<span class="sd">        xy[:, 1] = lats.flatten()</span>
-
-<span class="sd">        # Target positions</span>
-<span class="sd">        [xi, yi] = [np.asarray(int_lons), np.asarray(int_lats)]</span>
-<span class="sd">        uv = np.zeros([len(xi), 2])</span>
-<span class="sd">        uv[:, 0] = xi.flatten()</span>
-<span class="sd">        uv[:, 1] = yi.flatten()</span>
-
-<span class="sd">        # Setup the weights</span>
-<span class="sd">        self.interp_weights(xy, uv)</span>
-<span class="sd">        return lons.shape[0], lons.shape[1]</span>
-
-<span class="sd">    def interp_weights(self, xy, uv, d=2):</span>
-<span class="sd">        import scipy.spatial.qhull as qhull</span>
-<span class="sd">        </span>
-<span class="sd">        tri = qhull.Delaunay(xy)</span>
-<span class="sd">        simplex = tri.find_simplex(uv)</span>
-<span class="sd">        vertices = np.take(tri.simplices, simplex, axis=0)</span>
-<span class="sd">        temp = np.take(tri.transform, simplex, axis=0)</span>
-<span class="sd">        delta = uv - temp[:, d]</span>
-<span class="sd">        bary = np.einsum(&#39;njk,nk-&gt;nj&#39;, temp[:, :d, :], delta)</span>
-<span class="sd">        self.vtx = vertices</span>
-<span class="sd">        self.wts = np.hstack((bary, 1 - bary.sum(axis=1, keepdims=True)))</span>
-
-<span class="sd">    def interpolate(self, values):</span>
-<span class="sd">        values = values.flatten()</span>
-<span class="sd">        return np.einsum(&#39;nj,nj-&gt;n&#39;, np.take(values, self.vtx), self.wts)</span>
-<span class="sd">                </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="NoInterpolation"><a class="viewcode-back" href="../../index.html#surfex.NoInterpolation">[docs]</a><span class="k">class</span> <span class="nc">NoInterpolation</span><span class="p">(</span><span class="n">Interpolation</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cached_interpolator</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_interpolator</span><span class="p">(</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cached interpolator&quot;</span><span class="p">,</span> <span class="n">cached_interpolator</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">cached_interpolator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using cached interpolator&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span> <span class="o">!=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">():</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">())</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">())</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Domains are different. You need to interpolate!&quot;</span><span class="p">)</span>
-
-        <span class="n">Interpolation</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lonlist</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">latlist</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">field</span></div>
 </pre></div>
 
             <div class="clearer"></div>
