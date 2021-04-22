@@ -13,15 +13,11 @@ except ModuleNotFoundError:
     plt = None
 
 
-class LoadFromFile(Action):
+class LoadFromFile (Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        surfex.util.error("Reading options from file is not supported yet")
         with values as f:
-            contents = f.read()
-            data = parser.parse_args(contents.split())
-            for k, v in vars(data).items():
-                if v and k != option_string.lstrip('-'):
-                    setattr(namespace, k, v)
+            # parse arguments in the file and store them in the target namespace
+            parser.parse_args(f.read().split(), namespace)
 
 
 def parse_args_create_forcing(argv):
@@ -47,6 +43,8 @@ def parse_args_create_forcing(argv):
                         nargs="?")
     parser.add_argument('-i', '--input_format', type=str, help="Default input file format", default="netcdf",
                         choices=["netcdf", "grib1", "grib2", "surfex"])
+    parser.add_argument('-ig', '--input_geo', dest="geo_input", type=str, help="Default input geometry if needed",
+                        default=None, required=False)
     parser.add_argument('-o', '--output_format', type=str, help="Output file format", default="netcdf", nargs="?")
     parser.add_argument('-of', type=str, help="Output file name", default=None, nargs="?")
     parser.add_argument('-p', '--pattern', type=str, help="Filepattern", default=None, nargs="?")
@@ -384,7 +382,7 @@ def first_guess_for_oi(**kwargs):
         if np.isnan(np.sum(field)):
             print(fg.variables[var])
             fill_nan_value = fg.variables[var]._FillValue
-            print("Field " + var + " got Nan. Fill with: ",fill_nan_value)
+            print("Field " + var + " got Nan. Fill with: ", fill_nan_value)
             field[np.where(np.isnan(field))] = fill_nan_value
 
         print(field)

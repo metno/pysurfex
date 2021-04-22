@@ -109,10 +109,14 @@ class ConfProj(SurfexGeo):
         xloncen, xlatcen = \
             pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(self.xloncen, self.xlatcen)
 
-        x0 = xloncen - (0.5 * (float(self.nimax) - 1.) * self.xdx)
-        y0 = xlatcen - (0.5 * (float(self.njmax) - 1.) * self.xdy)
-        x = np.arange(x0, x0 + (self.nimax * self.xdx), self.xdx)
-        y = np.arange(y0, y0 + (self.njmax * self.xdy), self.xdy)
+        x0 = float(xloncen) - (0.5 * ((float(self.nimax) - 1.0) * self.xdx))
+        y0 = float(xlatcen) - (0.5 * ((float(self.njmax) - 1.0) * self.xdy))
+        x = np.empty([self.nimax])
+        y = np.empty([self.njmax])
+        for i in range(0, self.nimax):
+            x[i] = x0 + (float(i) * self.xdx)
+        for j in range(0, self.njmax):
+            y[j] = y0 + (float(j) * self.xdy)
         xv, yv = np.meshgrid(x, y)
         lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xv, yv)
 

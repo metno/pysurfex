@@ -1,6 +1,7 @@
 # General netcdf settings
 netcdf:
   filepattern: https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  interpolator: bilinear
   offset: 10800
   file_inc: 21600
   fcint: 21600
@@ -11,7 +12,7 @@ grib1:
   offset: 0
   file_inc: 3600
   fcint: 10800
-  interpolator: nearest
+  interpolator: bilinear
 
 # General grib2 settings
 grib2:
@@ -19,7 +20,7 @@ grib2:
   offset: 0
   file_inc: 3600
   fcint: 10800
-  interpolator: nearest
+  interpolator: bilinear
   typeOfStatisticalProcessing: -1
 
 surfex:
@@ -27,14 +28,14 @@ surfex:
   offset: 0
   file_inc: 3600
   fcint: 10800
-  interpolator: nearest
+  interpolator: bilinear
 
 fa:
   filepattern: not_defined
   offset: 0
   file_inc: 3600
   fcint: 10800
-  interpolator: nearest
+  interpolator: bilinear
 
 # Orography
 ZS:
@@ -72,12 +73,20 @@ ZS:
     converter:
       phi2m:
         name: SURFGEOPOTENTIEL
+  surfex:
+    converter:
+      none:
+        varname: ZS
 
 # Reference height Z
 ZREF:
   screen:
     constant:
       value: 2
+    surfex:
+      converter:
+        none:
+          varname: ZREF
   ml:
     netcdf:
       converter:
@@ -103,12 +112,20 @@ ZREF:
     fa:
       converter:
         none:
+    surfex:
+      converter:
+        none:
+          varname: ZREF
 
 # Reference height U
 UREF:
   screen:
     constant:
       value: 10
+    surfex:
+      converter:
+        none:
+          varname: UREF
   ml:
     netcdf:
       converter:
@@ -134,6 +151,10 @@ UREF:
     fa:
       converter:
         none:
+    surfex:
+      converter:
+        none:
+          varname: UREF
 
 # Temperature
 TA:
@@ -161,6 +182,10 @@ TA:
       converter:
         none:
           name: CLSTEMPERATURE
+    surfex:
+      converter:
+        none:
+          varname: Tair
   ml:
     netcdf:
       converter:
@@ -186,6 +211,10 @@ TA:
       converter:
         none:
           name: S065TEMPERATURE
+    surfex:
+      converter:
+        none:
+          varname: Tair
 
 # Specific humidity
 QA:
@@ -193,7 +222,7 @@ QA:
     netcdf:
       converter:
         none:
-          specific_humidity_2m
+          name: specific_humidity_2m
         rh2q:
           rh:
             name: relative_humidity_2m
@@ -267,6 +296,10 @@ QA:
             name: CLSTEMPERATURE
           p:
             name: SURFPRESSION
+    surfex:
+      converter:
+        none:
+          varname: Qair
   ml:
     netcdf:
       converter:
@@ -346,6 +379,10 @@ QA:
             name: S065TEMPERATURE
           p:
             name: SURFPRESSION
+    surfex:
+      converter:
+        none:
+          varname: Qair
 
 # Wind speed
 WIND:
@@ -407,6 +444,10 @@ WIND:
             name: CLSVENT.ZONAL
           y:
             name: CLSVENT.MERIDIEN
+    surfex:
+      converter:
+        none:
+          varname: Wind
   ml:
     netcdf:
       converter:
@@ -468,6 +509,10 @@ WIND:
             name: S065VENT.ZONAL
           y:
             name: S065VENT.MERIDIEN
+    surfex:
+      converter:
+        none:
+          varname: Wind
 
 # Wind direction
 WIND_DIR:
@@ -537,6 +582,10 @@ WIND_DIR:
           y:
             name: CLSVENT.MERIDIEN
             rotate_to_geographic: True
+    surfex:
+      converter:
+        none:
+          varname: Wind_DIR
   ml:
     netcdf:
       converter:
@@ -606,6 +655,10 @@ WIND_DIR:
           y:
             name: S065VENT.MERIDIEN
             rotate_to_geographic: True
+    surfex:
+      converter:
+        none:
+          varname: Wind_DIR
 
 # Rainfall rate
 RAIN:
@@ -624,6 +677,13 @@ RAIN:
           name: snowfall_amount_acc
           accumulated: True
           instant: 3600.
+      calcrain:
+        totalprec:
+          name: precipitation_amount_acc
+          accumulated: true
+          instant: 3600.
+        t:
+          name: air_temperature_2m
   grib1:
     converter:
       none:
@@ -677,6 +737,10 @@ RAIN:
         intant: 3600
         accumulated: False
         name: SURFACCPLUIE
+  surfex:
+    converter:
+      none:
+        varname: Rainf
 
 # Snow fall amount rate
 SNOW:
@@ -688,7 +752,8 @@ SNOW:
         instant: 3600.
       calcsnow: 
         totalprec:
-          name: precipitation_amount
+          name: precipitation_amount_acc
+          instant: 3600.
         rh:
           name: relative_humidity_2m
           level: 2
@@ -725,6 +790,10 @@ SNOW:
         intant: 3600
         accumulated: False
         name: SURFACCNEIGE
+  surfex:
+    converter:
+      none:
+        varname: Snowf
 
 # Surface air pressure
 PS:
@@ -751,6 +820,10 @@ PS:
     converter:
       none:
         name: SURFPRESSION
+  surfex:
+    converter:
+      none:
+        varname: PSurf
 
 # Direct shortwave radiation
 DIR_SW:
@@ -780,6 +853,10 @@ DIR_SW:
   fa:
     converter:
       name: "SURFRAYT SOLA DE"
+  surfex:
+    converter:
+      none:
+        varname: DIR_SWdown
 
 # Direct scattered radiation
 SCA_SW:
@@ -799,6 +876,10 @@ SCA_SW:
   grib2:
     converter:
       none:
+  surfex:
+    converter:
+      none:
+        varname: SCA_SWdown
 
 # Long wave radiation
 LW:
@@ -828,6 +909,10 @@ LW:
   fa:
     converter:
       name: "SURFRAYT THER DE"
+  surfex:
+    converter:
+      none:
+        varname: LWdown
 
 # Carbon dioxide
 CO2:
@@ -848,3 +933,7 @@ CO2:
 
   constant:
     value: 0.00062
+  surfex:
+    converter:
+      none:
+        varname: CO2air

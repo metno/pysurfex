@@ -155,7 +155,7 @@ class Grib(object):
                     return field, geo_out
                 eccodes.codes_release(gid)
 
-    def points(self, gribvar, geo, validtime=None, interpolation="nearest", cache=None):
+    def points(self, gribvar, geo, validtime=None, interpolation="nearest"):
 
         """
         Reads a 2-D field and interpolates it to requested positions
@@ -169,18 +169,7 @@ class Grib(object):
         """
 
         field, geo_in = self.field(gribvar, validtime)
-        if interpolation == "nearest":
-            surfex.util.info("Nearest neighbour", level=2)
-            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo, cache=cache)
-        elif interpolation == "linear":
-            surfex.util.info("Linear interpolation", level=2)
-            interpolator = surfex.interpolation.Linear(geo_in, geo, cache=cache)
-        elif interpolation == "none":
-            surfex.util.info("No interpolation", level=2)
-            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo, cache=cache)
-        else:
-            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
-
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 

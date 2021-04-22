@@ -69,7 +69,7 @@ class Fa(object):
 
             return field.data, geo_out
 
-    def points(self, varname, geo, validtime=None, interpolation="nearest", cache=None):
+    def points(self, varname, geo, validtime=None, interpolation="nearest"):
 
         """
         Reads a 2-D field and interpolates it to requested positions
@@ -79,23 +79,12 @@ class Fa(object):
             geo (surfex.Geo): Geometry
             validtime (datetime.datetime): Validtime
             interpolation (str): Interpoaltion method
-            cache (surfex.Cache): Cache
         Returns:
             np.array: vector with inpterpolated values
         """
 
         field, geo_in = self.field(varname, validtime)
-        if interpolation == "nearest":
-            surfex.util.info("Nearest neighbour", level=2)
-            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo, cache=cache)
-        elif interpolation == "linear":
-            surfex.util.info("Linear interpolation", level=2)
-            interpolator = surfex.interpolation.Linear(geo_in, geo, cache=cache)
-        elif interpolation == "none":
-            surfex.util.info("No interpolation", level=2)
-            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo, cache=cache)
-        else:
-            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
 
         field = interpolator.interpolate(field)
         return field, interpolator

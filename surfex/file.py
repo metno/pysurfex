@@ -21,23 +21,13 @@ class SurfexIO(object):
         raise NotImplementedError("This method is not implemented for this class!")
 
     @abc.abstractmethod
-    def points(self, var, geo_out, validtime=None, interpolation="nearest", cache=None):
+    def points(self, var, geo_out, validtime=None, interpolation="bilinear", cache=None):
         raise NotImplementedError("This method is not implemented for this class!")
 
-    def interpolate_field(self, field, geo_in, geo_out, interpolation="nearest", cache=None):
+    @staticmethod
+    def interpolate_field(field, geo_in, geo_out, interpolation="bilinear"):
 
-        if interpolation == "nearest":
-            surfex.util.info("Nearest neighbour", level=2)
-            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo_out, cache=cache)
-        elif interpolation == "linear":
-            surfex.util.info("Linear interpolation", level=2)
-            interpolator = surfex.interpolation.Linear(geo_in, geo_out, cache=cache)
-        elif interpolation == "none":
-            surfex.util.info("No interpolation", level=2)
-            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo_out, cache=cache)
-        else:
-            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
-
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo_out)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -440,8 +430,7 @@ class AsciiSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
         return points, interpolator
 
 
@@ -586,8 +575,7 @@ class NCSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
         return points, interpolator
 
 
@@ -863,8 +851,7 @@ class NetCDFSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
         return points, interpolator
 
 
@@ -953,8 +940,7 @@ class TexteSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
         return points, interpolator
 
 
@@ -1044,8 +1030,7 @@ class ForcingFileNetCDF(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
 
         return points, interpolator
 

@@ -12,6 +12,17 @@ from datetime import datetime, timedelta
 
 
 class SurfexForcing(object):
+    def __init__(self):
+        pass
+
+
+class SurfexNetCDFForcing(SurfexForcing):
+    def __init__(self, filename, geo):
+        SurfexForcing.__init__(self)
+        self.io = surfex.ForcingFileNetCDF(filename, geo)
+
+
+class SurfexOutputForcing(object):
     """
     Main output class for SURFEX forcing
     """
@@ -64,7 +75,7 @@ class SurfexForcing(object):
         raise NotImplementedError('users must define writeForcing to use this base class')
 
 
-class NetCDFOutput(SurfexForcing):
+class NetCDFOutput(SurfexOutputForcing):
     """
 
     Forcing in NetCDF format
@@ -89,7 +100,7 @@ class NetCDFOutput(SurfexForcing):
     }
 
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
-        SurfexForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
         print("Forcing type is netCDF")
         self.forcing_file = {}
         if fname is None:
@@ -230,7 +241,7 @@ class NetCDFOutput(SurfexForcing):
         shutil.move(self.tmp_fname, self.fname)
 
 
-class AsciiOutput(SurfexForcing):
+class AsciiOutput(SurfexOutputForcing):
     """
 
     Forcing in ASCII format
@@ -240,7 +251,7 @@ class AsciiOutput(SurfexForcing):
     output_format = "ascii"
 
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
-        SurfexForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
         print("Forcing type is ASCII")
         self.forcing_file = {}
         self.file_handler = {}
@@ -478,6 +489,8 @@ def set_forcing_config(**kwargs):
         geo_out = config.get_setting("GEOMETRY#GEO")
     elif "domain" in kwargs and kwargs["domain"] is not None:
         geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+    else:
+        raise Exception("No geometry is set")
 
     user_config = {}
     pattern = None
@@ -615,6 +628,15 @@ def set_forcing_config(**kwargs):
     fileformat = input_format
     if pattern is not None:
         merged_conf[fileformat]["filepattern"] = pattern
+
+    if "geo_input" in kwargs:
+        geo_input = kwargs["geo_input"]
+        if geo_input is not None:
+            if os.path.exists(geo_input):
+                geo_input = surfex.get_geo_object(json.load(open(geo_input, "r")))
+                merged_conf[fileformat]["geo_input"] = geo_input
+            else:
+                print("Input geometry " + geo_input + " does not exist")
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]

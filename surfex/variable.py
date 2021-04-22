@@ -193,14 +193,15 @@ class NetcdfVariable(Variable):
                 units = str([self.var_dict["units"]][0])
             if "accumulated" in self.var_dict:
                 accumulated = self.var_dict["accumulated"]
-            int_type = "nearest"
+            int_type = "bilinear"
             if "interpolator" in self.var_dict:
                 int_type = self.var_dict["interpolator"]
 
             # Re-read field
             previous_field = None
             if accumulated:
-                print(self.basetime, self.initialtime, self.previoustime)
+                if self.debug:
+                    print(self.basetime, self.initialtime, self.previoustime)
                 can_read = True
                 if self.basetime <= self.initialtime:
                     if self.previoustime < self.basetime:
@@ -208,7 +209,8 @@ class NetcdfVariable(Variable):
 
                 if not can_read:
                     surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    print(self.basetime, self.initialtime, self.previoustime)
+                    if self.debug:
+                        print(self.basetime, self.initialtime, self.previoustime)
                     previous_field = np.zeros([geo.npoints])
                 else:
                     # Re-read field
@@ -227,20 +229,27 @@ class NetcdfVariable(Variable):
                         previous_field, intp = self.file_handler.points(var_name,  geo, level=level,
                                                                         validtime=self.previoustime,
                                                                         interpolation=int_type,
-                                                                        units=units, cache=cache)
+                                                                        units=units, debug=self.debug)
                         if cache is not None:
                             cache.save_field(id_str, previous_field)
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
 
-            field, interpolator = self.file_handler.points(var_name, geo, level=level, validtime=validtime,
-                                                           interpolation=int_type, units=units, cache=cache)
-            # Rotate wind to geographic if requested
-            field = self.rotate_geographic_wind(field, interpolator)
+            id_str = None
             if cache is not None:
                 id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-                print(id_str)
-                cache.save_field(id_str, field)
+            if cache is not None and cache.is_saved(id_str):
+                print("Using cached value ", id_str)
+                field = cache.saved_fields[id_str]
+            else:
+                field, interpolator = self.file_handler.points(var_name, geo, level=level, validtime=validtime,
+                                                               interpolation=int_type, units=units, debug=self.debug)
+                # Rotate wind to geographic if requested
+                field = self.rotate_geographic_wind(field, interpolator)
+                if cache is not None:
+                    id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+                    print("ID_STRING", id_str)
+                    cache.save_field(id_str, field)
 
             if accumulated:
                 instant = [(validtime - self.previoustime).total_seconds()]
@@ -318,7 +327,7 @@ class GribVariable(Variable):
             else:
                 raise NotImplementedError
 
-            int_type = "nearest"
+            int_type = "bilinear"
             if "interpolator" in self.var_dict:
                 int_type = self.var_dict["interpolator"]
 
@@ -348,7 +357,7 @@ class GribVariable(Variable):
                             print("Re-read ", self.previoustime, " from ", self.previousfilename)
                         self.file_handler.fname = self.previousfilename
                         previous_field, intp = self.file_handler.points(gribvar, geo, self.previoustime,
-                                                                        interpolation=int_type, cache=cache)
+                                                                        interpolation=int_type)
 
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
@@ -362,8 +371,7 @@ class GribVariable(Variable):
             if cache is not None and cache.is_saved(id_str):
                 field = cache.saved_fields[id_str]
             else:
-                field, interpolator = self.file_handler.points(gribvar, geo, validtime, interpolation=int_type,
-                                                               cache=cache)
+                field, interpolator = self.file_handler.points(gribvar, geo, validtime, interpolation=int_type)
                 # Rotate wind to geographic if requested
                 field = self.rotate_geographic_wind(field, interpolator)
                 if cache is not None:
@@ -390,7 +398,7 @@ class SurfexVariable(Variable):
         # , "patches", "layers", "accumulated", "fcint", "offset", "file_inc", "filepattern",
         #         "fileformat", "filetype"]
         for i in range(0, len(mandatory)):
-            print(mandatory[i], var_dict)
+            # print(mandatory[i], var_dict)
             if mandatory[i] not in var_dict:
                 raise Exception("Surfex variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
 
@@ -446,7 +454,7 @@ class SurfexVariable(Variable):
             var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
                                                  basetime=self.basetime,
                                                  interval=interval, datatype=datatype)
-            int_type = "nearest"
+            int_type = "bilinear"
             if "interpolator" in self.var_dict:
                 int_type = self.var_dict["interpolator"]
 
@@ -476,7 +484,7 @@ class SurfexVariable(Variable):
                             print("Re-read ", self.previoustime, " from ", self.previousfilename)
                         self.file_handler.fname = self.previousfilename
                         previous_field, intp = self.file_handler.points(var, geo, validime=self.previoustime,
-                                                                        interpolation=int_type, cache=cache)
+                                                                        interpolation=int_type)
 
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
@@ -491,8 +499,7 @@ class SurfexVariable(Variable):
                 field = cache.saved_fields[id_str]
             else:
                 print(validtime)
-                field, interpolator = self.file_handler.points(var, geo, validtime=validtime, interpolation=int_type,
-                                                               cache=cache)
+                field, interpolator = self.file_handler.points(var, geo, validtime=validtime, interpolation=int_type)
                 # Rotate wind to geographic if requested
                 field = self.rotate_geographic_wind(field, interpolator)
                 if cache is not None:
@@ -549,7 +556,7 @@ class FaVariable(Variable):
             accumulated = False
             if "accumulated" in self.var_dict:
                 accumulated = self.var_dict["accumulated"]
-            int_type = "nearest"
+            int_type = "bilinear"
             if "interpolator" in self.var_dict:
                 int_type = self.var_dict["interpolator"]
 
@@ -570,9 +577,9 @@ class FaVariable(Variable):
                     # Re-read field
                     id_str = None
                     if cache is not None:
-                        id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
+                        id_str = cache.generate_fa_id(var_name, self.previousfilename, self.previoustime)
                     if cache is not None and cache.is_saved(id_str):
-                        print("Updating cached value ", id_str)
+                        print("Using cached value for previous time", id_str)
                         previous_field = cache.saved_fields[id_str]
                     else:
                         # Modify filename in handler
@@ -588,13 +595,21 @@ class FaVariable(Variable):
                         # Change filename back in handler. Ready to read this time step
                         self.file_handler.fname = fname
 
-            field, interpolator = self.file_handler.points(var_name, geo, validtime=validtime,
-                                                           interpolation=int_type, cache=cache)
-            # Rotate wind to geographic if requested
-            field = self.rotate_geographic_wind(field, interpolator)
+            id_str = None
             if cache is not None:
-                id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-                cache.save_field(id_str, field)
+                id_str = cache.generate_fa_id(var_name, self.filename, validtime)
+            if cache is not None and cache.is_saved(id_str):
+                print("Using cached value ", id_str)
+                field = cache.saved_fields[id_str]
+            else:
+                field, interpolator = self.file_handler.points(var_name, geo, validtime=validtime,
+                                                               interpolation=int_type)
+
+                # Rotate wind to geographic if requested
+                field = self.rotate_geographic_wind(field, interpolator)
+                if cache is not None:
+                    id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
+                    cache.save_field(id_str, field)
 
             if accumulated:
                 print("accumulated variable ", self.var_dict)

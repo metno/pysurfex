@@ -43,7 +43,12 @@ class Cache:
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
         if inttype in self.interpolators:
+            print(self.interpolators)
+            print(inttype)
+            print("identifier_out: ", self.interpolators[inttype])
             if identifier_out in self.interpolators[inttype]:
+                print(identifier_out)
+                print(self.interpolators[inttype][identifier_out])
                 if identifier_in in self.interpolators[inttype][identifier_out]:
                     return True
                 else:
@@ -67,27 +72,40 @@ class Cache:
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
 
-        print("Update interpolator ", inttype, identifier_in, identifier_out)
-        this_dict = {}
+        if self.debug:
+            print("Update interpolator ", inttype, identifier_in, identifier_out)
         if inttype in self.interpolators:
             out_geos = {}
-            for out_grid in self.interpolators[inttype]:
-                in_geos = {}
-                for f in self.interpolators[inttype][out_grid]:
-                    in_geos.update({f: self.interpolators[inttype][out_grid][f]})
-                in_geos.update({identifier_out: value})
-                out_geos.update({out_grid: in_geos})
-            this_dict.update({inttype: out_geos})
-            print(inttype)
-            print(this_dict)
-            self.interpolators.update({inttype: this_dict})
+            if identifier_out in self.interpolators[inttype]:
+                for out_grid in self.interpolators[inttype]:
+                    in_geos = {}
+                    for f in self.interpolators[inttype][out_grid]:
+                        if self.debug:
+                            print("Found ", f, " for grid ", out_grid)
+                        in_geos.update({f: self.interpolators[inttype][out_grid][f]})
+                    if identifier_out == out_grid:
+                        if self.debug:
+                            print("Update: ", identifier_in, " for out geo", identifier_out)
+                        in_geos.update({identifier_in: value})
+                    out_geos.update({out_grid: in_geos})
+            else:
+                if self.debug:
+                    print("Setting new: ", identifier_in, " for out geo", identifier_out)
+                out_geos.update({identifier_out: {identifier_in: value}})
+            self.interpolators.update({inttype: out_geos})
         else:
             self.interpolators.update({inttype: {identifier_out: {identifier_in: value}}})
+        if self.debug:
+            print("Updated interpolator: ", self.interpolators)
 
     def save_field(self, id_str, field):
+        if self.debug:
+            print("Saving ", id_str)
         self.saved_fields[id_str] = field
     
     def clean_fields(self, this_time):
+        if self.debug:
+            print("Clean fields")
         del_keys = []
         for key in self.saved_fields:
             yyyy = int(key[-10:-6])
@@ -103,7 +121,11 @@ class Cache:
             del self.saved_fields[del_keys[i]]
 
     def is_saved(self, id_str):
+        if self.debug:
+            print("is_saved: ", id_str, self.saved_fields)
         if id_str in self.saved_fields:
+            if self.debug:
+                print("Found ", id_str)
             return True
         else:
             return False

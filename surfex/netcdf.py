@@ -9,9 +9,10 @@ from enum import Enum
 
 
 class Netcdf(object):
-    def __init__(self, filename):
+    def __init__(self, filename, debug=False):
         self.filename = filename
-        print(filename)
+        if debug:
+            print(filename)
         self.file = netCDF4.Dataset(filename, "r")
 
     def num_height(self, field):
@@ -25,7 +26,7 @@ class Netcdf(object):
         pass
 
     def slice(self, var_name, levels=None, members=None, times=None, xcoords=None, ycoords=None,
-              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False):
+              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False, debug=False):
         """
         Assembles a 5D field in order lon,lat,time,height,ensemble
 
@@ -40,6 +41,7 @@ class Netcdf(object):
             instantanious (float): Scaling factor to make an accumulated value as instantanius
             units (str): CF unit for the variable to be read
             lev_from_ind (bool): level list are indices and not values
+            debug:
 
         Returns:
          np.array: 5D array with values
@@ -66,10 +68,12 @@ class Netcdf(object):
                 surfex.util.info("Time provided in call as datetime objects", level=2)
                 times_in_var = var.datetimes
                 for i in range(0, len(times_in_var)):
-                    print(i, times_in_var[i], times)
+                    if debug:
+                        print(i, times_in_var[i], times)
                     for j in range(0, len(times)):
                         # Time steps requested
-                        print(times_in_var[i], times[j])
+                        if debug:
+                            print(times_in_var[i], times[j])
                         if times_in_var[i] == times[j]:
                             times_to_read.append(i)
                             if i > 0:
@@ -89,7 +93,8 @@ class Netcdf(object):
                             else:
                                 prev_time_steps.append(0)
 
-        print("times to read", times_to_read)
+        if debug:
+            print("times to read", times_to_read)
         levels_to_read = []
         if levels is None:
             for i in range(0, var.levels.shape[0]):
@@ -178,9 +183,10 @@ class Netcdf(object):
         if deaccumulate:
             surfex.util.info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
 
-        print(var.var_name)
-        print(dims)
-        print(self.file[var.var_name])
+        if debug:
+            print(var.var_name)
+            print(dims)
+            print(self.file[var.var_name])
         field = self.file[var.var_name][dims]
         if units is not None:
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
@@ -217,7 +223,7 @@ class Netcdf(object):
         surfex.util.info("Shape of output: "+str(field.shape), level=2)
         return field, geo
 
-    def field(self, var_name, level=None, member=None, validtime=None,  units=None):
+    def field(self, var_name, level=None, member=None, validtime=None,  units=None, debug=False):
 
         if validtime is None:
             validtime = []
@@ -226,14 +232,15 @@ class Netcdf(object):
         else:
             validtime = [validtime]
 
-        print(level, member, validtime)
+        if debug:
+            print(level, member, validtime)
         field, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         return field, geo_in
 
     def points(self, var_name, geo, level=None, member=None, validtime=None,  units=None, interpolation="nearest",
-               cache=None):
+               debug=False):
 
         """
         Assembles a 5D slice and interpolates it to requested positions
@@ -248,20 +255,10 @@ class Netcdf(object):
 
         # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
-        print(level, member, validtime)
-        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units)
-        if interpolation == "nearest":
-            surfex.util.info("Nearest neighbour", level=2)
-            interpolator = surfex.interpolation.NearestNeighbour(geo_in, geo, cache=cache)
-        elif interpolation == "linear":
-            surfex.util.info("Linear interpolation", level=2)
-            interpolator = surfex.interpolation.Linear(geo_in, geo, cache=cache)
-        elif interpolation == "none":
-            surfex.util.info("No interpolation", level=2)
-            interpolator = surfex.interpolation.NoInterpolation(geo_in, geo, cache=cache)
-        else:
-            raise NotImplementedError("Interpolation type " + interpolation + " not implemented!")
-
+        if debug:
+            print(level, member, validtime)
+        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units, debug=debug)
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo, debug=debug)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -282,9 +279,10 @@ class Axis(Enum):
 
 
 class NetCDFFileVariable(object):
-    def __init__(self, fh, var_name):
+    def __init__(self, fh, var_name, debug=False):
         self.file = fh
         self.var_name = var_name
+        self.debug = debug
 
     @property
     def axis_types(self):
@@ -393,9 +391,11 @@ class NetCDFFileVariable(object):
                 for t in range(0, len(val)):
                     epochtime = int(cfunits.Units.conform(val[t], cfunits.Units(val.units),
                                                           cfunits.Units("seconds since 1970-01-01 00:00:00")))
-                    print(epochtime)
+                    if self.debug:
+                        print(epochtime)
                     dt = datetime.utcfromtimestamp(epochtime)
-                    print(dt)
+                    if self.debug:
+                        print(dt)
                     times.append(dt)
 
         if len(times) == 0:
@@ -537,7 +537,6 @@ def read_first_guess_netcdf_file(input_file, var):
     lons = np.array(np.reshape(lons, [nx * ny], order="F"))
     lats = np.array(np.reshape(lats, [nx * ny], order="f"))
 
-    # print(lons.shape, lats.shape, type(lons))
     geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
 
     background = fh[var][:]
@@ -545,23 +544,17 @@ def read_first_guess_netcdf_file(input_file, var):
     background = np.reshape(background, [ny, nx])
     background = np.transpose(background)
     fill_value = fh.variables[var]._FillValue
-    print("Field " + var + " got ", fill_value ,". Fill with nan")
+    print("Field " + var + " got ", fill_value , ". Fill with nan")
     background[background == fill_value] = np.nan
 
-    # background = background.tolist()
-    # background = np.asarray(background)
     glafs = fh["land_area_fraction"][:]
     glafs = np.array(np.reshape(glafs, [nx * ny]))
     glafs = np.reshape(glafs, [ny, nx])
     glafs = np.transpose(glafs)
-    # glafs = glafs.tolist()
-    # glafs = np.asarray(glafs)
     gelevs = fh["altitude"][:]
     gelevs = np.array(np.reshape(gelevs, [nx * ny]))
     gelevs = np.reshape(gelevs, [ny, nx])
     gelevs = np.transpose(gelevs)
-    # gelevs = gelevs.tolist()
-    # gelevs = np.asarray(gelevs)
 
     fh.close()
     return geo, validtime, background, glafs, gelevs

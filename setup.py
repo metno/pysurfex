@@ -85,7 +85,6 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "numpy",
-        "scipy",
         "netCDF4",
         "cfunits",
         "pyproj == 2.2",
