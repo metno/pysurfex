@@ -7,7 +7,8 @@ except ImportError:
 
 
 class Fa(object):
-    def __init__(self, fname):
+    def __init__(self, fname, debug=False):
+        self.debug = debug
         self.fname = fname
         self.projection = None
         self.lons = None
@@ -15,7 +16,7 @@ class Fa(object):
         self.nearest = None
         self.linear = None
 
-    def field(self, varname, validtime):
+    def field(self, varname, validtime, debug=False):
 
         if epygram is None:
             raise Exception("You need epygram to read FA files")
@@ -24,7 +25,7 @@ class Fa(object):
             field = resource.readfield(varname)
 
             # TODO: check time
-            print("Not checking validtime at the moment: ", validtime)
+            surfex.info("Not checking validtime for FA variable at the moment: " + str(validtime))
 
             if field.geometry.name == "lambert":
                 ny = field.geometry.dimensions["Y_CIzone"]

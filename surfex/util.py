@@ -8,6 +8,14 @@ def error(message):
     sys.exit(1)
 
 
+def debug(path, name, *args):
+    """ Write debug to console """
+    message = ""
+    for arg in args:
+        message = message + " " + str(arg)
+    print("\033[1;34m" + str(path) + "::" + name + " " + message + "\033[0m")
+
+
 def info(message, level=0):
     """ Write a information message to console """
     if level < 1:

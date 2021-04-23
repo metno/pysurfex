@@ -11,7 +11,8 @@ import pyproj
 
 
 class SurfexIO(object):
-    def __init__(self, filename, geo, extension):
+    def __init__(self, filename, geo, extension, debug=False):
+        self.debug = debug
         self.filename = filename
         self.geo = geo
         self.extension = extension
@@ -25,15 +26,16 @@ class SurfexIO(object):
         raise NotImplementedError("This method is not implemented for this class!")
 
     @staticmethod
-    def interpolate_field(field, geo_in, geo_out, interpolation="bilinear"):
+    def interpolate_field(field, geo_in, geo_out, interpolation="bilinear", debug=False):
 
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo_out)
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo_out, debug=debug)
         field = interpolator.interpolate(field)
         return field, interpolator
 
 
 class SurfexSurfIO(object):
-    def __init__(self, surfexfile, csurf_filetype, input_file=None, symlink=True, archive_file=None):
+    def __init__(self, surfexfile, csurf_filetype, input_file=None, symlink=True, archive_file=None, debug=False):
+        self.debug = debug
         self.filename = surfexfile.filename
         self.csurf_filetype = csurf_filetype
         self.need_pgd = False
@@ -132,7 +134,8 @@ class SurfexFileVariable(object):
         return self.varname
 
 
-def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfagmap=False, masterodb=False):
+def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfagmap=False, masterodb=False,
+                         debug=False):
 
     if filetype is not None:
         if filetype.lower() != "surf" and filetype.lower() != "ts" and filetype.lower() != "forcing":
@@ -143,7 +146,7 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfag
 
     if fileformat.lower() == "ascii":
         if filetype.lower() == "surf":
-            obj = AsciiSurfexFile(fname, geo=geo)
+            obj = AsciiSurfexFile(fname, geo=geo, debug=debug)
         elif filetype.lower() == "forcing":
             raise NotImplementedError("Not implemented yet")
         else:
@@ -151,27 +154,27 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfag
 
     elif fileformat.lower() == "nc":
         if filetype.lower() == "surf":
-            obj = NCSurfexFile(fname, geo=geo)
+            obj = NCSurfexFile(fname, geo=geo, debug=debug)
         else:
             raise NotImplementedError
     elif fileformat.lower() == "netcdf":
         if filetype.lower() == "ts":
             if geo is None:
                 raise Exception("Format NetCDF needs a geometry")
-            obj = NetCDFSurfexFile(fname, geo)
+            obj = NetCDFSurfexFile(fname, geo, debug=debug)
         elif filetype.lower() == "forcing":
             if geo is None:
                 raise Exception("Format NetCDF needs a geometry for reading forcing files")
-            obj = ForcingFileNetCDF(fname, geo)
+            obj = ForcingFileNetCDF(fname, geo, debug=debug)
         else:
             raise NotImplementedError
     elif fileformat.lower() == "texte":
         if geo is None:
             raise Exception("Format TEXTE needs a geometry")
-        obj = TexteSurfexFile(fname, geo)
+        obj = TexteSurfexFile(fname, geo, debug=debug)
     elif fileformat.lower() == "fa":
         if filetype.lower() == "surf":
-            obj = FaSurfexFile(fname, geo=geo, lfagmap=lfagmap, masterodb=masterodb)
+            obj = FaSurfexFile(fname, geo=geo, lfagmap=lfagmap, masterodb=masterodb, debug=debug)
         else:
             raise NotImplementedError
     # elif fileformat.lower() == "sfx":
@@ -241,6 +244,10 @@ class AsciiSurfexFile(SurfexIO):
 
     def __init__(self, filename, **kwargs):
 
+        debug = False
+        if "debug" in kwargs:
+            debug = kwargs["debug"]
+
         suffix = SurfFileTypeExtension("ASCII", **kwargs).suffix
         self.filename = filename
 
@@ -253,7 +260,7 @@ class AsciiSurfexFile(SurfexIO):
         if not filename.endswith(suffix):
             filename = filename + suffix
 
-        SurfexIO.__init__(self, filename, geo, "txt")
+        SurfexIO.__init__(self, filename, geo, "txt", debug=debug)
 
     def get_geo(self):
         if not os.path.isfile(self.filename):
@@ -437,6 +444,10 @@ class AsciiSurfexFile(SurfexIO):
 class NCSurfexFile(SurfexIO):
 
     def __init__(self, filename, **kwargs):
+
+        debug = False
+        if "debug" in kwargs:
+            debug = kwargs["debug"]
         suffix = SurfFileTypeExtension("NC", **kwargs).suffix
 
         if not filename.endswith(suffix):
@@ -450,7 +461,7 @@ class NCSurfexFile(SurfexIO):
             self.filename = filename
             geo = self.get_geo()
 
-        SurfexIO.__init__(self, filename, geo, "nc")
+        SurfexIO.__init__(self, filename, geo, "nc", debug=debug)
 
     def get_geo(self):
 
@@ -583,6 +594,9 @@ class FaSurfexFile(SurfexIO):
 
     def __init__(self, filename, **kwargs):
 
+        debug = False
+        if "debug" in kwargs:
+            debug = kwargs["debug"]
         geo = None
         if "geo" in kwargs:
             geo = kwargs["geo"]
@@ -601,7 +615,7 @@ class FaSurfexFile(SurfexIO):
         # if geo is None:
         #    geo = self.get_geo()
 
-        SurfexIO.__init__(self, filename, geo, extension)
+        SurfexIO.__init__(self, filename, geo, extension, debug=debug)
         self.lfagmap = lfagmap
 
     # def get_geo(self):
@@ -631,8 +645,7 @@ class FaSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(self, field, geo_in, geo_out, interpolation=interpolation,
-                                                          cache=cache)
+        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
         return points, interpolator
 
 
@@ -672,9 +685,9 @@ class NetCDFSurfexFile(SurfexIO):
     Reading surfex NetCDF output
     """
 
-    def __init__(self, filename, geo):
+    def __init__(self, filename, geo, debug=False):
         self.fh = netCDF4.Dataset(filename, "r")
-        SurfexIO.__init__(self, filename, geo, "nc")
+        SurfexIO.__init__(self, filename, geo, "nc", debug=debug)
 
     def read(self, var, times):
         """
@@ -861,9 +874,9 @@ class TexteSurfexFile(SurfexIO):
     Reading surfex TEXTE output
     """
 
-    def __init__(self, filename, geo):
+    def __init__(self, filename, geo, debug=False):
         self.file = None
-        SurfexIO.__init__(self,  filename, geo, "TXT")
+        SurfexIO.__init__(self,  filename, geo, "TXT", debug=debug)
 
     def read(self, variable, times):
         self.file = open(self.filename, mode="r")
@@ -946,68 +959,71 @@ class TexteSurfexFile(SurfexIO):
 
 class ForcingFileNetCDF(SurfexIO):
 
-    def __init__(self, fname, geo):
+    def __init__(self, fname, geo, debug=False):
         self.fname = fname
         self.fh = netCDF4.Dataset(fname, "r")
         self.lons = self.fh.variables["LON"]
         self.lats = self.fh.variables["LAT"]
         self.nx = self.lons.shape[0]
         self.ny = self.lats.shape[0]
-        SurfexIO.__init__(self, fname, geo, "nc")
+        SurfexIO.__init__(self, fname, geo, "nc", debug=debug)
 
-    def read_field(self, variable, times):
+    def read_field(self, variable, times, debug=False):
 
         var = variable.varname
         field = None
-        if self.fh.variables[var].shape[0] > 0:
-            if len(self.fh.variables[var].dimensions) == 1:
-                dimlen = self.fh.variables[var].shape[0]
-                field = self.fh.variables[var][0:dimlen]
-            else:
-                if len(times) == 0:
-                    raise Exception("You must set time!")
+        if var in self.fh.variables:
+            if self.fh.variables[var].shape[0] > 0:
+                if len(self.fh.variables[var].dimensions) == 1:
+                    dimlen = self.fh.variables[var].shape[0]
+                    field = self.fh.variables[var][0:dimlen]
+                else:
+                    if len(times) == 0:
+                        raise Exception("You must set time!")
 
-                times_read = []
-                ndims = 0
-                npoints = 0
-                for dim in self.fh.variables[var].dimensions:
-                    dimlen = self.fh.variables[var].shape[ndims]
+                    times_read = []
+                    ndims = 0
+                    npoints = 0
+                    for dim in self.fh.variables[var].dimensions:
+                        dimlen = self.fh.variables[var].shape[ndims]
 
-                    if dim == "time":
-                        times_for_var = self.fh.variables['time']
-                        units = times_for_var.units
-                        try:
-                            t_cal = times_for_var.calendar
-                        except AttributeError:  # Attribute doesn't exist
-                            t_cal = u"gregorian"  # or standard
+                        if dim == "time":
+                            times_for_var = self.fh.variables['time']
+                            units = times_for_var.units
+                            try:
+                                t_cal = times_for_var.calendar
+                            except AttributeError:  # Attribute doesn't exist
+                                t_cal = u"gregorian"  # or standard
 
-                        indices = []
-                        [indices.append(i) for i in range(0, dimlen)]
-                        times_for_var = netCDF4.num2date(times_for_var[indices], units=units, calendar=t_cal)
-                        # print(times_for_var)
-                        for times_to_read in range(0, len(times)):
-                            # print(times_to_read, times[times_to_read])
-                            for t in range(0, len(times_for_var)):
-                                # print(t, times_for_var[t], times[times_to_read])
-                                test_time = times_for_var[t].strftime("%Y%m%d%H")
-                                test_time = datetime.strptime(test_time, "%Y%m%d%H")
-                                if test_time == times[times_to_read]:
-                                    times_read.append(t)
-                                    print(t, times[times_to_read])
-                    else:
-                        npoints = dimlen
+                            indices = []
+                            [indices.append(i) for i in range(0, dimlen)]
+                            times_for_var = netCDF4.num2date(times_for_var[indices], units=units, calendar=t_cal)
+                            # print(times_for_var)
+                            for times_to_read in range(0, len(times)):
+                                # print(times_to_read, times[times_to_read])
+                                for t in range(0, len(times_for_var)):
+                                    # print(t, times_for_var[t], times[times_to_read])
+                                    test_time = times_for_var[t].strftime("%Y%m%d%H")
+                                    test_time = datetime.strptime(test_time, "%Y%m%d%H")
+                                    if test_time == times[times_to_read]:
+                                        times_read.append(t)
+                                        if debug:
+                                            print(t, times[times_to_read])
+                        else:
+                            npoints = dimlen
 
-                    ndims = ndims + 1
+                        ndims = ndims + 1
 
-                if npoints == 0:
-                    raise Exception("No points found")
+                    if npoints == 0:
+                        raise Exception("No points found")
 
-                if len(times_read) == 0 and len(times) > 0:
-                    print(times)
-                    raise Exception("Valid time not found in file!")
+                    if len(times_read) == 0 and len(times) > 0:
+                        print(times)
+                        raise Exception("Valid time not found in file!")
 
-                field = self.fh.variables[var][times_read, 0: npoints]
-
+                    field = self.fh.variables[var][times_read, 0: npoints]
+        else:
+            surfex.warning("Variable " + var + " not found!")
         return field, self.geo
 
     def field(self, var, validtime=None):
@@ -1021,7 +1037,8 @@ class ForcingFileNetCDF(SurfexIO):
 
         field, geo_in = self.read_field(var, validtime)
         # Reshape to fortran 2D style
-        field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
+        if field is not None:
+            field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation=None, cache=None):

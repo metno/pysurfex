@@ -784,13 +784,14 @@ class ObservationFromTitanJsonFile(ObservationSet):
 
 
 def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg,
-                             fg_threshold=2.0, new_snow_depth=0.01):
+                             fg_threshold=2.0, new_snow_depth=0.01, interpolator_method="bilinear", debug=False):
     nx = grid_lons.shape[0]
     ny = grid_lons.shape[1]
 
     nx = int(nx / step)
     ny = int(ny / step)
 
+    # TODO rewrite to use lonlatvals geo
     counter = 0
     ii = 0
     res_lons = []
@@ -807,6 +808,8 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
         ii = ii + step
 
     # TODO move from here
+    # interpolator = surfex.Interpolation(interpolator_method, fg_geo, geo_out, debug=debug)
+    # p_fg_snow_depth = interpolator.interpolate(grid_snow_fg)
     import gridpp
     points = gridpp.Points(np.asarray(res_lons), np.asarray(res_lats))
     fg_grid = gridpp.Grid(fg_geo.lons, fg_geo.lats)

@@ -9,36 +9,66 @@ class Interpolation(object):
 
         self.debug = debug
         self.operator = operator
-        grid_lons = np.array(geo_in.lons)
-        grid_lats = np.array(geo_in.lats)
-        self.var_lons = grid_lons
-        self.var_lats = grid_lats
         self.geo_in = geo_in
         self.geo_out = geo_out
+        if self.geo_out is None:
+            raise Exception("You can not interpolate without specifying an output geometry")
 
-        if self.debug:
-            print(grid_lons.shape, grid_lats.shape)
-        self.grid = gridpp.Grid(grid_lons, grid_lats)
-        lons = np.array(geo_out.lonlist)
-        lats = np.array(geo_out.latlist)
-        self.npoints = geo_out.npoints
-        if self.debug:
-            print(lons.shape)
-            print(lats.shape)
+        # Input
+        if self.geo_in is not None:
+            grid_lons = np.array(geo_in.lons)
+            grid_lats = np.array(geo_in.lats)
+            self.var_lons = grid_lons
+            self.var_lats = grid_lats
+            self.identical = self.geo_out.is_identical(self.geo_in)
+            if self.debug:
+                surfex.debug(__file__, self.__class__.__name__, "grid_lons.shape", grid_lons.shape)
+                surfex.debug(__file__, self.__class__.__name__, "grid_lats.shape", grid_lats.shape)
+            self.grid = gridpp.Grid(grid_lons, grid_lats)
+        else:
+            self.var_lons = None
+            self.var_lats = None
+            self.grid = None
+            self.identical = False
 
+        # Output
+        lons = np.array(self.geo_out.lonlist)
+        lats = np.array(self.geo_out.latlist)
+        self.npoints = self.geo_out.npoints
+        if self.debug:
+            surfex.debug(__file__, self.__class__.__name__, "Output lons shape:", lons.shape)
+            surfex.debug(__file__, self.__class__.__name__, "Output lats shape:", lats.shape)
         self.points = gridpp.Points(lons, lats)
 
-    def interpolate(self, field2d):
-        if self.debug:
-            print(field2d.shape)
-        surfex.info("Setting up \"" + self.operator + "\" interpolation for " + str(self.npoints) + " points")
-        if self.operator == "nearest":
-            interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
-        elif self.operator == "bilinear":
-            interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
+    def interpolate(self, field2d, undefined=None):
+
+        if field2d is None and undefined is not None:
+            return np.full((self.geo_out.nlons * self.geo_out.nlats), undefined)
+        elif field2d is None:
+            raise Exception("You try to interpolate a missing field!")
         else:
-            raise NotImplementedError(self.operator)
-        return interpolated_field
+            if self.debug:
+                surfex.debug(__file__, self.__class__.interpolate.__name__, "field2d.shape", field2d.shape)
+                surfex.debug(__file__, self.__class__.interpolate.__name__, "gridpp.__file__", gridpp.__file__)
+            if self.identical or self.operator == "none":
+                if self.operator == "none":
+                    if not self.identical:
+                        raise Exception("Input domain and ouput domain differ. You must interpolate!")
+                    surfex.info("No interpolation chosen")
+                else:
+                    surfex.info("Input and output domain are identical. No interpolation is needed")
+                interpolated_field = field2d.reshape(self.npoints)
+            else:
+                surfex.info("Doing \"" + self.operator + "\" interpolation for " + str(self.npoints) + " points")
+                if self.operator == "nearest":
+                    interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
+                elif self.operator == "bilinear":
+                    interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
+                elif self.operator == "none":
+                    interpolated_field = field2d.reshape(self.npoints)
+                else:
+                    raise NotImplementedError(self.operator)
+            return interpolated_field
 
     def rotate_wind_to_geographic(self):
         pass

@@ -7,7 +7,8 @@ import os
 
 
 class Geo(object):
-    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None):
+    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None, debug=False):
+        self.debug = debug
         can_interpolate = False
         if type(lons) != np.ndarray or type(lats) != np.ndarray:
             raise Exception("Longitudes and latitudes must be numpy nd arrays")
@@ -49,17 +50,18 @@ class Geo(object):
 
     def is_identical(self, geo_to_check):
         if self.identifier() == geo_to_check.identifier():
-            print("Geometries are identical")
+            if self.debug:
+                surfex.debug(__file__, self.__class__.is_identical.__name__, "Geometries are identical")
             return True
         else:
             return False
 
 
 class SurfexGeo(ABC, Geo):
-    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json):
+    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json, debug=False):
         self.mask = None
         self.proj = proj
-        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj)
+        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj, debug=debug)
 
     @abstractmethod
     def update_namelist(self, nml):
@@ -67,7 +69,7 @@ class SurfexGeo(ABC, Geo):
 
 
 class ConfProj(SurfexGeo):
-    def __init__(self, from_json):
+    def __init__(self, from_json, debug=False):
         self.cgrid = "CONF PROJ"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -122,7 +124,7 @@ class ConfProj(SurfexGeo):
 
         npoints = self.nimax * self.njmax
         SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax, np.reshape(lons, [npoints], order="F"),
-                           np.reshape(lats, [npoints], order="F"), from_json)
+                           np.reshape(lats, [npoints], order="F"), from_json, debug=debug)
 
     def update_namelist(self, nml):
         if self.ilate is None or self.ilate is None:
@@ -169,7 +171,7 @@ class ConfProj(SurfexGeo):
 
 
 class LonLatVal(SurfexGeo):
-    def __init__(self, from_json):
+    def __init__(self, from_json, debug=False):
         self.cgrid = "LONLATVAL"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -182,14 +184,12 @@ class LonLatVal(SurfexGeo):
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = pyproj.CRS.from_string(proj4)
                 SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), np.asarray(self.xx),
-                                   np.asarray(self.xy), from_json)
+                                   np.asarray(self.xy), from_json, debug=debug)
                 self.can_interpolate = False
             else:
-                print("Missing keys")
-                raise KeyError
+                raise KeyError("Missing keys")
         else:
-            print("Missing key")
-            raise KeyError
+            raise KeyError("Missing key")
 
     def update_namelist(self, nml):
         nml.update({
@@ -207,7 +207,7 @@ class LonLatVal(SurfexGeo):
 
 
 class Cartesian(SurfexGeo):
-    def __init__(self, from_json):
+    def __init__(self, from_json, debug=False):
         self.cgrid = "CARTESIAN"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -222,7 +222,7 @@ class Cartesian(SurfexGeo):
                 proj = None
                 # proj, npoints, nlons, nlats, lons, lats
                 SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, np.asarray([]),
-                                   np.asarray([]), from_json)
+                                   np.asarray([]), from_json, debug=debug)
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -250,7 +250,7 @@ class Cartesian(SurfexGeo):
 
 
 class LonLatReg(SurfexGeo):
-    def __init__(self, from_json):
+    def __init__(self, from_json, debug=False):
         self.cgrid = "LONLAT REG"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -287,7 +287,7 @@ class LonLatReg(SurfexGeo):
 
         # proj, npoints, nlons, nlats, lons, lats
         SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat, np.asarray(lons), np.asarray(lats),
-                           from_json)
+                           from_json, debug=debug)
 
     def update_namelist(self, nml):
         nml.update({
@@ -307,7 +307,7 @@ class LonLatReg(SurfexGeo):
 
 
 class IGN(SurfexGeo):
-    def __init__(self, from_json, recreate=False):
+    def __init__(self, from_json, recreate=False, debug=False):
         self.cgrid = "IGN"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -357,7 +357,8 @@ class IGN(SurfexGeo):
             lons.append(lon)
             lats.append(lat)
 
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats), from_json)
+        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats), from_json,
+                           debug=debug)
         self.can_interpolate = False
 
     @staticmethod
@@ -493,7 +494,7 @@ class IGN(SurfexGeo):
         return nml
 
 
-def get_geo_object(from_json):
+def get_geo_object(from_json, debug=False):
     domain_dict = {}
     for key in from_json:
         lower_case_dict = {}
@@ -504,23 +505,21 @@ def get_geo_object(from_json):
     if "nam_pgd_grid" in domain_dict:
         if "cgrid" in domain_dict["nam_pgd_grid"]:
             if domain_dict["nam_pgd_grid"]["cgrid"] == "CONF PROJ":
-                return ConfProj(from_json)
+                return ConfProj(from_json, debug=debug)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLATVAL":
-                return LonLatVal(from_json)
+                return LonLatVal(from_json, debug=debug)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLAT REG":
-                return LonLatReg(from_json)
+                return LonLatReg(from_json, debug=debug)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "IGN":
-                return IGN(from_json)
+                return IGN(from_json, debug=debug)
             elif domain_dict["nam_pgd_grid"]["cgrid"] == "CARTESIAN":
-                return Cartesian(from_json)
+                return Cartesian(from_json, debug=debug)
             else:
                 raise NotImplementedError
         else:
-            print("Missing grid information cgrid")
-            raise KeyError
+            raise KeyError("Missing grid information cgrid")
     else:
-        print("nam_pgd_grid not set!")
-        raise KeyError
+        raise KeyError("nam_pgd_grid not set!")
 
 
 def set_domain(settings, domain, hm_mode=False):

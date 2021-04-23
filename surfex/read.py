@@ -141,9 +141,10 @@ class Converter(object):
         self.name = name
         self.validtime = validtime
         self.basetime = basetime
-        # self.intervall = intervall
 
-        # print(conf, self.name)
+        if debug:
+            surfex.debug(__file__, self.__class__.__name__, "Converter name:", self.name)
+            surfex.debug(__file__, self.__class__.__name__, "Converter config: ", conf)
         if self.name not in conf:
             print(conf)
             raise KeyError(self.name + " is missing in converter definition")
@@ -163,8 +164,6 @@ class Converter(object):
         elif name == "calcsnow":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
             self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
-            # self.rh = self.create_variable(fileformat,defs,conf[self.name]["t"],debug)
-            # self.p = self.create_variable(fileformat,defs,conf[self.name]["p"],debug)
         elif name == "calcrain":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
             self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
@@ -189,13 +188,12 @@ class Converter(object):
             self.nature_fraction = self.create_variable(fileformat, defs, conf[self.name]["nature_fraction"], debug)
             self.town_fraction = self.create_variable(fileformat, defs, conf[self.name]["town_fraction"], debug)
         else:
-            print("Converter " + self.name + " not implemented")
-            raise NotImplementedError
+            raise NotImplementedError("Converter " + self.name + " not implemented")
 
         # print "Constructed the converter " + self.name
 
     def print_info(self):
-        print(self.name)
+        surfex.debug(__file__, self.__class__.print_info.__name__, "", self.name)
 
     def create_variable(self, fileformat, defs, var_dict, debug):
         """
@@ -218,6 +216,8 @@ class Converter(object):
         # Create deep copies not to inherit between variables
         defs = copy.deepcopy(defs)
         var_dict = copy.deepcopy(var_dict)
+        if var_dict is None:
+            raise Exception("Variable is not set")
         merged_dict = data_merge(defs, var_dict)
 
         if fileformat == "netcdf":
@@ -236,12 +236,11 @@ class Converter(object):
         else:
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
 
-        # TODO: Put this under verbose flag and format printing
-        # var.print_variable_info()
+        if debug:
+            var.print_variable_info()
         return var
 
     def read_time_step(self, geo, validtime, cache):
-        # print("Time in converter: "+self.name+" "+validtime.strftime('%Y%m%d%H'))
 
         gravity = 9.81
         field = None
@@ -339,6 +338,5 @@ class Converter(object):
             field = np.add(nature, town)
             field[field > 1] = 1.0
         else:
-            print("Converter " + self.name + " not implemented")
-            raise NotImplementedError
+            raise NotImplementedError("Converter " + self.name + " not implemented")
         return field

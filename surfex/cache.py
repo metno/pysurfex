@@ -1,4 +1,5 @@
 import datetime
+import surfex
 
 
 class Cache:
@@ -18,12 +19,9 @@ class Cache:
     def set_file_handler(self, filename, file_handler):
         self.files.append(filename)
         self.file_handler.append(file_handler)
-        # print "Setting filename "+str(filename)
-        # print "Setting filehandler "+str(file_handler)
-        # print "Cache inventory: "
-        # print str(self.files)
-        # print str(self.file_handler)
-        # print str(self.interpolators)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.set_file_handler.__name__, "filename ->", str(filename))
+            surfex.debug(__file__, self.__class__.set_file_handler.__name__, "file_handler ->", str(file_handler))
 
     def get_file_handler(self, filename):
         fh = None
@@ -43,19 +41,23 @@ class Cache:
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
         if inttype in self.interpolators:
-            print(self.interpolators)
-            print(inttype)
-            print("identifier_out: ", self.interpolators[inttype])
+            if self.debug:
+                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, self.interpolators)
+                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, inttype)
+                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, "identifier_out: ",
+                             self.interpolators[inttype])
             if identifier_out in self.interpolators[inttype]:
-                print(identifier_out)
-                print(self.interpolators[inttype][identifier_out])
+                if self.debug:
+                    surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, identifier_out)
+                    surfex.debug(__file__, self.__class__.interpolator_is_set.__name__,
+                                 self.interpolators[inttype][identifier_out])
                 if identifier_in in self.interpolators[inttype][identifier_out]:
                     return True
                 else:
-                    print("Coud not find in ", identifier_in)
+                    surfex.debug(__file__, self.__class__.__name__, "Could not find in ", identifier_in)
                     return False
             else:
-                print("Coud not find out", identifier_out)
+                surfex.debug(__file__, self.__class__.__name__, "Could not find out", identifier_out)
                 return False
         else:
             return False
@@ -73,7 +75,8 @@ class Cache:
         identifier_out = geo_out.identifier()
 
         if self.debug:
-            print("Update interpolator ", inttype, identifier_in, identifier_out)
+            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
+                         "Update interpolator ", inttype, identifier_in, identifier_out)
         if inttype in self.interpolators:
             out_geos = {}
             if identifier_out in self.interpolators[inttype]:
@@ -81,31 +84,35 @@ class Cache:
                     in_geos = {}
                     for f in self.interpolators[inttype][out_grid]:
                         if self.debug:
-                            print("Found ", f, " for grid ", out_grid)
+                            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
+                                         "Found ", f, " for grid ", out_grid)
                         in_geos.update({f: self.interpolators[inttype][out_grid][f]})
                     if identifier_out == out_grid:
                         if self.debug:
-                            print("Update: ", identifier_in, " for out geo", identifier_out)
+                            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
+                                         "Update: ", identifier_in, " for out geo", identifier_out)
                         in_geos.update({identifier_in: value})
                     out_geos.update({out_grid: in_geos})
             else:
                 if self.debug:
-                    print("Setting new: ", identifier_in, " for out geo", identifier_out)
+                    surfex.debug(__file__, self.__class__.update_interpolator.__name__,
+                                 "Setting new: ", identifier_in, " for out geo", identifier_out)
                 out_geos.update({identifier_out: {identifier_in: value}})
             self.interpolators.update({inttype: out_geos})
         else:
             self.interpolators.update({inttype: {identifier_out: {identifier_in: value}}})
         if self.debug:
-            print("Updated interpolator: ", self.interpolators)
+            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
+                         "Updated interpolator: ", self.interpolators)
 
     def save_field(self, id_str, field):
         if self.debug:
-            print("Saving ", id_str)
+            surfex.debug(__file__, self.__class__.__name__, "Saving ", id_str)
         self.saved_fields[id_str] = field
     
     def clean_fields(self, this_time):
         if self.debug:
-            print("Clean fields")
+            surfex.debug(__file__, self.__class__.clean_fields.__name__, "Clean fields")
         del_keys = []
         for key in self.saved_fields:
             yyyy = int(key[-10:-6])
@@ -122,10 +129,14 @@ class Cache:
 
     def is_saved(self, id_str):
         if self.debug:
-            print("is_saved: ", id_str, self.saved_fields)
+            surfex.debug(__file__, self.__class__.is_saved.__name__, " Check: ", id_str)
+            if len(self.saved_fields) > 0:
+                surfex.debug(__file__, self.__class__.is_saved.__name__, "Saved fields:")
+                for key in self.saved_fields:
+                    surfex.debug(__file__, self.__class__.is_saved.__name__, " - ", key)
         if id_str in self.saved_fields:
             if self.debug:
-                print("Found ", id_str)
+                surfex.debug(__file__, self.__class__.is_saved.__name__, "Found ", id_str)
             return True
         else:
             return False

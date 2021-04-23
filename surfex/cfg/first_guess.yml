@@ -1,4 +1,3 @@
-
 grib1:
   fcint: 3
   file_inc: 1
@@ -31,14 +30,14 @@ air_temperature_2m:
         tri: 0
       tap:
         tap1:
-          par: 11
-          typ: 105
-          lev: 832
+          parameter: 11
+          type: 105
+          level: 832
           tri: 0
         tap2:
-          par: 11
-          typ: 105
-          lev: 842
+          parameter: 11
+          type: 105
+          level: 842
           tri: 0
   grib2:
     converter:
@@ -71,14 +70,14 @@ relative_humidity_2m:
         tri: 0
       rhp:
         rhp1:
-          par: 52
-          typ: 105
-          lev: 832
+          parameter: 52
+          type: 105
+          level: 832
           tri: 0
         rhp2:
-          par: 52
-          typ: 105
-          lev: 842
+          parameter: 52
+          type: 105
+          level: 842
           tri: 0
   grib2:
     converter:
@@ -110,10 +109,11 @@ surface_snow_thickness:
         level: 0
         tri: 0
       sweclim:
-        parameter: 65
-        type: 105
-        level: 0
-        tri: 0
+        swe:
+          parameter: 65
+          type: 105
+          level: 0
+          tri: 0
       swe2sd:
         swe:
           parameter: 13
@@ -127,14 +127,14 @@ surface_snow_thickness:
           tri: 0
       sdp:
         sdp1:
-          par: 66
-          typ: 105
-          lev: 832
+          parameter: 66
+          type: 105
+          level: 830
           tri: 0
         sdp2:
-          par: 66
-          typ: 105
-          lev: 842
+          parameter: 66
+          type: 105
+          level: 840
           tri: 0
 
   grib2:
@@ -169,6 +169,10 @@ surface_snow_thickness:
         name: DSN_T_ISBA
 
 altitude:
+  netcdf:
+    converter:
+      none:
+        name: altitude
   grib1:
     converter:
       none:
@@ -218,9 +222,20 @@ land_area_fraction:
         tri: 0
       sea2land:
         sea:
-          parameter: -1
-          type: -1
+          parameter: 1
+          type: 113
           level: 0
+          tri: 0
+      nature_town:
+        nature_fraction:
+          parameter: 34
+          type: 105
+          level: 300
+          tri: 0
+        town_fraction:
+          parameter: 35
+          type: 105
+          level: 300
           tri: 0
   grib2:
     converter:

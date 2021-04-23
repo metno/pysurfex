@@ -10,9 +10,10 @@ from enum import Enum
 
 class Netcdf(object):
     def __init__(self, filename, debug=False):
+        self.debug = debug
         self.filename = filename
-        if debug:
-            print(filename)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "filename: ", filename)
         self.file = netCDF4.Dataset(filename, "r")
 
     def num_height(self, field):
@@ -26,7 +27,7 @@ class Netcdf(object):
         pass
 
     def slice(self, var_name, levels=None, members=None, times=None, xcoords=None, ycoords=None,
-              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False, debug=False):
+              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False):
         """
         Assembles a 5D field in order lon,lat,time,height,ensemble
 
@@ -51,7 +52,7 @@ class Netcdf(object):
         if xcoords is not None or ycoords is not None:
             raise Exception("Subsetting of the input dimensions not implemented yet!")
 
-        surfex.util.info("Reading variable "+var.var_name, level=1)
+        surfex.info("Reading variable " + var.var_name + " from " + self.filename)
         times_to_read = []
         prev_time_steps = []
         if times is None:
@@ -65,15 +66,18 @@ class Netcdf(object):
             if not isinstance(times, (list, tuple)):
                 raise Exception("Times must be a list!")
             if isinstance(times[0], date):
-                surfex.util.info("Time provided in call as datetime objects", level=2)
+                if self.debug:
+                    surfex.debug(__file__, self.__class__.slice.__name__, "Time provided in call as datetime objects")
                 times_in_var = var.datetimes
                 for i in range(0, len(times_in_var)):
-                    if debug:
-                        print(i, times_in_var[i], times)
+                    if self.debug:
+                        surfex.debug(__file__, self.__class__.slice.__name__, "i", i, "times_in_var",
+                                     times_in_var[i], "times", times)
                     for j in range(0, len(times)):
                         # Time steps requested
-                        if debug:
-                            print(times_in_var[i], times[j])
+                        if self.debug:
+                            surfex.debug(__file__, self.__class__.slice.__name__,  i, j, "times_in_var",
+                                         times_in_var[i],"times", times[j])
                         if times_in_var[i] == times[j]:
                             times_to_read.append(i)
                             if i > 0:
@@ -93,20 +97,21 @@ class Netcdf(object):
                             else:
                                 prev_time_steps.append(0)
 
-        if debug:
-            print("times to read", times_to_read)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "times to read", times_to_read)
         levels_to_read = []
         if levels is None:
             for i in range(0, var.levels.shape[0]):
                 levels_to_read.append(i)
         else:
-            surfex.util.info("Level provided in call. lev_from_ind=" + str(lev_from_ind), level=2)
+            if self.debug:
+                surfex.debug(__file__, self.__class__.slice.__name__, "Level provided in call. lev_from_ind=" +
+                             str(lev_from_ind))
             if not isinstance(levels, (list, tuple)):
                 raise Exception("Levels must be a list!")
             levels_in_var = var.levels
             for i in range(0, levels_in_var.shape[0]):
                 for j in range(0, len(levels)):
-                    # print lev_from_ind,i, j, levels_in_var[i], levels[j]
                     if lev_from_ind:
                         if i == levels[j]:
                             levels_to_read.append(i)
@@ -122,7 +127,8 @@ class Netcdf(object):
         else:
             if not isinstance(members, (list, tuple)):
                 raise Exception("Members must be a list!")
-            surfex.util.info("Ensemble members provided in call", level=2)
+            if self.debug:
+                surfex.debug(__file__, self.__class__.slice.__name__, "Ensemble members provided in call")
             members_in_var = var.members
             for i in range(0, members_in_var.shape[0]):
                 for j in range(0, len(members)):
@@ -145,9 +151,10 @@ class Netcdf(object):
         dim_levels = max(len(levels_to_read), 1)
         dim_members = max(len(members_to_read), 1)
 
-        surfex.util.info("Dimensions in output", level=3)
-        surfex.util.info(str(dim_x) + " " + str(dim_y) + " " + str(dim_t) + " " + str(dim_levels) + " " +
-                         str(dim_members), level=3)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "Dimensions in output")
+            surfex.debug(__file__, self.__class__.slice.__name__, str(dim_x) + " " + str(dim_y) +
+                         " " + str(dim_t) + " " + str(dim_levels) + " " + str(dim_members))
 
         lon_ind = slice(0, dim_x, 1)
         lat_ind = slice(0, dim_y, 1)
@@ -179,14 +186,18 @@ class Netcdf(object):
             else:
                 raise Exception(str(types[i])+" is not defined!")
 
-        surfex.util.info("Read " + var.var_name + " with dimensions: " + str(dims), level=2)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "Read " + var.var_name + " with dimensions: " +
+                         str(dims))
         if deaccumulate:
-            surfex.util.info("Deaccumulate previous dimensions: " + str(prev_dims), level=2)
+            if self.debug:
+                surfex.debug(__file__, self.__class__.slice.__name__,
+                             "Deaccumulate previous dimensions: " + str(prev_dims))
 
-        if debug:
-            print(var.var_name)
-            print(dims)
-            print(self.file[var.var_name])
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "var.varname: ", var.var_name)
+            surfex.debug(__file__, self.__class__.slice.__name__, "dims", dims)
+            surfex.debug(__file__, self.__class__.slice.__name__, "self.file[var.var_name]", self.file[var.var_name])
         field = self.file[var.var_name][dims]
         if units is not None:
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
@@ -208,7 +219,8 @@ class Netcdf(object):
         reverse_mapping = []
         for d in range(0, 5):
             if d not in mapping:
-                surfex.util.info("Adding dimension " + str(d), level=3)
+                if self.debug:
+                    surfex.debug(__file__, self.__class__.slice.__name__, "Adding dimension " + str(d))
                 field = np.expand_dims(field, len(dims) + i)
                 reverse_mapping.append(len(dims) + i)
                 i = i + 1
@@ -216,14 +228,16 @@ class Netcdf(object):
                 reverse_mapping.append(mapping[d])
 
         # Transpose to 5D array
-        surfex.util.info("Transpose to 5D array", level=1)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "Transpose to 5D array")
         field = np.transpose(field, reverse_mapping)
 
-        print("Read netcdf from ", self.filename, "times", times)
-        surfex.util.info("Shape of output: "+str(field.shape), level=2)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.slice.__name__, "Read netcdf from ", self.filename, "times", times)
+            surfex.debug(__file__, self.__class__.slice.__name__, "Shape of output: "+str(field.shape))
         return field, geo
 
-    def field(self, var_name, level=None, member=None, validtime=None,  units=None, debug=False):
+    def field(self, var_name, level=None, member=None, validtime=None,  units=None):
 
         if validtime is None:
             validtime = []
@@ -232,15 +246,15 @@ class Netcdf(object):
         else:
             validtime = [validtime]
 
-        if debug:
-            print(level, member, validtime)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.field.__name__, "level", level, "member", member, "validtime",
+                         validtime)
         field, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         return field, geo_in
 
-    def points(self, var_name, geo, level=None, member=None, validtime=None,  units=None, interpolation="nearest",
-               debug=False):
+    def points(self, var_name, geo, level=None, member=None, validtime=None,  units=None, interpolation="nearest"):
 
         """
         Assembles a 5D slice and interpolates it to requested positions
@@ -255,10 +269,11 @@ class Netcdf(object):
 
         # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
-        if debug:
-            print(level, member, validtime)
-        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units, debug=debug)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo, debug=debug)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.points.__name__, "level", level, "member", member, "validtime",
+                         validtime)
+        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime, units=units)
+        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -280,9 +295,9 @@ class Axis(Enum):
 
 class NetCDFFileVariable(object):
     def __init__(self, fh, var_name, debug=False):
+        self.debug = debug
         self.file = fh
         self.var_name = var_name
-        self.debug = debug
 
     @property
     def axis_types(self):
@@ -392,14 +407,14 @@ class NetCDFFileVariable(object):
                     epochtime = int(cfunits.Units.conform(val[t], cfunits.Units(val.units),
                                                           cfunits.Units("seconds since 1970-01-01 00:00:00")))
                     if self.debug:
-                        print(epochtime)
+                        surfex.debug(__file__, self.__class__.datetimes.__name__, "epoctime", epochtime)
                     dt = datetime.utcfromtimestamp(epochtime)
                     if self.debug:
-                        print(dt)
+                        surfex.debug(__file__, self.__class__.datetimes.__name__, "dt", dt)
                     times.append(dt)
 
-        if len(times) == 0:
-            surfex.util.info("No time found for " + self.var_name, level=2)
+        if len(times) == 0 and self.debug:
+            surfex.debug(__file__, "datetimes", "No time found for " + self.var_name)
         return times
 
     @property
@@ -415,8 +430,8 @@ class NetCDFFileVariable(object):
             if axis_types[i] == Axis.Time:
                 times = self.file.variables[self.dim_names[i]]
 
-        if times.shape[0] == 0:
-            surfex.util.info("No time found for "+self.var_name, level=2)
+        if times.shape[0] == 0 and self.debug:
+            surfex.debug(__file__, "times", "No time found for " + self.var_name)
         return times
 
     @property
@@ -432,8 +447,8 @@ class NetCDFFileVariable(object):
             if axis_types[i] == Axis.Realization:
                 members = self.file.variables[self.dim_names[i]]
 
-        if members.shape[0] == 0:
-            surfex.util.info("No ensemble members found for " + self.var_name, level=2)
+        if members.shape[0] == 0 and self.debug:
+            surfex.debug(__file__, "members", "No ensemble members found for " + self.var_name)
         return members
 
     @property
@@ -449,8 +464,8 @@ class NetCDFFileVariable(object):
             if self.is_level(axis_types[i]):
                 levels = self.file.variables[self.dim_names[i]]
 
-        if levels.shape[0] == 0:
-            surfex.util.info("No levels found for " + self.var_name, level=2)
+        if levels.shape[0] == 0 and self.debug:
+            surfex.debug(__file__, "levels", "No levels found for " + self.var_name)
         return levels
 
     @staticmethod
@@ -544,7 +559,7 @@ def read_first_guess_netcdf_file(input_file, var):
     background = np.reshape(background, [ny, nx])
     background = np.transpose(background)
     fill_value = fh.variables[var]._FillValue
-    print("Field " + var + " got ", fill_value , ". Fill with nan")
+    surfex.info("Field " + var + " got " + str(fill_value) + ". Fill with nan")
     background[background == fill_value] = np.nan
 
     glafs = fh["land_area_fraction"][:]
@@ -582,7 +597,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
 
     fh["time"][:] = float(validtime.strftime("%s"))
     fill_value = fh.variables[var]._FillValue
-    print("Field " + var + " got nan. Fill with ", fill_value)
+    surfex.info("Field " + var + " got nan. Fill with " + str(fill_value))
     field[np.where(np.isnan(field))] = fill_value
 
     fh[var][:] = np.transpose(field)
@@ -618,35 +633,35 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
     if t2m is not None:
         t2m_fh = netCDF4.Dataset(t2m["file"], "r")
         if debug:
-            print(t2m["var"], t2m_fh.variables[t2m["var"]].shape)
-        t2m_var = t2m_fh.variables[t2m["var"]][:]
+            surfex.debug(__file__, oi2soda.__name__, "T2m", t2m["var"], t2m_fh.variables[t2m["var"]].shape)
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, t2m_fh.variables[t2m["var"]].shape[1],
                                                 t2m_fh.variables[t2m["var"]].shape[0])
+        t2m_var = t2m_fh.variables[t2m["var"]][:]
         if debug:
-            print(t2m_var.shape, nx*ny)
-        t2m_var = np.reshape(t2m_var, ny * nx, order="C")
-        t2m_var = t2m_var.filled(fill_value = 999.)
+            surfex.debug(__file__, oi2soda.__name__, t2m_var.shape, nx*ny)
+        t2m_var = t2m_var.reshape([ny * nx], order="C")
+        t2m_var = t2m_var.filled(fill_value=999.)
         t2m_var = t2m_var.tolist()
 
     if rh2m is not None:
         rh2m_fh = netCDF4.Dataset(rh2m["file"], "r")
         if debug:
-            print(rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
+            surfex.debug(__file__, oi2soda.__name__, "RH2m", rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, rh2m_fh.variables[rh2m["var"]].shape[1],
                                                 rh2m_fh.variables[rh2m["var"]].shape[0])
         rh2m_var = rh2m_fh.variables[rh2m["var"]][:]
         rh2m_var = rh2m_var.reshape([ny * nx], order="C")
-        rh2m_var = rh2m_var.filled(fill_value = 999.)
+        rh2m_var = rh2m_var.filled(fill_value=999.)
         rh2m_var = rh2m_var.tolist()
 
     if sd is not None:
         sd_fh = netCDF4.Dataset(sd["file"], "r")
         if debug:
-            print(sd["var"], sd_fh.variables[sd["var"]].shape)
+            surfex.debug(__file__, oi2soda.__name__, "SD", sd["var"], sd_fh.variables[sd["var"]].shape)
 
         i = i + 1
         nx, ny = check_input_to_soda_dimensions(nx, ny, sd_fh.variables[sd["var"]].shape[1],
@@ -675,7 +690,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
     for i in range(0, nx*ny):
         out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
         if debug:
-            print("i", i)
+            surfex.debug(__file__, oi2soda.__name__, "i", i)
 
     out.close()
 
@@ -686,7 +701,7 @@ def read_cryoclim_nc(infiles):
     grid_snow_class = None
     for filename in infiles:
         if os.path.exists(filename):
-            print("Reading: ", filename)
+            surfex.info("Reading: " + filename)
             nc = netCDF4.Dataset(filename, "r")
             grid_lons = nc["lon"][:]
             grid_lats = nc["lat"][:]
@@ -697,7 +712,7 @@ def read_cryoclim_nc(infiles):
             grid_snow_class[grid_snow_class_read == 0] = 0
             nc.close()
         else:
-            print("Warning file " + filename + " does not exists")
+            surfex.warning("Warning file " + filename + " does not exists")
 
     if grid_lons is None or grid_lats is None or grid_snow_class is None:
         raise Exception("No files were read properly")

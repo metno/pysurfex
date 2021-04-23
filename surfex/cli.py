@@ -34,7 +34,7 @@ def parse_args_create_forcing(argv):
                         help="Toml configuration file for surfex settings potentially used if --harmomie is set",
                         default=None, nargs="?")
     parser.add_argument('-fb', type=str, help="First base time unless equal to dtg_start", default=None)
-    parser.add_argument('--options', type=open, action=LoadFromFile)
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-c', '--config', dest="user_config", type=str,
                         help="Configuration file in yaml format describing customized variable setup",
                         default=None, nargs="?")
@@ -172,6 +172,7 @@ def parse_args_qc2obsmon(argv):
     parser.add_argument('dtg', type=str, help="YYYYMMDDHH")
     parser.add_argument('varname', type=str, help="Variable name")
     parser.add_argument('qc', type=str, help="QC dataset JSONfile")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--operator', type=str, help="Obs operator", choices=["bilinear", "nearest"],
                         default="bilinear", required=False)
     parser.add_argument('--fg_file', type=str, help="First guess file", required=True)
@@ -194,6 +195,7 @@ def parse_args_qc2obsmon(argv):
 
 def parse_args_first_guess_for_oi(argv):
     parser = ArgumentParser(description="Create first guess file for gridpp")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-dtg', dest="dtg", type=str, help="Date (YYYYMMDDHH)", required=True)
     parser.add_argument('-i', "--inputfile", type=str, default=None, help="Default input file", nargs="?")
     parser.add_argument('-if', dest="inputformat", type=str, help="Input file format", default="grib2")
@@ -291,7 +293,7 @@ def first_guess_for_oi(**kwargs):
     variables = kwargs["variables"]
     variables = variables + ["altitude", "land_area_fraction"]
 
-    cache = surfex.cache.Cache(True, 3600)
+    cache = surfex.cache.Cache(debug, 3600)
     fg = None
     for var in variables:
 
@@ -302,8 +304,8 @@ def first_guess_for_oi(**kwargs):
         if "inputformat" in kwargs:
             fileformat = kwargs["inputformat"]
         if debug:
-            print(inputfile)
-            print(fileformat)
+            surfex.debug(__file__, first_guess_for_oi.__name__, inputfile)
+            surfex.debug(__file__, first_guess_for_oi.__name__, fileformat)
 
         converter = "none"
         if var == "air_temperature_2m":
@@ -355,7 +357,8 @@ def first_guess_for_oi(**kwargs):
         defs.update({"filepattern": inputfile})
 
         if debug:
-            print(var, fileformat)
+            surfex.debug(__file__, first_guess_for_oi.__name__, "Variable", var)
+            surfex.debug(__file__, first_guess_for_oi.__name__, "Fileformat", fileformat)
         converter_conf = config[var][fileformat]["converter"]
         if converter not in config[var][fileformat]["converter"]:
             raise Exception("No converter " + converter + " definition found in " + config + "!")
@@ -380,12 +383,10 @@ def first_guess_for_oi(**kwargs):
             field[field < 0] = 0
 
         if np.isnan(np.sum(field)):
-            print(fg.variables[var])
             fill_nan_value = fg.variables[var]._FillValue
-            print("Field " + var + " got Nan. Fill with: ", fill_nan_value)
+            surfex.info("Field " + var + " got Nan. Fill with: " + str(fill_nan_value))
             field[np.where(np.isnan(field))] = fill_nan_value
 
-        print(field)
         fg.variables[var][:] = np.transpose(field)
 
     if fg is not None:
@@ -396,7 +397,7 @@ def parse_args_masterodb(argv):
 
     """Parse the command line input arguments."""
     parser = ArgumentParser(description="SURFEX for MASTERRODB")
-
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
@@ -592,6 +593,7 @@ def parse_args_surfex_binary(argv, mode):
         raise NotImplementedError(mode + " is not implemented!")
 
     parser = ArgumentParser(description=desc)
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--version', action='version', version=surfex.__version__)
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
@@ -814,6 +816,7 @@ def run_surfex_binary(mode, **kwargs):
 
 def parse_args_gridpp(argv):
     parser = ArgumentParser(description="Create horisontal OI analysis")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-i', '--input_file', type=str, help="Input NetCDF file with all variables", required=True)
     parser.add_argument('-obs', '--obs_file', type=str, help="Input JSON file with QC observations", required=True)
     parser.add_argument('-o', '--output_file', type=str, help="Output NetCDF file with all variables", required=True)
@@ -898,6 +901,7 @@ def run_gridpp(**kwargs):
 
 def parse_args_titan(argv):
     parser = ArgumentParser(description="Do quality control of observations")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-i', '--input_file', type=str, help="Input json file with observation sets and test settings",
                         required=True)
     parser.add_argument('-o', '--output_file', type=str, help="Output json file with quality checked observations",
@@ -997,7 +1001,8 @@ def run_titan(**kwargs):
 
 
 def parse_args_oi2soda(argv):
-    parser = ArgumentParser(description="Create ASCII input for SODA from gridPP files")
+    parser = ArgumentParser(description="Create ASCII input for SODA from gridpp files")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--t2m_file', type=str, help="NetCDF file for T2M", required=False, default=None)
     parser.add_argument('--t2m_var', type=str, help="NetCDF variable name for T2M", required=False,
                         default="air_temperature_2m")
@@ -1050,6 +1055,7 @@ def run_oi2soda(**kwargs):
 
 def parse_lsm_file_assim(argv):
     parser = ArgumentParser(description="Create ASCII LSM input for SODA")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--file', type=str, help="Input file name", required=True)
     parser.add_argument('--fileformat', type=str, help="Input fileformat", required=True)
     parser.add_argument('--var', type=str, help="Variable in input file", required=False,
@@ -1131,6 +1137,7 @@ def lsm_file_assim(**kwargs):
 
 def parse_args_hm2pysurfex(argv):
     parser = ArgumentParser("hm2pysurfex")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument("-c", dest="config", type=str, required=True, help="PySurfex config file")
     parser.add_argument("-e", dest="environment", type=str, required=False, default=None,
                         help="Environment if not taken from running environment")
@@ -1181,6 +1188,7 @@ def hm2pysurfex(**kwargs):
 
 def parse_args_bufr2json(argv):
     parser = ArgumentParser("bufr2json")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument("-b", dest="bufr", type=str, required=True, help="Bufr file")
     parser.add_argument("-v", dest="vars", nargs="+", type=str, required=True, help="Variables")
     parser.add_argument("-o", dest="output", type=str, required=True, help="Output JSON file")
@@ -1232,6 +1240,7 @@ def run_bufr2json(**kwargs):
 
 def parse_args_plot_points(argv):
     parser = ArgumentParser("Plot points")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-g', '--geo', dest="geo", type=str, help="Domain/points json geometry definition file",
                         default=None, required=False)
     parser.add_argument('-v', '--variable', dest="variable", type=str, help="Variable name", required=False)
@@ -1312,7 +1321,7 @@ def run_plot_points(**kwargs):
     geo = None
     if geo_file is not None:
         domain_json = json.load(open(geo_file, "r"))
-        geo = surfex.geo.get_geo_object(domain_json)
+        geo = surfex.geo.get_geo_object(domain_json, debug=debug)
 
     contour = True
     var = "field_to_read"
@@ -1468,7 +1477,7 @@ def run_plot_points(**kwargs):
     if geo is None:
         raise Exception("No geo is set")
 
-    cache = None
+    cache = surfex.Cache(debug, -1)
     converter = "none"
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, validtime, debug=debug)
     field = surfex.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
@@ -1500,6 +1509,7 @@ def run_plot_points(**kwargs):
 
 def parse_plot_timeseries_args(argv):
     parser = ArgumentParser("Plot timeseries from JSON time series file")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('filename', type=str, default=None, help="JSON time series file")
     parser.add_argument('-lon', type=float, default=None, help="Longitude", required=False)
     parser.add_argument('-lat', type=float, default=None, help="Latitude", required=False)
@@ -1577,7 +1587,8 @@ def run_plot_timeseries_from_json(**kwargs):
 
 
 def parse_args_set_geo_from_obs_set(argv):
-    parser = ArgumentParser()
+    parser = ArgumentParser("Set a point geometry from an observation set")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument("-v", type=str, dest="variable", help="Variable name", required=True)
     parser.add_argument("-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True)
     parser.add_argument("-i", type=str, dest="inputfile", help="Input file", required=False)
@@ -1601,7 +1612,8 @@ def parse_args_set_geo_from_obs_set(argv):
 
 
 def parse_args_set_geo_from_stationlist(argv):
-    parser = ArgumentParser()
+    parser = ArgumentParser("Set a point geometry from a stationlist")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('stationlist', type=str, help="Station list")
     parser.add_argument("--lonrange", type=str,  dest="lonrange", help="Longitude range", default=None, required=False)
     parser.add_argument("--latrange", type=str, dest="latrange", help="Latitude range", default=None, required=False)
@@ -1669,8 +1681,8 @@ def set_geo_from_stationlist(**kwargs):
 
 def parse_merge_namelist_settings(argv):
     """Parse the command line input arguments."""
-    parser = ArgumentParser()
-
+    parser = ArgumentParser("Merge namelist settings")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--version', action='version', version='surfex {0}'.format(surfex.__version__))
     parser.add_argument('--json', '-j', type=str, nargs="+", required=True, help="A JSON file with run options")
     parser.add_argument('--indent', required=False, default=2, type=int, help="Indented output")
@@ -1705,7 +1717,7 @@ def run_merge_namelist_settings(**kwargs):
 def parse_merge_toml_settings(argv):
     """Parse the command line input arguments."""
     parser = ArgumentParser("Merge toml files")
-
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('--toml', '-t', type=str, nargs="+", required=True, help="TOML files with run options")
     parser.add_argument('--output', '-o', required=True, nargs='?')
 
@@ -1733,6 +1745,7 @@ def run_merge_toml_settings(**kwargs):
 
 def parse_args_merge_qc_data(argv):
     parser = ArgumentParser()
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument("-i", type=str, nargs="+", dest="filenames", help="Input QC JSON files", required=True)
     parser.add_argument("-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True)
     parser.add_argument("--indent", type=int, help="Indent in output", default=None)
@@ -1760,7 +1773,8 @@ def merge_qc_data(kwargs):
 
 
 def parse_timeseries2json(argv):
-    parser = ArgumentParser("Plot field")
+    parser = ArgumentParser("Convert a time series to json")
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-v', '--varname', dest="varname", type=str, help="Variable name", required=True)
     parser.add_argument('-lons', dest="lons", type=float, nargs="+", help="Longitudes", default=None, required=False)
     parser.add_argument('-lats', dest="lats", type=float, nargs="+", help="Latitudes", default=None, required=False)
@@ -1892,6 +1906,8 @@ def run_timeseries2json(**kwargs):
 
 def parse_cryoclim_pseudoobs(argv):
     parser = ArgumentParser("Create CRYOCLIM pseudo-obs")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
     parser.add_argument('-v', '--varname', dest="varname", type=str, help="Variable name",
                         default="surface_snow_thickness", required=False)
     parser.add_argument('-fg', dest="fg_file", type=str, help="First guess file", default=None, required=True)
@@ -1913,6 +1929,9 @@ def parse_cryoclim_pseudoobs(argv):
 
 
 def run_cryoclim_pseuodoobs(**kwargs):
+    debug= False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
     fg_file = kwargs["fg_file"]
     infiles = kwargs["infiles"]
     step = kwargs["thinning"]
@@ -1922,5 +1941,6 @@ def run_cryoclim_pseuodoobs(**kwargs):
 
     grid_lons, grid_lats, grid_snow_class = surfex.read_cryoclim_nc(infiles)
     fg_geo, validtime, grid_snow_fg, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, varname)
-    qc = surfex.snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg)
+    qc = surfex.snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg,
+                                         debug=debug)
     qc.write_output(output, indent=indent)

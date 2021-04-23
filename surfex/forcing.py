@@ -42,8 +42,8 @@ class SurfexOutputForcing(object):
 
     def _check_sanity(self):
         if len(self.var_objs) != self.nparameters:
-            print("Inconsistent number of parameter. " + str(len(self.var_objs)) + " != " + str(self.nparameters))
-            raise Exception
+            raise Exception("Inconsistent number of parameter. " + str(len(self.var_objs)) + " != " +
+                            str(self.nparameters))
 
         # Check if all parameters are present
         for i in range(0, len(self.var_objs)):
@@ -51,8 +51,7 @@ class SurfexOutputForcing(object):
 
         for key in self.parameters:
             if self.parameters[key] == 0:
-                print("Required parameter " + str(key) + " is missing!")
-                raise Exception
+                raise Exception("Required parameter " + str(key) + " is missing!")
 
     # Time dependent parameter
     nparameters = 11
@@ -101,7 +100,7 @@ class NetCDFOutput(SurfexOutputForcing):
 
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
-        print("Forcing type is netCDF")
+        surfex.info("Forcing type is netCDF")
         self.forcing_file = {}
         if fname is None:
             fname = "FORCING.nc"
@@ -116,18 +115,18 @@ class NetCDFOutput(SurfexOutputForcing):
         for i in range(0, len(self.var_objs)):
             this_obj = self.var_objs[i]
             this_var = this_obj.var_name
-            print(this_obj.var_name)
+            surfex.info("Preparing variable " + this_obj.var_name)
             tic = time.time()
             field = this_obj.read_time_step(this_time, cache)
             field = field.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             toc = time.time()
-            print("# read_time_step: ", toc - tic)
+            surfex.info("Preparation took " + str(toc - tic) + " seconds")
             self.forcing_file[self.translation[this_var]][self.time_step, :] = field
 
         self.forcing_file['TIME'][self.time_step] = self.time_step
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
-        print("Define netcdf forcing")
+        surfex.info("Define netcdf forcing")
 
         zs = None
         zref = None
@@ -135,7 +134,7 @@ class NetCDFOutput(SurfexOutputForcing):
         for i in range(0, len(att_objs)):
             this_obj = att_objs[i]
             this_var = this_obj.var_name
-            print(this_obj.var_name)
+            surfex.info("Define: " + this_obj.var_name)
             if this_var == "ZS":
                 zs = this_obj.read_time_step(att_time, cache)
             elif this_var == "ZREF":
@@ -176,7 +175,6 @@ class NetCDFOutput(SurfexOutputForcing):
             this_obj = self.var_objs[i]
             this_var = this_obj.var_name
 
-            # print this_var
             if this_var == "TA":
                 self.forcing_file['Tair'] = self.file_handler.createVariable("Tair", "f4",
                                                                              ("time", "Number_of_points",))
@@ -232,11 +230,11 @@ class NetCDFOutput(SurfexOutputForcing):
                 self.forcing_file['CO2air'].longname = "Near_Surface_CO2_Concentration"
                 self.forcing_file['CO2air'].units = "kg/m3"
             else:
-                print("This should never happen! " + this_var + " is not defined!")
-                raise NotImplementedError
+                raise NotImplementedError("This should never happen! " + this_var + " is not defined!")
 
     def finalize(self):
-        print("Close file")
+        if self.debug:
+            surfex.debug(__file__, self.__class__.finalize.__name__, "Close file")
         self.file_handler.close()
         shutil.move(self.tmp_fname, self.fname)
 
@@ -252,19 +250,20 @@ class AsciiOutput(SurfexOutputForcing):
 
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
-        print("Forcing type is ASCII")
+        surfex.info("Forcing type is ASCII")
         self.forcing_file = {}
         self.file_handler = {}
         if fname is None:
             fname = "Params_config.txt"
         self.fname = fname
+        self.debug = cache.debug
         self._define_forcing(geo, att_objs, att_time, cache)
 
     def write_forcing(self, var_objs, this_time, cache):
         for i in range(0, len(self.var_objs)):
             this_obj = self.var_objs[i]
             this_var = this_obj.var_name
-            print(this_obj.var_name)
+            surfex.info("Write var name" + this_obj.var_name)
             field = this_obj.read_time_step(this_time, cache)
             fmt = "%20.8f"
             cols = 50
@@ -313,7 +312,8 @@ class AsciiOutput(SurfexOutputForcing):
             self.file_handler[key] = open(self.forcing_file[key], 'w')
 
     def finalize(self):
-        print("Close file")
+        if self.debug:
+            surfex.info("Close file")
         for key in self.parameters:
             self.file_handler[key].close()
 
@@ -334,8 +334,14 @@ def write_formatted_array(file, array, columns, fileformat):
 
 def run_time_loop(options, var_objs, att_objs):
 
+    tic = time.time()
     this_time = options['start']
-    cache = surfex.cache.Cache(options['debug'], options['cache_interval'])
+    debug = False
+    if "debug" in options:
+        debug = options['debug']
+        if debug:
+            surfex.debug(__file__, run_time_loop.__name__, "Debug mode activated in cache")
+    cache = surfex.cache.Cache(debug, options['cache_interval'])
     # Find how many time steps we want to write
     ntimes = 0
     while this_time <= options['stop']:
@@ -354,15 +360,14 @@ def run_time_loop(options, var_objs, att_objs):
         output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
                                             var_objs, att_objs, att_time, cache)
     else:
-        print("Invalid output format "+options['output_format'])
-        raise NotImplementedError
+        raise NotImplementedError("Invalid output format " + options['output_format'])
 
     # Loop output time steps
     this_time = options['start']
     while this_time <= options['stop']:
 
         # Write for each time step
-        print("Creating forcing for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(output.time_step))
+        surfex.info("Creating forcing for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(output.time_step))
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
         this_time = this_time + timedelta(seconds=options['timestep'])
@@ -370,6 +375,8 @@ def run_time_loop(options, var_objs, att_objs):
 
     # Finalize forcing
     output.finalize()
+    toc = time.time()
+    surfex.info("Forcing generation took " + str(toc - tic) + " seconds")
 
 
 def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height, start, first_base_time,
@@ -414,28 +421,22 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
             if "converter" in conf[sfx_var][forcingformat]:
                 conf_dict = copy.deepcopy(conf[sfx_var][forcingformat]["converter"])
             else:
-                print("No converter defined for " + sfx_var)
-                raise KeyError
+                raise KeyError("No converter defined for " + sfx_var)
 
         # Variables with height dependency
         else:
             if ref_height in conf[sfx_var]:
-                # print sfx_var,ref_height,format
                 if forcingformat not in conf[sfx_var][ref_height]:
-                    print(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var + " and format: " +
+                    raise KeyError(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var + " and format: " +
                           forcingformat)
-                    raise KeyError
                 if conf[sfx_var][ref_height][forcingformat] is None:
-                    print(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var)
-                    raise KeyError
+                    raise KeyError(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var)
                 if "converter" in conf[sfx_var][ref_height][forcingformat]:
                     conf_dict = copy.deepcopy(conf[sfx_var][ref_height][forcingformat]["converter"])
                 else:
-                    print("No converter defined for " + sfx_var)
-                    raise KeyError
+                    raise KeyError("No converter defined for " + sfx_var)
             else:
-                print("No ref height \"" + ref_height + "\" defined for " + sfx_var)
-                raise KeyError
+                raise KeyError("No ref height \"" + ref_height + "\" defined for " + sfx_var)
 
     ##############################################################
     ##############################################################
@@ -446,24 +447,20 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
             if "constant" in conf[sfx_var]:
                 const_dict = copy.deepcopy(conf[sfx_var]["constant"])
             else:
-                print("No constant defined for " + sfx_var)
-                raise KeyError
+                raise KeyError("No constant defined for " + sfx_var)
         else:
             if ref_height in conf[sfx_var]:
                 if "constant" in conf[sfx_var][ref_height]:
                     const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
                 else:
-                    print("No constant defined for " + sfx_var)
-                    raise KeyError
+                    raise KeyError("No constant defined for " + sfx_var)
             else:
-                print("No ref height \"" + ref_height + "\" defined for " + sfx_var)
-                raise KeyError
+                raise KeyError("No ref height \"" + ref_height + "\" defined for " + sfx_var)
 
         obj = surfex.read.ConstantValue(geo, sfx_var, const_dict)
     else:
 
         # Construct the converter
-        # print sfx_var
         converter = surfex.read.Converter(selected_converter, start, defs, conf_dict, forcingformat,
                                           first_base_time, debug)
 
@@ -475,6 +472,10 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
 def set_forcing_config(**kwargs):
 
     debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+    if debug:
+        surfex.debug(__file__, set_forcing_config.__name__, "Debug mode activated")
     fb = None
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
@@ -483,12 +484,12 @@ def set_forcing_config(**kwargs):
                 config_exp = kwargs["config_exp_surfex"]
         if config_exp is None:
             config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
-        print("Using default config from: " + config_exp)
+        surfex.info("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
         geo_out = config.get_setting("GEOMETRY#GEO")
     elif "domain" in kwargs and kwargs["domain"] is not None:
-        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
+        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")), debug=debug)
     else:
         raise Exception("No geometry is set")
 
@@ -535,8 +536,6 @@ def set_forcing_config(**kwargs):
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
-        if "debug" in kwargs:
-            debug = kwargs["debug"]
         if "fb" in kwargs:
             fb = kwargs["fb"]
         if "geo_out" in kwargs:
@@ -611,8 +610,7 @@ def set_forcing_config(**kwargs):
 
     # Time information
     if (int(dtg_start) or int(dtg_stop)) < 1000010100:
-        print("Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop))
-        raise Exception
+        raise Exception("Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop))
 
     start = datetime.strptime(str.strip(str(dtg_start)), '%Y%m%d%H')
     stop = datetime.strptime(str.strip(str(dtg_stop)), '%Y%m%d%H')
@@ -636,7 +634,7 @@ def set_forcing_config(**kwargs):
                 geo_input = surfex.get_geo_object(json.load(open(geo_input, "r")))
                 merged_conf[fileformat]["geo_input"] = geo_input
             else:
-                print("Input geometry " + geo_input + " does not exist")
+                surfex.info("Input geometry " + geo_input + " does not exist")
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
