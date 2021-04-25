@@ -178,9 +178,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span> <span class="o">=</span> <span class="n">validtime</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span> <span class="o">=</span> <span class="n">basetime</span>
-        <span class="c1"># self.intervall = intervall</span>
 
-        <span class="c1"># print(conf, self.name)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Converter name:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Converter config: &quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; is missing in converter definition&quot;</span><span class="p">)</span>
@@ -200,8 +201,6 @@
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="c1"># self.rh = self.create_variable(fileformat,defs,conf[self.name][&quot;t&quot;],debug)</span>
-            <span class="c1"># self.p = self.create_variable(fileformat,defs,conf[self.name][&quot;p&quot;],debug)</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcrain&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
@@ -226,13 +225,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
 
         <span class="c1"># print &quot;Constructed the converter &quot; + self.name</span>
 
     <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">print_info</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -255,6 +253,8 @@
         <span class="c1"># Create deep copies not to inherit between variables</span>
         <span class="n">defs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">defs</span><span class="p">)</span>
         <span class="n">var_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">var_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">var_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Variable is not set&quot;</span><span class="p">)</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="n">data_merge</span><span class="p">(</span><span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
@@ -273,12 +273,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Create variable for format &quot;</span> <span class="o">+</span> <span class="n">fileformat</span> <span class="o">+</span> <span class="s2">&quot; not implemented!&quot;</span><span class="p">)</span>
 
-        <span class="c1"># TODO: Put this under verbose flag and format printing</span>
-        <span class="c1"># var.print_variable_info()</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">var</span>
 
     <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
-        <span class="c1"># print(&quot;Time in converter: &quot;+self.name+&quot; &quot;+validtime.strftime(&#39;%Y%m%d%H&#39;))</span>
 
         <span class="n">gravity</span> <span class="o">=</span> <span class="mf">9.81</span>
         <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
@@ -376,8 +375,7 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nature</span><span class="p">,</span> <span class="n">town</span><span class="p">)</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span></div>
 </pre></div>
 

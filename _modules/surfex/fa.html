@@ -44,7 +44,8 @@
 
 
 <div class="viewcode-block" id="Fa"><a class="viewcode-back" href="../../index.html#surfex.Fa">[docs]</a><span class="k">class</span> <span class="nc">Fa</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="kc">None</span>
@@ -52,7 +53,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nearest</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">epygram</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You need epygram to read FA files&quot;</span><span class="p">)</span>
@@ -61,7 +62,7 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">readfield</span><span class="p">(</span><span class="n">varname</span><span class="p">)</span>
 
             <span class="c1"># TODO: check time</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not checking validtime at the moment: &quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not checking validtime for FA variable at the moment: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">validtime</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;lambert&quot;</span><span class="p">:</span>
                 <span class="n">ny</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s2">&quot;Y_CIzone&quot;</span><span class="p">]</span>

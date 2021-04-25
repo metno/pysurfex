@@ -48,7 +48,8 @@
 
 
 <div class="viewcode-block" id="SurfexIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">=</span> <span class="n">extension</span>
@@ -62,15 +63,16 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method is not implemented for this class!&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">interpolate_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interpolate_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
-        <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">)</span>
+        <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
 <div class="viewcode-block" id="SurfexSurfIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexSurfIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surfexfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surfexfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">surfexfile</span><span class="o">.</span><span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">csurf_filetype</span> <span class="o">=</span> <span class="n">csurf_filetype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">need_pgd</span> <span class="o">=</span> <span class="kc">False</span>
@@ -169,7 +171,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">varname</span></div>
 
 
-<div class="viewcode-block" id="get_surfex_io_object"><a class="viewcode-back" href="../../index.html#surfex.get_surfex_io_object">[docs]</a><span class="k">def</span> <span class="nf">get_surfex_io_object</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="get_surfex_io_object"><a class="viewcode-back" href="../../index.html#surfex.get_surfex_io_object">[docs]</a><span class="k">def</span> <span class="nf">get_surfex_io_object</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                         <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;surf&quot;</span> <span class="ow">and</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;ts&quot;</span> <span class="ow">and</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;forcing&quot;</span><span class="p">:</span>
@@ -180,7 +183,7 @@
 
     <span class="k">if</span> <span class="n">fileformat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;surf&quot;</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;forcing&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented yet&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -188,27 +191,27 @@
 
     <span class="k">elif</span> <span class="n">fileformat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;surf&quot;</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     <span class="k">elif</span> <span class="n">fileformat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ts&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format NetCDF needs a geometry&quot;</span><span class="p">)</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">NetCDFSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">NetCDFSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;forcing&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format NetCDF needs a geometry for reading forcing files&quot;</span><span class="p">)</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">ForcingFileNetCDF</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">ForcingFileNetCDF</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     <span class="k">elif</span> <span class="n">fileformat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;texte&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format TEXTE needs a geometry&quot;</span><span class="p">)</span>
-        <span class="n">obj</span> <span class="o">=</span> <span class="n">TexteSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">TexteSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">fileformat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">filetype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;surf&quot;</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     <span class="c1"># elif fileformat.lower() == &quot;sfx&quot;:</span>
@@ -278,6 +281,10 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
+        <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">debug</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
+
         <span class="n">suffix</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;ASCII&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
 
@@ -290,7 +297,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="n">suffix</span>
 
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_geo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
@@ -474,6 +481,10 @@
 <div class="viewcode-block" id="NCSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NCSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">debug</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
         <span class="n">suffix</span> <span class="o">=</span> <span class="n">SurfFileTypeExtension</span><span class="p">(</span><span class="s2">&quot;NC&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
@@ -487,7 +498,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
             <span class="n">geo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_geo</span><span class="p">()</span>
 
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_geo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
@@ -620,6 +631,9 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
+        <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">debug</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
         <span class="n">geo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">geo</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo&quot;</span><span class="p">]</span>
@@ -638,7 +652,7 @@
         <span class="c1"># if geo is None:</span>
         <span class="c1">#    geo = self.get_geo()</span>
 
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lfagmap</span> <span class="o">=</span> <span class="n">lfagmap</span>
 
     <span class="c1"># def get_geo(self):</span>
@@ -668,8 +682,7 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;validime must be a datetime object&quot;</span><span class="p">)</span>
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">)</span>
 
-        <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span> <span class="o">=</span> <span class="n">SurfexIO</span><span class="o">.</span><span class="n">interpolate_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span>
-                                                          <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+        <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span> <span class="o">=</span> <span class="n">SurfexIO</span><span class="o">.</span><span class="n">interpolate_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">interpolator</span></div>
 
 
@@ -709,9 +722,9 @@
 <span class="sd">    Reading surfex NetCDF output</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -898,9 +911,9 @@
 <span class="sd">    Reading surfex TEXTE output</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;TXT&quot;</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;TXT&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
@@ -983,68 +996,71 @@
 
 <div class="viewcode-block" id="ForcingFileNetCDF"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF">[docs]</a><span class="k">class</span> <span class="nc">ForcingFileNetCDF</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;LON&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;LAT&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ny</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span>
+        <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">read_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">read_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">var</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">varname</span>
         <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">dimlen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="n">dimlen</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set time!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">dimlen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="n">dimlen</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set time!&quot;</span><span class="p">)</span>
 
-                <span class="n">times_read</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">ndims</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">npoints</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
-                    <span class="n">dimlen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">ndims</span><span class="p">]</span>
+                    <span class="n">times_read</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">ndims</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">npoints</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                        <span class="n">dimlen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">ndims</span><span class="p">]</span>
 
-                    <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
-                        <span class="n">times_for_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
-                        <span class="n">units</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="o">.</span><span class="n">units</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">t_cal</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="o">.</span><span class="n">calendar</span>
-                        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># Attribute doesn&#39;t exist</span>
-                            <span class="n">t_cal</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;gregorian&quot;</span>  <span class="c1"># or standard</span>
+                        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                            <span class="n">times_for_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+                            <span class="n">units</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="o">.</span><span class="n">units</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">t_cal</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="o">.</span><span class="n">calendar</span>
+                            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># Attribute doesn&#39;t exist</span>
+                                <span class="n">t_cal</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;gregorian&quot;</span>  <span class="c1"># or standard</span>
 
-                        <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
-                        <span class="p">[</span><span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimlen</span><span class="p">)]</span>
-                        <span class="n">times_for_var</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times_for_var</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">t_cal</span><span class="p">)</span>
-                        <span class="c1"># print(times_for_var)</span>
-                        <span class="k">for</span> <span class="n">times_to_read</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)):</span>
-                            <span class="c1"># print(times_to_read, times[times_to_read])</span>
-                            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times_for_var</span><span class="p">)):</span>
-                                <span class="c1"># print(t, times_for_var[t], times[times_to_read])</span>
-                                <span class="n">test_time</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
-                                <span class="n">test_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">test_time</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
-                                <span class="k">if</span> <span class="n">test_time</span> <span class="o">==</span> <span class="n">times</span><span class="p">[</span><span class="n">times_to_read</span><span class="p">]:</span>
-                                    <span class="n">times_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="n">times_to_read</span><span class="p">])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">npoints</span> <span class="o">=</span> <span class="n">dimlen</span>
+                            <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="p">[</span><span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimlen</span><span class="p">)]</span>
+                            <span class="n">times_for_var</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times_for_var</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">t_cal</span><span class="p">)</span>
+                            <span class="c1"># print(times_for_var)</span>
+                            <span class="k">for</span> <span class="n">times_to_read</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)):</span>
+                                <span class="c1"># print(times_to_read, times[times_to_read])</span>
+                                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">times_for_var</span><span class="p">)):</span>
+                                    <span class="c1"># print(t, times_for_var[t], times[times_to_read])</span>
+                                    <span class="n">test_time</span> <span class="o">=</span> <span class="n">times_for_var</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+                                    <span class="n">test_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">test_time</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">test_time</span> <span class="o">==</span> <span class="n">times</span><span class="p">[</span><span class="n">times_to_read</span><span class="p">]:</span>
+                                        <span class="n">times_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                                        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                                            <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="n">times_to_read</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">npoints</span> <span class="o">=</span> <span class="n">dimlen</span>
 
-                    <span class="n">ndims</span> <span class="o">=</span> <span class="n">ndims</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">ndims</span> <span class="o">=</span> <span class="n">ndims</span> <span class="o">+</span> <span class="mi">1</span>
 
-                <span class="k">if</span> <span class="n">npoints</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No points found&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">npoints</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No points found&quot;</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times_read</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Valid time not found in file!&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times_read</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Valid time not found in file!&quot;</span><span class="p">)</span>
 
-                <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">times_read</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">npoints</span><span class="p">]</span>
-
+                    <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">times_read</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">npoints</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Variable &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; not found!&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span>
 
     <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1058,7 +1074,8 @@
 
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_field</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="c1"># Reshape to fortran 2D style</span>
-        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span>
 
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

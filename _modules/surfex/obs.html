@@ -821,13 +821,14 @@
 
 
 <span class="k">def</span> <span class="nf">snow_pseudo_obs_cryoclim</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">grid_snow_class</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">fg_geo</span><span class="p">,</span> <span class="n">grid_snow_fg</span><span class="p">,</span>
-                             <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+                             <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">interpolator_method</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ny</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nx</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span>
     <span class="n">ny</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ny</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span>
 
+    <span class="c1"># TODO rewrite to use lonlatvals geo</span>
     <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">res_lons</span> <span class="o">=</span> <span class="p">[]</span>
@@ -844,6 +845,8 @@
         <span class="n">ii</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">+</span> <span class="n">step</span>
 
     <span class="c1"># TODO move from here</span>
+    <span class="c1"># interpolator = surfex.Interpolation(interpolator_method, fg_geo, geo_out, debug=debug)</span>
+    <span class="c1"># p_fg_snow_depth = interpolator.interpolate(grid_snow_fg)</span>
     <span class="kn">import</span> <span class="nn">gridpp</span>
     <span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">))</span>
     <span class="n">fg_grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">fg_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">fg_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
