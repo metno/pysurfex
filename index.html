@@ -427,18 +427,17 @@ make latexpdf
 
 <dl class="py class">
 <dt id="surfex.Converter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Converter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileformat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#Converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Converter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Converter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileformat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#Converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Converter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Main interface to read a field is done through a converter.
 The converter name is default “None” to read a plain field without any conversion.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – name of the converter</p></li>
-<li><p><strong>validtime</strong> (<em>datetime.datetime</em>) – The valid time you want to read</p></li>
+<li><p><strong>initial_time</strong> (<em>datetime.datetime</em>) – The valid time you want to read</p></li>
 <li><p><strong>defs</strong> (<em>dict</em>) – A dictionary defining the variables</p></li>
 <li><p><strong>conf</strong> (<em>dict</em>) – A dictionary defining the converter</p></li>
 <li><p><strong>fileformat</strong> (<em>str</em>) – Fileformat of the converter</p></li>
-<li><p><strong>basetime</strong> (<em>datetime.datetime</em>) – The base time of the input data source</p></li>
 <li><p><strong>debug</strong> (<em>bool</em>) – Debug option</p></li>
 </ul>
 </dd>
@@ -490,36 +489,9 @@ corresponding configuration.</p>
 
 <dl class="py class">
 <dt id="surfex.Variable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#Variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt id="surfex.NetcdfVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">NetcdfVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#NetcdfVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.NetcdfVariable" title="Permalink to this definition">¶</a></dt>
-<dd><p>NetCDF variable</p>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">Variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_forecast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#Variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>New combined variable</p>
 </dd></dl>
-
-<dl class="py class">
-<dt id="surfex.GribVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">GribVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grib_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grib2'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#GribVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.GribVariable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Grib variable</p>
-</dd></dl>
-
-<dl class="py class">
-<dt id="surfex.SurfexVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">SurfexVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#SurfexVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexVariable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt id="surfex.FaVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">FaVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#FaVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.FaVariable" title="Permalink to this definition">¶</a></dt>
-<dd><p>FA variable</p>
-</dd></dl>
-
-<dl class="py class">
-<dt id="surfex.ObservationVariable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">ObservationVariable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/variable.html#ObservationVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.ObservationVariable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py class">
 <dt id="surfex.LoadFromFile">
@@ -1070,7 +1042,7 @@ Uses internally the SystemFilePaths class</p>
 
 <dl class="py function">
 <dt id="surfex.ObservationSet.points">
-<code class="sig-prename descclassname"><span class="pre">surfex.ObservationSet.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.ObservationSet.points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.ObservationSet.</span></code><code class="sig-name descname"><span class="pre">points</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.ObservationSet.points" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1521,7 +1493,7 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Converter.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.Converter.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileformat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Converter.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Converter.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileformat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Converter.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializing the converter</p>
 </dd></dl>
 
@@ -1671,7 +1643,7 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Variable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_forecast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
@@ -1687,97 +1659,12 @@ haversine formula. Values can be vectors.</p>
 
 <dl class="py function">
 <dt id="surfex.Variable.deaccumulate">
-<code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">deaccumulate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.deaccumulate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.Variable.open_new_file">
-<code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">open_new_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_inc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.open_new_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">deaccumulate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.deaccumulate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="surfex.Variable.rotate_geographic_wind">
 <code class="sig-prename descclassname"><span class="pre">surfex.Variable.</span></code><code class="sig-name descname"><span class="pre">rotate_geographic_wind</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.Variable.rotate_geographic_wind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NetcdfVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.NetcdfVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NetcdfVariable.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NetcdfVariable.read_variable">
-<code class="sig-prename descclassname"><span class="pre">surfex.NetcdfVariable.</span></code><code class="sig-name descname"><span class="pre">read_variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NetcdfVariable.read_variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.NetcdfVariable.print_variable_info">
-<code class="sig-prename descclassname"><span class="pre">surfex.NetcdfVariable.</span></code><code class="sig-name descname"><span class="pre">print_variable_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.NetcdfVariable.print_variable_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.GribVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.GribVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grib_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grib2'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.GribVariable.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.GribVariable.read_variable">
-<code class="sig-prename descclassname"><span class="pre">surfex.GribVariable.</span></code><code class="sig-name descname"><span class="pre">read_variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.GribVariable.read_variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.GribVariable.print_variable_info">
-<code class="sig-prename descclassname"><span class="pre">surfex.GribVariable.</span></code><code class="sig-name descname"><span class="pre">print_variable_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.GribVariable.print_variable_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.SurfexVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexVariable.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.SurfexVariable.read_variable">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexVariable.</span></code><code class="sig-name descname"><span class="pre">read_variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexVariable.read_variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.SurfexVariable.print_variable_info">
-<code class="sig-prename descclassname"><span class="pre">surfex.SurfexVariable.</span></code><code class="sig-name descname"><span class="pre">print_variable_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.SurfexVariable.print_variable_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.FaVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.FaVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.FaVariable.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.FaVariable.read_variable">
-<code class="sig-prename descclassname"><span class="pre">surfex.FaVariable.</span></code><code class="sig-name descname"><span class="pre">read_variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.FaVariable.read_variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.FaVariable.print_variable_info">
-<code class="sig-prename descclassname"><span class="pre">surfex.FaVariable.</span></code><code class="sig-name descname"><span class="pre">print_variable_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.FaVariable.print_variable_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.ObservationVariable.__init__">
-<code class="sig-prename descclassname"><span class="pre">surfex.ObservationVariable.</span></code><code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.ObservationVariable.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="surfex.ObservationVariable.read_variable">
-<code class="sig-prename descclassname"><span class="pre">surfex.ObservationVariable.</span></code><code class="sig-name descname"><span class="pre">read_variable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.ObservationVariable.read_variable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="surfex.ObservationVariable.print_variable_info">
-<code class="sig-prename descclassname"><span class="pre">surfex.ObservationVariable.</span></code><code class="sig-name descname"><span class="pre">print_variable_info</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surfex.ObservationVariable.print_variable_info" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2368,7 +2255,7 @@ settings: dict</p>
 
 <dl class="py function">
 <dt id="surfex.parse_filepattern">
-<code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">parse_filepattern</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#parse_filepattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.parse_filepattern" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">surfex.</span></code><code class="sig-name descname"><span class="pre">parse_filepattern</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/file.html#parse_filepattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.parse_filepattern" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

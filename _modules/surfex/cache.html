@@ -199,7 +199,23 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_obs_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_id</span><span class="p">(</span><span class="n">id_type</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_netcdf_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span> <span class="ow">or</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+            <span class="n">varname</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">varname</span>
+            <span class="n">patches</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">patches</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">layers</span>
+            <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_surfex_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">patches</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_obs_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </pre></div>
 
             <div class="clearer"></div>

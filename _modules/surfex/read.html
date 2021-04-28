@@ -161,23 +161,23 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (str): name of the converter</span>
-<span class="sd">        validtime (datetime.datetime): The valid time you want to read</span>
+<span class="sd">        initial_time (datetime.datetime): The valid time you want to read</span>
 <span class="sd">        defs (dict): A dictionary defining the variables</span>
 <span class="sd">        conf (dict): A dictionary defining the converter</span>
 <span class="sd">        fileformat (str): Fileformat of the converter</span>
-<span class="sd">        basetime (datetime.datetime): The base time of the input data source</span>
 <span class="sd">        debug (bool): Debug option</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializing the converter</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span> <span class="o">=</span> <span class="n">validtime</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span> <span class="o">=</span> <span class="n">basetime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span> <span class="o">=</span> <span class="n">initial_time</span>
+        <span class="c1"># self.validtime = validtime</span>
+        <span class="c1"># self.basetime = basetime</span>
 
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Converter name:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -257,21 +257,24 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Variable is not set&quot;</span><span class="p">)</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="n">data_merge</span><span class="p">(</span><span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">NetcdfVariable</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span>  <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span> <span class="ow">or</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">GribVariable</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span>  <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                                               <span class="n">grib_type</span><span class="o">=</span><span class="n">fileformat</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">SurfexVariable</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">FaVariable</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">ObservationVariable</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fileformat</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Create variable for format &quot;</span> <span class="o">+</span> <span class="n">fileformat</span> <span class="o">+</span> <span class="s2">&quot; not implemented!&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Create variable for format &quot;</span> <span class="o">+</span> <span class="n">fileformat</span> <span class="o">+</span> <span class="s2">&quot; not implemented!&quot;</span><span class="p">)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if fileformat == &quot;netcdf&quot;:</span>
+<span class="sd">            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug)</span>
+<span class="sd">        elif fileformat == &quot;grib1&quot; or fileformat == &quot;grib2&quot;:</span>
+<span class="sd">            var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime,  debug=debug,</span>
+<span class="sd">                                               grib_type=fileformat)</span>
+<span class="sd">        elif fileformat == &quot;surfex&quot;:</span>
+<span class="sd">            var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug)</span>
+<span class="sd">        elif fileformat == &quot;fa&quot;:</span>
+<span class="sd">            var = surfex.variable.FaVariable(merged_dict, self.basetime, self.validtime, debug=debug)</span>
+<span class="sd">        elif fileformat == &quot;obs&quot;:</span>
+<span class="sd">            var = surfex.variable.ObservationVariable(merged_dict, self.basetime, self.validtime, debug=debug)</span>
+<span class="sd">        elif fileformat == &quot;constant&quot;:</span>
+<span class="sd">            raise NotImplementedError(&quot;Create variable for format &quot; + fileformat + &quot; not implemented!&quot;)</span>
+<span class="sd">        else:</span>
+<span class="sd">            raise NotImplementedError(&quot;Create variable for format &quot; + fileformat + &quot; not implemented!&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">()</span>
@@ -336,7 +339,7 @@
             <span class="c1"># wetbulbTemperature = (gamma * tc + delta * Td)/(gamma + delta);</span>
             <span class="c1"># wetbulbTemperatureK  = wetbulbTemperature + 273.15;</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">field_totalprec</span>
-            <span class="n">field</span><span class="p">[</span><span class="n">field_t</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">field</span><span class="p">[</span><span class="n">field_t</span> <span class="o">&gt;</span> <span class="mf">274.16</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;phi2m&quot;</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">gravity</span><span class="p">)</span>

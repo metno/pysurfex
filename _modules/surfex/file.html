@@ -1137,10 +1137,12 @@
     <span class="k">return</span> <span class="n">field</span>
 
 
-<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#surfex.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#surfex.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">basetime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">file_pattern</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">parse_filepattern</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
 
     <span class="c1"># print(file_pattern)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">)</span>

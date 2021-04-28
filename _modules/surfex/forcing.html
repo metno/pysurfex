@@ -174,10 +174,13 @@
             <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Define: &quot;</span> <span class="o">+</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;ZS&quot;</span><span class="p">:</span>
                 <span class="n">zs</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+                <span class="n">zs</span> <span class="o">=</span> <span class="n">zs</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;ZREF&quot;</span><span class="p">:</span>
                 <span class="n">zref</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+                <span class="n">zref</span> <span class="o">=</span> <span class="n">zref</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;UREF&quot;</span><span class="p">:</span>
                 <span class="n">uref</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+                <span class="n">uref</span> <span class="o">=</span> <span class="n">uref</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
         <span class="c1"># DIMS</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;NPOINTS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
@@ -393,7 +396,6 @@
                                              <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
         <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
-        <span class="c1"># base_time, geo, ntimes, var_objs, att_objs, att_time, cache</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">AsciiOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -416,8 +418,8 @@
     <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing generation took &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; seconds&quot;</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_input_object</span><span class="p">(</span><span class="n">sfx_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">forcingformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span> <span class="n">ref_height</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span>
-                     <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">set_input_object</span><span class="p">(</span><span class="n">sfx_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">forcingformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span> <span class="n">ref_height</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span>
+                     <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set the input parameter for a specific SURFEX forcing variable based on input</span>
 
@@ -427,7 +429,6 @@
 <span class="sd">    :param forcingformat:</span>
 <span class="sd">    :param selected_converter:</span>
 <span class="sd">    :param ref_height:</span>
-<span class="sd">    :param start:</span>
 <span class="sd">    :param first_base_time:</span>
 <span class="sd">    :param timestep:</span>
 <span class="sd">    :param debug:</span>
@@ -498,8 +499,8 @@
     <span class="k">else</span><span class="p">:</span>
 
         <span class="c1"># Construct the converter</span>
-        <span class="n">converter</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">Converter</span><span class="p">(</span><span class="n">selected_converter</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">forcingformat</span><span class="p">,</span>
-                                          <span class="n">first_base_time</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">Converter</span><span class="p">(</span><span class="n">selected_converter</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">forcingformat</span><span class="p">,</span>
+                                          <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 
         <span class="c1"># Construct the input object</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">sfx_var</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
@@ -704,7 +705,7 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
         <span class="n">att_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_input_object</span><span class="p">(</span><span class="n">atts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span> <span class="n">ref_height</span><span class="p">,</span>
-                                         <span class="n">start</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="p">))</span>
+                                         <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="p">))</span>
 
     <span class="c1"># Set forcing variables (time dependent)</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TA&quot;</span><span class="p">,</span> <span class="s2">&quot;QA&quot;</span><span class="p">,</span> <span class="s2">&quot;PS&quot;</span><span class="p">,</span> <span class="s2">&quot;DIR_SW&quot;</span><span class="p">,</span> <span class="s2">&quot;SCA_SW&quot;</span><span class="p">,</span> <span class="s2">&quot;LW&quot;</span><span class="p">,</span> <span class="s2">&quot;RAIN&quot;</span><span class="p">,</span> <span class="s2">&quot;SNOW&quot;</span><span class="p">,</span> <span class="s2">&quot;WIND&quot;</span><span class="p">,</span> <span class="s2">&quot;WIND_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;CO2&quot;</span><span class="p">]</span>
@@ -766,7 +767,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">var_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_input_object</span><span class="p">(</span><span class="n">sfx_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span> <span class="n">ref_height</span><span class="p">,</span>
-                                         <span class="n">start</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="p">))</span>
+                                         <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">))</span>
 
     <span class="c1"># Save options</span>
     <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
