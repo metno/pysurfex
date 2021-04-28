@@ -291,7 +291,7 @@ class ObservationSet(object):
                     found = True
         return found
 
-    def points(self, geo):
+    def points(self, geo, validtime=None):
         my_times = []
         my_values = []
         my_stids = []

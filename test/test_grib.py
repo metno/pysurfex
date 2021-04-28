@@ -67,7 +67,8 @@ class GribTest(unittest.TestCase):
 
         validtime = datetime(year=2020, month=3, day=30, hour=6)
         cache = surfex.Cache(debug, 7200)
-        converter = surfex.read.Converter(self.converter, validtime, defs, converter_conf, fileformat, validtime,
+        initial_basetime = validtime
+        converter = surfex.read.Converter(self.converter, initial_basetime, defs, converter_conf, fileformat,
                                           debug=debug)
         surfex.read.ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
 
@@ -81,7 +82,8 @@ class GribTest(unittest.TestCase):
 
         validtime = datetime(year=2020, month=3, day=30, hour=6)
         cache = surfex.Cache(debug, 7200)
-        converter = surfex.read.Converter(self.converter, validtime, defs, converter_conf, fileformat, validtime,
+        initial_basetime = validtime
+        converter = surfex.read.Converter(self.converter, initial_basetime, defs, converter_conf, fileformat,
                                           debug=debug)
         surfex.read.ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
 

@@ -3,14 +3,12 @@ netcdf:
   filepattern: https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
   interpolator: bilinear
   offset: 10800
-  file_inc: 21600
-  fcint: 21600
+  fcint: 10800
 
 # General grib1 settings
 grib1:
   filepattern: not_defined
   offset: 0
-  file_inc: 3600
   fcint: 10800
   interpolator: bilinear
 
@@ -18,7 +16,6 @@ grib1:
 grib2:
   filepattern: not_defined
   offset: 0
-  file_inc: 3600
   fcint: 10800
   interpolator: bilinear
   typeOfStatisticalProcessing: -1
@@ -26,14 +23,12 @@ grib2:
 surfex:
   filepattern: not_defined
   offset: 0
-  file_inc: 3600
   fcint: 10800
   interpolator: bilinear
 
 fa:
   filepattern: not_defined
   offset: 0
-  file_inc: 3600
   fcint: 10800
   interpolator: bilinear
 

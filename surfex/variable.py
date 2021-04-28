@@ -1,151 +1,354 @@
-import abc
 import surfex
-from surfex.util import error, warning
+from surfex.util import warning
 import copy
 import numpy as np
 from datetime import timedelta
 
 
 class Variable(object):
-    __metaclass__ = abc.ABCMeta
 
     """
-    Variable top class
-    The variable read it self
+    New combined variable
     """
 
-    def __init__(self, basetime, validtime, var_dict, debug):
-        intervall = 3600
-        if "timestep" in var_dict:
-            intervall = var_dict["timestep"]
-        self.initialtime = validtime
-        if validtime is not None:
-            self.previoustime = validtime-timedelta(seconds=intervall)
+    def __init__(self, var_type, var_dict, initial_basetime, debug=False, prefer_forecast=True):
+
+        self.var_type = var_type
+        if self.var_type == "netcdf":
+            mandatory = ["name", "fcint", "offset", "filepattern"]
+        elif self.var_type == "grib1":
+            mandatory = ["parameter", "type", "level", "tri", "fcint", "offset", "filepattern"]
+            pass
+        elif self.var_type == "grib2":
+            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level",
+                         "typeOfStatisticalProcessing", "fcint", "offset", "filepattern"]
+        elif self.var_type == "surfex":
+            mandatory = ["varname", "fcint", "offset",  "filepattern"]
+            # , "patches", "layers", "accumulated", "fcint", "offset", "file_inc", "filepattern",
+            #         "fileformat", "filetype"]
+        elif self.var_type == "fa":
+            mandatory = ["name", "fcint", "offset", "filepattern"]
+        elif self.var_type == "obs":
+            mandatory = ["filetype", "fcint", "offset"]
         else:
-            self.previoustime = None
-        self.basetime = basetime
-        self.validtime = validtime
+            raise NotImplementedError
+
+        for i in range(0, len(mandatory)):
+            if mandatory[i] not in var_dict:
+                raise Exception(var_type + " variable must have attribute " + mandatory[i] +
+                                " var_dict:" + str(var_dict))
+
         self.var_dict = copy.deepcopy(var_dict)
+        interval = 3600
+        if "timestep" in var_dict:
+            interval = var_dict["timestep"]
+        self.interval = interval
         if "filepattern" in var_dict:
             self.filepattern = var_dict["filepattern"]
         else:
-            self.filepattern = None
-        self.file_handler = None
-        self.previousfilename = None
-        if validtime is not None:
-            self.time_elapsed = validtime-basetime
-        else:
-            self.time_elapsed = 0
-        self.filename = surfex.file.parse_filepattern(self.filepattern, self.basetime, self.validtime)
+            raise Exception("No filepattern provided")
+        self.initial_basetime = initial_basetime
+        self.fcint = int(self.var_dict["fcint"])
+        self.offset = int(self.var_dict["offset"])
+        self.prefer_forecast = prefer_forecast
+        if "prefer_forecast" in self.var_dict:
+            self.prefer_forecast = self.var_dict["prefer_forecast"]
+
+        if self.offset > self.fcint:
+            raise Exception("You can not have larger offset than the frequency of forecasts " +
+                            str(self.offset) + " > " + str(self.fcint))
+
         self.debug = debug
         if self.debug:
-            surfex.debug(__file__, self.__class__.__name__,  self.var_dict, self.initialtime)
             surfex.debug(__file__, self.__class__.__name__, "Constructed " + self.__class__.__name__ + " for " +
                          str(self.var_dict))
 
-    @abc.abstractmethod
+    def get_filename(self, validtime,  previoustime=None):
+        if self.debug:
+            surfex.debug(__file__, self.__class__.get_filename.__name__, "Set basename for filename")
+        basetime = self.get_basetime(validtime,  previoustime=previoustime)
+        if previoustime is not None:
+            validtime = previoustime
+        return surfex.file.parse_filepattern(self.filepattern, basetime, validtime, debug=self.debug)
+
+    def get_filehandler(self, validtime, cache=None, previoustime=None):
+
+        filename = self.get_filename(validtime, previoustime=previoustime)
+        if cache is not None and cache.file_open(filename):
+            file_handler = cache.get_file_handler(filename)
+        else:
+            if self.var_type == "netcdf":
+                file_handler = surfex.netcdf.Netcdf(filename, debug=self.debug)
+            elif self.var_type == "grib1" or self.var_type == "grib2":
+                file_handler = surfex.grib.Grib(filename, debug=self.debug)
+            elif self.var_type == "surfex":
+                fileformat = None
+                if "fileformat" in self.var_dict:
+                    fileformat = self.var_dict["fileformat"]
+                filetype = None
+                if "filetype" in self.var_dict:
+                    filetype = self.var_dict["filetype"]
+                geo_in = None
+                if "geo_input" in self.var_dict:
+                    geo_in = self.var_dict["geo_input"]
+                file_handler = surfex.file.get_surfex_io_object(filename, fileformat=fileformat,
+                                                                filetype=filetype, geo=geo_in, debug=self.debug)
+            elif self.var_type == "obs":
+                var_dict = self.var_dict
+                var_dict = {"set": var_dict}
+                basetime = self.get_basetime(validtime)
+                file_handler = surfex.get_datasources(basetime, var_dict)[0]
+            else:
+                raise NotImplementedError
+
+            if cache is not None:
+                cache.set_file_handler(filename, file_handler)
+
+        if self.debug:
+            surfex.debug(__file__, self.__class__.get_filehandler.__name__, "var_type:", self.var_type)
+            surfex.debug(__file__, self.__class__.get_filehandler.__name__, "filename:", filename)
+        return file_handler, filename
+
+    def read_var_points(self, var, geo, validtime, previoustime=None, cache=None):
+
+        interpolation = "bilinear"
+        if self.var_type != "obs":
+            if "interpolator" in self.var_dict:
+                interpolation = self.var_dict["interpolator"]
+
+        if self.debug:
+            surfex.debug(__file__, self.__class__.read_variable.__name__, "set basetime from ", validtime)
+
+        # TODO put this in a netcdf variable and we don't need this any more
+        kwargs = {}
+        if self.var_type == "netcdf":
+            kwargs.update({"level": None})
+            kwargs.update({"units": None})
+            if "level" in self.var_dict:
+                kwargs.update({"level": [self.var_dict["level"]]})
+            if "units" in self.var_dict:
+                kwargs.update({"units": str([self.var_dict["units"]][0])})
+
+        filehandler, filename = self.get_filehandler(validtime, cache=cache, previoustime=previoustime)
+        if previoustime is not None:
+            validtime = previoustime
+            if self.debug:
+                surfex.debug(__file__, self.__class__.read_variable.__name__, "new validtime to read previous time",
+                             validtime)
+
+        if filehandler is None:
+            surfex.warning("No file handler exist for this time step")
+            field = np.array([len(geo.lons)])
+            field = field.fill(np.nan)
+        else:
+            id_str = None
+            if cache is not None:
+                id_str = cache.generate_id(self.var_type, var, filename, validtime)
+
+            if cache is not None and cache.is_saved(id_str):
+                field = cache.saved_fields[id_str]
+                surfex.info("Using cached value for " + id_str)
+            else:
+                if self.var_type == "obs":
+                    times, field, stids = filehandler.points(geo, validtime=validtime)
+                else:
+                    field, interpolator = filehandler.points(var, geo, interpolation=interpolation,
+                                                             validtime=validtime, **kwargs)
+
+                    field = self.rotate_geographic_wind(field, interpolator)
+                if self.debug and field is not None:
+                    surfex.debug(__file__, self.__class__.read_variable.__name__, "field.shape", field.shape)
+
+                if cache is not None:
+                    if self.debug:
+                        surfex.debug(__file__, self.__class__.read_variable.__name__, "ID_STRING", id_str)
+                    cache.save_field(id_str, field)
+        return field
+
+    def set_var(self, validtime=None):
+        accumulated = False
+        if self.var_type == "netcdf":
+            var = self.var_dict["name"]
+            if "accumulated" in self.var_dict:
+                accumulated = self.var_dict["accumulated"]
+        elif self.var_type == "grib1":
+            par = self.var_dict["parameter"]
+            typ = self.var_dict["type"]
+            level = self.var_dict["level"]
+            tri = self.var_dict["tri"]
+            if tri == 4:
+                accumulated = True
+            var = surfex.grib.Grib1Variable(par, typ, level, tri, debug=self.debug)
+        elif self.var_type == "grib2":
+            discipline = self.var_dict["discipline"]
+            pc = self.var_dict["parameterCategory"]
+            pn = self.var_dict["parameterNumber"]
+            lt = self.var_dict["levelType"]
+            lev = self.var_dict["level"]
+            tsp = -1
+            if "typeOfStatisticalProcessing" in self.var_dict:
+                tsp = self.var_dict["typeOfStatisticalProcessing"]
+            if tsp == 1:
+                accumulated = True
+            var = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp=tsp, debug=self.debug)
+        elif self.var_type == "surfex":
+            varname = self.var_dict["varname"]
+            layers = None
+            if "layers" in self.var_dict:
+                layers = self.var_dict["layers"]
+            patches = None
+            if "patches" in self.var_dict:
+                patches = self.var_dict["patches"]
+            if "accumulated" in self.var_dict:
+                accumulated = self.var_dict["accumulated"]
+            datatype = None
+            if "datatype" in self.var_dict:
+                datatype = self.var_dict["datatype"]
+
+            basetime = self.get_basetime(validtime)
+            var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
+                                                 basetime=basetime,
+                                                 interval=self.interval, datatype=datatype)
+        elif self.var_type == "fa":
+            var = self.var_dict["name"]
+        elif self.var_type == "obs":
+            if "varname" in self.var_dict:
+                var = self.var_dict["varname"]
+            else:
+                var = None
+        else:
+            raise NotImplementedError
+
+        instant = 0
+        if accumulated:
+            instant = self.interval
+        if "instant" in self.var_dict:
+            instant = self.var_dict["instant"]
+        if "prefer_forecast" in self.var_dict:
+            self.prefer_forecast = self.var_dict["prefer_forecast"]
+
+        return accumulated, instant, var
+
     def read_variable(self, geo, validtime, cache):
-        raise NotImplementedError('users must define read_variable to use this base class')
+
+        # Set variable info
+        accumulated, instant, var = self.set_var(validtime=validtime)
+        previous_field = None
+        if accumulated:
+            # Re-read field
+            previoustime = validtime - timedelta(seconds=self.interval)
+            # Don't read if previous time is older than the very first basetime
+            if previoustime >= self.initial_basetime:
+                if self.debug:
+                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Re-read ", previoustime)
+                previous_field = self.read_var_points(var, geo, validtime=validtime, previoustime=previoustime,
+                                                      cache=cache)
+            else:
+                previous_field = np.zeros([geo.npoints])
+        elif instant > 0:
+            previous_field = np.zeros([geo.npoints])
+
+        field = self.read_var_points(var, geo, validtime=validtime, cache=cache)
+
+        # Deaccumulate if either two files are read or if instant is > 0.
+        if accumulated or instant > 0:
+            field = self.deaccumulate(field, previous_field, instant)
+
+        return field
 
     def print_variable_info(self):
         surfex.debug(__file__, self.__class__.print_variable_info.__name__, ":" + str(self.var_dict) + ":")
 
-    @staticmethod
-    def deaccumulate(field, previous_field, instant):
+    def deaccumulate(self, field, previous_field, instant):
 
-        field = np.subtract(field, previous_field)
-        if any(field[field < 0.]):
-            neg = []
-            for i in range(0, field.shape[0]):
-                if field[i] < 0.:
-                    neg.append(field[i])
-            neg = np.asarray(neg)
-            warning("Deaccumulated field has " + str(neg.shape[0]) + " negative lowest:"
-                    + str(np.nanmin(neg)) + " mean: " + str(np.nanmean(neg)))
-        field[field < 0.] = 0
-        if float(instant) != 0.:
-            field = np.divide(field, float(instant))
-        return field
-
-    def open_new_file(self, fcint, offset, file_inc):
-
-        if self.filepattern is None:
-            return True
-
-        if self.validtime is None:
-            return True
-
-        new = False
-        filepattern = self.var_dict["filepattern"]
-        basetime = self.basetime
-        validtime = self.validtime
-        new_basetime = basetime
-
-        # Basetime checks
-        if offset >= 0:
-            # Change basetime if offset is exceeded
-            if (validtime-basetime) > (timedelta(seconds=fcint)+timedelta(seconds=offset)):
-                new_basetime = basetime+timedelta(seconds=fcint)
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Changing basetime to ", new_basetime)
+        if self.debug:
+            surfex.debug(__file__, self.__class__.deaccumulate.__name__, "Deaccumulate field with: ", instant)
+        if field is None:
+            surfex.warning("Field is not read properly")
+            return None
         else:
+            field = np.subtract(field, previous_field)
+            if any(field[field < 0.]):
+                neg = []
+                for i in range(0, field.shape[0]):
+                    if field[i] < 0.:
+                        neg.append(field[i])
+                neg = np.asarray(neg)
+                warning("Deaccumulated field has " + str(neg.shape[0]) + " negative lowest:"
+                        + str(np.nanmin(neg)) + " mean: " + str(np.nanmean(neg)))
+            field[field < 0.] = 0
+            if float(instant) != 0.:
+                field = np.divide(field, float(instant))
+
+            return field
+
+    def get_basetime(self, validtime, previoustime=None, allow_different_basetime=False):
+
+        if self.offset < 0:
             raise Exception("Negative offset does not make sense here")
 
-        # Always open the file for the first step
-        if self.validtime == self.initialtime:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.open_new_file.__name__,
-                             "Same validtime as initial time ", self.initialtime)
-            new = True
+        # Take offset into account
+        first = False
+        offset = self.offset
 
-        # File increment checks
-        if file_inc > 0:
-            if file_inc > offset:
-                if offset == 0:
-                    if self.time_elapsed == timedelta(seconds=file_inc):
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.open_new_file.__name__,
-                                         "Test for file_inc offset == 0: ",
-                                         self.time_elapsed, timedelta(seconds=file_inc) + timedelta(seconds=offset))
-                        self.time_elapsed = timedelta(seconds=0)
-                        new = True
-                else:
-                    if self.time_elapsed > (timedelta(seconds=file_inc) + timedelta(seconds=offset)):
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.open_new_file.__name__,
-                                         "Test for file_inc offset != 0: ",
-                                         self.time_elapsed, timedelta(seconds=file_inc) + timedelta(seconds=offset))
-                        self.time_elapsed = timedelta(seconds=0)
-                        new = True
+        basetime = validtime - timedelta(seconds=offset)
+        if basetime <= self.initial_basetime:
+            first = True
+            basetime = self.initial_basetime
 
+        if self.debug:
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "             validtime: ", validtime)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "          previoustime: ", previoustime)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "                 first: ", first)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "                 fcint: ", self.fcint)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "                offset: ", self.offset)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "      initial_basetime: ",
+                         self.initial_basetime)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "  Basetime with offset: ", basetime)
+
+        # Modify based on fcint
+        seconds_since_midnight = \
+            int((basetime - basetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+        if seconds_since_midnight == 64800:
+            seconds_since_midnight = 0
+        basetime_inc = int(seconds_since_midnight / int(timedelta(seconds=self.fcint).seconds))
+
+        prefer_forecast = timedelta(seconds=0)
+        if seconds_since_midnight == basetime_inc * int(timedelta(seconds=self.fcint).seconds):
+            if first:
+                if self.debug:
+                    surfex.debug(__file__, self.__class__.get_basetime.__name__, "First basetime")
             else:
-                if self.time_elapsed >= timedelta(seconds=file_inc):
+                if self.prefer_forecast:
                     if self.debug:
-                        surfex.debug(__file__, self.__class__.open_new_file.__name__,
-                                     "Test for file_inc (file_inc <= offset): ",
-                                     self.time_elapsed, timedelta(seconds=file_inc))
-                    self.time_elapsed = timedelta(seconds=0)
-                    new = True
-        else:
-            surfex.error("file_inc must be a positive value > 0")
+                        surfex.debug(__file__, self.__class__.get_basetime.__name__,
+                                     "Prefer forecasts instead of analyis")
+                    prefer_forecast = timedelta(seconds=self.fcint)
+                else:
+                    if self.debug:
+                        surfex.debug(__file__, self.__class__.get_basetime.__name__,
+                                     "Prefer analysis instead of forecast")
 
-        # Set filename. New basetime is the same as previous or the updated one
-        self.filename = surfex.file.parse_filepattern(filepattern, new_basetime, validtime)
-        self.previousfilename = surfex.file.parse_filepattern(filepattern, basetime, self.previoustime)
-        # Reread if the basetime has changed
-        if new_basetime != basetime:
-            new = True
-            self.previousfilename = self.filename
+        fcint = timedelta(seconds=self.fcint)
+        basetime = basetime.replace(hour=0, minute=0, second=0, microsecond=0) + \
+                                   (basetime_inc * fcint) - prefer_forecast
 
-        self.time_elapsed = self.time_elapsed + (validtime - self.previoustime)
-        self.basetime = new_basetime
-        if new and self.debug:
-            surfex.info("Open new file: " + str(self.filename) + " validtime: " + str(self.validtime) +
-                        " basetime: " + str(self.basetime))
-            surfex.info("Previous file is now: " + str(self.previousfilename) +
-                        " previoustime:" + str(self.previoustime))
+        if previoustime is not None:
+            if allow_different_basetime:
+                raise NotImplementedError
 
-        return new
+        if self.debug:
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "seconds_since_midnight: ",
+                         seconds_since_midnight)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "         cycle seconds:",
+                         basetime_inc * int(timedelta(seconds=self.fcint).seconds))
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "       prefer_forecast: ",
+                         self.prefer_forecast)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "   prefer_forecast_inc: ",
+                         prefer_forecast)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "          basetime_inc:", basetime_inc)
+            surfex.debug(__file__, self.__class__.get_basetime.__name__, "           Basetime is:", basetime)
+        return basetime
 
     def rotate_geographic_wind(self, field, interpolator):
         rotate_wind = False
@@ -156,592 +359,3 @@ class Variable(object):
             return field
         else:
             return field
-
-
-class NetcdfVariable(Variable):
-
-    """
-    NetCDF variable
-    """
-
-    def __init__(self, var_dict, basetime, validtime, debug):
-
-        mandatory = ["name", "fcint", "offset", "file_inc", "filepattern"]
-        for i in range(0, len(mandatory)):
-            if mandatory[i] not in var_dict:
-                raise Exception("NetCDF variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
-
-        Variable.__init__(self, basetime, validtime, var_dict, debug)
-
-    def read_variable(self, geo, validtime, cache):
-
-        self.validtime = validtime
-        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
-                              int(self.var_dict["file_inc"])):
-            if cache is not None and cache.file_open(self.filename):
-                self.file_handler = cache.get_file_handler(self.filename)
-            else:
-                self.file_handler = surfex.netcdf.Netcdf(self.filename)
-                if cache is not None:
-                    cache.set_file_handler(self.filename, self.file_handler)
-
-        if self.file_handler is None:
-            surfex.warning("No file handler exist for this time step")
-            field = np.array([len(geo.lons)])
-            field = field.fill(np.nan)
-        else:
-            var_name = self.var_dict["name"]
-            level = None
-            accumulated = False
-            units = None
-            if "level" in self.var_dict:
-                level = [self.var_dict["level"]]
-            if "units" in self.var_dict:
-                units = str([self.var_dict["units"]][0])
-            if "accumulated" in self.var_dict:
-                accumulated = self.var_dict["accumulated"]
-            int_type = "bilinear"
-            if "interpolator" in self.var_dict:
-                int_type = self.var_dict["interpolator"]
-
-            # Re-read field
-            previous_field = None
-            if accumulated:
-                if self.debug:
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__, "basetime", self.basetime,
-                                     "initialtime", self.initialtime, "previoustime", self.previoustime)
-                can_read = True
-                if self.basetime <= self.initialtime:
-                    if self.previoustime < self.basetime:
-                        can_read = False
-
-                if not can_read:
-                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    if self.debug:
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.read_variable.__name__, "basetime", self.basetime,
-                                         "initialtime", self.initialtime, "previoustime", self.previoustime)
-                    previous_field = np.zeros([geo.npoints])
-                else:
-                    # Re-read field
-                    id_str = None
-                    if cache is not None:
-                        id_str = cache.generate_netcdf_id(var_name, self.previousfilename, self.previoustime)
-                    if cache is not None and cache.is_saved(id_str):
-                        surfex.info("Updating cached value " + id_str)
-                        previous_field = cache.saved_fields[id_str]
-                    else:
-                        # Modify filename in handler
-                        fname = self.filename
-                        if self.debug:
-                            if self.debug:
-                                surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                             "Re-read ", self.previoustime, " from ", self.previousfilename)
-                        self.file_handler.fname = self.previousfilename
-                        previous_field, intp = self.file_handler.points(var_name,  geo, level=level,
-                                                                        validtime=self.previoustime,
-                                                                        interpolation=int_type,
-                                                                        units=units)
-                        if cache is not None:
-                            cache.save_field(id_str, previous_field)
-                        # Change filename back in handler. Ready to read this time step
-                        self.file_handler.fname = fname
-
-            id_str = None
-            if cache is not None:
-                id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-            if cache is not None and cache.is_saved(id_str):
-                surfex.info("Using cached value " + id_str)
-                field = cache.saved_fields[id_str]
-            else:
-                field, interpolator = self.file_handler.points(var_name, geo, level=level, validtime=validtime,
-                                                               interpolation=int_type, units=units)
-                # Rotate wind to geographic if requested
-                field = self.rotate_geographic_wind(field, interpolator)
-                if cache is not None:
-                    id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__, "ID_STRING", id_str)
-                    cache.save_field(id_str, field)
-
-            if accumulated:
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict:
-                    instant = [self.var_dict["instant"]]
-                field = self.deaccumulate(field, previous_field, float(instant[0]))
-
-        self.previoustime = validtime
-        return field
-
-
-class GribVariable(Variable):
-
-    """
-    Grib variable
-    """
-    def __init__(self, var_dict, basetime, validtime, debug, grib_type="grib2"):
-        if grib_type == "grib1":
-            mandatory = ["parameter", "type", "level", "tri", "fcint", "offset", "file_inc", "filepattern"]
-            for i in range(0, len(mandatory)):
-                if mandatory[i] not in var_dict:
-                    error("Grib1 variable must have attribute \"" + mandatory[i] + "\". var_dict=" + str(var_dict))
-            Variable.__init__(self, basetime, validtime, var_dict, debug)
-            self.grib_type = grib_type
-        elif grib_type == "grib2":
-            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level",
-                         "typeOfStatisticalProcessing", "fcint", "offset", "file_inc", "filepattern"]
-            for i in range(0, len(mandatory)):
-                if mandatory[i] not in var_dict:
-                    error("Grib2 variable must have attribute \"" + mandatory[i] + "\". var_dict=" + str(var_dict))
-            Variable.__init__(self, basetime, validtime, var_dict, debug)
-            self.grib_type = grib_type
-        else:
-            raise NotImplementedError
-
-    def read_variable(self, geo, validtime, cache):
-        self.validtime = validtime
-        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
-                              int(self.var_dict["file_inc"])):
-
-            if cache is not None and cache.file_open(self.filename):
-                self.file_handler = cache.get_file_handler(self.filename)
-            else:
-                self.file_handler = surfex.grib.Grib(self.filename, debug=self.debug)
-                if cache is not None:
-                    cache.set_file_handler(self.filename, self.file_handler)
-
-        if self.file_handler is None:
-            warning("No file handler exist for this time step")
-            field = np.array([len(geo.lons)])
-            field = field.fill(np.nan)
-        else:
-            if self.grib_type == "grib1":
-                par = self.var_dict["parameter"]
-                typ = self.var_dict["type"]
-                level = self.var_dict["level"]
-                tri = self.var_dict["tri"]
-                gribvar = surfex.grib.Grib1Variable(par, typ, level, tri, debug=self.debug)
-            elif self.grib_type == "grib2":
-                discipline = self.var_dict["discipline"]
-                pc = self.var_dict["parameterCategory"]
-                pn = self.var_dict["parameterNumber"]
-                lt = self.var_dict["levelType"]
-                lev = self.var_dict["level"]
-                tsp = -1
-                if "typeOfStatisticalProcessing" in self.var_dict:
-                    tsp = self.var_dict["typeOfStatisticalProcessing"]
-                gribvar = surfex.grib.Grib2Variable(discipline, pc, pn, lt, lev, tsp=tsp, debug=self.debug)
-            else:
-                raise NotImplementedError
-
-            int_type = "bilinear"
-            if "interpolator" in self.var_dict:
-                int_type = self.var_dict["interpolator"]
-
-            # Re-read field
-            previous_field = None
-            if gribvar.is_accumulated():
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Accumulated: basetime",
-                                 self.basetime, "initialtime", self.initialtime, "previoustime", self.previoustime)
-                can_read = True
-                if self.basetime <= self.initialtime:
-                    if self.previoustime < self.basetime:
-                        can_read = False
-
-                if not can_read:
-                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__, "Can not read: basetime",
-                                     self.basetime, "initialtime", self.initialtime, "previoustime", self.previoustime)
-                    previous_field = np.zeros([geo.npoints])
-                else:
-                    id_str = None
-                    if cache is not None:
-                        id_str = cache.generate_grib_id(gribvar, self.previousfilename, self.previoustime)
-                    if cache is not None and cache.is_saved(id_str):
-                        previous_field = cache.saved_fields[id_str]
-                    else:
-                        # Modify filename in handler
-                        fname = self.filename
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                         "Re-read ", self.previoustime, " from ", self.previousfilename)
-                        self.file_handler.fname = self.previousfilename
-                        previous_field, intp = self.file_handler.points(gribvar, geo, self.previoustime,
-                                                                        interpolation=int_type)
-
-                        # Change filename back in handler. Ready to read this time step
-                        self.file_handler.fname = fname
-                        if cache is not None:
-                            cache.save_field(id_str, previous_field)
-
-            # Read field
-            id_str = None
-            if cache is not None:
-                id_str = cache.generate_grib_id(gribvar, self.filename, self.validtime)
-            if cache is not None and cache.is_saved(id_str):
-                field = cache.saved_fields[id_str]
-            else:
-                field, interpolator = self.file_handler.points(gribvar, geo, validtime, interpolation=int_type)
-                # Rotate wind to geographic if requested
-                field = self.rotate_geographic_wind(field, interpolator)
-                if cache is not None:
-                    cache.save_field(id_str, field)
-
-            # Deaccumulate
-            if gribvar.is_accumulated():
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict:
-                    instant = [self.var_dict["instant"]]
-                field = self.deaccumulate(field, previous_field, float(instant[0]))
-
-        self.previoustime = validtime
-        return field
-
-
-class SurfexVariable(Variable):
-
-    def __init__(self, var_dict, basetime, validtime, debug):
-        mandatory = ["varname", "fcint", "offset", "file_inc", "filepattern"]
-        # , "patches", "layers", "accumulated", "fcint", "offset", "file_inc", "filepattern",
-        #         "fileformat", "filetype"]
-        for i in range(0, len(mandatory)):
-            if mandatory[i] not in var_dict:
-                raise Exception("Surfex variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
-
-        Variable.__init__(self, basetime, validtime, var_dict, debug)
-
-    def read_variable(self, geo, validtime, cache):
-
-        self.validtime = validtime
-        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
-                              int(self.var_dict["file_inc"])):
-
-            geo_in = None
-            if "geo_input" in self.var_dict:
-                geo_in = self.var_dict["geo_input"]
-
-            if cache is not None and cache.file_open(self.filename):
-                self.file_handler = cache.get_file_handler(self.filename)
-            else:
-                fileformat = None
-                if "fileformat" in self.var_dict:
-                    fileformat = self.var_dict["fileformat"]
-                filetype = None
-                if "filetype" in self.var_dict:
-                    filetype = self.var_dict["filetype"]
-                self.file_handler = surfex.file.get_surfex_io_object(self.filename, fileformat=fileformat,
-                                                                     filetype=filetype, geo=geo_in, debug=self.debug)
-                if cache is not None:
-                    cache.set_file_handler(self.filename, self.file_handler)
-
-        if self.file_handler is None:
-            warning("No file handler exist for this time step")
-            field = np.array([len(geo.lons)])
-            field = field.fill(np.nan)
-        else:
-            varname = self.var_dict["varname"]
-            layers = None
-            if "layers" in self.var_dict:
-                layers = self.var_dict["layers"]
-            patches = None
-            if "patches" in self.var_dict:
-                patches = self.var_dict["patches"]
-            accumulated = False
-            if "accumulated" in self.var_dict:
-                accumulated = self.var_dict["accumulated"]
-            interval = None
-            if "interval" in self.var_dict:
-                interval = self.var_dict["interval"]
-            datatype = None
-            if "datatype" in self.var_dict:
-                datatype = self.var_dict["datatype"]
-
-            var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
-                                                 basetime=self.basetime,
-                                                 interval=interval, datatype=datatype)
-            int_type = "bilinear"
-            if "interpolator" in self.var_dict:
-                int_type = self.var_dict["interpolator"]
-
-            # Re-read field
-            previous_field = None
-            if accumulated:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Re-read1: basetime: ", self.basetime,
-                                 " initialtime", self.initialtime, " previoustime", self.previoustime)
-                can_read = True
-                if self.basetime <= self.initialtime:
-                    if self.previoustime < self.basetime:
-                        can_read = False
-
-                if not can_read:
-                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__, "Re-read2: basetime: ",
-                                     self.basetime,
-                                     " initialtime", self.initialtime, " previoustime", self.previoustime)
-                    previous_field = np.zeros([geo.npoints])
-                else:
-                    id_str = None
-                    if cache is not None:
-                        id_str = cache.generate_surfex_id(varname, patches, layers, self.previousfilename,
-                                                          self.previoustime)
-                    if cache is not None and cache.is_saved(id_str):
-                        previous_field = cache.saved_fields[id_str]
-                    else:
-                        fname = self.filename
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                         "Re-read ", self.previoustime, " from ", self.previousfilename)
-                        self.file_handler.fname = self.previousfilename
-                        previous_field, intp = self.file_handler.points(var, geo, validime=self.previoustime,
-                                                                        interpolation=int_type)
-
-                        # Change filename back in handler. Ready to read this time step
-                        self.file_handler.fname = fname
-                        if cache is not None:
-                            cache.save_field(id_str, previous_field)
-
-            # Read field
-            id_str = None
-            if cache is not None:
-                id_str = cache.generate_surfex_id(varname, patches, layers, self.filename, self.validtime)
-            if cache is not None and cache.is_saved(id_str):
-                field = cache.saved_fields[id_str]
-            else:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Validtime:", validtime)
-                field, interpolator = self.file_handler.points(var, geo, validtime=validtime, interpolation=int_type)
-                # Rotate wind to geographic if requested
-                field = self.rotate_geographic_wind(field, interpolator)
-                if cache is not None:
-                    cache.save_field(id_str, field)
-
-            # Deaccumulate
-            if accumulated:
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict:
-                    instant = [self.var_dict["instant"]]
-                field = self.deaccumulate(field, previous_field, float(instant[0]))
-
-        self.previoustime = validtime
-        return field
-
-
-class FaVariable(Variable):
-
-    """
-    FA variable
-    """
-
-    def __init__(self, var_dict, basetime, validtime, debug):
-
-        mandatory = ["name", "fcint", "offset", "file_inc", "filepattern"]
-        for i in range(0, len(mandatory)):
-            if mandatory[i] not in var_dict:
-                raise Exception("NetCDF variable must have attribute " + mandatory[i] + " var_dict:" + str(var_dict))
-
-        Variable.__init__(self, basetime, validtime, var_dict, debug)
-
-    def read_variable(self, geo, validtime, cache, geo_in=None):
-
-        self.validtime = validtime
-        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
-                              int(self.var_dict["file_inc"])):
-            if cache is not None and cache.file_open(self.filename):
-                self.file_handler = cache.get_file_handler(self.filename)
-            else:
-                self.file_handler = surfex.fa.Fa(self.filename)
-                if cache is not None:
-                    cache.set_file_handler(self.filename, self.file_handler)
-
-        if self.file_handler is None:
-            surfex.util.warning("No file handler exist for this time step")
-            field = np.array([len(geo.lons)])
-            field = field.fill(np.nan)
-        else:
-            var_name = self.var_dict["name"]
-            accumulated = False
-            if "accumulated" in self.var_dict:
-                accumulated = self.var_dict["accumulated"]
-            int_type = "bilinear"
-            if "interpolator" in self.var_dict:
-                int_type = self.var_dict["interpolator"]
-
-            # Re-read field
-            previous_field = None
-            if accumulated:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "Accumulated " +
-                                 "basetime", self.basetime, "initialtime", self.initialtime,
-                                 "previoustime", self.previoustime)
-                can_read = True
-                if self.basetime <= self.initialtime:
-                    if self.previoustime < self.basetime:
-                        can_read = False
-
-                if not can_read:
-                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                     "basetime", self.basetime, "initialtime", self.initialtime,
-                                     "previoustime", self.previoustime)
-                    previous_field = np.zeros([geo.npoints])
-                else:
-                    # Re-read field
-                    id_str = None
-                    if cache is not None:
-                        id_str = cache.generate_fa_id(var_name, self.previousfilename, self.previoustime)
-                    if cache is not None and cache.is_saved(id_str):
-                        surfex.info("Using cached value for previous time" + id_str)
-                        previous_field = cache.saved_fields[id_str]
-                    else:
-                        # Modify filename in handler
-                        fname = self.filename
-                        if self.debug:
-                            surfex.info("Re-read " + str(self.previoustime) + " from " + str(self.previousfilename))
-                        self.file_handler.fname = self.previousfilename
-                        previous_field, intp = self.file_handler.points(var_name,  geo,
-                                                                        validtime=self.previoustime,
-                                                                        interpolation=int_type)
-                        if cache is not None:
-                            cache.save_field(id_str, previous_field)
-                        # Change filename back in handler. Ready to read this time step
-                        self.file_handler.fname = fname
-
-            id_str = None
-            if cache is not None:
-                id_str = cache.generate_fa_id(var_name, self.filename, validtime)
-            if cache is not None and cache.is_saved(id_str):
-                surfex.info("Using cached value " + id_str)
-                field = cache.saved_fields[id_str]
-            else:
-                field, interpolator = self.file_handler.points(var_name, geo, validtime=validtime,
-                                                               interpolation=int_type)
-
-                # Rotate wind to geographic if requested
-                field = self.rotate_geographic_wind(field, interpolator)
-                if cache is not None:
-                    id_str = cache.generate_netcdf_id(var_name, self.filename, validtime)
-                    cache.save_field(id_str, field)
-
-            if accumulated:
-                surfex.debug(__file__, self.__class__.read_variable.__name__, "accumulated variable ", self.var_dict)
-                surfex.debug(__file__, self.__class__.read_variable.__name__, "field", field)
-                surfex.debug(__file__, self.__class__.read_variable.__name__, "prevous", previous_field)
-                surfex.debug(__file__, self.__class__.read_variable.__name__,
-                             "deccumulated", self.deaccumulate(field, previous_field, 0))
-            if accumulated:
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict:
-                    instant = [self.var_dict["instant"]]
-                field = self.deaccumulate(field, previous_field, float(instant[0]))
-                surfex.debug(__file__, self.__class__.read_variable.__name__, "instant", field)
-
-        self.previoustime = validtime
-        return field
-
-
-class ObservationVariable(Variable):
-    def __init__(self,  var_dict, basetime, validtime, debug):
-
-        mandatory = ["filetype", "fcint", "offset", "file_inc"]
-
-        for i in range(0, len(mandatory)):
-            if debug:
-                surfex.debug(__file__, self.__class__.read_variable.__name__, "Mandatory: ", mandatory[i], var_dict)
-            if mandatory[i] not in var_dict:
-                raise Exception("Observation variable must have attribute " + mandatory[i] + " var_dict:" +
-                                str(var_dict))
-
-        Variable.__init__(self, basetime, validtime, var_dict, debug)
-
-    def read_variable(self, geo, validtime, cache, geo_in=None):
-
-        self.validtime = validtime
-        if self.open_new_file(int(self.var_dict["fcint"]), int(self.var_dict["offset"]),
-                              int(self.var_dict["file_inc"])):
-
-            if cache is not None and cache.file_open(self.filename):
-                self.file_handler = cache.get_file_handler(self.filename)
-            else:
-                var_dict = self.var_dict
-                var_dict = {"set": var_dict}
-                self.file_handler = surfex.get_datasources(validtime, var_dict)[0]
-
-                if cache is not None:
-                    cache.set_file_handler(self.filename, self.file_handler)
-
-        if self.file_handler is None:
-            warning("No file handler exist for this time step")
-            field = np.array([geo.nlons])
-            field = field.fill(np.nan)
-        else:
-            if "varname" in self.var_dict:
-                varname = self.var_dict["varname"]
-            else:
-                varname = None
-
-            accumulated = False
-            if "accumulated" in self.var_dict:
-                accumulated = self.var_dict["accumulated"]
-
-            # Re-read field
-            previous_field = None
-            if accumulated:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.read_variable.__name__, "basetime", self.basetime,
-                                 "initialtime", self.initialtime, "previoustime", self.previoustime)
-                can_read = True
-                if self.basetime <= self.initialtime:
-                    if self.previoustime < self.basetime:
-                        can_read = False
-
-                if not can_read:
-                    surfex.warning("Can not read previous time step for this time. Setting it to 0.")
-                    if self.debug:
-                        surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                     "basetime", self.basetime,
-                                     "initialtime", self.initialtime, "previoustime", self.previoustime)
-                    previous_field = np.zeros([geo.npoints])
-                else:
-                    id_str = None
-                    if cache is not None:
-                        id_str = cache.generate_obs_id(varname, self.previousfilename, self.previoustime)
-                    if cache is not None and cache.is_saved(id_str):
-                        previous_field = cache.saved_fields[id_str]
-                    else:
-                        fname = self.filename
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.read_variable.__name__,
-                                         "Re-read ", self.previoustime, " from ", self.previousfilename)
-                        self.file_handler.fname = self.previousfilename
-
-                        times, previous_field, stids = self.file_handler.points(geo)
-
-                        # Change filename back in handler. Ready to read this time step
-                        self.file_handler.fname = fname
-                        if cache is not None:
-                            cache.save_field(id_str, previous_field)
-
-            # Read field
-            id_str = None
-            if cache is not None:
-                id_str = cache.generate_obs_id(varname, self.filename, self.validtime)
-            if cache is not None and cache.is_saved(id_str):
-                field = cache.saved_fields[id_str]
-            else:
-                times, field, stids = self.file_handler.points(geo)
-
-            # Deaccumulate
-            if accumulated:
-                instant = [(validtime - self.previoustime).total_seconds()]
-                if "instant" in self.var_dict:
-                    instant = [self.var_dict["instant"]]
-                field = self.deaccumulate(field, previous_field, float(instant[0]))
-
-        self.previoustime = validtime
-        return field

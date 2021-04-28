@@ -137,10 +137,13 @@ class NetCDFOutput(SurfexOutputForcing):
             surfex.info("Define: " + this_obj.var_name)
             if this_var == "ZS":
                 zs = this_obj.read_time_step(att_time, cache)
+                zs = zs.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             elif this_var == "ZREF":
                 zref = this_obj.read_time_step(att_time, cache)
+                zref = zref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             elif this_var == "UREF":
                 uref = this_obj.read_time_step(att_time, cache)
+                uref = uref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
 
         # DIMS
         self.forcing_file['NPOINTS'] = self.file_handler.createDimension("Number_of_points", geo.npoints)
@@ -356,7 +359,6 @@ def run_time_loop(options, var_objs, att_objs):
                                              var_objs, att_objs, att_time, cache)
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
-        # base_time, geo, ntimes, var_objs, att_objs, att_time, cache
         output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
                                             var_objs, att_objs, att_time, cache)
     else:
@@ -379,8 +381,8 @@ def run_time_loop(options, var_objs, att_objs):
     surfex.info("Forcing generation took " + str(toc - tic) + " seconds")
 
 
-def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height, start, first_base_time,
-                     timestep, debug):
+def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height, first_base_time,
+                     timestep, debug=False):
     """
     Set the input parameter for a specific SURFEX forcing variable based on input
 
@@ -390,7 +392,6 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
     :param forcingformat:
     :param selected_converter:
     :param ref_height:
-    :param start:
     :param first_base_time:
     :param timestep:
     :param debug:
@@ -461,8 +462,8 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
     else:
 
         # Construct the converter
-        converter = surfex.read.Converter(selected_converter, start, defs, conf_dict, forcingformat,
-                                          first_base_time, debug)
+        converter = surfex.read.Converter(selected_converter, first_base_time, defs, conf_dict, forcingformat,
+                                          debug=debug)
 
         # Construct the input object
         obj = surfex.read.ConvertedInput(geo, sfx_var, converter)
@@ -667,7 +668,7 @@ def set_forcing_config(**kwargs):
             raise NotImplementedError
 
         att_objs.append(set_input_object(atts[i], merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         start, first_base_time, timestep, debug))
+                                         first_base_time, timestep, debug))
 
     # Set forcing variables (time dependent)
     variables = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR", "CO2"]
@@ -729,7 +730,7 @@ def set_forcing_config(**kwargs):
         else:
             raise NotImplementedError
         var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         start, first_base_time, timestep, debug))
+                                         first_base_time, timestep, debug=debug))
 
     # Save options
     options = dict()

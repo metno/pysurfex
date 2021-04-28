@@ -163,3 +163,19 @@ class Cache:
     @staticmethod
     def generate_obs_id(varname, filename, validtime):
         return "%s%s%s" % (varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+
+    @staticmethod
+    def generate_id(id_type, var, filename, validtime):
+        if id_type == "netcdf":
+            return Cache.generate_netcdf_id(var, filename, validtime)
+        elif id_type == "grib1" or id_type == "grib2":
+            return Cache.generate_grib_id(var, filename, validtime)
+        elif id_type == "surfex":
+            varname = var.varname
+            patches = var.patches
+            layers = var.layers
+            return Cache.generate_surfex_id(varname, patches, layers, filename, validtime)
+        elif id_type == "obs":
+            return Cache.generate_obs_id(var, filename, validtime)
+        else:
+            raise NotImplementedError

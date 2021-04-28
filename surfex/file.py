@@ -1100,10 +1100,12 @@ def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None
     return field
 
 
-def parse_filepattern(file_pattern, basetime, validtime):
+def parse_filepattern(file_pattern, basetime, validtime, debug=False):
 
     if basetime is None or validtime is None:
         return file_pattern
+    if debug:
+        surfex.debug(__file__, parse_filepattern.__name__, file_pattern, basetime, validtime)
 
     # print(file_pattern)
     file_name = str(file_pattern)

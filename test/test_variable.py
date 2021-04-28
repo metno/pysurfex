@@ -11,31 +11,91 @@ class TestVariable(unittest.TestCase):
         with open("test/fixtures/config.yml", 'r') as cfgf:
             self.cfg = yaml.safe_load(cfgf)
 
-    def test_open_new_file(self):
-        debug = False
+    def test_open_new_file_nc(self):
+        debug = True
         initialtime = datetime(2019, 11, 13, 0)
         intervall = 3600
+        case = "netcdf"
 
-        for case in ['grib', 'netcdf']:
-            var_dict = self.cfg[case]
-            basetime = initialtime
-            for i in range(11):
-                with self.subTest(i=i):
-                    validtime = initialtime + timedelta(seconds=intervall*i)
-                    variable = Variable(basetime, validtime, var_dict, debug)
-                    new = variable.open_new_file(var_dict['fcint'], var_dict['offset'], var_dict['file_inc'])
-                    basetime = variable.basetime
-                    if debug:
-                        print("----------------------")
-                        print("open new file:", new)
-                        print("basetime:", variable.basetime)
-                        print("validtime:", variable.validtime)
-                        print("previous time:", variable.previoustime)
-                        print("time elapsed:", variable.time_elapsed)
-                        print("filename:", variable.filename)
-                        print("previous_filename:", variable.previousfilename)
-            
-                    self.assertEqual(variable.filename, var_dict['blueprint'][i])
+        var_dict = self.cfg[case]
+        var_type = case
+        for i in range(11):
+            with self.subTest(i=i):
+                validtime = initialtime + timedelta(seconds=intervall*i)
+                previoustime = validtime - timedelta(seconds=intervall)
+                variable = Variable(var_type, var_dict, initialtime, debug=debug)
+                previous_filename = variable.get_filename(validtime, previoustime=previoustime)
+                filename = variable.get_filename(validtime)
+                self.assertEqual(filename, var_dict['blueprint'][i])
+                if i > 0:
+                    self.assertEqual(previous_filename, var_dict['blueprint_previous'][i])
+
+    def test_open_new_file_grib1(self):
+        debug = True
+        initialtime = datetime(2019, 11, 13, 0)
+        intervall = 3600
+        case = "grib1"
+
+        var_dict = self.cfg[case]
+        var_type = case
+        for i in range(11):
+            with self.subTest(i=i):
+                validtime = initialtime + timedelta(seconds=intervall*i)
+                previoustime = validtime - timedelta(seconds=intervall)
+                variable = Variable(var_type, var_dict, initialtime, debug=debug)
+                previous_filename = variable.get_filename(validtime, previoustime=previoustime)
+                filename = variable.get_filename(validtime)
+                self.assertEqual(filename, var_dict['blueprint'][i])
+                if i > 0:
+                    self.assertEqual(previous_filename, var_dict['blueprint_previous'][i])
+
+    def test_open_new_file_grib2(self):
+        debug = True
+        initialtime = datetime(2019, 11, 13, 2)
+        intervall = 3600
+        case = "grib2"
+
+        var_dict = self.cfg[case]
+        var_type = case
+        for i in range(11):
+            with self.subTest(i=i):
+                validtime = initialtime + timedelta(seconds=intervall*i)
+                previoustime = validtime - timedelta(seconds=intervall)
+                variable = Variable(var_type, var_dict, initialtime, debug=debug)
+                previous_filename = variable.get_filename(validtime, previoustime=previoustime)
+                filename = variable.get_filename(validtime)
+                self.assertEqual(filename, var_dict['blueprint'][i])
+                if i > 0:
+                    self.assertEqual(previous_filename, var_dict['blueprint_previous'][i])
+
+    def test_open_new_file_an(self):
+        debug = True
+        initialtime = datetime(2019, 11, 13, 0)
+        intervall = 3600
+        case = "met_nordic"
+
+        var_dict = self.cfg[case]
+        var_type = case
+        if var_type == "met_nordic":
+            var_type = "netcdf"
+        for i in range(11):
+            with self.subTest(i=i):
+                validtime = initialtime + timedelta(seconds=intervall*i)
+                variable = Variable(var_type, var_dict, initialtime, debug=debug)
+                filename = variable.get_filename(validtime)
+                self.assertEqual(filename, var_dict['blueprint'][i])
+
+    def test_open_new_file_fail(self):
+        debug = True
+        initialtime = datetime(2019, 11, 13, 0)
+        case = "met_nordic"
+        var_dict = self.cfg[case]
+        var_dict["offset"] = 7200
+        var_type = case
+        if var_type == "met_nordic":
+            var_type = "netcdf"
+        with self.assertRaises(Exception):
+            Variable(var_type, var_dict, initialtime, debug=debug)
 
 
 if __name__ == "__main__":

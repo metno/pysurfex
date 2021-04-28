@@ -52,7 +52,10 @@ class Netcdf(object):
         if xcoords is not None or ycoords is not None:
             raise Exception("Subsetting of the input dimensions not implemented yet!")
 
-        surfex.info("Reading variable " + var.var_name + " from " + self.filename)
+        tinfo = ""
+        if times is not None:
+            tinfo = "time " + str(times) + " in "
+        surfex.info("Reading " + tinfo + "variable " + var.var_name + " from " + self.filename)
         times_to_read = []
         prev_time_steps = []
         if times is None:

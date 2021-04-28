@@ -20,7 +20,9 @@ class ForcingTest(unittest.TestCase):
                 "--zval", "constant",
                 "--zsoro_converter", "phi2m",
                 "--zval", "constant",
-                "--uval", "constant"
+                "--uval", "constant",
+                "-of", "unittest_FORCING_netcdf.nc",
+                "--debug"
                 ]
         kwargs = surfex.parse_args_create_forcing(argv)
         options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
@@ -39,7 +41,9 @@ class ForcingTest(unittest.TestCase):
                 "--zval", "constant",
                 "--zsoro_converter", "phi2m",
                 "--zval", "constant",
-                "--uval", "constant"
+                "--uval", "constant",
+                "-of", "unittest_FORCING_grib1.nc",
+                "--debug"
                 ]
         kwargs = surfex.parse_args_create_forcing(argv)
         options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
@@ -58,7 +62,9 @@ class ForcingTest(unittest.TestCase):
                 "--zval", "constant",
                 "--zsoro_converter", "phi2m",
                 "--zval", "constant",
-                "--uval", "constant"
+                "--uval", "constant",
+                "-of", "unittest_FORCING_grib2.nc",
+                "--debug"
                 ]
         kwargs = surfex.parse_args_create_forcing(argv)
         options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)

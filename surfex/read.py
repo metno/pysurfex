@@ -124,23 +124,23 @@ class Converter(object):
 
     Args:
         name (str): name of the converter
-        validtime (datetime.datetime): The valid time you want to read
+        initial_time (datetime.datetime): The valid time you want to read
         defs (dict): A dictionary defining the variables
         conf (dict): A dictionary defining the converter
         fileformat (str): Fileformat of the converter
-        basetime (datetime.datetime): The base time of the input data source
         debug (bool): Debug option
 
     """
 
-    def __init__(self, name, validtime, defs, conf, fileformat, basetime, debug=False):
+    def __init__(self, name, initial_time, defs, conf, fileformat, debug=False):
         """
         Initializing the converter
         """
 
         self.name = name
-        self.validtime = validtime
-        self.basetime = basetime
+        self.initial_time = initial_time
+        # self.validtime = validtime
+        # self.basetime = basetime
 
         if debug:
             surfex.debug(__file__, self.__class__.__name__, "Converter name:", self.name)
@@ -220,6 +220,8 @@ class Converter(object):
             raise Exception("Variable is not set")
         merged_dict = data_merge(defs, var_dict)
 
+        var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time, debug=debug)
+        """
         if fileformat == "netcdf":
             var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug)
         elif fileformat == "grib1" or fileformat == "grib2":
@@ -235,6 +237,7 @@ class Converter(object):
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
         else:
             raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
+        """
 
         if debug:
             var.print_variable_info()
@@ -299,7 +302,7 @@ class Converter(object):
             # wetbulbTemperature = (gamma * tc + delta * Td)/(gamma + delta);
             # wetbulbTemperatureK  = wetbulbTemperature + 273.15;
             field = field_totalprec
-            field[field_t > 1] = 0
+            field[field_t > 274.16] = 0
         elif self.name == "phi2m":
             field = self.phi.read_variable(geo, validtime, cache)
             field = np.divide(field, gravity)

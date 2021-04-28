@@ -363,8 +363,8 @@ def first_guess_for_oi(**kwargs):
         if converter not in config[var][fileformat]["converter"]:
             raise Exception("No converter " + converter + " definition found in " + config + "!")
 
-        converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime,
-                                          debug=debug)
+        initial_basetime = validtime - timedelta(seconds=10800)
+        converter = surfex.read.Converter(converter, initial_basetime, defs, converter_conf, fileformat, debug=debug)
         field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
         field = np.reshape(field, [geo.nlons, geo.nlats])
 
@@ -1109,9 +1109,8 @@ def lsm_file_assim(**kwargs):
     defs = {
         "filepattern": inputfile,
         "fileformat": fileformat,
-        "fcint": 3,
+        "fcint": 10800,
         "offset": 0,
-        "file_inc": 1
     }
 
     print(var, fileformat)
@@ -1122,7 +1121,8 @@ def lsm_file_assim(**kwargs):
     }
 
     var = "LSM"
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime, debug=debug)
+    initial_basetime = validtime - timedelta(seconds=10800)
+    converter = surfex.read.Converter(converter, initial_basetime, defs, converter_conf, fileformat, debug=debug)
     field = surfex.read.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [geo.nlons, geo.nlats])
     field = np.transpose(field)
@@ -1479,7 +1479,7 @@ def run_plot_points(**kwargs):
 
     cache = surfex.Cache(debug, -1)
     converter = "none"
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, validtime, debug=debug)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, inputtype, debug=debug)
     field = surfex.ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
 
     if field is None:
