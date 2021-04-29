@@ -309,7 +309,7 @@ class Variable(object):
         # Modify based on fcint
         seconds_since_midnight = \
             int((basetime - basetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        if seconds_since_midnight == 64800:
+        if seconds_since_midnight == 86400:
             seconds_since_midnight = 0
         basetime_inc = int(seconds_since_midnight / int(timedelta(seconds=self.fcint).seconds))
 
