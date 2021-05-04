@@ -294,7 +294,7 @@
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span>
 
-    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
 
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assembles a 5D slice and interpolates it to requested positions</span>
@@ -309,6 +309,10 @@
 
         <span class="c1"># field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)</span>
         <span class="c1"># field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order=&quot;F&quot;))</span>
+        <span class="n">var_name</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">level</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">member</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">units</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="s2">&quot;member&quot;</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="s2">&quot;validtime&quot;</span><span class="p">,</span>
                          <span class="n">validtime</span><span class="p">)</span>
@@ -331,6 +335,14 @@
     <span class="n">ReferenceTime</span> <span class="o">=</span> <span class="mi">9</span>
     <span class="n">Realization</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">Hybrid</span> <span class="o">=</span> <span class="mi">11</span></div>
+
+
+<span class="k">class</span> <span class="nc">NetCDFReadVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">member</span>
 
 
 <div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
