@@ -289,7 +289,10 @@
     <span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
-        <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">debug</span><span class="p">)</span>
+        <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">debug</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">debug</span>
+        <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
         <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing type is ASCII&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="p">{}</span>
@@ -410,7 +413,8 @@
         <span class="n">output</span><span class="o">.</span><span class="n">write_forcing</span><span class="p">(</span><span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
-        <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
 
     <span class="c1"># Finalize forcing</span>
     <span class="n">output</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
