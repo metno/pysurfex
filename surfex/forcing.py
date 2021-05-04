@@ -252,7 +252,10 @@ class AsciiOutput(SurfexOutputForcing):
     output_format = "ascii"
 
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
-        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
+        debug = False
+        if cache is not None:
+            debug = cache.debug
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, debug)
         surfex.info("Forcing type is ASCII")
         self.forcing_file = {}
         self.file_handler = {}
@@ -373,7 +376,8 @@ def run_time_loop(options, var_objs, att_objs):
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
         this_time = this_time + timedelta(seconds=options['timestep'])
-        cache.clean_fields(this_time)
+        if cache is not None:
+            cache.clean_fields(this_time)
 
     # Finalize forcing
     output.finalize()

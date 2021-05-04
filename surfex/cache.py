@@ -153,8 +153,11 @@ class Cache:
             raise NotImplementedError
 
     @staticmethod
-    def generate_netcdf_id(varname, filename, validtime):
-        return "%s%s%s" % (varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+    def generate_netcdf_id(var, filename, validtime):
+        varname = var.name
+        level = str(var.level)
+        member = str(var.member)
+        return "%s%s%s%s%s" % (varname, level, member, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
 
     @staticmethod
     def generate_surfex_id(varname, patches, layers, filename, validtime):
