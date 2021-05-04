@@ -158,7 +158,7 @@ class Grib(object):
                     return field, geo_out
                 eccodes.codes_release(gid)
 
-    def points(self, gribvar, geo, validtime=None, interpolation="nearest"):
+    def points(self, gribvar, geo, validtime=None, interpolation="bilinear"):
 
         """
         Reads a 2-D field and interpolates it to requested positions

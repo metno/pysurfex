@@ -257,7 +257,7 @@ class Netcdf(object):
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         return field, geo_in
 
-    def points(self, var_name, geo, level=None, member=None, validtime=None,  units=None, interpolation="nearest"):
+    def points(self, var, geo, validtime=None, interpolation="bilinear"):
 
         """
         Assembles a 5D slice and interpolates it to requested positions
@@ -272,6 +272,10 @@ class Netcdf(object):
 
         # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime, units=units)
         # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
+        var_name = var.name
+        level = var.level
+        member = var.member
+        units = var.units
         if self.debug:
             surfex.debug(__file__, self.__class__.points.__name__, "level", level, "member", member, "validtime",
                          validtime)
@@ -294,6 +298,14 @@ class Axis(Enum):
     ReferenceTime = 9
     Realization = 10
     Hybrid = 11
+
+
+class NetCDFReadVariable(object):
+    def __init__(self, name, level=None, units=None, member=None):
+        self.name = name
+        self.level = level
+        self.units = units
+        self.member = member
 
 
 class NetCDFFileVariable(object):

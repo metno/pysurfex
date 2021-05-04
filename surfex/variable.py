@@ -153,7 +153,7 @@ class Variable(object):
                     times, field, stids = filehandler.points(geo, validtime=validtime)
                 else:
                     field, interpolator = filehandler.points(var, geo, interpolation=interpolation,
-                                                             validtime=validtime, **kwargs)
+                                                             validtime=validtime)
 
                     field = self.rotate_geographic_wind(field, interpolator)
                 if self.debug and field is not None:
@@ -168,9 +168,21 @@ class Variable(object):
     def set_var(self, validtime=None):
         accumulated = False
         if self.var_type == "netcdf":
-            var = self.var_dict["name"]
+            name = self.var_dict["name"]
             if "accumulated" in self.var_dict:
                 accumulated = self.var_dict["accumulated"]
+            level = None
+            if "level" in self.var_dict:
+                level = self.var_dict["level"]
+                if not isinstance(level, list):
+                    level = [level]
+            units = None
+            if "units" in self.var_dict:
+                units = str([self.var_dict["units"]][0])
+            member = None
+            if "member" in self.var_dict:
+                member = self.var_dict["member"]
+            var = surfex.NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
             typ = self.var_dict["type"]
