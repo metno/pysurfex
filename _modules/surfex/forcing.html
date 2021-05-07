@@ -118,7 +118,6 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;NETCDF3_64BIT&quot;</span>
     <span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">translation</span> <span class="o">=</span> <span class="p">{</span>
@@ -135,8 +134,14 @@
         <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="s2">&quot;CO2air&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">fmt</span><span class="p">):</span>
         <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">debug</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;NETCDF3_64BIT&quot;</span>
+        <span class="k">elif</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;nc4&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;NETCDF4&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
         <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing type is netCDF&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -286,13 +291,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">debug</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">debug</span>
         <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span>
         <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing type is ASCII&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="p">{}</span>
@@ -392,11 +396,12 @@
         <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
 
     <span class="c1"># Create output object</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span> <span class="ow">or</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;nc4&quot;</span><span class="p">:</span>
         <span class="c1"># Set att_time the same as start</span>
         <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">NetCDFOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
-                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span>
+                                             <span class="n">fmt</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">]))</span>
     <span class="k">elif</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
         <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">AsciiOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
