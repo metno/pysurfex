@@ -221,23 +221,6 @@ class Converter(object):
         merged_dict = data_merge(defs, var_dict)
 
         var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time, debug=debug)
-        """
-        if fileformat == "netcdf":
-            var = surfex.variable.NetcdfVariable(merged_dict, self.basetime, self.validtime,  debug=debug)
-        elif fileformat == "grib1" or fileformat == "grib2":
-            var = surfex.variable.GribVariable(merged_dict, self.basetime, self.validtime,  debug=debug,
-                                               grib_type=fileformat)
-        elif fileformat == "surfex":
-            var = surfex.variable.SurfexVariable(merged_dict, self.basetime, self.validtime, debug=debug)
-        elif fileformat == "fa":
-            var = surfex.variable.FaVariable(merged_dict, self.basetime, self.validtime, debug=debug)
-        elif fileformat == "obs":
-            var = surfex.variable.ObservationVariable(merged_dict, self.basetime, self.validtime, debug=debug)
-        elif fileformat == "constant":
-            raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
-        else:
-            raise NotImplementedError("Create variable for format " + fileformat + " not implemented!")
-        """
 
         if debug:
             var.print_variable_info()

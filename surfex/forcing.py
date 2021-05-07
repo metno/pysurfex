@@ -81,7 +81,6 @@ class NetCDFOutput(SurfexOutputForcing):
 
     """
 
-    output_format = "NETCDF3_64BIT"
     forcing_file = {}
 
     translation = {
@@ -98,8 +97,14 @@ class NetCDFOutput(SurfexOutputForcing):
         "CO2": "CO2air",
     }
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
+    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, fmt):
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
+        if fmt == "netcdf":
+            self.output_format = "NETCDF3_64BIT"
+        elif fmt == "nc4":
+            self.output_format = "NETCDF4"
+        else:
+            raise NotImplementedError(format)
         surfex.info("Forcing type is netCDF")
         self.forcing_file = {}
         if fname is None:
@@ -249,13 +254,12 @@ class AsciiOutput(SurfexOutputForcing):
 
     """
 
-    output_format = "ascii"
-
     def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
         debug = False
         if cache is not None:
             debug = cache.debug
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, debug)
+        self.output_format = "ascii"
         surfex.info("Forcing type is ASCII")
         self.forcing_file = {}
         self.file_handler = {}
@@ -355,11 +359,12 @@ def run_time_loop(options, var_objs, att_objs):
         this_time = this_time + timedelta(seconds=options['timestep'])
 
     # Create output object
-    if str.lower(options['output_format']) == "netcdf":
+    if str.lower(options['output_format']) == "netcdf" or str.lower(options['output_format']) == "nc4":
         # Set att_time the same as start
         att_time = options['start']
         output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
-                                             var_objs, att_objs, att_time, cache)
+                                             var_objs, att_objs, att_time, cache,
+                                             fmt=str.lower(options['output_format']))
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
         output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,

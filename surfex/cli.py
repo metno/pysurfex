@@ -45,7 +45,8 @@ def parse_args_create_forcing(argv):
                         choices=["netcdf", "grib1", "grib2", "surfex"])
     parser.add_argument('-ig', '--input_geo', dest="geo_input", type=str, help="Default input geometry if needed",
                         default=None, required=False)
-    parser.add_argument('-o', '--output_format', type=str, help="Output file format", default="netcdf", nargs="?")
+    parser.add_argument('-o', '--output_format', type=str, help="Output file format", default="nc4",
+                        choices=["netcdf", "nc4", "ascii"], nargs="?")
     parser.add_argument('-of', type=str, help="Output file name", default=None, nargs="?")
     parser.add_argument('-p', '--pattern', type=str, help="Filepattern", default=None, nargs="?")
     parser.add_argument('--zref', type=str, help="Temperature/humidity reference height", default="ml",
