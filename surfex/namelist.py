@@ -549,14 +549,20 @@ class BaseNamelist(object):
         if self.config.get_setting("SURFEX#TILES#NATURE") == "ISBA":
             self.input_list.append({"json": {"NAM_ISBAn": {"LPERTSURF":
                                                            self.config.get_setting("SURFEX#ISBA#PERTSURF")}}})
-            self.input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": self.config.get_setting("SURFEX#ISBA#XCGMAX")}}})
-            self.input_list.append({"json": {"NAM_ISBAn": {"XCSMAX": self.config.get_setting("SURFEX#ISBA#XCSMAX")}}})
+            xcgmax = self.config.get_setting("SURFEX#ISBA#XCGMAX", abort=False)
+            if xcgmax is not None:
+                self.input_list.append({"json": {"NAM_ISBAn": {"XCGMAX": xcgmax}}})
+            xcsmax = self.config.get_setting("SURFEX#ISBA#XCSMAX", abort=False)
+            if xcsmax is not None:
+                self.input_list.append({"json": {"NAM_ISBAn": {"XCSMAX": xcsmax}}})
 
         # SSO
-        self.input_list.append({"json": {"NAM_SSON": {"CROUGH": self.config.get_setting("SURFEX#SSO#SCHEME")}}})
-        geo = self.config.get_setting("GEOMETRY#GEO")
-        if isinstance(geo, surfex.ConfProj):
-            self.input_list.append({"json": {"NAM_SSON": {"XSOROT": geo.xdx}}})
+        sso = self.config.get_setting("SURFEX#SSO#SCHEME")
+        self.input_list.append({"json": {"NAM_SSON": {"CROUGH": sso}}})
+        if sso == "OROTUR":
+            geo = self.config.get_setting("GEOMETRY#GEO")
+            if isinstance(geo, surfex.ConfProj):
+                self.input_list.append({"json": {"NAM_SSON": {"XSOROT": geo.xdx}}})
 
         # Perturbed offline settings
         self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
@@ -732,8 +738,10 @@ class BaseNamelist(object):
             self.input_list.append({"file": self.input_path + "/sice.json"})
 
         self.input_list.append({"file": self.input_path + "/treedrag.json"})
-        self.input_list.append({"json": {"NAM_TREEDRAG": {"LFAKETREE":
-                                                          self.config.get_setting("SURFEX#TREEDRAG#FAKETREES")}}})
+        lfaketrees = self.config.get_setting("SURFEX#TREEDRAG#FAKETREES", abort=False)
+        if lfaketrees is not None:
+            self.input_list.append({"json": {"NAM_TREEDRAG": {"LFAKETREE":
+                                                             self.config.get_setting("SURFEX#TREEDRAG#FAKETREES")}}})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             self.input_list.append({"file": self.input_path + "/flake.json"})

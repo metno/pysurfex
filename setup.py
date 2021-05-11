@@ -180,6 +180,7 @@ setup(
         'bin/soda',
         'bin/titan',
         'bin/bufr2json',
-        'bin/cryoclim_pseudoobs'
+        'bin/cryoclim_pseudoobs',
+        'bin/dump_environ'
     ],
 )
