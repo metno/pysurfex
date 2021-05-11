@@ -23,8 +23,9 @@ grib2:
 surfex:
   filepattern: not_defined
   offset: 0
-  fcint: 10800
+  fcint: 3600
   interpolator: bilinear
+  prefer_forecast: false
 
 fa:
   filepattern: not_defined

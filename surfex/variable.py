@@ -182,8 +182,9 @@ class Variable(object):
             member = None
             if "member" in self.var_dict:
                 member = self.var_dict["member"]
-                if not isinstance(member, list):
-                    member = [member]
+                if member is not None:
+                    if not isinstance(member, list):
+                        member = [member]
             var = surfex.NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
