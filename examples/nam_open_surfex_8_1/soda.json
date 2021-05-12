@@ -1,0 +1,9 @@
+{
+  "NAM_ASSIM": {
+    "LECSST": true,
+    "NPRINTLEV": 1,
+    "LRELCLIMSNOW": false,
+    "LEXTRAP_NATURE": false,
+    "LEXTRAP_SNOW": false
+  }
+}

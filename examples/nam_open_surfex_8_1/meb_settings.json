@@ -1,0 +1,13 @@
+{
+  "NAM_SGH_ISBAn": {
+    "CRUNOFF":  "DT92",
+    "CRAIN":  "SGH",
+    "CHORT": "DEF",
+    "LSOC":  true
+ },
+ "NAM_MEB_ISBA":{
+    "LMEB_PATCH(1)":  false,
+    "LMEB_PATCH(2)":  true,
+    "LMEB_LITTER": false
+  }
+}

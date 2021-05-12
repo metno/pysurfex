@@ -1,0 +1,15 @@
+{
+  "NAM_DATA_ISBA": {
+    "XUNIF_RSMIN(4)": 150.0,
+    "XUNIF_RSMIN(5)": 150.0,
+    "XUNIF_RSMIN(6)": 150.0,
+    "XUNIF_RSMIN(7)": 150.0,
+    "XUNIF_RSMIN(9)": 150.0,
+    "XUNIF_RSMIN(10)": 150.0,
+    "XUNIF_RSMIN(11)": 150.0,
+    "XUNIF_RSMIN(12)": 150.0,
+    "XUNIF_RSMIN(16)": 40.0,
+    "XUNIF_RSMIN(17)": 40.0,
+    "XUNIF_RSMIN(18)": 120.0
+  }
+}

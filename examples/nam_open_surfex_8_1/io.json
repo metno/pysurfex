@@ -1,0 +1,13 @@
+{
+  "nam_io_offline": {
+    "lrestart": true,
+    "lrestart_2m": true,
+    "xtstep_surf": 60,
+    "xtstep_output": 3600.0,
+    "nhalo": 0,
+    "lset_forc_zs": false
+  },
+  "nam_write_surf_atm": {
+     "lsplit_patch": false
+  }
+}
