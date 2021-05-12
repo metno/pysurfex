@@ -195,6 +195,14 @@ make latexpdf
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>Example on a system json file</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;ecoclimap_bin_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;/lustre/storeB/users/trygveasp/H2O/open_SURFEX_V8_1/MY_RUN/ECOCLIMAP/&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;climdir&quot;</span><span class="p">:</span> <span class="s2">&quot;/lustre/storeB/project/nwp/surfex/PGD/&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;oro_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;/lustre/storeB/project/nwp/surfex/PGD/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
 <section id="run-open-surfex-8-1">
 <h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this headline">¶</a></h1>
@@ -221,16 +229,16 @@ cp -r /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/nam_open_surfex
 dump_environ
 
 <span class="c1"># Create PGD</span>
-pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_open_surfex_8_1 -o PGD.nc PGD
+pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 -o PGD.nc PGD
 
 <span class="c1"># Create PREP (from namelist values)</span>
-prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file path-to-pysurfex/test/nam/prep_from_namelist_values.json -dtg <span class="m">2021010103</span> PREP
+prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 --pgd PGD.nc -o PREP.nc --prep_file path-to-pysurfex/test/nam/prep_from_namelist_values.json --prep_filetype json --dtg <span class="m">2021010103</span> PREP
 
-<span class="c1"># Create Forcing</span>
+<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
 create_forcing <span class="m">2021010103</span> <span class="m">2021010104</span> -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig path-to-pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
 <span class="c1"># Run Offline</span>
-offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s system.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing <span class="nv">$PWD</span>
+offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing <span class="nv">$PWD</span>
 </pre></div>
 </div>
 </section>
@@ -262,17 +270,18 @@ ln -sf /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/cfg/ppi_centos
 <span class="c1"># Dump environment</span>
 dump_environ
 
-<span class="c1"># Create PGD</span>
-pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_open_surfex_8_1 -o PGD.nc PGD
+<span class="c1"># Create PGD (Positional argument PGD is the name of your PGD binary)</span>
+pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 -o PGD.nc PGD
 
-<span class="c1"># Create PREP</span>
-prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json -dtg <span class="m">2021010103</span> PREP
+<span class="c1"># Create PREP (Positional argument PREP is the name of your PREP binary)</span>
+prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json --prep_filetype json --dtg <span class="m">2021010103</span> PREP
 
-<span class="c1"># Create Forcing</span>
+<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
 create_forcing <span class="m">2021010103</span> <span class="m">2021010104</span> -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
-<span class="c1"># Run Offline</span>
-offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing <span class="nv">$PWD</span>
+<span class="c1"># Run Offline (Positional argument OFFLINE is the name of your OFFLINE binary)</span>
+<span class="c1"># If your domain is different from your forcing you might need to use option --forc_zs</span>
+offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing <span class="nv">$PWD</span> --forc_zs
 </pre></div>
 </div>
 </section>
@@ -304,16 +313,16 @@ cp -r /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/nam_cy43_dev na
 dump_environ
 
 <span class="c1"># Create PGD</span>
-pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_cy43_dev_ppi -o PGD.nc PGD-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
+pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi -o PGD.nc PGD-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
 
 <span class="c1"># Create PREP</span>
-prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_cy43_dev_ppi -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json -dtg <span class="m">2021010103</span> PREP-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
+prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json --prep_filetype json  --dtg <span class="m">2021010103</span> PREP-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
 
-<span class="c1"># Create Forcing</span>
+<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
 create_forcing <span class="m">2021010103</span> <span class="m">2021010104</span> -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
 <span class="c1"># Run Offline</span>
-offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_cy43_dev_ppi -s ppi.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0 --forcing <span class="nv">$PWD</span>
+offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0 --forcing <span class="nv">$PWD</span> --forc_zs
 </pre></div>
 </div>
 <section id="classes">

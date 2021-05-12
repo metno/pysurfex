@@ -28,6 +28,16 @@ Example on a Lambert conf proj domain
     }
   }
 
+Example on a system json file
+
+.. code-block:: json
+
+   {
+     "ecoclimap_bin_dir": "/lustre/storeB/users/trygveasp/H2O/open_SURFEX_V8_1/MY_RUN/ECOCLIMAP/",
+     "climdir": "/lustre/storeB/project/nwp/surfex/PGD/",
+     "oro_dir": "/lustre/storeB/project/nwp/surfex/PGD/"
+   }
+
 
 Run open-SURFEX 8.1
 =======================================================
@@ -56,16 +66,16 @@ Run open-SURFEX 8.1
    dump_environ
 
    # Create PGD
-   pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_open_surfex_8_1 -o PGD.nc PGD
+   pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 -o PGD.nc PGD
 
    # Create PREP (from namelist values)
-   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file path-to-pysurfex/test/nam/prep_from_namelist_values.json -dtg 2021010103 PREP
+   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 --pgd PGD.nc -o PREP.nc --prep_file path-to-pysurfex/test/nam/prep_from_namelist_values.json --prep_filetype json --dtg 2021010103 PREP
 
-   # Create Forcing
+   # Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)
    create_forcing 2021010103 2021010104 -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig path-to-pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
    # Run Offline
-   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s system.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing $PWD
+   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.json -n nam_open_surfex_8_1 --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing $PWD
 
 
 Run open-SURFEX 8.1 on centos7 PPI
@@ -98,17 +108,18 @@ Run open-SURFEX 8.1 on centos7 PPI
    # Dump environment
    dump_environ
 
-   # Create PGD
-   pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_open_surfex_8_1 -o PGD.nc PGD
+   # Create PGD (Positional argument PGD is the name of your PGD binary)
+   pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 -o PGD.nc PGD
 
-   # Create PREP
-   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json -dtg 2021010103 PREP
+   # Create PREP (Positional argument PREP is the name of your PREP binary)
+   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json --prep_filetype json --dtg 2021010103 PREP
 
-   # Create Forcing
+   # Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)
    create_forcing 2021010103 2021010104 -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
-   # Run Offline
-   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_open_surfex_8_1 -s ppi.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing $PWD
+   # Run Offline (Positional argument OFFLINE is the name of your OFFLINE binary)
+   # If your domain is different from your forcing you might need to use option --forc_zs
+   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_open_surfex_8_1 --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing $PWD --forc_zs
 
 
 Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)
@@ -143,16 +154,16 @@ Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)
    dump_environ
 
    # Create PGD
-   pgd -c config_exp_surfex.toml -r rte.json -d domain.json -n nam_cy43_dev_ppi -o PGD.nc PGD-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
+   pgd -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi -o PGD.nc PGD-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
 
    # Create PREP
-   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_cy43_dev_ppi -s ppi.json --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json -dtg 2021010103 PREP-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
+   prep -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi --pgd PGD.nc -o PREP.nc --prep_file /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json --prep_filetype json  --dtg 2021010103 PREP-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
 
-   # Create Forcing
+   # Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)
    create_forcing 2021010103 2021010104 -d domain.json -p https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc --zsoro_converter none -i surfex --rain_converter none --wind_converter none --wind_dir_converter none -ig /modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
 
    # Run Offline
-   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -n nam_cy43_dev_ppi -s ppi.json --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0 --forcing $PWD
+   offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -n nam_cy43_dev_ppi --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0 --forcing $PWD --forc_zs
 
 
 
