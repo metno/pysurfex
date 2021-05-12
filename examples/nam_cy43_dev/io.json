@@ -5,7 +5,7 @@
     "xtstep_surf": 60,
     "xtstep_output": 3600.0,
     "nhalo": 0,
-    "lfagmap": true
+    "lfagmap": true,
     "lset_forc_zs": false
   },
   "nam_write_surf_atm": {
