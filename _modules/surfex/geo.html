@@ -102,6 +102,10 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
         <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -150,12 +154,16 @@
 
         <span class="n">x0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xloncen</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">))</span>
         <span class="n">y0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xlatcen</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y0</span> <span class="o">=</span> <span class="n">y0</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">])</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
             <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
         <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">)</span>
 
@@ -204,7 +212,45 @@
                     <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span>
                 <span class="p">}</span>
             <span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nml</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;cgrid&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">geo</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">:</span>
+            <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">xlon0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">:</span>
+                <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">xdx</span><span class="p">:</span>
+                <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">xdy</span><span class="p">:</span>
+                <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span> <span class="o">&gt;</span> <span class="n">geo</span><span class="o">.</span><span class="n">nimax</span><span class="p">:</span>
+                <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span> <span class="o">&gt;</span> <span class="n">geo</span><span class="o">.</span><span class="n">njmax</span><span class="p">:</span>
+                <span class="n">is_subset</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="n">is_subset</span><span class="p">:</span>
+                <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Grids have same projection and grid spacing&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">y0</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
+                    <span class="c1"># print(&quot;Test i:&quot;, i, geo.x[i], self.x0)</span>
+                    <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">4</span><span class="p">):</span>
+                        <span class="n">x0</span> <span class="o">=</span> <span class="n">i</span>
+                        <span class="k">break</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
+                    <span class="c1"># print(&quot;Test j:&quot;, j, geo.y[j], self.y0)</span>
+                    <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mi">4</span><span class="p">):</span>
+                        <span class="n">y0</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">y0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Grid is a subset of input grid &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
 <div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#surfex.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -240,7 +286,12 @@
                 <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span>
             <span class="p">}</span>
         <span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nml</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
 <div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#surfex.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -283,7 +334,13 @@
                 <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span>
             <span class="p">}</span>
         <span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nml</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
 <div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#surfex.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -340,7 +397,13 @@
                 <span class="s2">&quot;nlat&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlat</span>
             <span class="p">}</span>
         <span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nml</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
 <div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#surfex.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -528,7 +591,13 @@
                 <span class="s2">&quot;nrows&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
             <span class="p">}</span>
         <span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nml</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
 <div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#surfex.get_geo_object">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -631,7 +700,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>
