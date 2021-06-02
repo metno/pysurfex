@@ -67,6 +67,10 @@ class SurfexGeo(ABC, Geo):
     def update_namelist(self, nml):
         return NotImplementedError
 
+    @abstractmethod
+    def subset(self, geo):
+        return NotImplementedError
+
 
 class ConfProj(SurfexGeo):
     def __init__(self, from_json, debug=False):
@@ -113,12 +117,16 @@ class ConfProj(SurfexGeo):
 
         x0 = float(xloncen) - (0.5 * ((float(self.nimax) - 1.0) * self.xdx))
         y0 = float(xlatcen) - (0.5 * ((float(self.njmax) - 1.0) * self.xdy))
+        self.x0 = x0
+        self.y0 = y0
         x = np.empty([self.nimax])
         y = np.empty([self.njmax])
         for i in range(0, self.nimax):
             x[i] = x0 + (float(i) * self.xdx)
         for j in range(0, self.njmax):
             y[j] = y0 + (float(j) * self.xdy)
+        self.x = x
+        self.y = y
         xv, yv = np.meshgrid(x, y)
         lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xv, yv)
 
@@ -169,6 +177,44 @@ class ConfProj(SurfexGeo):
             })
         return nml
 
+    def subset(self, geo):
+        lons = []
+        lats = []
+        if hasattr(geo, "cgrid") and geo.cgrid == self.cgrid:
+            is_subset = True
+            if self.xlon0 != geo.xlon0 or self.xlat0 != geo.xlat0:
+                is_subset = False
+            if self.xdx != geo.xdx:
+                is_subset = False
+            if self.xdy != geo.xdy:
+                is_subset = False
+            if self.nimax > geo.nimax:
+                is_subset = False
+            if self.njmax > geo.njmax:
+                is_subset = False
+
+            if is_subset:
+                surfex.info("Grids have same projection and grid spacing", 0)
+                x0 = None
+                y0 = None
+
+                for i in range(0, geo.nimax):
+                    # print("Test i:", i, geo.x[i], self.x0)
+                    if round(self.x0, 4) == round(geo.x[i], 4):
+                        x0 = i
+                        break
+                for j in range(0, geo.njmax):
+                    # print("Test j:", j, geo.y[j], self.y0)
+                    if round(self.y0, 4) == round(geo.y[j], 4):
+                        y0 = j
+                        break
+                if x0 is not None and y0 is not None:
+                    surfex.info("Grid is a subset of input grid " + str(x0) + " " + str(y0), 0)
+                    lons = np.arange(x0, x0 + self.nimax, 1).tolist()
+                    lats = np.arange(y0, y0 + self.njmax, 1).tolist()
+
+        return lons, lats
+
 
 class LonLatVal(SurfexGeo):
     def __init__(self, from_json, debug=False):
@@ -204,6 +250,11 @@ class LonLatVal(SurfexGeo):
             }
         })
         return nml
+
+    def subset(self, geo):
+        lons = []
+        lats = []
+        return lons, lats
 
 
 class Cartesian(SurfexGeo):
@@ -247,6 +298,12 @@ class Cartesian(SurfexGeo):
             }
         })
         return nml
+
+    def subset(self, geo):
+        print("Subset not implemented")
+        lons = []
+        lats = []
+        return lons, lats
 
 
 class LonLatReg(SurfexGeo):
@@ -304,6 +361,12 @@ class LonLatReg(SurfexGeo):
             }
         })
         return nml
+
+    def subset(self, geo):
+        print("Subset not implemented")
+        lons = []
+        lats = []
+        return lons, lats
 
 
 class IGN(SurfexGeo):
@@ -492,6 +555,12 @@ class IGN(SurfexGeo):
             }
         })
         return nml
+
+    def subset(self, geo):
+        print("Subset not implemented")
+        lons = []
+        lats = []
+        return lons, lats
 
 
 def get_geo_object(from_json, debug=False):

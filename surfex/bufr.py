@@ -179,12 +179,18 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                     if not exists:
                         if var == "relativeHumidityAt2M":
                             if not np.isnan(t2m) and not np.isnan(td2m):
-                                value = self.td2rh(td2m, t2m)
-                                value = value * 0.01
+                                try:
+                                    value = self.td2rh(td2m, t2m)
+                                    value = value * 0.01
+                                except:
+                                    value = np.nan
                             else:
                                 if not np.isnan(t) and not np.isnan(td):
-                                    value = self.td2rh(td, t)
-                                    value = value * 0.01
+                                    try:
+                                        value = self.td2rh(td, t)
+                                        value = value * 0.01
+                                    except:
+                                        value = np.nan
                         elif var == "airTemperatureAt2M":
                             if np.isnan(t2m):
                                 if not np.isnan(t):

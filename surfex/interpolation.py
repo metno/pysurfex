@@ -59,15 +59,24 @@ class Interpolation(object):
                     surfex.info("Input and output domain are identical. No interpolation is needed")
                 interpolated_field = field2d.reshape(self.npoints)
             else:
-                surfex.info("Doing \"" + self.operator + "\" interpolation for " + str(self.npoints) + " points")
-                if self.operator == "nearest":
-                    interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
-                elif self.operator == "bilinear":
-                    interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
-                elif self.operator == "none":
-                    interpolated_field = field2d.reshape(self.npoints)
+                sub_lons, sub_lats = self.geo_out.subset(self.geo_in)
+                if len(sub_lons) == 0 and len(sub_lats) == 0:
+                    surfex.info("Doing \"" + self.operator + "\" interpolation for " + str(self.npoints) + " points")
+                    if self.operator == "nearest":
+                        interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
+                    elif self.operator == "bilinear":
+                        interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
+                    elif self.operator == "none":
+                        interpolated_field = field2d.reshape(self.npoints)
+                    else:
+                        raise NotImplementedError(self.operator)
                 else:
-                    raise NotImplementedError(self.operator)
+                    surfex.info("Output domain is a subset of input domain")
+                    new_field = np.ndarray([len(sub_lons), len(sub_lats)])
+                    for i in range(0, len(sub_lons)):
+                        for j in range(0, len(sub_lats)):
+                            new_field[i, j] = field2d[sub_lons[i], sub_lats[j]]
+                    interpolated_field = new_field.reshape(self.npoints)
             return interpolated_field
 
     def rotate_wind_to_geographic(self):
