@@ -121,6 +121,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 sd = np.nan
                 t = np.nan
                 td = np.nan
+                cb = np.nan
                 for key in keys:
                     try:
                         val = eccodes.codes_get(bufr, key)
@@ -160,6 +161,8 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             td = val
                         if key == "totalSnowDepth":
                             sd = val
+                        if key == "heightBaseOfCloud":
+                            cb = val
 
                     except eccodes.CodesInternalError:
                         pass
@@ -199,6 +202,8 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                                 value = t2m
                         elif var == "totalSnowDepth":
                             value = sd
+                        elif var == "heightBaseOfCloud":
+                            value = cb
                         else:
                             raise NotImplementedError("Var " + var + " is not coded! Please do it!")
 

@@ -5,7 +5,7 @@ except ImportError:
     gridpp = None
 
 
-def horizontal_oi(geo, background, observations, gelevs, glafs, hlength=10000.,
+def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
                   vlength=10000., wlength=0.5, elev_gradient=0, structure_function="Barnes",
                   max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None,
                   interpol="bilinear", debug=False):

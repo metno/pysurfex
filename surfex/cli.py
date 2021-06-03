@@ -890,7 +890,7 @@ def run_gridpp(**kwargs):
     observations = surfex.dataset_from_file(an_time, obs_file,  qc_flag=0)
     print("Found " + str(len(observations.lons)) + " observations with QC flag == 0")
 
-    field = surfex.horizontal_oi(geo, background, observations, gelevs=gelevs, glafs=glafs, hlength=hlength,
+    field = surfex.horizontal_oi(geo, background, observations, gelevs, hlength=hlength,
                                  vlength=vlength, wlength=wlength, structure_function="Barnes",
                                  max_locations=max_locations, elev_gradient=elev_gradient,
                                  epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue,  interpol="bilinear",
