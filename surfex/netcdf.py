@@ -491,7 +491,7 @@ class NetCDFFileVariable(object):
             return False
 
 
-def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc"):
+def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc", geo=None):
 
     if os.path.exists(fname):
         os.remove(fname)
@@ -548,6 +548,10 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
         my_fg.variables[my_var].standard_name = standard_name[my_var]
         my_fg.variables[my_var].units = units[my_var]
 
+    # Global attributes
+    if geo is not None:
+        my_fg = geo.write_proj_info(my_fg)
+
     return my_fg
 
 
@@ -567,13 +571,34 @@ def read_first_guess_netcdf_file(input_file, var):
     lons = np.array(np.reshape(lons, [nx * ny], order="F"))
     lats = np.array(np.reshape(lats, [nx * ny], order="f"))
 
-    geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
+    attrs = fh.ncattrs()
+    if "gridtype" in attrs:
+        if fh.getncattr("gridtype") == "lambert":
+            from_json = {
+                "nam_conf_proj_grid": {
+                    "nimax": nx,
+                    "njmax": ny,
+                    "xloncen": fh.getncattr("lonc"),
+                    "xlatcen": fh.getncattr("latc"),
+                    "xdx": fh.getncattr("dlon"),
+                    "xdy": fh.getncattr("dlat"),
+                },
+                "nam_conf_proj": {
+                    "xlon0": fh.getncattr("projlon"),
+                    "xlat0": fh.getncattr("projlat")
+                }
+            }
+            geo = surfex.ConfProj(from_json)
+        else:
+            raise NotImplementedError
+    else:
+        geo = surfex.Geo(nx*ny, nx, ny, lons, lats)
 
     background = fh[var][:]
     background = np.array(np.reshape(background, [nx * ny]))
     background = np.reshape(background, [ny, nx])
     background = np.transpose(background)
-    fill_value = fh.variables[var]._FillValue
+    fill_value = fh.variables[var].getncattr("_FillValue")
     surfex.info("Field " + var + " got " + str(fill_value) + ". Fill with nan")
     background[background == fill_value] = np.nan
 
@@ -602,7 +627,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
         if geo is None:
             raise Exception("You need to provide geo to write a new file")
         fh = create_netcdf_first_guess_template([var, "altitude", "land_area_fraction"],
-                                                geo.nlons, geo.nlats, fname=filename)
+                                                geo.nlons, geo.nlats, fname=filename, geo=geo)
         fh.variables["longitude"][:] = np.transpose(geo.lons)
         fh.variables["latitude"][:] = np.transpose(geo.lats)
         fh.variables["x"][:] = [i for i in range(0, geo.nlons)]
@@ -611,7 +636,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
         fh.variables["land_area_fraction"][:] = np.transpose(lafs)
 
     fh["time"][:] = float(validtime.strftime("%s"))
-    fill_value = fh.variables[var]._FillValue
+    fill_value = fh.variables[var].getncattr("_FillValue")
     surfex.info("Field " + var + " got nan. Fill with " + str(fill_value))
     field[np.where(np.isnan(field))] = fill_value
 
@@ -684,7 +709,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
 
         sd_var = sd_fh.variables[sd["var"]][:]
         sd_var = sd_var.reshape([ny * nx], order="C")
-        sd_var = sd_var.filled(fill_value = 999.)
+        sd_var = sd_var.filled(fill_value=999.)
         sd_var = sd_var.tolist()
 
     if i == 0:

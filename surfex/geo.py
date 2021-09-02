@@ -56,6 +56,9 @@ class Geo(object):
         else:
             return False
 
+    def write_proj_info(self, fg):
+        return fg
+
 
 class SurfexGeo(ABC, Geo):
     def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json, debug=False):
@@ -69,6 +72,10 @@ class SurfexGeo(ABC, Geo):
 
     @abstractmethod
     def subset(self, geo):
+        return NotImplementedError
+
+    @abstractmethod
+    def write_proj_info(self, fg):
         return NotImplementedError
 
 
@@ -215,6 +222,17 @@ class ConfProj(SurfexGeo):
 
         return lons, lats
 
+    def write_proj_info(self, fg):
+        fg.setncattr("gridtype", "lambert")
+        fg.setncattr("dlon", float(self.xdx))
+        fg.setncattr("dlat", float(self.xdy))
+        fg.setncattr("projlat", float(self.xlat0))
+        fg.setncattr("projlat2", float(self.xlat0))
+        fg.setncattr("projlon", float(self.xlon0))
+        fg.setncattr("lonc", float(self.xloncen))
+        fg.setncattr("latc", float(self.xlatcen))
+        return fg
+
 
 class LonLatVal(SurfexGeo):
     def __init__(self, from_json, debug=False):
@@ -255,6 +273,9 @@ class LonLatVal(SurfexGeo):
         lons = []
         lats = []
         return lons, lats
+
+    def write_proj_info(self, fg):
+        raise NotImplementedError
 
 
 class Cartesian(SurfexGeo):
@@ -304,6 +325,9 @@ class Cartesian(SurfexGeo):
         lons = []
         lats = []
         return lons, lats
+
+    def write_proj_info(self, fg):
+        raise NotImplementedError
 
 
 class LonLatReg(SurfexGeo):
@@ -367,6 +391,9 @@ class LonLatReg(SurfexGeo):
         lons = []
         lats = []
         return lons, lats
+
+    def write_proj_info(self, fg):
+        raise NotImplementedError
 
 
 class IGN(SurfexGeo):
@@ -561,6 +588,9 @@ class IGN(SurfexGeo):
         lons = []
         lats = []
         return lons, lats
+
+    def write_proj_info(self, fg):
+        raise NotImplementedError
 
 
 def get_geo_object(from_json, debug=False):
