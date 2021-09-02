@@ -91,7 +91,10 @@
                 <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_identical</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Geometries are identical&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fg</span></div>
 
 
 <div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#surfex.SurfexGeo">[docs]</a><span class="k">class</span> <span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
@@ -106,6 +109,10 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
         <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -250,7 +257,18 @@
                     <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
                     <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;gridtype&quot;</span><span class="p">,</span> <span class="s2">&quot;lambert&quot;</span><span class="p">)</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat2&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;lonc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xloncen</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;latc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">fg</span></div>
 
 
 <div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#surfex.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -291,7 +309,10 @@
     <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#surfex.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -340,7 +361,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#surfex.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -403,7 +427,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#surfex.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
@@ -597,7 +624,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+
+    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#surfex.get_geo_object">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -677,7 +707,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -700,7 +730,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

@@ -410,7 +410,7 @@
         <span class="k">if</span> <span class="n">fg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nx</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span>
             <span class="n">ny</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span>
-            <span class="n">fg</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+            <span class="n">fg</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
             <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">))</span>
             <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
             <span class="n">fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
@@ -1994,7 +1994,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -2017,7 +2017,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>
