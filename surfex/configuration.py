@@ -816,7 +816,10 @@ class ConfigurationFromHarmonie(Configuration):
 
         snow_cycles = ["06"]
         if "SNOW_CYCLES" in env:
-            snow_cycles = (str(env["SNOW_CYCLES"]).split(" "))
+            if (env["SNOW_CYCLES"]) == "":
+                snow_cycles = []
+            else:
+                snow_cycles = (str(env["SNOW_CYCLES"]).split(" "))
         self.update_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES",  snow_cycles)
 
         lswepsini = False
