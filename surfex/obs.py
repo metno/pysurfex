@@ -321,18 +321,19 @@ class ObservationSet(object):
 
     def write_json_file(self, filename, indent=None):
         obs2vectors = np.vectorize(Observation.obs2vectors)
-        obstimes, lons, lats, stids, elevs, values, varnames = obs2vectors(self.observations)
         data = {}
-        for o in range(0, len(lons)):
-            data.update({o: {
-                "obstime": obstimes[o].strftime("%Y%m%d%H%M%S"),
-                "varname": varnames[o],
-                "lon": lons[o],
-                "lat": lats[o],
-                "stid": stids[o],
-                "elev": elevs[o],
-                "value": values[o],
-                }})
+        if len(self.observations) > 0:
+            obstimes, lons, lats, stids, elevs, values, varnames = obs2vectors(self.observations)
+            for o in range(0, len(lons)):
+                data.update({o: {
+                    "obstime": obstimes[o].strftime("%Y%m%d%H%M%S"),
+                    "varname": varnames[o],
+                    "lon": lons[o],
+                    "lat": lats[o],
+                    "stid": stids[o],
+                    "elev": elevs[o],
+                    "value": values[o],
+                    }})
         if indent is None:
             json.dump(data, open(filename, "w"))
         else:
