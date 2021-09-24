@@ -305,7 +305,8 @@
         <span class="c1"># Deaccumulate if either two files are read or if instant is &gt; 0.</span>
         <span class="k">if</span> <span class="n">accumulated</span> <span class="ow">or</span> <span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deaccumulate</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">)</span>
-
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Negative accumulated value found for &quot;</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span>
 
     <span class="k">def</span> <span class="nf">print_variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -329,6 +330,8 @@
                 <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Deaccumulated field has &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">neg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; negative lowest:&quot;</span>
                         <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">neg</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; mean: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">neg</span><span class="p">)))</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Should not be negative values&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">instant</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
                 <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">instant</span><span class="p">))</span>
 

@@ -853,7 +853,10 @@
 
         <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;06&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">&quot;SNOW_CYCLES&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">,</span>  <span class="n">snow_cycles</span><span class="p">)</span>
 
         <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
