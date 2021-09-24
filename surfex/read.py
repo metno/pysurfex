@@ -265,6 +265,10 @@ class Converter(object):
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_snow = self.snow.read_variable(geo, validtime, cache)
             field = np.subtract(field_totalprec, field_snow)
+            if any(field[field < 0.]):
+                print("Set negative rain values to zero")
+                field[field < 0.] = 0
+
         elif self.name == "calcrain":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_t = self.t.read_variable(geo, validtime, cache)

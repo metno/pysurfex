@@ -268,7 +268,8 @@ class Variable(object):
         # Deaccumulate if either two files are read or if instant is > 0.
         if accumulated or instant > 0:
             field = self.deaccumulate(field, previous_field, instant)
-
+            if any(field[field < 0.]):
+                raise Exception("Negative accumulated value found for " + var)
         return field
 
     def print_variable_info(self):
@@ -292,6 +293,8 @@ class Variable(object):
                 warning("Deaccumulated field has " + str(neg.shape[0]) + " negative lowest:"
                         + str(np.nanmin(neg)) + " mean: " + str(np.nanmean(neg)))
             field[field < 0.] = 0
+            if any(field[field < 0.]):
+                raise Exception("Should not be negative values")
             if float(instant) != 0.:
                 field = np.divide(field, float(instant))
 
