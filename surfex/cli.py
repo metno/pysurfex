@@ -831,6 +831,7 @@ def parse_args_gridpp(argv):
     parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.25, required=False)
     parser.add_argument('--minvalue', dest='minvalue', type=float, default=None, required=False)
     parser.add_argument('--maxvalue', dest='maxvalue', type=float, default=None, required=False)
+    parser.add_argument('--only_diff', action="store_true", help="Only write differences to file", required=False, default=False)
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
@@ -880,6 +881,9 @@ def run_gridpp(**kwargs):
     maxvalue = None
     if "maxvalue" in kwargs:
         maxvalue = kwargs["maxvalue"]
+    only_diff = False
+    if "only_diff" in kwargs:
+        only_diff = kwargs["only_diff"]
     obs_file = kwargs["obs_file"]
 
     # Get input fields
@@ -894,7 +898,7 @@ def run_gridpp(**kwargs):
                                  vlength=vlength, wlength=wlength, structure_function="Barnes",
                                  max_locations=max_locations, elev_gradient=elev_gradient,
                                  epsilon=epsilon, minvalue=minvalue, maxvalue=maxvalue,  interpol="bilinear",
-                                 debug=debug)
+                                 only_diff=only_diff, debug=debug)
 
     if output_file is not None:
         surfex.write_analysis_netcdf_file(output_file, field, var, validtime, gelevs, glafs, new_file=True, geo=geo)
