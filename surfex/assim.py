@@ -36,9 +36,34 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     if interpol == "bilinear":
         pbackground = gridpp.bilinear(bgrid, points, background)
     elif interpol == "nearest":
-        pbackground = gridpp.nearest(bgrid, points, background, elev_gradient)
+        pbackground = gridpp.nearest(bgrid, points, background)
     else:
         raise NotImplementedError
+
+    # Remove undefined backgrounds    
+    if any(np.isnan(pbackground)):
+       print("Found undefined backgrounds. Remove them")
+       lons2 = []
+       lats2 = []
+       elevs2 = []
+       values2 = []
+       for p in range(0, len(lons)):
+          if np.isnan(pbackground[p]):
+             print("Undefined background in lon=", lons[p], " lat=", lats[p]," value=", values[p])
+          else:
+             lons2.append(lons[p])
+             lats2.append(lats[p])
+             elevs2.append(elevs[p])
+             values2.append(values[p])
+       values = values2
+       points = gridpp.Points(lats2, lons2, elevs2)
+       if interpol == "bilinear":
+           pbackground = gridpp.bilinear(bgrid, points, background)
+       elif interpol == "nearest":
+           pbackground = gridpp.nearest(bgrid, points, background)
+       else:
+           raise NotImplementedError
+
     variance_ratios = np.full(points.size(), epsilon)
 
     if structure_function == "Barnes":
