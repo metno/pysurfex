@@ -389,11 +389,21 @@
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">run_time_loop</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Debug mode activated in cache&quot;</span><span class="p">)</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">])</span>
+    <span class="n">single</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="s2">&quot;single&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+        <span class="n">single</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
+
     <span class="c1"># Find how many time steps we want to write</span>
     <span class="n">ntimes</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">]:</span>
-        <span class="n">ntimes</span> <span class="o">=</span> <span class="n">ntimes</span><span class="o">+</span><span class="mi">1</span>
+        <span class="n">ntimes</span> <span class="o">=</span> <span class="n">ntimes</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ntimes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ntimes</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Print single time step twice&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Option single should be used with one time step&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create output object</span>
     <span class="k">if</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span> <span class="ow">or</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;nc4&quot;</span><span class="p">:</span>
@@ -417,9 +427,12 @@
         <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating forcing for: &quot;</span> <span class="o">+</span> <span class="n">this_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; time_step:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">time_step</span><span class="p">))</span>
         <span class="n">output</span><span class="o">.</span><span class="n">write_forcing</span><span class="p">(</span><span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
 
     <span class="c1"># Finalize forcing</span>
     <span class="n">output</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
@@ -787,6 +800,9 @@
     <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestep</span>
     <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_out</span>
     <span class="n">options</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">debug</span>
+    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="s2">&quot;single&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">options</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
     <span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_interval</span>
 
     <span class="k">return</span> <span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span></div>
