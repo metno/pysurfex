@@ -352,11 +352,21 @@ def run_time_loop(options, var_objs, att_objs):
         if debug:
             surfex.debug(__file__, run_time_loop.__name__, "Debug mode activated in cache")
     cache = surfex.cache.Cache(debug, options['cache_interval'])
+    single = False
+    if "single" in options:
+        single = options["single"]
+
     # Find how many time steps we want to write
     ntimes = 0
     while this_time <= options['stop']:
-        ntimes = ntimes+1
+        ntimes = ntimes + 1
         this_time = this_time + timedelta(seconds=options['timestep'])
+    if single:
+        if ntimes == 1:
+            ntimes = 2
+            surfex.info("Print single time step twice", 0)
+        else:
+            raise Exception("Option single should be used with one time step")
 
     # Create output object
     if str.lower(options['output_format']) == "netcdf" or str.lower(options['output_format']) == "nc4":
@@ -380,9 +390,12 @@ def run_time_loop(options, var_objs, att_objs):
         surfex.info("Creating forcing for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(output.time_step))
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
-        this_time = this_time + timedelta(seconds=options['timestep'])
-        if cache is not None:
-            cache.clean_fields(this_time)
+        if not single:
+            this_time = this_time + timedelta(seconds=options['timestep'])
+            if cache is not None:
+                cache.clean_fields(this_time)
+        elif output.time_step > 1:
+            this_time = this_time + timedelta(seconds=options['timestep'])
 
     # Finalize forcing
     output.finalize()
@@ -750,6 +763,9 @@ def set_forcing_config(**kwargs):
     options['timestep'] = timestep
     options['geo_out'] = geo_out
     options['debug'] = debug
+    options['single'] = False
+    if "single" in kwargs:
+        options['single'] = kwargs["single"]
     options['cache_interval'] = cache_interval
 
     return options, var_objs, att_objs

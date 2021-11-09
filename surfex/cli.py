@@ -54,6 +54,7 @@ def parse_args_create_forcing(argv):
     parser.add_argument('--uref', type=str, help="Wind reference height: screen/ml/", default="ml",
                         choices=["ml", "screen"])
     parser.add_argument('--debug', help="Show debug information", action="store_true")
+    parser.add_argument('--single', help="Print single time step twice", action="store_true")
     parser.add_argument('--version', action="version", version=surfex.__version__)
 
     group_ta = parser.add_argument_group('TA', description="Air temperature [K]")
