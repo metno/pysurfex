@@ -390,9 +390,11 @@
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">run_time_loop</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Debug mode activated in cache&quot;</span><span class="p">)</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">])</span>
+    <span class="n">time_step</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span>
     <span class="n">single</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="s2">&quot;single&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
         <span class="n">single</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
+        <span class="n">time_step</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Find how many time steps we want to write</span>
     <span class="n">ntimes</span> <span class="o">=</span> <span class="mi">0</span>
@@ -411,12 +413,12 @@
         <span class="c1"># Set att_time the same as start</span>
         <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">NetCDFOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
-                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">],</span>
+                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">time_step</span><span class="p">,</span>
                                              <span class="n">fmt</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">]))</span>
     <span class="k">elif</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
         <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">AsciiOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
-                                            <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+                                            <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Invalid output format &quot;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span>
 
@@ -845,7 +847,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
     </div>
   </body>
 </html>
