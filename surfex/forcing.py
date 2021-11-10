@@ -353,9 +353,11 @@ def run_time_loop(options, var_objs, att_objs):
         if debug:
             surfex.debug(__file__, run_time_loop.__name__, "Debug mode activated in cache")
     cache = surfex.cache.Cache(debug, options['cache_interval'])
+    time_step = options['timestep']
     single = False
     if "single" in options:
         single = options["single"]
+        time_step = 1
 
     # Find how many time steps we want to write
     ntimes = 0
@@ -374,12 +376,12 @@ def run_time_loop(options, var_objs, att_objs):
         # Set att_time the same as start
         att_time = options['start']
         output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
-                                             var_objs, att_objs, att_time, cache, options['timestep'],
+                                             var_objs, att_objs, att_time, cache, time_step,
                                              fmt=str.lower(options['output_format']))
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
         output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
-                                            var_objs, att_objs, att_time, cache, options['timestep'])
+                                            var_objs, att_objs, att_time, cache, time_step)
     else:
         raise NotImplementedError("Invalid output format " + options['output_format'])
 
