@@ -29,14 +29,15 @@ class SurfexOutputForcing(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, base_time, geo, ntimes, var_objs, debug):
-        self.time_step_intervall = 3600
+    def __init__(self, base_time, geo, ntimes, var_objs, debug, time_step_intervall):
+        self.time_step_intervall = time_step_intervall
         self.valid_time = None
         self.base_time = base_time
         self.geo = geo
         self.debug = debug
         self.ntimes = ntimes
         self.time_step = 0
+        self.time_step_value = 0
         self.var_objs = var_objs
         self._check_sanity()
 
@@ -97,8 +98,8 @@ class NetCDFOutput(SurfexOutputForcing):
         "CO2": "CO2air",
     }
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, fmt):
-        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug)
+    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, time_step, fmt="netcdf"):
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug, time_step)
         if fmt == "netcdf":
             self.output_format = "NETCDF3_64BIT"
         elif fmt == "nc4":
@@ -128,7 +129,7 @@ class NetCDFOutput(SurfexOutputForcing):
             surfex.info("Preparation took " + str(toc - tic) + " seconds")
             self.forcing_file[self.translation[this_var]][self.time_step, :] = field
 
-        self.forcing_file['TIME'][self.time_step] = self.time_step
+        self.forcing_file['TIME'][self.time_step] = self.time_step_value
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
         surfex.info("Define netcdf forcing")
@@ -254,11 +255,11 @@ class AsciiOutput(SurfexOutputForcing):
 
     """
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache):
+    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, time_step):
         debug = False
         if cache is not None:
             debug = cache.debug
-        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, debug)
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, debug, time_step)
         self.output_format = "ascii"
         surfex.info("Forcing type is ASCII")
         self.forcing_file = {}
@@ -373,12 +374,12 @@ def run_time_loop(options, var_objs, att_objs):
         # Set att_time the same as start
         att_time = options['start']
         output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
-                                             var_objs, att_objs, att_time, cache,
+                                             var_objs, att_objs, att_time, cache, options['timestep'],
                                              fmt=str.lower(options['output_format']))
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
         output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
-                                            var_objs, att_objs, att_time, cache)
+                                            var_objs, att_objs, att_time, cache, options['timestep'])
     else:
         raise NotImplementedError("Invalid output format " + options['output_format'])
 
@@ -391,12 +392,15 @@ def run_time_loop(options, var_objs, att_objs):
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
         if not single:
+            output.time_step_value = output.time_step
             this_time = this_time + timedelta(seconds=options['timestep'])
             if cache is not None:
                 cache.clean_fields(this_time)
-        elif output.time_step > 1:
-            this_time = this_time + timedelta(seconds=options['timestep'])
-
+        else:
+            output.time_step_value = 0
+            if output.time_step > 1:
+                this_time = this_time + timedelta(seconds=options['timestep'])
+  
     # Finalize forcing
     output.finalize()
     toc = time.time()
