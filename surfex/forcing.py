@@ -357,7 +357,6 @@ def run_time_loop(options, var_objs, att_objs):
     single = False
     if "single" in options:
         single = options["single"]
-        time_step = 1
 
     # Find how many time steps we want to write
     ntimes = 0
@@ -365,6 +364,7 @@ def run_time_loop(options, var_objs, att_objs):
         ntimes = ntimes + 1
         this_time = this_time + timedelta(seconds=options['timestep'])
     if single:
+        time_step = 1
         if ntimes == 1:
             ntimes = 2
             surfex.info("Print single time step twice", 0)
