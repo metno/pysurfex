@@ -273,7 +273,7 @@ class Converter(object):
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_t = self.t.read_variable(geo, validtime, cache)
             field = field_totalprec
-            field[field_t < 1] = 0
+            field[field_t <= 274.16] = 0
         elif self.name == "calcsnow":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             # field_rh = self.rh.read_variable(geo, validtime,cache) #
