@@ -21,6 +21,8 @@ class BufrObservationSet(surfex.obs.ObservationSet):
     def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, debug=False,
                  label="bufr", use_first=False):
 
+        if debug:
+            print(eccodes.__file__)
         if lonrange is None:
             lonrange = [-180, 180]
         if latrange is None:
@@ -35,7 +37,9 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         # define the keys to be printed
         keys = [
             'latitude',
+            'localLatitude',
             'longitude',
+            'localLongitude',
             'year',
             'month',
             'day',
@@ -105,7 +109,9 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             # print the values for the selected keys from the message
             if decoded:
                 lat = np.nan
+                local_lat = np.nan
                 lon = np.nan
+                local_lon = np.nan
                 value = np.nan
                 elev = np.nan
                 year = -1
@@ -124,13 +130,29 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 cb = np.nan
                 for key in keys:
                     try:
+                        if debug:
+                           print("Decode: ", key)
                         val = eccodes.codes_get(bufr, key)
+                        if debug:
+                            print("Got:", key,"=",val)
                         if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
                             val = np.nan
                         if key == "latitude":
                             lat = val
+                            if lat < -90 or lat > 90:
+                                lat = np.nan
                         if key == "longitude":
                             lon = val
+                            if lon < -180 or lon > 180:
+                                lon = np.nan
+                        if key == "localLatitude":
+                            local_lat = val
+                            if local_lat < -90 or local_lat > 90:
+                                local_lat = np.nan
+                        if key == "localLongitude":
+                            local_lon = val
+                            if local_lon < -180 or local_lon > 180:
+                                local_lon = np.nan
                         if key == "year":
                             year = val
                         if key == "month":
@@ -165,90 +187,113 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             cb = val
 
                     except eccodes.CodesInternalError:
-                        pass
+                        if debug:
+                            print('Report does not contain key="%s"' % (key))
                         # all_found = False
                         # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
-                # Assign value to var
-                pos = "{:.5f}".format(lon) + ":" + "{:.5f}".format(lat)
-                for var in variables:
-                    exists = False
-                    if use_first:
-                        if pos in registry:
-                            if var in registry[pos]:
-                                exists = registry[pos][var]
-                        else:
-                            registry.update({pos: {}})
-                    if not exists:
-                        if var == "relativeHumidityAt2M":
-                            if not np.isnan(t2m) and not np.isnan(td2m):
-                                try:
-                                    value = self.td2rh(td2m, t2m)
-                                    value = value * 0.01
-                                except:
-                                    value = np.nan
+                got_pos = True
+                if np.isnan(lat):
+                    if np.isnan(local_lat):
+                        got_pos = False
+                    else:
+                        lat = local_lat
+                if np.isnan(lon):
+                    if np.isnan(local_lon):
+                        got_pos = False
+                    else:
+                        lon = local_lon
+ 
+                if got_pos:
+                    # Assign value to var
+                    pos = "{:.5f}".format(lon) + ":" + "{:.5f}".format(lat)
+                    for var in variables:
+                        exists = False
+                        if use_first:
+                            if pos in registry:
+                                if var in registry[pos]:
+                                    exists = registry[pos][var]
                             else:
-                                if not np.isnan(t) and not np.isnan(td):
+                                registry.update({pos: {}})
+                        if not exists:
+                            if debug:
+                                print("Pos does not exist ", pos, var)
+                            if var == "relativeHumidityAt2M":
+                                if not np.isnan(t2m) and not np.isnan(td2m):
                                     try:
-                                        value = self.td2rh(td, t)
+                                        value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
                                     except:
                                         value = np.nan
-                        elif var == "airTemperatureAt2M":
-                            if np.isnan(t2m):
-                                if not np.isnan(t):
-                                    value = t
+                                else:
+                                    if not np.isnan(t) and not np.isnan(td):
+                                        try:
+                                            value = self.td2rh(td, t)
+                                            value = value * 0.01
+                                        except:
+                                            value = np.nan
+                            elif var == "airTemperatureAt2M":
+                                if np.isnan(t2m):
+                                    if not np.isnan(t):
+                                        value = t
+                                else:
+                                    value = t2m
+                            elif var == "totalSnowDepth":
+                                value = sd
+                            elif var == "heightBaseOfCloud":
+                                value = cb
                             else:
-                                value = t2m
-                        elif var == "totalSnowDepth":
-                            value = sd
-                        elif var == "heightBaseOfCloud":
-                            value = cb
+                                raise NotImplementedError("Var " + var + " is not coded! Please do it!")
                         else:
-                            raise NotImplementedError("Var " + var + " is not coded! Please do it!")
+                            if debug:
+                                print("Pos already exists ", pos, var)
+    
+                        all_found = True
+                        if np.isnan(lat):
+                            all_found = False
+                        if np.isnan(lon):
+                            all_found = False
+                        if year == -1:
+                            all_found = False
+                        if month == -1:
+                            all_found = False
+                        if day == -1:
+                            all_found = False
+                        if hour == -1:
+                            all_found = False
+                        if minute == -1:
+                            all_found = False
+                        if np.isnan(elev):
+                            all_found = False
+                        if np.isnan(value):
+                            all_found = False
+                        if not all_found:
+                            nerror.update({var: nerror[var] + 1})
 
-                    all_found = True
-                    if np.isnan(lat):
-                        all_found = False
-                    if np.isnan(lon):
-                        all_found = False
-                    if year == -1:
-                        all_found = False
-                    if month == -1:
-                        all_found = False
-                    if day == -1:
-                        all_found = False
-                    if hour == -1:
-                        all_found = False
-                    if minute == -1:
-                        all_found = False
-                    if np.isnan(elev):
-                        all_found = False
-                    if np.isnan(value):
-                        all_found = False
-                    if not all_found:
-                        nerror.update({var: nerror[var] + 1})
-
-                    # print(lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
-                    if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
-                        obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
-                        # print(value)
-                        if not np.isnan(value):
-                            if self.inside_window(obs_dtg, valid_dtg, valid_range):
-                                # print(valid_dtg, lon, lat, value, elev, stid)
-                                if station_number > 0 and block_number > 0:
-                                    stid = str((block_number * 1000) + station_number)
-                                observations.append(surfex.obs.Observation(obs_dtg, lon, lat, value,
-                                                                           elev=elev, stid=stid, varname=var))
-                                if use_first:
-                                    registry[pos].update({var: True})
-                                nobs.update({var: nobs[var] + 1})
+                        if debug:
+                            print("Check on position in space and time", lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
+                        if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
+                            obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+                            # print(value)
+                            if not np.isnan(value):
+                                if self.inside_window(obs_dtg, valid_dtg, valid_range):
+                                    if debug:
+                                        print("Valid DTG for station", obs_dtg, valid_dtg, valid_range, lon, lat, value, elev, stid)
+                                    if station_number > 0 and block_number > 0:
+                                        stid = str((block_number * 1000) + station_number)
+                                    observations.append(surfex.obs.Observation(obs_dtg, lon, lat, value,
+                                                                               elev=elev, stid=stid, varname=var))
+                                    if use_first:
+                                        registry[pos].update({var: True})
+                                    nobs.update({var: nobs[var] + 1})
+                                else:
+                                    ntime.update({var: ntime[var] + 1})
                             else:
-                                ntime.update({var: ntime[var] + 1})
+                                nundef.update({var: nundef[var] + 1})
                         else:
-                            nundef.update({var: nundef[var] + 1})
-                    else:
-                        ndomain.update({var: ndomain[var] + 1})
+                            ndomain.update({var: ndomain[var] + 1})
+                else:
+                    nerror.update({var: nerror[var] + 1})
 
                 cnt += 1
 
