@@ -168,6 +168,17 @@ surface_snow_thickness:
       none:
         name: DSN_T_ISBA
 
+cloud_base:
+  grib2:
+    converter:
+      cloud_base:
+        cloud_base:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 11
+          levelType: 10
+          level: 0
+
 altitude:
   netcdf:
     converter:
@@ -188,7 +199,6 @@ altitude:
           tri: 0
   grib2:
     converter:
-      none:
       phi2m:
         phi:
           discipline: 0
@@ -211,6 +221,17 @@ altitude:
     converter:
       phi2m:
         name: SURFGEOPOTENTIEL
+
+cloud_base:
+  grib2:
+    converter:
+      cloud_base:
+        cloud_base:
+          discipline: 0
+          parameterCategory: 6
+          parameterNumber: 11
+          levelType: 1
+          level: 0
 
 land_area_fraction:
   grib1:

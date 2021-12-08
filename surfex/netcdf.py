@@ -525,21 +525,25 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
                      "relative_humidity_2m": "relative_humidity",
                      "altitude": "altitude",
                      "surface_snow_thickness": "surface_snow_thickness",
+                     "cloud_base": "cloud_base",
                      "land_area_fraction": "land_area_fraction"}
     long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
                  "relative_humidity_2m": "Screen level relative humidity (RH2M)",
                  "altitude": "Altitude",
                  "surface_snow_thickness": "Surface snow thickness",
+                 "cloud_base": "Cloud base",
                  "land_area_fraction": "Land Area Fraction"}
     units = {"air_temperature_2m": "K",
              "relative_humidity_2m": "1",
              "altitude": "m",
              "surface_snow_thickness": "m",
+             "cloud_base": "m",
              "land_area_fraction": "1"}
     fillvalue = {"air_temperature_2m": "9.96921e+36",
                  "relative_humidity_2m": "9.96921e+36",
                  "altitude": "9.96921e+36",
                  "surface_snow_thickness": "9.96921e+36",
+                 "cloud_base": "9.96921e+36",
                  "land_area_fraction": "9.96921e+36"}
 
     for my_var in my_variables:

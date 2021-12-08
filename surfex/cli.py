@@ -222,6 +222,12 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?",
                         choices=["none", "sweclim", "swe2sd", "sdp"])
 
+    parser.add_argument('-cb_file', type=str, default=None, help="Cloud base file", nargs="?")
+    parser.add_argument('-cb_format', type=str, default=None, help="Cloud base file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--cb_converter', type=str, default="cloud_base", help="", nargs="?",
+                        choices=["cloud_base"])
+
     parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
     parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
@@ -238,7 +244,7 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('--config', '-c', dest="config", type=str, help="YAML config file",
                         default="first_guess.yml", nargs="?")
     parser.add_argument('variables', nargs="+", choices=["air_temperature_2m", "relative_humidity_2m",
-                                                         "surface_snow_thickness"],
+                                                         "surface_snow_thickness", "cloud_base"],
                         help="Variables to create first guess for")
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
@@ -331,6 +337,13 @@ def first_guess_for_oi(**kwargs):
                 fileformat = kwargs["sd_format"]
             if "sd_converter" in kwargs and kwargs["sd_converter"] is not None:
                 converter = kwargs["sd_converter"]
+        elif var == "cloud_base":
+            if "cb_file" in kwargs and kwargs["cb_file"] is not None:
+                inputfile = kwargs["cb_file"]
+            if "cb_format" in kwargs and kwargs["cb_format"] is not None:
+                fileformat = kwargs["cb_format"]
+            if "cb_converter" in kwargs and kwargs["cb_converter"] is not None:
+                converter = kwargs["cb_converter"]
         elif var == "altitude":
             if "altitude_file" in kwargs and kwargs["altitude_file"] is not None:
                 inputfile = kwargs["altitude_file"]
@@ -363,6 +376,9 @@ def first_guess_for_oi(**kwargs):
             surfex.debug(__file__, first_guess_for_oi.__name__, "Fileformat", fileformat)
         converter_conf = config[var][fileformat]["converter"]
         if converter not in config[var][fileformat]["converter"]:
+            if debug:
+                surfex.debug(__file__, first_guess_for_oi.__name__, "config_file", config_file)
+                surfex.debug(__file__, first_guess_for_oi.__name__, "config:", config)
             raise Exception("No converter " + converter + " definition found in " + config + "!")
 
         initial_basetime = validtime - timedelta(seconds=10800)

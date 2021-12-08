@@ -4,6 +4,7 @@ from surfex.util import data_merge
 import copy
 from abc import abstractmethod, ABCMeta
 import numpy as np
+
 try:
     from StringIO import StringIO   # Python 2.x
 except ImportError:
@@ -187,6 +188,8 @@ class Converter(object):
         elif self.name == "nature_town":
             self.nature_fraction = self.create_variable(fileformat, defs, conf[self.name]["nature_fraction"], debug)
             self.town_fraction = self.create_variable(fileformat, defs, conf[self.name]["town_fraction"], debug)
+        elif self.name == "cloud_base":
+            self.cloud_base = self.create_variable(fileformat, defs, conf[self.name]["cloud_base"], debug)
         else:
             raise NotImplementedError("Converter " + self.name + " not implemented")
 
@@ -327,6 +330,33 @@ class Converter(object):
             town = self.town_fraction.read_variable(geo, validtime, cache)
             field = np.add(nature, town)
             field[field > 1] = 1.0
+        elif self.name == "cloud_base":
+            print("Converter cloud_base")
+            import gridpp
+
+            field = self.cloud_base.read_variable(geo, validtime, cache)
+            a = field.reshape(geo.nlons, geo.nlats)
+
+            def fill_field(a, radius=1):
+                ovalues = gridpp.neighbourhood(a, radius, gridpp.Mean)
+                n = 0
+                for i in range(0, geo.nlons):
+                    for j in range(0, geo.nlats):
+                       if np.isnan(a[i][j]):
+                            n = n + 1
+                            #print("Sub ", i, j, n)
+                            a[i][j] = ovalues[i][j]
+                return a, n
+
+            it = 0
+            while np.any(np.isnan(a)):
+               print("Filling cloud base")
+               a, n = fill_field(a, radius=3)
+               it = it + 1
+               print("Iteration ", it, "NaNs:", n)
+
+            field = a.reshape(geo.nlons * geo.nlats)
+
         else:
             raise NotImplementedError("Converter " + self.name + " not implemented")
         return field

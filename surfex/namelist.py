@@ -740,8 +740,7 @@ class BaseNamelist(object):
         self.input_list.append({"file": self.input_path + "/treedrag.json"})
         lfaketrees = self.config.get_setting("SURFEX#TREEDRAG#FAKETREES", abort=False)
         if lfaketrees is not None:
-            self.input_list.append({"json": {"NAM_TREEDRAG": {"LFAKETREE":
-                                                             self.config.get_setting("SURFEX#TREEDRAG#FAKETREES")}}})
+            self.input_list.append({"json": {"NAM_TREEDRAG": {"LFAKETREE": lfaketrees}}})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             self.input_list.append({"file": self.input_path + "/flake.json"})

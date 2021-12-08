@@ -183,7 +183,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             td = val
                         if key == "totalSnowDepth":
                             sd = val
-                        if key == "heightBaseOfCloud":
+                        if key == "heightOfBaseOfCloud":
                             cb = val
 
                     except eccodes.CodesInternalError:
@@ -240,7 +240,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                                     value = t2m
                             elif var == "totalSnowDepth":
                                 value = sd
-                            elif var == "heightBaseOfCloud":
+                            elif var == "heightOfBaseOfCloud":
                                 value = cb
                             else:
                                 raise NotImplementedError("Var " + var + " is not coded! Please do it!")
