@@ -220,7 +220,7 @@
                             <span class="n">td</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;totalSnowDepth&quot;</span><span class="p">:</span>
                             <span class="n">sd</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightBaseOfCloud&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                             <span class="n">cb</span> <span class="o">=</span> <span class="n">val</span>
 
                     <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span><span class="p">:</span>
@@ -277,7 +277,7 @@
                                     <span class="n">value</span> <span class="o">=</span> <span class="n">t2m</span>
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;totalSnowDepth&quot;</span><span class="p">:</span>
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">sd</span>
-                            <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;heightBaseOfCloud&quot;</span><span class="p">:</span>
+                            <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">cb</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Var &quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot; is not coded! Please do it!&quot;</span><span class="p">)</span>
@@ -419,7 +419,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>

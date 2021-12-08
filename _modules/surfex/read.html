@@ -41,6 +41,7 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>   <span class="c1"># Python 2.x</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -224,6 +225,8 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nature_town&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;cloud_base&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
 
@@ -364,6 +367,33 @@
             <span class="n">town</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nature</span><span class="p">,</span> <span class="n">town</span><span class="p">)</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter cloud_base&quot;</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">gridpp</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">fill_field</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">ovalues</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Mean</span><span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">):</span>
+                       <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]):</span>
+                            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+                            <span class="c1">#print(&quot;Sub &quot;, i, j, n)</span>
+                            <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalues</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">n</span>
+
+            <span class="n">it</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
+               <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filling cloud base&quot;</span><span class="p">)</span>
+               <span class="n">a</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">fill_field</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+               <span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">1</span>
+               <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration &quot;</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="s2">&quot;NaNs:&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+            <span class="n">field</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span> <span class="o">*</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span></div>
@@ -402,7 +432,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>

@@ -777,8 +777,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/treedrag.json&quot;</span><span class="p">})</span>
         <span class="n">lfaketrees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#FAKETREES&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lfaketrees</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;NAM_TREEDRAG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">:</span>
-                                                             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#FAKETREES&quot;</span><span class="p">)}}})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;NAM_TREEDRAG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">:</span> <span class="n">lfaketrees</span><span class="p">}}})</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/flake.json&quot;</span><span class="p">})</span>
@@ -1479,7 +1478,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>
