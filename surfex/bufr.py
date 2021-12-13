@@ -164,9 +164,11 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         if key == "minute":
                             minute = val
                         if key == "heightOfStation":
-                            elev = val
+                            if not np.isnan(val):
+                                elev = val
                         if key == "heightOfStationGroundAboveMeanSeaLevel":
-                            elev = val
+                            if not np.isnan(val):
+                                elev = val
                         if key == "stationNumber":
                             station_number = val
                         if key == "blockNumber":
