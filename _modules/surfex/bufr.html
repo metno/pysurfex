@@ -201,9 +201,11 @@
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;minute&quot;</span><span class="p">:</span>
                             <span class="n">minute</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStation&quot;</span><span class="p">:</span>
-                            <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                                <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStationGroundAboveMeanSeaLevel&quot;</span><span class="p">:</span>
-                            <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                                <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;stationNumber&quot;</span><span class="p">:</span>
                             <span class="n">station_number</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;blockNumber&quot;</span><span class="p">:</span>
