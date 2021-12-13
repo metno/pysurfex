@@ -775,3 +775,23 @@ def set_forcing_config(**kwargs):
     options['cache_interval'] = cache_interval
 
     return options, var_objs, att_objs
+
+
+def modify_forcing(**kwargs):
+    infile = kwargs["input_file"]
+    outfile = kwargs["output_file"]
+    time_step = kwargs["time_step"]
+    variables = kwargs["variables"]
+
+    ifile = netCDF4.Dataset(infile, 'r')
+    ofile = netCDF4.Dataset(outfile, "r+")
+
+    for var in variables:
+        print("Modify variable " + var)
+        print("input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step)
+        print("output", ofile[var][0, :], ofile[var][0, :].shape)
+        ofile[var][0,:] = ifile[var][time_step, :]
+        ofile.sync()
+
+    ifile.close()
+    ofile.close()

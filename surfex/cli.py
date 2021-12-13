@@ -169,6 +169,26 @@ def parse_args_create_forcing(argv):
     return kwargs
 
 
+def parse_args_modify_forcing(argv):
+
+    # print argv
+    parser = ArgumentParser(description="Modify offline forcing NetCDF file")
+    parser.add_argument('-i', '--input_file', type=str, help="Input forcing file", nargs="?", required=True)
+    parser.add_argument('-t', '--time_step', type=str, help="Time step ", nargs="?", required=False, default=-1)
+    parser.add_argument('-o', '--output_file', type=str, help="Output forcing file",  nargs="?", required=True)
+    parser.add_argument('variables', type=str, nargs="+", help="Variables to substitute")
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
 def parse_args_qc2obsmon(argv):
     parser = ArgumentParser("Create SQLite data base for obsmon")
     parser.add_argument('dtg', type=str, help="YYYYMMDDHH")

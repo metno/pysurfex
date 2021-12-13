@@ -159,6 +159,7 @@ setup(
         'bin/create_forcing',
         'bin/qc2obsmon',
         'bin/create_forcing',
+        'bin/modify_forcing',
         'bin/FirstGuess4gridpp',
         'bin/gridpp',
         'bin/json-gui2toml',
