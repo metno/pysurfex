@@ -812,6 +812,26 @@
     <span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_interval</span>
 
     <span class="k">return</span> <span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span></div>
+
+
+<span class="k">def</span> <span class="nf">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">infile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_file&quot;</span><span class="p">]</span>
+    <span class="n">outfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">]</span>
+    <span class="n">time_step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;time_step&quot;</span><span class="p">]</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span>
+
+    <span class="n">ifile</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">ofile</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Modify variable &quot;</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">ofile</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+
+    <span class="n">ifile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">ofile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 
             <div class="clearer"></div>
