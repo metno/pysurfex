@@ -809,27 +809,6 @@ class ConfigurationFromHarmonie(Configuration):
             cvar_m = list(map(str, cvar_m.split(",")))
             self.update_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M", cvar_m)
 
-        if "XSIGMA_M" in env:
-            xsigma_m = env["XSIGMA_M"]
-            xsigma_m = list(map(float, xsigma_m.split(",")))
-            self.update_setting("SURFEX#ASSIM#ISBA#ENKF#XSIGMA_M", xsigma_m)
-
-        if "XTPRT_M" in env:
-            xtprt_m = env["XTPRT_M"]
-            xtprt_m = list(map(float, xtprt_m.split(",")))
-            self.update_setting("SURFEX#ASSIM#ISBA#ENKF#XTPRT_M", xtprt_m)
-
-        if "LLINCHECK" in env:
-            llincheck = env["LLINCHECK"]
-            if llincheck == "TRUE":
-                self.update_setting("SURFEX#ASSIM#ISBA#ENKF#LLINCHECK", True)
-            else:
-                self.update_setting("SURFEX#ASSIM#ISBA#ENKF#LLINCHECK", False)
-
-        if "XALPHA" in env:
-            xalpha = env["XALPHA"]
-            self.update_setting("SURFEX#ASSIM#ISBA#ENKF#XALPHA", float(xalpha))
-
         if "NENS_M" in env:
             nens_m = env["NENS_M"]
             self.update_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M", int(nens_m))

@@ -590,14 +590,10 @@ class BaseNamelist(object):
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-            xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XTPRT_M")
-            xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XSIGMA_M")
             nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var in range(0, len(cvar_m)):
                 self.input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
                 self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
                 if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
@@ -751,34 +747,18 @@ class BaseNamelist(object):
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
             nvar = 0
-            llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#LLINCHECK")
-            self.input_list.append({"json": {"NAM_ASSIM": {"LLINCHECK": llincheck}}})
-            xalpha = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XALPHA")
-            self.input_list.append({"json": {"NAM_VAR": {"XALPHA": xalpha}}})
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
-            xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XSIGMA_M")
-            xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XTPRT_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-            if len(nncv) != len(cvar_m) or len(nncv) != len(xsigma_m) or len(nncv) != len(xtprt_m):
-                raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
+            if len(nncv) != len(cvar_m):
+                raise Exception("Mismatch in nncv/cvar_m")
             for var in range(0, len(cvar_m)):
                 self.input_list.append(
                     {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
                 self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
                 if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
-#            self.input_list.append({"json": {"NAM_VAR": {"XSCALE_Q":
-#                                                         self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#XSCALE_Q")}}})
-#            self.input_list.append({"json": {"NAM_IO_VARASSIM": {
-#                "LPRT": False,
-#                "LBEV": self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#EVOLVE_B"),
-#                "LBFIXED": not self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#EVOLVE_B")
-#            }}})
-
 
         # Town
         self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_TEB":
@@ -1519,7 +1499,6 @@ class SodaInputData(surfex.JsonInputData):
         enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(nens_m) + "." + extension: first_guess})
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-        llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#LLINCHECK")
 
         pert_enkf = 0
         pert_input = 0
@@ -1541,7 +1520,6 @@ class SodaInputData(surfex.JsonInputData):
 
                 target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(p) + "." + extension
                 enkf_settings.update({target: perturbed_run})
-#                pert_enkf = pert_enkf + 1
 
         # LSM
         # Fetch first_guess needed for LSM for extrapolations
