@@ -33,7 +33,7 @@ LAI = 'LAI_@MM@@CDD@_c.dir'             # SG Leaf area index
 YZS = "gmted2010.dir"               # Database with orography: "gmted2010"|"gtopo30"
 
 [SURFEX.PARAMETERS]
-XRIMAX = 0.2                        # Maximum allowed Richardson number in the surface layer
+XRIMAX = 0.0                        # Maximum allowed Richardson number in the surface layer
 
 [SURFEX.TILES]                      # Define which tile schemes to use
 SEA = "SEAFLX"                      # Sea scheme
@@ -73,12 +73,12 @@ LDB_VERSION = "3.0"
 
 # ISBA settings
 [SURFEX.ISBA]
-SCHEME = "3-L"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
+SCHEME = "DIF"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
 NPATCH = 2                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
-MEB = false                         # Enable Multi Energy Budget (MEB) model
+MEB = true                         # Enable Multi Energy Budget (MEB) model
 CANOPY = false                      # Activates surface boundary multi layer scheme over land in SURFEX
                                     # (must be false for NPATCH>1)
-SNOW = "D95"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
+SNOW = "3-L"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
 YSOC_TOP = "soc_top.dir"            # Soil organic carbon data. Options: "soc_top.dir"
 YSOC_SUB = "soc_sub.dir"            # Soil organic carbon data. Options: "soc_sub.dir"
 
@@ -125,7 +125,7 @@ CFILE_FORMAT_LSM = "ASCII"              # File format for land sea mask when usi
 [SURFEX.ASSIM.SCHEMES]
 SEA = "NONE"                         # Assimilation method for sea tile: "INPUT"|"NONE"
 INLAND_WATER = "INPUT"               # Assimilation method for water tile: "INPUT"|"NONE"
-ISBA = "EKF"                         # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
+ISBA = "ENKF"                         # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
 TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|"ROADT"
 
 [SURFEX.ASSIM.OBS]
@@ -134,8 +134,9 @@ CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when 
 LOBSNAT = false                             # Observation ASCII file only contains nature points
 COBS_M = ["T2M","HU2M","WG2 ","LAI","SWE"]  # Observation types
 NNCO = [1, 1, 0, 0, 1]                      # Active observation types
-XERROBS_M = [1.0, 0.1, 0.1, 0.1, 20.0]      # Observation error (used in EKF)
+XERROBS_M = [0.4, 0.1, 0.1, 0.1, 20.0]      # Observation error (used in EKF)
 LSWE = false                                # Assimilate SWE, if false assimilate snow depth
+NOBSTYPE_M=2                                # Number of assimilated observations in the EnKF
 
 [SURFEX.ASSIM.SEA]
 CFILE_FORMAT_SST = "ASCII"           # File format for SST input when using SODA and SEA == "INPUT": "ASCII"|"FA"
@@ -175,3 +176,13 @@ XSCALE_Q = 0.125                             # Scaling of obs error
 EVOLVE_B = false                             # Evolve B matrix each cycle
 LLINCHECK = true                             # Linerarity check of jacobians
 XALPHA = 0.2                                 # Alpha used in linerarity check of jacobians
+
+# EnKF settings
+[SURFEX.ASSIM.ISBA.ENKF]
+NNCV = [1,1,1,1,1,1]                             # Active EnKF control variables
+CVAR_M = ["TG1", "TG2", "TG3", "WG2" , "WG3", "WG4"]       # Control variables
+XSCALE_Q = 0.125                             # Scaling of obs error
+EVOLVE_B = false                             # Evolve B matrix each cycle
+LLINCHECK = false                             # Linerarity check of jacobians
+NENS_M=16                                    # Number of ensemble members
+LPASSIVE_MODE=false
