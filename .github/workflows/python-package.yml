@@ -81,7 +81,7 @@ jobs:
         unzip -o testdata.zip
         echo "Testdata"
         ./prepare_testdata.sh
-        export PATH=$PWD/test/bin:/usr/bin/:$PATH && CLIENTID=${{secrets.CLIENTID}} && nosetests
+        export PATH=$PWD/test/bin:/usr/bin/:$PATH && export CLIENTID=${{secrets.CLIENTID}} && nosetests
     - name: Coveralls
       if: ${{ matrix.python-version == 3.6 }}
       run: |
