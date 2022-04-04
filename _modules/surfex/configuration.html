@@ -786,6 +786,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;OI&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_EKF_SURFEX&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">)</span>
+
 
         <span class="c1"># Active EKF control variables from CVAR_M</span>
         <span class="k">if</span> <span class="s2">&quot;NNCV&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
@@ -831,6 +834,27 @@
             <span class="n">xerrobs_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XERROBS_M&quot;</span><span class="p">]</span>
             <span class="n">xerrobs_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">xerrobs_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#XERROBS_M&quot;</span><span class="p">,</span> <span class="n">xerrobs_m</span><span class="p">)</span>
+
+        <span class="c1"># Active EnKF control variables from CVAR_M</span>
+        <span class="k">if</span> <span class="s2">&quot;NNCV&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCV&quot;</span><span class="p">]</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nncv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NNCV&quot;</span><span class="p">,</span> <span class="n">nncv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;CVAR_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CVAR_M&quot;</span><span class="p">]</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cvar_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#CVAR_M&quot;</span><span class="p">,</span> <span class="n">cvar_m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;NENS_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nens_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NENS_M&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NENS_M&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nens_m</span><span class="p">))</span>
+        
+        <span class="c1"># Observations</span>
+        <span class="k">if</span> <span class="s2">&quot;NOBSTYPE_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nobstype_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NOBSTYPE_M&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OBS#NOBSTYPE_M&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nobstype_m</span><span class="p">))</span>
+
 
         <span class="c1"># ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)</span>
         <span class="c1"># # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments</span>
