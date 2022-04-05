@@ -15,7 +15,7 @@ class SystemFilePaths(object):
 
     def __init__(self, system_file_paths):
         self.system_file_paths = system_file_paths
-        self.system_variables = None
+        # self.system_variables = None
 
     def get_system_path(self, dtype, **kwargs):
         # print(kwargs)
@@ -33,9 +33,15 @@ class SystemFilePaths(object):
             if default_dir is None:
                 raise Exception("No system path found for " + dtype)
             else:
+                if verbosity > 1:
+                    print("Find default path")
                 data_dir = self.find_matching_data_dir(default_dir, **kwargs)
-                print("DEFAULT")
-        # print(data_dir)
+                if data_dir is None:
+                    if verbosity > 0:
+                        print("No default path found for " + default_dir)
+
+        if verbosity > 3:
+            print(data_dir)
         return data_dir
 
     def find_matching_data_dir(self, dtype, **kwargs):
@@ -109,6 +115,9 @@ class SystemFilePaths(object):
 
     @staticmethod
     def parse_setting(setting, **kwargs):
+        verbosity = 0
+        if "verbosity" in kwargs:
+            verbosity = kwargs["verbosity"]
         check_parsing = True
         # Check on arguments
         if kwargs is not None and isinstance(setting, str):
@@ -145,6 +154,11 @@ class SystemFilePaths(object):
 
             if basedtg is not None and validtime is not None:
                 lead_time = validtime - basedtg
+                setting = str(setting).replace("@YYYY_LL@", validtime.strftime("%Y"))
+                setting = str(setting).replace("@MM_LL@", validtime.strftime("%m"))
+                setting = str(setting).replace("@DD_LL@", validtime.strftime("%d"))
+                setting = str(setting).replace("@HH_LL@", validtime.strftime("%H"))
+                setting = str(setting).replace("@mm_LL@", validtime.strftime("%M"))
                 lead_seconds = int(lead_time.total_seconds())
                 # lead_minutes = int(lead_seconds / 3600)
                 lead_hours = int(lead_seconds / 3600)
@@ -183,9 +197,13 @@ class SystemFilePaths(object):
                 setting = str(setting).replace("@VAR@", var)
 
             if sfx_exp_vars is not None:
-                # print(sfx_exp_vars)
+                if verbosity > 2:
+                    print(sfx_exp_vars, setting)
                 for sfx_exp_var in sfx_exp_vars:
-                    setting = str(setting).replace("@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
+                    if isinstance(sfx_exp_vars[sfx_exp_var], str):
+                        if verbosity > 4:
+                            print(str(setting), "  <--> ", "@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
+                        setting = str(setting).replace("@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
 
             if "check_parsing" in kwargs:
                 check_parsing = kwargs["check_parsing"]
@@ -416,7 +434,7 @@ class BaseNamelist(object):
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
             self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}})
             if os.path.exists(self.input_path + "/isba_dif.json"):
-                self.input_list.append({"file": self.input_path + "/isba_dif.json" })
+                self.input_list.append({"file": self.input_path + "/isba_dif.json"})
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
             self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "3-L", "NGROUND_LAYER": 3}}})
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "2-L":
@@ -518,7 +536,7 @@ class BaseNamelist(object):
         # Set extra ISBA-DIF properties (Not needed in prep?)
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
             if os.path.exists(self.input_path + "/isba_dif.json"):
-                self.input_list.append({"file": self.input_path + "/isba_dif.json" })
+                self.input_list.append({"file": self.input_path + "/isba_dif.json"})
 
         # ISBA CANOPY
         self.input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY":
@@ -618,7 +636,7 @@ class BaseNamelist(object):
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         xerrobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#XERROBS_M")
         print(nnco, cobs_m, xerrobs_m)
-        if len(nnco) != len(cobs_m) or  len(nnco) != len(xerrobs_m):
+        if len(nnco) != len(cobs_m) or len(nnco) != len(xerrobs_m):
             raise Exception("Mismatch in nnco/cobs_m/xerrobs_m")
 
         for ob in range(0, len(nnco)):
@@ -664,15 +682,16 @@ class BaseNamelist(object):
         # Snow
         laesnm = False
         snow_cycles = self.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
-        if type(snow_cycles) is list:
-            if len(snow_cycles) > 0:
-                if self.dtg is not None:
-                    for cycle in snow_cycles:
-                        if int(self.dtg.strftime("%H")) == int(cycle):
-                            print("true")
-                            laesnm = True
-                else:
-                    raise Exception("You must provide a DTG when using a list for snow assimilation cycles")
+        if len(snow_cycles) > 0:
+            print(self.dtg)
+            if self.dtg is not None:
+                for cycle in snow_cycles:
+                    print(self.dtg.strftime("%H"))
+                    if int(self.dtg.strftime("%H")) == int(cycle):
+                        print("true")
+                        laesnm = True
+            else:
+                raise Exception("You must provide a DTG when using a list for snow assimilation cycles")
         self.input_list.append({"json": {"NAM_ASSIM": {"LAESNM": laesnm}}})
 
         # Set OI settings
@@ -856,7 +875,7 @@ class BaseNamelist(object):
         if os.path.exists(my_file):
             new_dict = json.load(open(my_file, "r"))
         else:
-            raise FileNotFoundError
+            raise FileNotFoundError(my_file)
 
         return Namelist.merge_namelist_dicts(old_dict, new_dict)
 
@@ -867,8 +886,7 @@ class BaseNamelist(object):
             if "file" in inp:
                 json_file = str(inp["file"])
                 if not os.path.exists(json_file):
-                    print("Needed namelist input does not exist: " + json_file)
-                    raise FileNotFoundError
+                    raise FileNotFoundError("Needed namelist input does not exist: " + json_file)
                 else:
                     merged_json_settings = self.merge_json_namelist_file(merged_json_settings, json_file)
             elif "json" in inp:
@@ -1019,7 +1037,7 @@ class PgdInputData(surfex.JsonInputData):
             fname = "GlobalLakeStatus" + version + ".dir"
             linkbasename = "GlobalLakeStatus"
             data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
-                                                            linkbasename= linkbasename, **kwargs))
+                                                            linkbasename=linkbasename, **kwargs))
 
         possible_direct_data = {
             "ISBA": {
