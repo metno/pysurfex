@@ -55,6 +55,11 @@ air_temperature_2m:
     converter:
       none:
         varname: T2M_ISBA
+      tap:
+        tap1:
+          varname: T2M_P1
+        tap2:
+          varname: T2M_P2
   fa:
     converter:
       none:
@@ -163,6 +168,11 @@ surface_snow_thickness:
     converter:
       none:
         varname: DSN_T_ISBA
+      sdp:
+        sdp1:
+          varname: DSN_T_P1
+        sdp2:
+          varname: DSN_T_P2
   fa:
     converter:
       none:
@@ -282,6 +292,11 @@ land_area_fraction:
       sea2land:
         sea:
           varname: FRAC_SEA
+      nature_town:
+        nature_fraction:
+          varname: FRAC_NATURE
+        town_fraction:
+          varname: FRAC_TOWN
 
   fa:
     converter:
