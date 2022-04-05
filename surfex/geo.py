@@ -46,6 +46,8 @@ class Geo(object):
         tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" + f_lon + ":" + l_lon +\
               ":" + f_lat + ":" + l_lat + ":"
         tag = tag.replace(" ", "")
+        if self.debug:
+            print(tag)
         return tag
 
     def is_identical(self, geo_to_check):
@@ -84,6 +86,8 @@ class ConfProj(SurfexGeo):
         self.cgrid = "CONF PROJ"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
+        if debug:
+            print(__file__, "from_json:", from_json)
         self.ilone = None
         self.ilate = None
         if "nam_conf_proj_grid" in domain_dict:
