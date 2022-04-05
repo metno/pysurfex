@@ -346,7 +346,7 @@ class AsciiSurfexFile(SurfexIO):
                     "ilate": 0
                 }
             }
-            print(domain)
+            # print(domain)
             return surfex.geo.ConfProj(domain)
         else:
             raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
@@ -485,8 +485,8 @@ class NCSurfexFile(SurfexIO):
             proj = pyproj.CRS.from_string(proj_string)
             wgs84 = pyproj.CRS.from_string("EPSG:4326")
             x0, y0 = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(ll_lon, ll_lat)
-            xc = x0 + 0.5 * (nx - 1) * dx
-            yc = y0 + 0.5 * (ny - 1) * dy
+            xc = x0 + 0.5 * (nx + 1) * dx
+            yc = y0 + 0.5 * (ny + 1) * dy
             lonc, latc = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xc, yc)
 
             domain = {
@@ -573,6 +573,12 @@ class NCSurfexFile(SurfexIO):
 
         geo_in = self.get_geo()
         field = fh[var.varname][:]
+        # print(fh[var.varname])
+        fillvalue = fh[var.varname].getncattr("_FillValue")
+        # if np.any(np.isnan(field)):
+        print("Set ", fillvalue, " to nan")
+        field = field.filled(np.nan)
+        # print(field)
 
         # Reshape to fortran 2D style
         # field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
@@ -586,7 +592,9 @@ class NCSurfexFile(SurfexIO):
             raise Exception("validime must be a datetime object")
         field, geo_in = self.field(var, validtime=validtime)
 
+        # print(field)
         points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out, interpolation=interpolation)
+        # print(points)
         return points, interpolator
 
 
