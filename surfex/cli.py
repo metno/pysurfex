@@ -868,7 +868,8 @@ def parse_args_gridpp(argv):
     parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.25, required=False)
     parser.add_argument('--minvalue', dest='minvalue', type=float, default=None, required=False)
     parser.add_argument('--maxvalue', dest='maxvalue', type=float, default=None, required=False)
-    parser.add_argument('--only_diff', action="store_true", help="Only write differences to file", required=False, default=False)
+    parser.add_argument('--only_diff', action="store_true", help="Only write differences to file", required=False,
+                        default=False)
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
 
@@ -1971,7 +1972,7 @@ def parse_cryoclim_pseudoobs(argv):
 
 
 def run_cryoclim_pseuodoobs(**kwargs):
-    debug= False
+    debug = False
     if "debug" in kwargs:
         debug = kwargs["debug"]
     fg_file = kwargs["fg_file"]
