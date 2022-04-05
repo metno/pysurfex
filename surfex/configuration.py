@@ -1,21 +1,10 @@
-import collections
-import tomlkit
-import copy
 import os
 import surfex
-
-
-def toml_load(fname):
-    fh = open(fname, "r")
-    res = tomlkit.parse(fh.read())
-    fh.close()
-    return res
-
-
-def toml_dump(to_dump,  fname, mode="w"):
-    fh = open(fname, mode)
-    fh.write(tomlkit.dumps(to_dump))
-    fh.close()
+try:
+    import json
+except Exception as ex:
+    print("json lot loaded: ", str(ex))
+    json = None
 
 
 class Configuration(object):
@@ -74,6 +63,18 @@ class Configuration(object):
             if nncv[p] == 1:
                 perts.append(p)
         self.perts = perts
+
+    def dump_json(self, filename, indent=None, debug=False):
+        if json is None:
+            raise Exception("json module not loaded")
+
+        settings = {
+            "settings": self.settings,
+            "member_settings": self.member_settings
+        }
+        if debug:
+            print(__file__, settings)
+        json.dump(open(filename, "w"), settings, indent=indent)
 
     def max_fc_length(self, mbr=None):
         ll_list = self.get_ll_list(mbr=mbr)
@@ -211,10 +212,10 @@ class Configuration(object):
                 dsetting = {key: dsetting}
 
         if mbr is None:
-            self.settings = merge_toml_env(self.settings, dsetting)
+            self.settings = surfex.merge_toml_env(self.settings, dsetting)
         else:
             if self.members is not None and str(mbr) in self.members:
-                self.member_settings[str(mbr)] = merge_toml_env(self.member_settings[str(mbr)], dsetting)
+                self.member_settings[str(mbr)] = surfex.merge_toml_env(self.member_settings[str(mbr)], dsetting)
             else:
                 raise Exception("Not a valid member: " + str(mbr))
 
@@ -371,187 +372,6 @@ class Configuration(object):
 
         # print(expanded_hh_list, expanded_ll_list)
         return expanded_hh_list, expanded_ll_list
-
-
-def process_merged_settings(merged_settings):
-
-    merged_member_settings = {}
-    # Write member settings
-    members = None
-    if "FORECAST" in merged_settings:
-        if "ENSMSEL" in merged_settings["FORECAST"]:
-            members = list(merged_settings["FORECAST"]["ENSMSEL"])
-
-    # print(members, type(members), len(members))
-    member_settings = {}
-    if members is not None:
-        for mbr in members:
-            toml_settings = copy.deepcopy(merged_settings)
-            member_dict = get_member_settings(merged_member_settings, mbr)
-            toml_settings = merge_toml_env(toml_settings, member_dict)
-            member_settings.update({str(mbr): toml_settings})
-
-    return merged_settings, member_settings
-
-
-def merge_toml_env(old_env, mods):
-    # print(mods)
-    return deep_update(old_env, mods)
-
-
-def merge_toml_env_from_files(toml_files):
-    merged_env = {}
-    for toml_file in toml_files:
-        if os.path.exists(toml_file):
-            # print(toml_file)
-            modification = toml_load(toml_file)
-            # print(modification)
-            merged_env = merge_toml_env(merged_env, modification)
-            # print(merged_env)
-        else:
-            print("WARNING: File not found " + toml_file)
-    return merged_env
-
-
-def merge_toml_env_from_file(toml_file):
-    merged_env = {}
-    if os.path.exists(toml_file):
-        # print(toml_file)
-        modification = toml_load(toml_file)
-        merged_env = merge_toml_env(merged_env, modification)
-    else:
-        print("WARNING: File not found " + toml_file)
-    return merged_env
-
-
-def merge_config_files_dict(config_files, configuration=None, testbed_configuration=None,
-                            user_settings=None):
-
-    for this_config_file in config_files:
-        hm_exp = config_files[this_config_file]["toml"].copy()
-
-        block_config = tomlkit.document()
-        if configuration is not None:
-            f = this_config_file.split("/")[-1]
-            if f == "config_exp.toml":
-                block_config.add(tomlkit.comment("\n# SURFEX experiment configuration file\n#"))
-
-        for block in config_files[this_config_file]["blocks"]:
-            if configuration is not None:
-                # print(configuration)
-                # print(type(configuration))
-                # if type(configuration) is not dict:
-                #     raise Exception("Configuration should be a dict here!")
-                if block in configuration:
-                    merged_config = merge_toml_env(hm_exp[block], configuration[block])
-                    print("Merged: ", block, configuration[block])
-                else:
-                    merged_config = hm_exp[block]
-
-                block_config.update({block: merged_config})
-
-            if testbed_configuration is not None:
-                # print("testbed", testbed_configuration)
-                # if type(testbed_configuration) is not dict:
-                #    raise Exception("Testbed configuration should be a dict here!")
-                if block in testbed_configuration:
-                    hm_testbed = merge_toml_env(block_config[block], testbed_configuration[block])
-                else:
-                    hm_testbed = block_config[block]
-                block_config.update({block: hm_testbed})
-
-            if user_settings is not None:
-                if type(user_settings) is not dict:
-                    raise Exception("User settings should be a dict here!")
-                if block in user_settings:
-                    print("Merge user settings in block " + block)
-                    user = merge_toml_env(block_config[block], user_settings[block])
-                    block_config.update({block: user})
-
-        config_files.update({this_config_file: {"toml": block_config}})
-    return config_files
-
-
-def merge_toml_env_from_config_dicts(config_files):
-
-    merged_env = {}
-    for f in config_files:
-        # print(f)
-        modification = config_files[f]["toml"]
-        merged_env = merge_toml_env(merged_env, modification)
-    return merged_env
-
-
-def flatten(d, sep="#"):
-
-    obj = collections.OrderedDict()
-
-    def recurse(t, parent_key=""):
-        if isinstance(t, list):
-            for i in range(len(t)):
-                recurse(t[i], parent_key + sep + str(i) if parent_key else str(i))
-        elif isinstance(t, dict):
-            for k, v in t.items():
-                recurse(v, parent_key + sep + k if parent_key else k)
-        else:
-            obj[parent_key] = t
-
-    recurse(d)
-    return obj
-
-
-def get_member_settings(d, member, sep="#"):
-
-    member_settings = {}
-    settings = flatten(d)
-    for setting in settings:
-        # print(setting)
-        keys = setting.split(sep)
-        # print(keys)
-        if len(keys) == 1:
-            # print(member)
-            member3 = "{:03d}".format(int(member))
-            val = settings[setting]
-            if type(val) is str:
-                val = val.replace("@EEE@", member3)
-
-            this_setting = {keys[0]: val}
-            # print("This setting", this_setting)
-            member_settings = merge_toml_env(member_settings, this_setting)
-        else:
-            this_member = int(keys[-1])
-            keys = keys[:-1]
-            # print(keys)
-            if this_member == member:
-                # print("This is it")
-                # print(setting, keys, this_member)
-
-                this_setting = settings[setting]
-                for key in reversed(keys):
-                    this_setting = {key: this_setting}
-
-                # print(this_setting)
-                member_settings = merge_toml_env(member_settings, this_setting)
-    return member_settings
-
-
-def deep_update(source, overrides):
-    """
-    Update a nested dictionary or similar mapping.
-    Modify ``source`` in place.
-    """
-    for key, value in overrides.items():
-        if isinstance(value, collections.Mapping) and value:
-            returned = deep_update(source.get(key, {}), value)
-            # print("Returned:", key, returned)
-            source[key] = returned
-        else:
-            override = overrides[key]
-            # print("Override:", key, override)
-
-            source[key] = override
-
-    return source
 
 
 class ConfigurationFromHarmonie(Configuration):
@@ -864,3 +684,26 @@ class ConfigurationFromHarmonie(Configuration):
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", True)
             else:
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", False)
+
+
+class ConfigurationFromJson(Configuration):
+
+    def __init__(self, all_settings, debug=False):
+        if json is None:
+            raise Exception("json module not loaded")
+
+        settings = all_settings["config"]
+        member_settings = all_settings["member_config"]
+        Configuration.__init__(self, settings, member_settings, debug=debug)
+
+
+class ConfigurationFromJsonFile(Configuration):
+
+    def __init__(self, filename, debug=False):
+        if json is None:
+            raise Exception("json module not loaded")
+
+        all_settings = json.load(open(filename, "r"))
+        settings = all_settings["config"]
+        member_settings = all_settings["member_config"]
+        Configuration.__init__(self, settings, member_settings, debug=debug)

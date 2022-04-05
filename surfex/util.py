@@ -1,5 +1,8 @@
 import sys
+import os
 from datetime import datetime
+import collections
+import toml
 
 
 def error(message):
@@ -85,3 +88,41 @@ def data_merge(a, b):
     except TypeError as e:
         raise YamlReaderError('TypeError "%s" in key "%s" when merging "%s" into "%s"' % (e, key, b, a))
     return a
+
+
+def merge_toml_env(old_env, mods):
+    # print(mods)
+    return deep_update(old_env, mods)
+
+
+def merge_toml_env_from_files(toml_files):
+    merged_env = {}
+    for toml_file in toml_files:
+        if os.path.exists(toml_file):
+            # print(toml_file)
+            modification = toml.load(open(toml_file, "r"))
+            # print(modification)
+            merged_env = merge_toml_env(merged_env, modification)
+            # print(merged_env)
+        else:
+            print("WARNING: File not found " + toml_file)
+    return merged_env
+
+
+def deep_update(source, overrides):
+    """
+    Update a nested dictionary or similar mapping.
+    Modify ``source`` in place.
+    """
+    for key, value in overrides.items():
+        if isinstance(value, collections.Mapping) and value:
+            returned = deep_update(source.get(key, {}), value)
+            # print("Returned:", key, returned)
+            source[key] = returned
+        else:
+            override = overrides[key]
+            # print("Override:", key, override)
+
+            source[key] = override
+
+    return source
