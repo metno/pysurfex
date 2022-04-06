@@ -83,6 +83,8 @@
         <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlons</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">f_lon</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">l_lon</span> <span class="o">+</span>\
               <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">f_lat</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">l_lat</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span>
         <span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tag</span>
 
     <span class="k">def</span> <span class="nf">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_to_check</span><span class="p">):</span>
@@ -121,6 +123,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CONF PROJ&quot;</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="s2">&quot;from_json:&quot;</span><span class="p">,</span> <span class="n">from_json</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;nam_conf_proj_grid&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>

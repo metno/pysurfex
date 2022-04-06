@@ -36,7 +36,10 @@
             
   <h1>Source code for surfex.util</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">toml</span>
 
 
 <div class="viewcode-block" id="error"><a class="viewcode-back" href="../../index.html#surfex.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
@@ -122,6 +125,44 @@
     <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">YamlReaderError</span><span class="p">(</span><span class="s1">&#39;TypeError &quot;</span><span class="si">%s</span><span class="s1">&quot; in key &quot;</span><span class="si">%s</span><span class="s1">&quot; when merging &quot;</span><span class="si">%s</span><span class="s1">&quot; into &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">a</span></div>
+
+
+<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
+    <span class="c1"># print(mods)</span>
+    <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
+    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
+            <span class="c1"># print(toml_file)</span>
+            <span class="n">modification</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">toml_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+            <span class="c1"># print(modification)</span>
+            <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
+            <span class="c1"># print(merged_env)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: File not found &quot;</span> <span class="o">+</span> <span class="n">toml_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">merged_env</span></div>
+
+
+<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update a nested dictionary or similar mapping.</span>
+<span class="sd">    Modify ``source`` in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">returned</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">value</span><span class="p">)</span>
+            <span class="c1"># print(&quot;Returned:&quot;, key, returned)</span>
+            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">returned</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">override</span> <span class="o">=</span> <span class="n">overrides</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="c1"># print(&quot;Override:&quot;, key, override)</span>
+
+            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">override</span>
+
+    <span class="k">return</span> <span class="n">source</span></div>
 </pre></div>
 
             <div class="clearer"></div>

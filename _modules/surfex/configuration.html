@@ -35,24 +35,13 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.configuration</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">tomlkit</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">surfex</span>
-
-
-<div class="viewcode-block" id="toml_load"><a class="viewcode-back" href="../../index.html#surfex.toml_load">[docs]</a><span class="k">def</span> <span class="nf">toml_load</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">res</span></div>
-
-
-<div class="viewcode-block" id="toml_dump"><a class="viewcode-back" href="../../index.html#surfex.toml_dump">[docs]</a><span class="k">def</span> <span class="nf">toml_dump</span><span class="p">(</span><span class="n">to_dump</span><span class="p">,</span>  <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
-    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">to_dump</span><span class="p">))</span>
-    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;json lot loaded: &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+    <span class="n">json</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -111,6 +100,18 @@
             <span class="k">if</span> <span class="n">nncv</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">perts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">perts</span> <span class="o">=</span> <span class="n">perts</span>
+
+    <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;json module not loaded&quot;</span><span class="p">)</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span>
+            <span class="s2">&quot;member_settings&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">settings</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">max_fc_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ll_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
@@ -248,10 +249,10 @@
                 <span class="n">dsetting</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">dsetting</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="n">mbr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">dsetting</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">dsetting</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)],</span> <span class="n">dsetting</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)],</span> <span class="n">dsetting</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not a valid member: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span>
 
@@ -408,187 +409,6 @@
 
         <span class="c1"># print(expanded_hh_list, expanded_ll_list)</span>
         <span class="k">return</span> <span class="n">expanded_hh_list</span><span class="p">,</span> <span class="n">expanded_ll_list</span></div>
-
-
-<div class="viewcode-block" id="process_merged_settings"><a class="viewcode-back" href="../../index.html#surfex.process_merged_settings">[docs]</a><span class="k">def</span> <span class="nf">process_merged_settings</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">):</span>
-
-    <span class="n">merged_member_settings</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="c1"># Write member settings</span>
-    <span class="n">members</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;FORECAST&quot;</span> <span class="ow">in</span> <span class="n">merged_settings</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;ENSMSEL&quot;</span> <span class="ow">in</span> <span class="n">merged_settings</span><span class="p">[</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">]:</span>
-            <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">[</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">][</span><span class="s2">&quot;ENSMSEL&quot;</span><span class="p">])</span>
-
-    <span class="c1"># print(members, type(members), len(members))</span>
-    <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">toml_settings</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">merged_settings</span><span class="p">)</span>
-            <span class="n">member_dict</span> <span class="o">=</span> <span class="n">get_member_settings</span><span class="p">(</span><span class="n">merged_member_settings</span><span class="p">,</span> <span class="n">mbr</span><span class="p">)</span>
-            <span class="n">toml_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">toml_settings</span><span class="p">,</span> <span class="n">member_dict</span><span class="p">)</span>
-            <span class="n">member_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">):</span> <span class="n">toml_settings</span><span class="p">})</span>
-
-    <span class="k">return</span> <span class="n">merged_settings</span><span class="p">,</span> <span class="n">member_settings</span></div>
-
-
-<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
-    <span class="c1"># print(mods)</span>
-    <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
-    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
-            <span class="c1"># print(toml_file)</span>
-            <span class="n">modification</span> <span class="o">=</span> <span class="n">toml_load</span><span class="p">(</span><span class="n">toml_file</span><span class="p">)</span>
-            <span class="c1"># print(modification)</span>
-            <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
-            <span class="c1"># print(merged_env)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: File not found &quot;</span> <span class="o">+</span> <span class="n">toml_file</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">merged_env</span></div>
-
-
-<div class="viewcode-block" id="merge_toml_env_from_file"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_file">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_file</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
-    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
-        <span class="c1"># print(toml_file)</span>
-        <span class="n">modification</span> <span class="o">=</span> <span class="n">toml_load</span><span class="p">(</span><span class="n">toml_file</span><span class="p">)</span>
-        <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: File not found &quot;</span> <span class="o">+</span> <span class="n">toml_file</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">merged_env</span></div>
-
-
-<span class="k">def</span> <span class="nf">merge_config_files_dict</span><span class="p">(</span><span class="n">config_files</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testbed_configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">user_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
-    <span class="k">for</span> <span class="n">this_config_file</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">:</span>
-        <span class="n">hm_exp</span> <span class="o">=</span> <span class="n">config_files</span><span class="p">[</span><span class="n">this_config_file</span><span class="p">][</span><span class="s2">&quot;toml&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-        <span class="n">block_config</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">this_config_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="s2">&quot;config_exp.toml&quot;</span><span class="p">:</span>
-                <span class="n">block_config</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># SURFEX experiment configuration file</span><span class="se">\n</span><span class="s2">#&quot;</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">[</span><span class="n">this_config_file</span><span class="p">][</span><span class="s2">&quot;blocks&quot;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># print(configuration)</span>
-                <span class="c1"># print(type(configuration))</span>
-                <span class="c1"># if type(configuration) is not dict:</span>
-                <span class="c1">#     raise Exception(&quot;Configuration should be a dict here!&quot;)</span>
-                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">configuration</span><span class="p">:</span>
-                    <span class="n">merged_config</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">hm_exp</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">configuration</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Merged: &quot;</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">configuration</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">merged_config</span> <span class="o">=</span> <span class="n">hm_exp</span><span class="p">[</span><span class="n">block</span><span class="p">]</span>
-
-                <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">merged_config</span><span class="p">})</span>
-
-            <span class="k">if</span> <span class="n">testbed_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># print(&quot;testbed&quot;, testbed_configuration)</span>
-                <span class="c1"># if type(testbed_configuration) is not dict:</span>
-                <span class="c1">#    raise Exception(&quot;Testbed configuration should be a dict here!&quot;)</span>
-                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">testbed_configuration</span><span class="p">:</span>
-                    <span class="n">hm_testbed</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">testbed_configuration</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">hm_testbed</span> <span class="o">=</span> <span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">]</span>
-                <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">hm_testbed</span><span class="p">})</span>
-
-            <span class="k">if</span> <span class="n">user_settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">user_settings</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;User settings should be a dict here!&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">user_settings</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Merge user settings in block &quot;</span> <span class="o">+</span> <span class="n">block</span><span class="p">)</span>
-                    <span class="n">user</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">block_config</span><span class="p">[</span><span class="n">block</span><span class="p">],</span> <span class="n">user_settings</span><span class="p">[</span><span class="n">block</span><span class="p">])</span>
-                    <span class="n">block_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">block</span><span class="p">:</span> <span class="n">user</span><span class="p">})</span>
-
-        <span class="n">config_files</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">this_config_file</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;toml&quot;</span><span class="p">:</span> <span class="n">block_config</span><span class="p">}})</span>
-    <span class="k">return</span> <span class="n">config_files</span>
-
-
-<div class="viewcode-block" id="merge_toml_env_from_config_dicts"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_config_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_config_dicts</span><span class="p">(</span><span class="n">config_files</span><span class="p">):</span>
-
-    <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">config_files</span><span class="p">:</span>
-        <span class="c1"># print(f)</span>
-        <span class="n">modification</span> <span class="o">=</span> <span class="n">config_files</span><span class="p">[</span><span class="n">f</span><span class="p">][</span><span class="s2">&quot;toml&quot;</span><span class="p">]</span>
-        <span class="n">merged_env</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">merged_env</span><span class="p">,</span> <span class="n">modification</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">merged_env</span></div>
-
-
-<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../index.html#surfex.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
-
-    <span class="n">obj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">recurse</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)):</span>
-                <span class="n">recurse</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">recurse</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">k</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">obj</span><span class="p">[</span><span class="n">parent_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
-
-    <span class="n">recurse</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">obj</span></div>
-
-
-<div class="viewcode-block" id="get_member_settings"><a class="viewcode-back" href="../../index.html#surfex.get_member_settings">[docs]</a><span class="k">def</span> <span class="nf">get_member_settings</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
-
-    <span class="n">member_settings</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">settings</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">setting</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
-        <span class="c1"># print(setting)</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
-        <span class="c1"># print(keys)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># print(member)</span>
-            <span class="n">member3</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:03d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">member</span><span class="p">))</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">setting</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@EEE@&quot;</span><span class="p">,</span> <span class="n">member3</span><span class="p">)</span>
-
-            <span class="n">this_setting</span> <span class="o">=</span> <span class="p">{</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">val</span><span class="p">}</span>
-            <span class="c1"># print(&quot;This setting&quot;, this_setting)</span>
-            <span class="n">member_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">member_settings</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">this_member</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># print(keys)</span>
-            <span class="k">if</span> <span class="n">this_member</span> <span class="o">==</span> <span class="n">member</span><span class="p">:</span>
-                <span class="c1"># print(&quot;This is it&quot;)</span>
-                <span class="c1"># print(setting, keys, this_member)</span>
-
-                <span class="n">this_setting</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">setting</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
-                    <span class="n">this_setting</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">this_setting</span><span class="p">}</span>
-
-                <span class="c1"># print(this_setting)</span>
-                <span class="n">member_settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="n">member_settings</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">member_settings</span></div>
-
-
-<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Update a nested dictionary or similar mapping.</span>
-<span class="sd">    Modify ``source`` in place.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
-            <span class="n">returned</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">value</span><span class="p">)</span>
-            <span class="c1"># print(&quot;Returned:&quot;, key, returned)</span>
-            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">returned</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">override</span> <span class="o">=</span> <span class="n">overrides</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="c1"># print(&quot;Override:&quot;, key, override)</span>
-
-            <span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">override</span>
-
-    <span class="k">return</span> <span class="n">source</span></div>
 
 
 <div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
@@ -925,6 +745,29 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">ConfigurationFromJson</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_settings</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;json module not loaded&quot;</span><span class="p">)</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">all_settings</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+        <span class="n">member_settings</span> <span class="o">=</span> <span class="n">all_settings</span><span class="p">[</span><span class="s2">&quot;member_config&quot;</span><span class="p">]</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">member_settings</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ConfigurationFromJsonFile</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;json module not loaded&quot;</span><span class="p">)</span>
+
+        <span class="n">all_settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">all_settings</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+        <span class="n">member_settings</span> <span class="o">=</span> <span class="n">all_settings</span><span class="p">[</span><span class="s2">&quot;member_config&quot;</span><span class="p">]</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">member_settings</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
 </pre></div>
 
             <div class="clearer"></div>
