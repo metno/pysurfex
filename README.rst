@@ -74,7 +74,6 @@ General dependencies (from pypi)
   jsonmerge
   datetime
   f90nml
-  enum34
   requests
   json; python_version < '3'
   StringIO; python_version < '3'

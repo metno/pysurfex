@@ -96,7 +96,6 @@ setup(
         "datetime",
         "f90nml",
         "cfunits",
-        "enum34",
         "requests",
         "json; python_version < '3'",
         "StringIO; python_version < '3'",
