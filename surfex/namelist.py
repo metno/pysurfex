@@ -602,9 +602,25 @@ class BaseNamelist(object):
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
+            self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_ISBA":
+                                                           self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
+            nvar = 0
+            cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
+            nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
+            nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
+            for var in range(0, len(cvar_m)):
+                self.input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                if nncv[var] == 1:
+                    nvar += 1
+            self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
+
+
         # TODO the need for this in forecast must be removed!
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         if len(nnco) != len(cobs_m):
             raise Exception("Mismatch in nnco/cobs_m")
@@ -634,6 +650,7 @@ class BaseNamelist(object):
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
+        nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         xerrobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#XERROBS_M")
         print(nnco, cobs_m, xerrobs_m)
         if len(nnco) != len(cobs_m) or len(nnco) != len(xerrobs_m):
@@ -745,6 +762,22 @@ class BaseNamelist(object):
                 "LBEV": self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
                 "LBFIXED": not self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B")
             }}})
+
+
+        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
+            nvar = 0
+            cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
+            nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
+            if len(nncv) != len(cvar_m):
+                raise Exception("Mismatch in nncv/cvar_m")
+            for var in range(0, len(cvar_m)):
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
+                self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                if nncv[var] == 1:
+                    nvar += 1
+            self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
+            self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
         # Town
         self.input_list.append({"json": {"NAM_ASSIM": {"CASSIM_TEB":
@@ -1203,6 +1236,8 @@ class SodaInputData(surfex.JsonInputData):
                 self.add_data(self.set_input_vertical_soil_ekf(**kwargs))
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
                 self.add_data(self.set_input_vertical_soil_oi(**kwargs))
+            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF"):
+                self.add_data(self.set_input_vertical_soil_enkf(**kwargs))
 
         # Town
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
@@ -1424,3 +1459,100 @@ class SodaInputData(surfex.JsonInputData):
                                                              check_existence=check_existence)
             ekf_settings.update({target: lsmfile})
         return ekf_settings
+
+    def set_input_vertical_soil_enkf(self, **kwargs):
+
+        if self.dtg is None:
+            raise Exception("You must set DTG")
+
+        yy = self.dtg.strftime("%y")
+        mm = self.dtg.strftime("%m")
+        dd = self.dtg.strftime("%d")
+        hh = self.dtg.strftime("%H")
+        enkf_settings = {}
+
+        geo = self.config.get_setting("GEOMETRY#GEO")
+        # First guess for SURFEX
+        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
+
+        check_existence = True
+        if "check_existence" in kwargs:
+            check_existence = kwargs["check_existence"]
+
+        # TODO
+        fcint = 3
+        fg_dtg = self.dtg - timedelta(hours=fcint)
+        fg = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
+        if csurf_filetype == "ascii":
+            fg_file = surfex.AsciiSurfexFile(fg, geo=geo)
+            fg = fg_file.filename
+        elif csurf_filetype == "nc":
+            fg_file = surfex.NCSurfexFile(fg, geo=geo)
+            fg = fg_file.filename
+        elif csurf_filetype == "fa":
+            lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
+            # TODO for now assume that first guess always is a inline forecast with FA format
+            masterodb = True
+            if "masterodb" in kwargs:
+                masterodb = kwargs["masterodb"]
+            fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
+            fg = fg_file.filename
+        else:
+            raise NotImplementedError
+
+        data_dir = "first_guess_dir"
+        first_guess = self.system_file_paths.get_system_file(data_dir, fg, default_dir="assim_dir",
+                                                             validtime=self.dtg, basedtg=fg_dtg,
+                                                             check_existence=check_existence)
+
+        # We newer run inline model for perturbations or in SODA
+        extension = fg_file.extension
+        if csurf_filetype == "fa":
+            extension = "fa"
+
+        nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
+
+        enkf_settings.update({"PREP_INIT." + extension: first_guess})
+        enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
+        enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(nens_m) + "." + extension: first_guess})
+
+        nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
+
+        pert_enkf = 0
+        pert_input = 0
+        for p in range(0, nens_m):
+                data_dir = "perturbed_run_dir"
+                if "perturbed_file_pattern" in kwargs:
+                    perturbed_file_pattern = kwargs["perturbed_file_pattern"]
+                else:
+                    print("Use default CSURFFILE for perturbed file names")
+                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
+                                             + "." + extension
+
+                # TODO depending on when perturbations are run
+                perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
+                                                                       validtime=self.dtg, basedtg=fg_dtg,
+                                                                       check_existence=check_existence,
+                                                                       default_dir="assim_dir",
+                                                                       pert=p)
+
+                target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(p) + "." + extension
+                enkf_settings.update({target: perturbed_run})
+
+        # LSM
+        # Fetch first_guess needed for LSM for extrapolations
+        if self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
+            cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
+            if cfile_format_lsm.upper() == "ASCII":
+                target = "LSM.DAT"
+            elif cfile_format_lsm.upper() == "FA":
+                target = "FG_OI_MAIN"
+            else:
+                raise NotImplementedError(cfile_format_lsm)
+
+            data_dir = "lsm_dir"
+            lsmfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
+                                                             validtime=self.dtg, basedtg=fg_dtg,
+                                                             check_existence=check_existence)
+            enkf_settings.update({target: lsmfile})
+        return enkf_settings
