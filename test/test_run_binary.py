@@ -2,6 +2,7 @@ import unittest
 import surfex
 import os
 import json
+import toml
 import socket
 
 
@@ -128,7 +129,7 @@ class RunTestNC(unittest.TestCase):
         # PGD
         task = "pgd"
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         output = os.getcwd() + "/unittest_PGD_TEST_" + self.grid + extension
         if "PGD_BINARY" in os.environ and os.environ["PGD_BINARY"] != "":
@@ -156,7 +157,7 @@ class RunTestNC(unittest.TestCase):
         task = "prep"
 
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         pgd = output
         output = os.getcwd() + "/unittest_PREP_TEST_" + self.grid + extension
@@ -188,7 +189,7 @@ class RunTestNC(unittest.TestCase):
         task = "offline"
 
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         if "OFFLINE_BINARY" in os.environ and os.environ["OFFLINE_BINARY"] != "":
             binary = os.environ["OFFLINE_BINARY"]
@@ -220,7 +221,7 @@ class RunTestNC(unittest.TestCase):
         task = "soda"
 
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         if "SODA_BINARY" in os.environ and os.environ["SODA_BINARY"] != "":
             binary = os.environ["SODA_BINARY"]
@@ -265,7 +266,7 @@ class RunTestNC(unittest.TestCase):
 
         # Forecast
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         binary = self.rootdir + "/test/bin/MASTERODB"
         pgd = "Const.Clim.sfx"
@@ -293,7 +294,7 @@ class RunTestNC(unittest.TestCase):
 
         # CANARI
         json.dump(dict(os.environ), open(rte, "w"))
-        surfex.toml_dump(config, config_file)
+        toml.dump(config, open(config_file, "w"))
 
         binary = self.rootdir + "/test/bin/MASTERODB_CANARI"
         prep = output
