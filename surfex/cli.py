@@ -1986,3 +1986,121 @@ def run_cryoclim_pseuodoobs(**kwargs):
     qc = surfex.snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg,
                                          debug=debug)
     qc.write_output(output, indent=indent)
+
+def parse_args_shape2ign(argv):
+    parser = ArgumentParser("Convert NVE shape files to IGN geometry")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
+    parser.add_argument('-c', '--catchment', dest="catchment", type=str, help="Catchment name",
+                        default="None", required=False)
+    parser.add_argument('-i', dest="infile", type=str,  help="Infile/directory", default=None, required=True)
+    parser.add_argument('-r', dest="ref_proj", type=str,  help="Reference projection (domain file)", default=None, required=True)
+    parser.add_argument('--indent', dest="indent", type=str, help="Indent", default=None, required=False)
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output json geometry file", default=None,
+                        required=False)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+def run_shape2ign(**kwargs):
+    catchment = kwargs["catchment"]
+    infile = kwargs["infile"]
+    output = kwargs["output"]
+    debug = kwargs["debug"]
+    indent = kwargs["indent"]
+    ref_proj = kwargs["ref_proj"]
+    if indent is not None:
+        indent = int(indent)
+
+    from osgeo import ogr
+    import pyproj
+    import json
+
+    from_json = json.load(open(ref_proj, "r"))
+    geo = surfex.get_geo_object(from_json)
+    earth = 6.37122e+6
+    proj_string = "+proj=lcc +lat_0=" + str(geo.xlat0) + " +lon_0=" + str(geo.xlon0) + " +lat_1=" + \
+                  str(geo.xlat0) + " +lat_2=" + str(geo.xlat0) + " +units=m +no_defs +R=" + str(earth)
+
+    print(proj_string)
+    proj = pyproj.CRS.from_string(proj_string)
+    wgs84 = pyproj.CRS.from_string("EPSG:4326")
+
+    shpfile = ogr.Open(infile)
+    shape = shpfile.GetLayer(0)
+
+    feature = shape.GetFeature(2562)
+    feature_dict = json.loads(feature.ExportToJson())
+    print(feature_dict["properties"]["stNavn"])
+    print(feature_dict)
+
+    lons = []
+    lats = []
+    values = []
+    for p in feature_dict["geometry"]["coordinates"][0]:
+        lons.append(p[0])
+        lats.append(p[1])
+        values.append(p[2])
+
+    x, y = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(lons, lats)
+    x1 = min(x)
+    x2 = max(x)
+    y1 = min(y)
+    y2 = max(y)
+    print(x1, x2, y1, y2)
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    for p in range(0, len(x)):
+        ring.AddPoint(x[p], y[p])
+
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(ring)
+
+    ign_x = []
+    ign_y = []
+    delta_x = 1000
+    delta_y = 1000
+    nx = int((x2 - x1) / delta_x) + 1
+    ny = int((y2 - y1) / delta_y) + 1
+    xdx = []
+    xdy = []
+
+    npoints = 0
+    for xp in range(0, nx):
+       xx = x1 + (xp * delta_x ) - delta_x
+       for yp in range(0, ny):
+         yy =  y1 + (yp * delta_y ) - delta_y
+         point = ogr.Geometry(ogr.wkbPoint)
+         point.AddPoint(xx, yy)
+         if not poly.Intersection(point).IsEmpty():
+             ign_x.append(xx)
+             xdx.append(delta_x)
+             ign_y.append(yy)
+             xdy.append(delta_y)
+             npoints = npoints + 1
+
+    nam_json = {"nam_pgd_grid": {
+                    "cgrid": "IGN"
+                },
+                "nam_ign": {
+                  "clambert": 7,
+                  "npoints": npoints,
+                  "xx": ign_x,
+                  "xy": ign_y,
+                  "xdx": xdx,
+                  "xdy": xdy,
+                  "xx_llcorner": 0,
+                  "xy_llcorner": 0,
+                  "xcellsize": "250",
+                  "ncols": 0,
+                  "nrows": 0
+                }
+              }
+
+    json.dump(nam_json, open(output, "w"), indent=indent)
