@@ -52,18 +52,18 @@
 
 
 <div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#surfex.QualityControl">[docs]</a><span class="k">class</span> <span class="nc">QualityControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<div class="viewcode-block" id="QualityControl.__init__"><a class="viewcode-back" href="../../index.html#surfex.QualityControl.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="QualityControl.set_input"><a class="viewcode-back" href="../../index.html#surfex.QualityControl.set_input">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="QualityControl.test"><a class="viewcode-back" href="../../index.html#surfex.QualityControl.test">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="QualityControl.set_flags"><a class="viewcode-back" href="../../index.html#surfex.QualityControl.set_flags">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">set_flags</span><span class="p">(</span><span class="n">global_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
         <span class="n">imask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">global_flags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
                          <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">flag</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
@@ -71,20 +71,20 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">global_flags</span><span class="p">[</span><span class="n">imask</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Plausibility"><a class="viewcode-back" href="../../index.html#surfex.Plausibility">[docs]</a><span class="k">class</span> <span class="nc">Plausibility</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Plausibility.__init__"><a class="viewcode-back" href="../../index.html#surfex.Plausibility.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">def_min</span> <span class="o">=</span> <span class="n">minval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">def_max</span> <span class="o">=</span> <span class="n">maxval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;plausibility&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;plausibility&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Plausibility.set_input"><a class="viewcode-back" href="../../index.html#surfex.Plausibility.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">used_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_min</span>
         <span class="n">used_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_max</span>
@@ -107,9 +107,9 @@
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_max</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">+</span> <span class="n">minvals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">+</span> <span class="n">maxvals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">102</span><span class="p">):</span>
+<div class="viewcode-block" id="Plausibility.test"><a class="viewcode-back" href="../../index.html#surfex.Plausibility.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">102</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -133,7 +133,7 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">global_flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#surfex.FirstGuess">[docs]</a><span class="k">class</span> <span class="nc">FirstGuess</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
@@ -151,7 +151,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;firstguess&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">posdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess.set_input"><a class="viewcode-back" href="../../index.html#surfex.FirstGuess.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">posdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">used_negdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_negdiff</span>
         <span class="n">used_posdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_posdiff</span>
@@ -176,9 +176,9 @@
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_posdiff</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">negdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">negdiff</span> <span class="o">+</span> <span class="n">minvals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">+</span> <span class="n">maxvals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">108</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess.test"><a class="viewcode-back" href="../../index.html#surfex.FirstGuess.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">108</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -210,7 +210,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">minvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                       <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">maxvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">global_flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">fg_vals</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Fraction"><a class="viewcode-back" href="../../index.html#surfex.Fraction">[docs]</a><span class="k">class</span> <span class="nc">Fraction</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
@@ -228,7 +228,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;fraction&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Fraction.set_input"><a class="viewcode-back" href="../../index.html#surfex.Fraction.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">used_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_min</span>
         <span class="n">used_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_max</span>
 
@@ -252,9 +252,9 @@
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_max</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">+</span> <span class="n">minvals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">+</span> <span class="n">maxvals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">151</span><span class="p">):</span>
+<div class="viewcode-block" id="Fraction.test"><a class="viewcode-back" href="../../index.html#surfex.Fraction.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">151</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -296,7 +296,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">minvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                       <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">maxvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">global_flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">fraction_vals</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Sct"><a class="viewcode-back" href="../../index.html#surfex.Sct">[docs]</a><span class="k">class</span> <span class="nc">Sct</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
@@ -326,7 +326,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sct&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">neg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Sct.set_input"><a class="viewcode-back" href="../../index.html#surfex.Sct.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">neg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">used_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_pos</span>
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -355,9 +355,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg</span> <span class="o">+</span> <span class="n">neg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">+</span> <span class="n">eps2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">+</span> <span class="n">eps2</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">105</span><span class="p">):</span>
+<div class="viewcode-block" id="Sct.test"><a class="viewcode-back" href="../../index.html#surfex.Sct.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">105</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -442,7 +442,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No observations to run test on&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Buddy"><a class="viewcode-back" href="../../index.html#surfex.Buddy">[docs]</a><span class="k">class</span> <span class="nc">Buddy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
@@ -465,7 +465,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;buddy&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">distance_lim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">priorities</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">buddies_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obs_to_check</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Buddy.set_input"><a class="viewcode-back" href="../../index.html#surfex.Buddy.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">distance_lim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">priorities</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">buddies_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obs_to_check</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">used_distance_lim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_distance_lim</span>
         <span class="n">used_priorities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_priorities</span>
@@ -507,9 +507,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">priorities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">priorities</span> <span class="o">+</span> <span class="n">priorities</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">buddies_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buddies_min</span> <span class="o">+</span> <span class="n">buddies_min</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thresholds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresholds</span> <span class="o">+</span> <span class="n">thresholds</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">+</span> <span class="n">obs_to_check</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">+</span> <span class="n">obs_to_check</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">104</span><span class="p">):</span>
+<div class="viewcode-block" id="Buddy.test"><a class="viewcode-back" href="../../index.html#surfex.Buddy.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">104</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -546,11 +546,11 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">global_flags</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Climatology"><a class="viewcode-back" href="../../index.html#surfex.Climatology">[docs]</a><span class="k">class</span> <span class="nc">Climatology</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Climatology.__init__"><a class="viewcode-back" href="../../index.html#surfex.Climatology.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">an_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
@@ -562,9 +562,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;climatology&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;climatology&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Climatology.set_input"><a class="viewcode-back" href="../../index.html#surfex.Climatology.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">used_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_min</span>
         <span class="n">used_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_max</span>
@@ -587,9 +587,9 @@
             <span class="n">offset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_offset</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">+</span> <span class="n">minvals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">+</span> <span class="n">maxvals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">103</span><span class="p">):</span>
+<div class="viewcode-block" id="Climatology.test"><a class="viewcode-back" href="../../index.html#surfex.Climatology.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">103</span><span class="p">):</span>
 
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
@@ -614,20 +614,20 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                       <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">global_flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="k">return</span> <span class="n">global_flags</span></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div></div>
 
 
 <div class="viewcode-block" id="Redundancy"><a class="viewcode-back" href="../../index.html#surfex.Redundancy">[docs]</a><span class="k">class</span> <span class="nc">Redundancy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Redundancy.__init__"><a class="viewcode-back" href="../../index.html#surfex.Redundancy.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">an_time</span> <span class="o">=</span> <span class="n">an_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;redundancy&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;redundancy&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="Redundancy.set_input"><a class="viewcode-back" href="../../index.html#surfex.Redundancy.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">115</span><span class="p">):</span>
+<div class="viewcode-block" id="Redundancy.test"><a class="viewcode-back" href="../../index.html#surfex.Redundancy.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">115</span><span class="p">):</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
@@ -658,11 +658,11 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">obstimes</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div>
+        <span class="k">return</span> <span class="n">flags</span></div></div>
 
 
 <div class="viewcode-block" id="Blacklist"><a class="viewcode-back" href="../../index.html#surfex.Blacklist">[docs]</a><span class="k">class</span> <span class="nc">Blacklist</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Blacklist.__init__"><a class="viewcode-back" href="../../index.html#surfex.Blacklist.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blacklist</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must set blacklist as a dict&quot;</span><span class="p">)</span>
@@ -690,12 +690,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">blacklist_pos</span> <span class="o">=</span> <span class="n">blacklist_pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blacklist_stid</span> <span class="o">=</span> <span class="n">blacklist_stid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;blacklist&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;blacklist&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="Blacklist.set_input"><a class="viewcode-back" href="../../index.html#surfex.Blacklist.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="Blacklist.test"><a class="viewcode-back" href="../../index.html#surfex.Blacklist.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">)):</span>
@@ -721,11 +721,11 @@
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span>
                       <span class="n">flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div>
+        <span class="k">return</span> <span class="n">flags</span></div></div>
 
 
 <div class="viewcode-block" id="DomainCheck"><a class="viewcode-back" href="../../index.html#surfex.DomainCheck">[docs]</a><span class="k">class</span> <span class="nc">DomainCheck</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_geo</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="DomainCheck.__init__"><a class="viewcode-back" href="../../index.html#surfex.DomainCheck.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_geo</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">domain_geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Domain geo was not set!&quot;</span><span class="p">)</span>
@@ -735,12 +735,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="DomainCheck.set_input"><a class="viewcode-back" href="../../index.html#surfex.DomainCheck.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">199</span><span class="p">):</span>
+<div class="viewcode-block" id="DomainCheck.test"><a class="viewcode-back" href="../../index.html#surfex.DomainCheck.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">199</span><span class="p">):</span>
 
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
@@ -754,19 +754,19 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span>
                       <span class="n">flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="k">return</span> <span class="n">flags</span></div>
+        <span class="k">return</span> <span class="n">flags</span></div></div>
 
 
 <div class="viewcode-block" id="NoMeta"><a class="viewcode-back" href="../../index.html#surfex.NoMeta">[docs]</a><span class="k">class</span> <span class="nc">NoMeta</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="NoMeta.__init__"><a class="viewcode-back" href="../../index.html#surfex.NoMeta.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
-        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nometa&quot;</span><span class="p">)</span>
+        <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nometa&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="NoMeta.set_input"><a class="viewcode-back" href="../../index.html#surfex.NoMeta.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">101</span><span class="p">):</span>
+<div class="viewcode-block" id="NoMeta.test"><a class="viewcode-back" href="../../index.html#surfex.NoMeta.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">101</span><span class="p">):</span>
 
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
@@ -778,7 +778,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span>
                       <span class="n">flags</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div>
+        <span class="k">return</span> <span class="n">flags</span></div></div>
 
 
 <div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#surfex.define_quality_control">[docs]</a><span class="k">def</span> <span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -1009,27 +1009,27 @@
                 <span class="n">an_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">an_dep</span> <span class="o">=</span> <span class="n">an_dep</span>
 
-    <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet.get_stid_index"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet.get_stid_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
         <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">stid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span><span class="p">[</span><span class="n">stid</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="k">def</span> <span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet.get_pos_index"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet.get_pos_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
         <span class="n">lon</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:10.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
         <span class="n">lat</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:10.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">lat</span>
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="QCDataSet.perform_tests"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet.perform_tests">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;You must implement this method&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;You must implement this method&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">write_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet.write_output"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet.write_output">[docs]</a>    <span class="k">def</span> <span class="nf">write_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)):</span>
@@ -1051,9 +1051,9 @@
                     <span class="s2">&quot;passed_tests&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">passed_tests</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                 <span class="p">}</span>
             <span class="p">})</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">normalize_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">cmin</span><span class="p">,</span> <span class="n">cmax</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet.normalize_ci"><a class="viewcode-back" href="../../index.html#surfex.QCDataSet.normalize_ci">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">cmin</span><span class="p">,</span> <span class="n">cmax</span><span class="p">):</span>
 
         <span class="n">nsize</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1094,12 +1094,12 @@
                 <span class="n">corep1</span> <span class="o">=</span> <span class="p">(</span><span class="n">qcorep</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">-</span> <span class="n">qav</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">qmx</span> <span class="o">-</span> <span class="n">qav</span><span class="p">)</span>
                 <span class="n">corep</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">=</span> <span class="n">corep_mean</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">corep_max</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">-</span> <span class="n">corep_mean</span><span class="p">[</span><span class="n">gav</span><span class="p">])</span> <span class="o">*</span> <span class="n">corep1</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">qcorep</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">qcorep</span></div></div>
 
 
 <div class="viewcode-block" id="TitanDataSet"><a class="viewcode-back" href="../../index.html#surfex.TitanDataSet">[docs]</a><span class="k">class</span> <span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">corep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TitanDataSet.__init__"><a class="viewcode-back" href="../../index.html#surfex.TitanDataSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">corep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">tit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;titanlib was not loaded properly&quot;</span><span class="p">)</span>
@@ -1155,9 +1155,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">passed_tests</span> <span class="o">=</span> <span class="n">passed_tests</span>
 
         <span class="n">QCDataSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">cis</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">providers</span><span class="p">,</span>
-                           <span class="n">passed_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remove_invalid_elevs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                           <span class="n">passed_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remove_invalid_elevs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TitanDataSet.perform_tests"><a class="viewcode-back" href="../../index.html#surfex.TitanDataSet.perform_tests">[docs]</a>    <span class="k">def</span> <span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tests</span><span class="p">:</span>
@@ -1251,11 +1251,11 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  tested: &quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tested&quot;</span><span class="p">])</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;      ok: &quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ok&quot;</span><span class="p">])</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;     bad: &quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;bad&quot;</span><span class="p">],</span> <span class="n">outside</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ObsOperator"><a class="viewcode-back" href="../../index.html#surfex.ObsOperator">[docs]</a><span class="k">class</span> <span class="nc">ObsOperator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<div class="viewcode-block" id="ObsOperator.__init__"><a class="viewcode-back" href="../../index.html#surfex.ObsOperator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 
         <span class="c1"># TODO rewrite to use lonlatval geo</span>
         <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
@@ -1288,20 +1288,20 @@
                 <span class="n">inside_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span> <span class="o">=</span> <span class="n">inside_grid</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">obs_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">obs_values</span></div>
 
-    <span class="k">def</span> <span class="nf">get_obs_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObsOperator.get_obs_value"><a class="viewcode-back" href="../../index.html#surfex.ObsOperator.get_obs_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_obs_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="k">def</span> <span class="nf">is_in_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
+<div class="viewcode-block" id="ObsOperator.is_in_grid"><a class="viewcode-back" href="../../index.html#surfex.ObsOperator.is_in_grid">[docs]</a>    <span class="k">def</span> <span class="nf">is_in_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div></div>
 
 
 <div class="viewcode-block" id="Departure"><a class="viewcode-back" href="../../index.html#surfex.Departure">[docs]</a><span class="k">class</span> <span class="nc">Departure</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<div class="viewcode-block" id="Departure.__init__"><a class="viewcode-back" href="../../index.html#surfex.Departure.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span> <span class="o">=</span> <span class="n">ObsOperator</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="n">max_distance</span><span class="p">)</span>
         <span class="n">obs_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">()</span>
@@ -1324,17 +1324,17 @@
                 <span class="n">departures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">departures</span> <span class="o">=</span> <span class="n">departures</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">values</span></div>
 
-    <span class="k">def</span> <span class="nf">get_departure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Departure.get_departure"><a class="viewcode-back" href="../../index.html#surfex.Departure.get_departure">[docs]</a>    <span class="k">def</span> <span class="nf">get_departure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">departures</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Departure.get_values"><a class="viewcode-back" href="../../index.html#surfex.Departure.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="dataset_from_file"><a class="viewcode-back" href="../../index.html#surfex.dataset_from_file">[docs]</a><span class="k">def</span> <span class="nf">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

@@ -49,38 +49,38 @@
 
 
 <div class="viewcode-block" id="Observation"><a class="viewcode-back" href="../../index.html#surfex.Observation">[docs]</a><span class="k">class</span> <span class="nc">Observation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="s2">&quot;NA&quot;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Observation.__init__"><a class="viewcode-back" href="../../index.html#surfex.Observation.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="s2">&quot;NA&quot;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obstime</span> <span class="o">=</span> <span class="n">obstime</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stid</span> <span class="o">=</span> <span class="n">stid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elev</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">elev</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">varname</span> <span class="o">=</span> <span class="n">varname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">varname</span> <span class="o">=</span> <span class="n">varname</span></div>
 
-    <span class="k">def</span> <span class="nf">print_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;observation: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<div class="viewcode-block" id="Observation.print_obs"><a class="viewcode-back" href="../../index.html#surfex.Observation.print_obs">[docs]</a>    <span class="k">def</span> <span class="nf">print_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;observation: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.vectors2obs"><a class="viewcode-back" href="../../index.html#surfex.Observation.vectors2obs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">vectors2obs</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.obs2vectors"><a class="viewcode-back" href="../../index.html#surfex.Observation.obs2vectors">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">obs2vectors</span><span class="p">(</span><span class="n">my_obs</span><span class="p">):</span>
         <span class="c1"># print(my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value)</span>
-        <span class="k">return</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">obstime</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">stid</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">elev</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">varname</span>
+        <span class="k">return</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">obstime</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">stid</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">elev</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">varname</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.format_lon"><a class="viewcode-back" href="../../index.html#surfex.Observation.format_lon">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">format_lon</span><span class="p">(</span><span class="n">lon</span><span class="p">):</span>
         <span class="n">lon</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:10.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">lon</span>
+        <span class="k">return</span> <span class="n">lon</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.format_lat"><a class="viewcode-back" href="../../index.html#surfex.Observation.format_lat">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">format_lat</span><span class="p">(</span><span class="n">lat</span><span class="p">):</span>
         <span class="n">lat</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:10.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">lat</span>
+        <span class="k">return</span> <span class="n">lat</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.get_pos_from_stid"><a class="viewcode-back" href="../../index.html#surfex.Observation.get_pos_from_stid">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_pos_from_stid</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">stids</span><span class="p">):</span>
 
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
@@ -97,9 +97,9 @@
                     <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Could not find station id &quot;</span> <span class="o">+</span> <span class="n">stid</span> <span class="o">+</span> <span class="s2">&quot; in file &quot;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Observation.get_stid_from_stationlist"><a class="viewcode-back" href="../../index.html#surfex.Observation.get_stid_from_stationlist">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_stid_from_stationlist</span><span class="p">(</span><span class="n">stationlist</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
 
         <span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
@@ -119,7 +119,7 @@
                 <span class="n">stids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">stids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;NA&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">stids</span></div>
+        <span class="k">return</span> <span class="n">stids</span></div></div>
 
 
 <div class="viewcode-block" id="get_datasources"><a class="viewcode-back" href="../../index.html#surfex.get_datasources">[docs]</a><span class="k">def</span> <span class="nf">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tolerate_nmissing</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -263,31 +263,31 @@
 
 
 <div class="viewcode-block" id="ObservationSet"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet">[docs]</a><span class="k">class</span> <span class="nc">ObservationSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.__init__"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observations</span> <span class="o">=</span> <span class="n">observations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span></div>
 
-    <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_stid_index"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.get_stid_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
         <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stid</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">stid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span><span class="p">[</span><span class="n">stid</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="k">def</span> <span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_pos_index"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.get_pos_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
         <span class="n">lon</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
         <span class="n">lat</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">lat</span>
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="k">def</span> <span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_obs"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.get_obs">[docs]</a>    <span class="k">def</span> <span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">obs2vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">Observation</span><span class="o">.</span><span class="n">obs2vectors</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Obs dim&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">))</span>
@@ -314,9 +314,9 @@
 
             <span class="k">return</span> <span class="n">times</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">varnames</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span></div>
 
-    <span class="k">def</span> <span class="nf">matching_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_obs</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.matching_obs"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.matching_obs">[docs]</a>    <span class="k">def</span> <span class="nf">matching_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_obs</span><span class="p">):</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">my_obs</span><span class="o">.</span><span class="n">obstime</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="o">.</span><span class="n">obstimes</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
@@ -326,9 +326,9 @@
 
                 <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">:</span>
                     <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="n">found</span>
+        <span class="k">return</span> <span class="n">found</span></div>
 
-    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.points"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">my_times</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">my_values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">my_stids</span> <span class="o">=</span> <span class="p">[]</span>
@@ -354,9 +354,9 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not find position &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span> <span class="s2">&quot; in this data source&quot;</span><span class="p">)</span>
 
         <span class="n">my_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">my_values</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">my_times</span><span class="p">,</span> <span class="n">my_values</span><span class="p">,</span> <span class="n">my_stids</span>
+        <span class="k">return</span> <span class="n">my_times</span><span class="p">,</span> <span class="n">my_values</span><span class="p">,</span> <span class="n">my_stids</span></div>
 
-    <span class="k">def</span> <span class="nf">write_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.write_json_file"><a class="viewcode-back" href="../../index.html#surfex.ObservationSet.write_json_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">obs2vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">Observation</span><span class="o">.</span><span class="n">obs2vectors</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -374,7 +374,7 @@
         <span class="k">if</span> <span class="n">indent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="NetatmoObservationSet"><a class="viewcode-back" href="../../index.html#surfex.NetatmoObservationSet">[docs]</a><span class="k">class</span> <span class="nc">NetatmoObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
@@ -784,7 +784,7 @@
 
 
 <div class="viewcode-block" id="JsonObservationSet"><a class="viewcode-back" href="../../index.html#surfex.JsonObservationSet">[docs]</a><span class="k">class</span> <span class="nc">JsonObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonObservationSet.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">obs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -806,11 +806,11 @@
             <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">var</span> <span class="o">==</span> <span class="n">varname</span><span class="p">:</span>
                 <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="n">varname</span><span class="p">))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ObservationFromTitanJsonFile"><a class="viewcode-back" href="../../index.html#surfex.ObservationFromTitanJsonFile">[docs]</a><span class="k">class</span> <span class="nc">ObservationFromTitanJsonFile</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationFromTitanJsonFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.ObservationFromTitanJsonFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">qc_obs</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -818,7 +818,7 @@
             <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Observation</span><span class="p">(</span><span class="n">qc_obs</span><span class="o">.</span><span class="n">obstimes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                             <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qc_obs</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 
-        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span></div></div>
 
 
 <span class="k">def</span> <span class="nf">snow_pseudo_obs_cryoclim</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">grid_snow_class</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">fg_geo</span><span class="p">,</span> <span class="n">grid_snow_fg</span><span class="p">,</span>

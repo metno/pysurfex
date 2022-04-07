@@ -46,7 +46,7 @@
 
 <div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.__init__"><a class="viewcode-back" href="../../index.html#surfex.Configuration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">conf_dict</span>
@@ -99,7 +99,7 @@
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">nncv</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">perts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">perts</span> <span class="o">=</span> <span class="n">perts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perts</span> <span class="o">=</span> <span class="n">perts</span></div>
 
     <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -113,28 +113,28 @@
             <span class="nb">print</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">settings</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">max_fc_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.max_fc_length"><a class="viewcode-back" href="../../index.html#surfex.Configuration.max_fc_length">[docs]</a>    <span class="k">def</span> <span class="nf">max_fc_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ll_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="n">max_fc</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="n">ll_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_fc</span><span class="p">):</span>
                 <span class="n">max_fc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">max_fc</span>
+        <span class="k">return</span> <span class="n">max_fc</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Configuration.has_sfc_analysis"><a class="viewcode-back" href="../../index.html#surfex.Configuration.has_sfc_analysis">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">has_sfc_analysis</span><span class="p">(</span><span class="n">anasurf</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">anasurf</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CANARI&quot;</span><span class="p">,</span> <span class="s2">&quot;gridpp&quot;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
-    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
-    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is_not"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
             <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
@@ -142,9 +142,9 @@
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.value_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># if type(setting) is not list:</span>
@@ -152,17 +152,17 @@
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="n">found</span>
+        <span class="k">return</span> <span class="n">found</span></div>
 
-    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.value_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
@@ -170,17 +170,17 @@
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="n">found</span>
+        <span class="k">return</span> <span class="n">found</span></div>
 
-    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_setting">[docs]</a>    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">mbr</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">mbr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mbr&quot;</span><span class="p">]</span>
@@ -233,9 +233,9 @@
                 <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># print(setting, this_setting, mbr, type(this_setting))</span>
-        <span class="k">return</span> <span class="n">this_setting</span>
+        <span class="k">return</span> <span class="n">this_setting</span></div>
 
-    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.update_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.update_setting">[docs]</a>    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
@@ -254,9 +254,9 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)]</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">member_settings</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">)],</span> <span class="n">dsetting</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not a valid member: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not a valid member: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mbr</span><span class="p">))</span></div>
 
-    <span class="k">def</span> <span class="nf">get_total_unique_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_total_unique_hh_list"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_total_unique_hh_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_unique_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Create a list of all unique HHs from all members</span>
         <span class="c1"># print(self.members, self.get_hh_list())</span>
         <span class="n">hh_list_all</span> <span class="o">=</span> <span class="p">[]</span>
@@ -280,9 +280,9 @@
         <span class="k">for</span> <span class="n">hh</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">hh_list_all</span><span class="p">):</span>
             <span class="n">hh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">hh_list</span>
+        <span class="k">return</span> <span class="n">hh_list</span></div>
 
-    <span class="k">def</span> <span class="nf">get_fcint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_fcint"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_fcint">[docs]</a>    <span class="k">def</span> <span class="nf">get_fcint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hh_list</span><span class="p">(</span><span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="n">fcint</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hh_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -295,20 +295,20 @@
                         <span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">hh</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">hh_list</span><span class="p">[</span><span class="n">hh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fcint</span> <span class="o">=</span> <span class="mi">24</span>
-        <span class="k">return</span> <span class="n">fcint</span>
+        <span class="k">return</span> <span class="n">fcint</span></div>
 
-    <span class="k">def</span> <span class="nf">get_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_hh_list"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_hh_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_hh_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#HH_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#LL_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="c1"># print(hh_list, ll_list)</span>
         <span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_hh_and_ll_list</span><span class="p">(</span><span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hh_list</span>
+        <span class="k">return</span> <span class="n">hh_list</span></div>
 
-    <span class="k">def</span> <span class="nf">get_ll_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_ll_list"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_ll_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_ll_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">hh_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#HH_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;GENERAL#LL_LIST&quot;</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">)</span>
         <span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_hh_and_ll_list</span><span class="p">(</span><span class="n">hh_list</span><span class="p">,</span> <span class="n">ll_list</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ll_list</span>
+        <span class="k">return</span> <span class="n">ll_list</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">expand_list</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:03d}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sep1</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">sep2</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">sep3</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -419,7 +419,7 @@
 <span class="sd">    Some settings imply several changes in SURFEX configuration</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfigurationFromHarmonie.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">member_conf_dict</span> <span class="o">=</span> <span class="n">conf_dict</span>
         <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">member_conf_dict</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
@@ -744,7 +744,7 @@
             <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LVOLATILE_SIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">ConfigurationFromJson</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>

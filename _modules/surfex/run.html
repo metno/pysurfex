@@ -45,12 +45,12 @@
 
 
 <div class="viewcode-block" id="BatchJob"><a class="viewcode-back" href="../../index.html#surfex.BatchJob">[docs]</a><span class="k">class</span> <span class="nc">BatchJob</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.__init__"><a class="viewcode-back" href="../../index.html#surfex.BatchJob.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rte</span> <span class="o">=</span> <span class="n">rte</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span> <span class="o">=</span> <span class="n">wrapper</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Constructed BatchJob&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Constructed BatchJob&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.run"><a class="viewcode-back" href="../../index.html#surfex.BatchJob.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">cmd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No command provided!&quot;</span><span class="p">)</span>
@@ -72,11 +72,11 @@
 
         <span class="n">return_code</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">return_code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">(</span><span class="n">return_code</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">(</span><span class="n">return_code</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="SURFEXBinary"><a class="viewcode-back" href="../../index.html#surfex.SURFEXBinary">[docs]</a><span class="k">class</span> <span class="nc">SURFEXBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFEXBinary.__init__"><a class="viewcode-back" href="../../index.html#surfex.SURFEXBinary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">binary</span> <span class="o">=</span> <span class="n">binary</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span> <span class="o">=</span> <span class="n">iofile</span>
@@ -158,7 +158,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span><span class="o">.</span><span class="n">archive_output_file</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">archive_data</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">archive_data</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="PerturbedOffline"><a class="viewcode-back" href="../../index.html#surfex.PerturbedOffline">[docs]</a><span class="k">class</span> <span class="nc">PerturbedOffline</span><span class="p">(</span><span class="n">SURFEXBinary</span><span class="p">):</span>
@@ -245,39 +245,39 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Run binary with namelist EXSEG1.nam: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Masterodb.archive_output"><a class="viewcode-back" href="../../index.html#surfex.Masterodb.archive_output">[docs]</a>    <span class="k">def</span> <span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Archive output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span><span class="o">.</span><span class="n">archive_output_file</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="InputDataToSurfexBinaries"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">InputDataToSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="InputDataToSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="InputDataToSurfexBinaries.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries.prepare_input">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
 
 
 <div class="viewcode-block" id="OutputDataFromSurfexBinaries"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">OutputDataFromSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="OutputDataFromSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="OutputDataFromSurfexBinaries.archive_files"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries.archive_files">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
 
 
 <div class="viewcode-block" id="JsonOutputData"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData">[docs]</a><span class="k">class</span> <span class="nc">JsonOutputData</span><span class="p">(</span><span class="n">OutputDataFromSurfexBinaries</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonOutputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="n">OutputDataFromSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
 
-    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonOutputData.archive_files"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData.archive_files">[docs]</a>    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
             <span class="nb">print</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
@@ -294,23 +294,23 @@
                 <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot; failed&quot;</span><span class="p">)</span>
-                <span class="k">raise</span></div>
+                <span class="k">raise</span></div></div>
 
 
 <div class="viewcode-block" id="JsonOutputDataFromFile"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile">[docs]</a><span class="k">class</span> <span class="nc">JsonOutputDataFromFile</span><span class="p">(</span><span class="n">JsonOutputData</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-        <span class="n">JsonOutputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)))</span>
+<div class="viewcode-block" id="JsonOutputDataFromFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+        <span class="n">JsonOutputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)))</span></div>
 
-    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">JsonOutputData</span><span class="o">.</span><span class="n">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="JsonOutputDataFromFile.archive_files"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile.archive_files">[docs]</a>    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">JsonOutputData</span><span class="o">.</span><span class="n">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="JsonInputData"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData">[docs]</a><span class="k">class</span> <span class="nc">JsonInputData</span><span class="p">(</span><span class="n">InputDataToSurfexBinaries</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="n">InputDataToSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
 
-    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonInputData.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.prepare_input">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">input_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
             <span class="nb">print</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">input_file</span><span class="p">)</span>
@@ -336,20 +336,20 @@
                     <span class="nb">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
                     <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-                    <span class="k">raise</span><span class="p">(</span><span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot; failed&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span><span class="p">(</span><span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot; failed&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonInputData.add_data"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span></div></div>
 
 
 <div class="viewcode-block" id="JsonInputDataFromFile"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile">[docs]</a><span class="k">class</span> <span class="nc">JsonInputDataFromFile</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)))</span>
+<div class="viewcode-block" id="JsonInputDataFromFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)))</span></div>
 
-    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="JsonInputDataFromFile.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile.prepare_input">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="create_working_dir"><a class="viewcode-back" href="../../index.html#surfex.create_working_dir">[docs]</a><span class="k">def</span> <span class="nf">create_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">enter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>

@@ -46,22 +46,22 @@
 
 
 <div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#surfex.Netcdf">[docs]</a><span class="k">class</span> <span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf.__init__"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;filename: &quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">num_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="Netcdf.num_height"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.num_height">[docs]</a>    <span class="k">def</span> <span class="nf">num_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">num_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf.num_time"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.num_time">[docs]</a>    <span class="k">def</span> <span class="nf">num_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param field: </span>
 <span class="sd">        :return: (int) length of time dimension </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
     <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xcoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ycoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">deaccumulate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">instantanious</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lev_from_ind</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -277,7 +277,7 @@
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Shape of output: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo</span>
 
-    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf.field"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">validtime</span> <span class="o">=</span> <span class="p">[]</span>
@@ -292,7 +292,7 @@
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
         <span class="c1"># Reshape to fortran 2D style</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span>
+        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
 
@@ -346,10 +346,10 @@
 
 
 <div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFFileVariable.__init__"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">fh</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -520,12 +520,12 @@
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="s2">&quot;levels&quot;</span><span class="p">,</span> <span class="s2">&quot;No levels found for &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">levels</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="NetCDFFileVariable.is_level"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable.is_level">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">is_level</span><span class="p">(</span><span class="n">axis_type</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">Height</span> <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">Pressure</span> <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GeoZ</span> <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">Hybrid</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="kc">False</span></div></div>
 
 
 <div class="viewcode-block" id="create_netcdf_first_guess_template"><a class="viewcode-back" href="../../index.html#surfex.create_netcdf_first_guess_template">[docs]</a><span class="k">def</span> <span class="nf">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">my_variables</span><span class="p">,</span> <span class="n">my_nx</span><span class="p">,</span> <span class="n">my_ny</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;raw.nc&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

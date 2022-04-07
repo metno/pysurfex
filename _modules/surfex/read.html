@@ -51,18 +51,18 @@
 <div class="viewcode-block" id="ReadData"><a class="viewcode-back" href="../../index.html#surfex.ReadData">[docs]</a><span class="k">class</span> <span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadData.__init__"><a class="viewcode-back" href="../../index.html#surfex.ReadData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span></div>
         <span class="c1"># print &quot;Constructed &quot;+self.__class__.__name__+&quot; for &quot; + self.var_name</span>
 
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="ReadData.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ReadData.read_time_step">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadData.print_info"><a class="viewcode-back" href="../../index.html#surfex.ReadData.print_info">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">Points</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -88,20 +88,20 @@
 <span class="sd">        converter (surfex.Converter): Converter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertedInput.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">converter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">converter</span></div>
 
-    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertedInput.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.read_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="c1"># Preserve positive values for precipitation</span>
         <span class="c1"># TODO</span>
         <span class="c1"># if self.var_name == &quot;RAIN&quot; or self.var_name == &quot;SNOW&quot;:</span>
         <span class="c1">#    field[field &lt; 0.] = 0.</span>
-        <span class="k">return</span> <span class="n">field</span>
+        <span class="k">return</span> <span class="n">field</span></div>
 
-    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ConvertedInput.print_info"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="ConstantValue"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue">[docs]</a><span class="k">class</span> <span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
@@ -115,23 +115,23 @@
 <span class="sd">    :param var_dict: Variable definition</span>
 <span class="sd">    :type var_dict: dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantValue.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span> <span class="o">=</span> <span class="n">var_dict</span>
         <span class="k">if</span> <span class="s2">&quot;value&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Constant value must have a value!&quot;</span><span class="p">)</span>
-            <span class="k">raise</span>
+            <span class="k">raise</span></div>
 
-    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantValue.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.read_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)])</span>
         <span class="n">field</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="c1"># print field.shape</span>
-        <span class="k">return</span> <span class="n">field</span>
+        <span class="k">return</span> <span class="n">field</span></div>
 
-    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ConstantValue.print_info"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="remove_existing_file"><a class="viewcode-back" href="../../index.html#surfex.remove_existing_file">[docs]</a><span class="k">def</span> <span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
@@ -170,7 +170,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Converter.__init__"><a class="viewcode-back" href="../../index.html#surfex.Converter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializing the converter</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -228,14 +228,14 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;cloud_base&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span></div>
 
         <span class="c1"># print &quot;Constructed the converter &quot; + self.name</span>
 
-    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">print_info</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<div class="viewcode-block" id="Converter.print_info"><a class="viewcode-back" href="../../index.html#surfex.Converter.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">print_info</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+<div class="viewcode-block" id="Converter.create_variable"><a class="viewcode-back" href="../../index.html#surfex.Converter.create_variable">[docs]</a>    <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a variable</span>
 
@@ -264,7 +264,7 @@
 
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">var</span>
+        <span class="k">return</span> <span class="n">var</span></div>
 
     <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 
