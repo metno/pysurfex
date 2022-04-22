@@ -452,6 +452,7 @@ def parse_args_masterodb(argv):
     parser.add_argument('--dtg', type=str, required=False, default=None)
     parser.add_argument('--output', '-o', type=str, required=False, default=None)
     parser.add_argument('--only_archive', action="store_true", default=False, help="Only call archiving")
+    parser.add_argument('--tolerate_missing', action="store_true", default=False, help="Tolerate missing files")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
     parser.add_argument('--mode', '-m', type=str, required=True, choices=["forecast", "canari"])
     parser.add_argument('--archive', '-a', required=False, default=None, nargs='?',
@@ -531,10 +532,21 @@ def run_masterodb(**kwargs):
     only_archive = kwargs["only_archive"]
     print_namelist = kwargs["print_namelist"]
 
+    check_existence = True
+    if "tolerate_missing" in kwargs:
+        if kwargs["tolerate_missing"]:
+            check_existence = False
+
+    dtg = None
     if "dtg" in kwargs:
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
             kwargs.update({"dtg": dtg})
+
+    # TODO
+    perturbed_file_pattern = None
+    if perturbed_file_pattern in kwargs:
+        kwargs["perturbed_file_pattern"]
 
     pgd_file_path = kwargs["pgd"]
     prep_file_path = kwargs["prep"]
@@ -552,15 +564,20 @@ def run_masterodb(**kwargs):
             raise FileNotFoundError
 
     if mode == "forecast":
-        input_data = surfex.InlineForecastInputData(config, system_file_paths, **kwargs)
+        input_data = surfex.InlineForecastInputData(config, system_file_paths, check_existence=check_existence)
         mode = "offline"
     elif mode == "canari":
-        input_data = surfex.SodaInputData(config, system_file_paths, **kwargs)
+        verbosity = 1
+        if debug:
+            verbosity = 10
+        input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
+                                          verbosity=verbosity, perturbed_file_pattern = perturbed_file_pattern,
+                                          dtg=dtg)
         mode = "soda"
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
-    my_settings = surfex.BaseNamelist(mode, config, namelist_path, **kwargs).get_namelist()
+    my_settings = surfex.BaseNamelist(mode, config, namelist_path, dtg=dtg, fcint=3).get_namelist()
     my_geo.update_namelist(my_settings)
 
     # Create input
@@ -651,6 +668,7 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument('--harmonie', action="store_true", default=False,
                         help="Surfex configuration created from Harmonie environment")
     parser.add_argument('--print_namelist', action="store_true", default=False, help="Print namelsist used")
+    parser.add_argument('--tolerate_missing', action="store_true", default=False, help="Tolerate missing files")
     parser.add_argument('--masterodb', action="store_true", default=False, help="Input file written by msterodb")
     parser.add_argument('--rte', '-r', required=True, nargs='?')
     parser.add_argument('--config', '-c', required=False, nargs='?')
@@ -734,22 +752,61 @@ def run_surfex_binary(mode, **kwargs):
     perturbed = False
     need_pgd = True
     need_prep = True
+    check_existence = True
+    if "tolerate_missing" in kwargs:
+        if kwargs["tolerate_missing"]:
+            check_existence = False
+
+    prep_input_file = None
+    if "prep_file" in kwargs:
+        prep_input_file = kwargs["prep_file"]
+    prep_input_pgdfile = None
+    if "prep_pgdfile" in kwargs:
+        prep_input_pgdfile = kwargs["prep_pgdfile"]
+    prep_input_filetype = None
+    if "prep_filetype" in kwargs:
+        prep_input_filetype = kwargs["prep_filetype"]
+    prep_input_pgdfiletype = None
+    if "prep_pgdfiletype" in kwargs:
+        prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
+
+    # TODO
+    perturbed_file_pattern = None
+    if perturbed_file_pattern in kwargs:
+        kwargs["perturbed_file_pattern"]
+
+    dtg = None
+    if "dtg" in kwargs:
+        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
+            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            kwargs.update({"dtg": dtg})
+
+    print(kwargs)
     if mode == "pgd":
         pgd = True
         need_pgd = False
         need_prep = False
-        input_data = surfex.PgdInputData(config, system_file_paths, **kwargs)
+        input_data = surfex.PgdInputData(config, system_file_paths, check_existence=check_existence)
     elif mode == "prep":
         prep = True
         need_prep = False
-        input_data = surfex.PrepInputData(config, system_file_paths, **kwargs)
+        input_data = surfex.PrepInputData(config, system_file_paths, check_existence=check_existence,
+                                          prep_file=prep_input_file,
+                                          prep_pgdfile=prep_input_pgdfile)
     elif mode == "offline":
-        input_data = surfex.OfflineInputData(config, system_file_paths, **kwargs)
+        input_data = surfex.OfflineInputData(config, system_file_paths, check_existence=check_existence)
     elif mode == "soda":
-        input_data = surfex.SodaInputData(config, system_file_paths, **kwargs)
+        verbosity = 1
+        if debug:
+            verbosity = 10
+        input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
+                                          verbosity=verbosity,
+                                          masterodb=kwargs["masterodb"],
+                                          perturbed_file_pattern = perturbed_file_pattern,
+                                          dtg=dtg)
     elif mode == "perturbed":
         perturbed = True
-        input_data = surfex.OfflineInputData(config, system_file_paths, **kwargs)
+        input_data = surfex.OfflineInputData(config, system_file_paths, check_existence=check_existence)
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
@@ -759,16 +816,13 @@ def run_surfex_binary(mode, **kwargs):
     namelist_path = kwargs["namelist_path"]
     force = kwargs["force"]
     output = kwargs["output"]
-    # domain = kwargs["domain"]
     archive = kwargs["archive"]
     print_namelist = kwargs["print_namelist"]
     masterodb = kwargs["masterodb"]
     print("masterodb ", masterodb)
-
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
-            kwargs.update({"dtg": dtg})
+    forc_zs = False
+    if "forc_zs" in kwargs:
+        forc_zs = kwargs["forc_zs"]
 
     pgd_file_path = None
     if need_pgd:
@@ -803,7 +857,10 @@ def run_surfex_binary(mode, **kwargs):
 
     if not os.path.exists(output) or force:
 
-        my_settings = surfex.Namelist(sfx_version, mode, config, namelist_path, **kwargs).get_namelist()
+        my_settings = surfex.Namelist(sfx_version, mode, config, namelist_path, forc_zs=forc_zs,
+                                      prep_file=prep_input_file, prep_filetype=prep_input_filetype,
+                                      prep_pgdfile=prep_input_pgdfile, prep_pgdfiletype=prep_input_pgdfiletype,
+                                      dtg=dtg, fcint=3).get_namelist()
         my_geo.update_namelist(my_settings)
 
         # Create input
@@ -815,7 +872,8 @@ def run_surfex_binary(mode, **kwargs):
         if "lfagmap" in my_settings["nam_io_offline"]:
             lfagmap = my_settings["nam_io_offline"]["lfagmap"]
 
-        print(my_pgdfile, lfagmap)
+        if debug:
+            print(my_pgdfile, lfagmap)
         if need_pgd:
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
                                              masterodb=masterodb)

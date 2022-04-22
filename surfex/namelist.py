@@ -277,38 +277,20 @@ class ExternalSurfexInputFile(object):
 
 
 class BaseNamelist(object):
-    def __init__(self, program, config, input_path, **kwargs):
+    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
 
         self.config = config
         self.input_path = input_path
-        self.forc_zs = False
-        if "forc_zs" in kwargs:
-            self.forc_zs = kwargs["forc_zs"]
-        prep_file = None
-        if "prep_file" in kwargs:
-            prep_file = kwargs["prep_file"]
-        prep_filetype = None
-        if "prep_filetype" in kwargs:
-            prep_filetype = kwargs["prep_filetype"]
-        prep_pgdfile = None
-        if "prep_pgdfile" in kwargs:
-            prep_pgdfile = kwargs["prep_pgdfile"]
-        prep_pgdfiletype = None
-        if "prep_pgdfiletype" in kwargs:
-            prep_pgdfiletype = kwargs["prep_pgdfiletype"]
-        dtg = None
-        if "dtg" in kwargs:
-            dtg = kwargs["dtg"]
+        self.forc_zs = forc_zs
+        if dtg is not None:
             if isinstance(dtg, str):
                 dtg = datetime.strptime(dtg, "%Y%m%d%H")
         self.dtg = dtg
         check_parsing = True
         if self.dtg is None:
             check_parsing = False
-
-        self.fcint = 3
-        if "fcint" in kwargs:
-            self.fcint = kwargs["fcint"]
+        self.fcint = fcint
 
         # TODO Should be taken from LL_LLIST
         forecast_length = self.fcint
@@ -937,32 +919,52 @@ class Sfx81(BaseNamelist):
 
 
 class Cy46(BaseNamelist):
-    def __init__(self, program, config, input_path, **kwargs):
-        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+        BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
 
 
 class Cy43(BaseNamelist):
-    def __init__(self, program, config, input_path, **kwargs):
-        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+        BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
 
 
 class Cy40(BaseNamelist):
-    def __init__(self, program, config, input_path, **kwargs):
-        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+        BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
 
 
 class Namelist(Cy40, Cy43, Cy46, Sfx81, BaseNamelist):
-    def __init__(self, cycle, program, config, input_path, **kwargs):
+    def __init__(self, cycle, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
         if cycle.lower() == "base":
-            BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+            BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
         elif cycle.lower() == "sfx81":
-            Sfx81.__init__(self, program, config, input_path, **kwargs)
+            Sfx81.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
         elif cycle.lower() == "cy46":
-            Cy46.__init__(self, program, config, input_path, **kwargs)
+            Cy46.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
         elif cycle.lower() == "cy43":
-            Cy43.__init__(self, program, config, input_path, **kwargs)
+            Cy43.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
         elif cycle.lower() == "cy40":
-            Cy40.__init__(self, program, config, input_path, **kwargs)
+            Cy40.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
         else:
             raise Exception()
 
@@ -1041,7 +1043,7 @@ class EcoclimapSG(Ecoclimap):
 
 class PgdInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths, **kwargs):
+    def __init__(self, config, system_file_paths, check_existence=True):
 
         # Ecoclimap settings
         eco_sg = config.get_setting("SURFEX#COVER#SG")
@@ -1050,12 +1052,8 @@ class PgdInputData(surfex.JsonInputData):
         else:
             ecoclimap = Ecoclimap(config, system_file_paths=system_file_paths)
 
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
         data = ecoclimap.set_input(check_existence=check_existence)
 
-        kwargs.update({"check_existence": check_existence})
         ext_data = ExternalSurfexInputFile(system_file_paths)
         # Set direct input files
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
@@ -1066,11 +1064,11 @@ class PgdInputData(surfex.JsonInputData):
             fname = "GlobalLakeDepth" + version + ".dir"
             linkbasename = "GlobalLakeDepth"
             data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
-                                                            linkbasename=linkbasename, **kwargs))
+                                                            linkbasename=linkbasename, check_existence=check_existence))
             fname = "GlobalLakeStatus" + version + ".dir"
             linkbasename = "GlobalLakeStatus"
             data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
-                                                            linkbasename=linkbasename, **kwargs))
+                                                            linkbasename=linkbasename, check_existence=check_existence))
 
         possible_direct_data = {
             "ISBA": {
@@ -1090,31 +1088,22 @@ class PgdInputData(surfex.JsonInputData):
             for ftype in possible_direct_data[namelist_section]:
                 data_dir = possible_direct_data[namelist_section][ftype]
                 fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir", **kwargs))
+                data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
+                                                                check_existence=check_existence))
 
         # Treedrag
         if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             fname = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
             data_dir = "tree_height_dir"
-            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir", **kwargs))
+            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
+                                                            check_existence=check_existence))
 
         surfex.JsonInputData.__init__(self, data)
 
 
 class PrepInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths, **kwargs):
-
-        prep_file = None
-        if "prep_file" in kwargs:
-            prep_file = kwargs["prep_file"]
-        prep_pgdfile = None
-        if "prep_pgdfile" in kwargs:
-            prep_pgdfile = kwargs["prep_pgdfile"]
-
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
+    def __init__(self, config, system_file_paths, check_existence=True, prep_file=None, prep_pgdfile=None):
 
         data = {}
         # Ecoclimap settings
@@ -1147,11 +1136,7 @@ class PrepInputData(surfex.JsonInputData):
 
 class OfflineInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths, **kwargs):
-
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
+    def __init__(self, config, system_file_paths, check_existence=True):
 
         data = {}
         # Ecoclimap settings
@@ -1172,11 +1157,7 @@ class OfflineInputData(surfex.JsonInputData):
 
 class InlineForecastInputData(surfex.JsonInputData):
 
-    def __init__(self, config, system_file_paths, **kwargs):
-
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
+    def __init__(self, config, system_file_paths, check_existence=True):
 
         data = {}
         # Ecoclimap settings
@@ -1194,19 +1175,13 @@ class SodaInputData(surfex.JsonInputData):
     This class set
     """
 
-    def __init__(self, config, system_file_paths, **kwargs):
+    def __init__(self, config, system_file_paths, check_existence=True, verbosity=6, masterodb=True,
+                 perturbed_file_pattern=None, dtg=None):
 
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
-
-        kwargs.update({"verbosity": 6})
         self.config = config
         self.system_file_paths = system_file_paths
         self.file_paths = ExternalSurfexInputFile(self.system_file_paths)
-        dtg = None
-        if "dtg" in kwargs:
-            dtg = kwargs["dtg"]
+        if dtg is not None:
             if isinstance(dtg, str):
                 dtg = datetime.strptime(dtg, "%Y%m%d%H")
         self.dtg = dtg
@@ -1233,11 +1208,13 @@ class SodaInputData(surfex.JsonInputData):
         # NATURE
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
-                self.add_data(self.set_input_vertical_soil_ekf(**kwargs))
+                self.add_data(self.set_input_vertical_soil_ekf(check_existence=check_existence, masterodb=masterodb,
+                                                                perturbed_file_pattern=perturbed_file_pattern))
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
-                self.add_data(self.set_input_vertical_soil_oi(**kwargs))
+                self.add_data(self.set_input_vertical_soil_oi())
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF"):
-                self.add_data(self.set_input_vertical_soil_enkf(**kwargs))
+                self.add_data(self.set_input_vertical_soil_enkf(check_existence=check_existence, masterodb=masterodb,
+                                                                perturbed_file_pattern=perturbed_file_pattern))
 
         # Town
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
@@ -1286,7 +1263,7 @@ class SodaInputData(surfex.JsonInputData):
         }
         return sea_settings
 
-    def set_input_vertical_soil_oi(self, **kwargs):
+    def set_input_vertical_soil_oi(self):
 
         oi_settings = {}
         # Climate
@@ -1350,7 +1327,7 @@ class SodaInputData(surfex.JsonInputData):
         oi_settings.update({target: lsmfile})
         return oi_settings
 
-    def set_input_vertical_soil_ekf(self, **kwargs):
+    def set_input_vertical_soil_ekf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None):
 
         if self.dtg is None:
             raise Exception("You must set DTG")
@@ -1365,10 +1342,6 @@ class SodaInputData(surfex.JsonInputData):
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
-
         # TODO
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
@@ -1382,9 +1355,6 @@ class SodaInputData(surfex.JsonInputData):
         elif csurf_filetype == "fa":
             lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
             # TODO for now assume that first guess always is a inline forecast with FA format
-            masterodb = True
-            if "masterodb" in kwargs:
-                masterodb = kwargs["masterodb"]
             fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
             fg = fg_file.filename
         else:
@@ -1424,9 +1394,7 @@ class SodaInputData(surfex.JsonInputData):
 
             if exists:
                 data_dir = "perturbed_run_dir"
-                if "perturbed_file_pattern" in kwargs:
-                    perturbed_file_pattern = kwargs["perturbed_file_pattern"]
-                else:
+                if perturbed_file_pattern is None:
                     print("Use default CSURFFILE for perturbed file names")
                     perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
                                              + "." + extension
@@ -1460,7 +1428,7 @@ class SodaInputData(surfex.JsonInputData):
             ekf_settings.update({target: lsmfile})
         return ekf_settings
 
-    def set_input_vertical_soil_enkf(self, **kwargs):
+    def set_input_vertical_soil_enkf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None):
 
         if self.dtg is None:
             raise Exception("You must set DTG")
@@ -1475,10 +1443,6 @@ class SodaInputData(surfex.JsonInputData):
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 
-        check_existence = True
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
-
         # TODO
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
@@ -1492,9 +1456,6 @@ class SodaInputData(surfex.JsonInputData):
         elif csurf_filetype == "fa":
             lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
             # TODO for now assume that first guess always is a inline forecast with FA format
-            masterodb = True
-            if "masterodb" in kwargs:
-                masterodb = kwargs["masterodb"]
             fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
             fg = fg_file.filename
         else:
@@ -1514,7 +1475,8 @@ class SodaInputData(surfex.JsonInputData):
 
         enkf_settings.update({"PREP_INIT." + extension: first_guess})
         enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
-        enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(nens_m) + "." + extension: first_guess})
+        enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(nens_m) + "." +
+                              extension: first_guess})
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
 
@@ -1522,9 +1484,7 @@ class SodaInputData(surfex.JsonInputData):
         pert_input = 0
         for p in range(0, nens_m):
                 data_dir = "perturbed_run_dir"
-                if "perturbed_file_pattern" in kwargs:
-                    perturbed_file_pattern = kwargs["perturbed_file_pattern"]
-                else:
+                if perturbed_file_pattern is None:
                     print("Use default CSURFFILE for perturbed file names")
                     perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
                                              + "." + extension

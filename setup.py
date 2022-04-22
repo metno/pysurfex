@@ -181,6 +181,7 @@ setup(
         'bin/titan',
         'bin/bufr2json',
         'bin/cryoclim_pseudoobs',
-        'bin/dump_environ'
+        'bin/dump_environ',
+        'bin/shape2ign'
     ],
 )

@@ -146,11 +146,12 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # PREP
@@ -178,11 +179,12 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # OFFLINE
@@ -208,13 +210,14 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             "--forc_zs",
             "--forcing_dir", "testdata",
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # SODA
@@ -241,11 +244,12 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # Clean up
@@ -285,11 +289,12 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             "-b", binary
         ]
         kwargs = surfex.parse_args_masterodb(argv)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_masterodb(**kwargs)
 
         # CANARI
@@ -311,11 +316,12 @@ class RunTestNC(unittest.TestCase):
             "-n", self.rootdir + "/test/nam/",
             "-r", rte,
             "-f",
+            "--tolerate_missing",
             "-o", output,
             "-b", binary
         ]
         kwargs = surfex.parse_args_masterodb(argv)
-        kwargs.update({"check_existence": False})
+        # kwargs.update({"check_existence": False})
         surfex.run_masterodb(**kwargs)
 
         # Clean up

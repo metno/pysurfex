@@ -74,7 +74,7 @@ class Configuration(object):
         }
         if debug:
             print(__file__, settings)
-        json.dump(open(filename, "w"), settings, indent=indent)
+        json.dump(settings, open(filename, "w"), indent=indent)
 
     def max_fc_length(self, mbr=None):
         ll_list = self.get_ll_list(mbr=mbr)
@@ -145,7 +145,7 @@ class Configuration(object):
 
     def get_setting(self, setting, **kwargs):
         mbr = None
-        if mbr in kwargs:
+        if "mbr" in kwargs:
             mbr = kwargs["mbr"]
         sep = "#"
         if "sep" in kwargs:
@@ -174,7 +174,8 @@ class Configuration(object):
 
         if keys[0] in settings:
             this_setting = settings[keys[0]]
-            # print(this_setting)
+            if self.debug:
+                print("get_setting", keys[0], "->", this_setting)
             if len(keys) > 1:
                 for key in keys[1:]:
                     if key in this_setting:
@@ -195,7 +196,8 @@ class Configuration(object):
             else:
                 this_setting = None
 
-        # print(setting, this_setting, mbr, type(this_setting))
+        if self.debug:
+            print("get_setting", setting, this_setting, mbr, type(this_setting))
         return this_setting
 
     def update_setting(self, setting, value, mbr=None, sep="#"):
