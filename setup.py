@@ -87,7 +87,7 @@ setup(
         "numpy",
         "netCDF4",
         "cfunits",
-        "pyproj == 2.2",
+        "pyproj >= 2.2",
         "pyyaml",
         "tomlkit",
         "toml",
