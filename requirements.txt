@@ -1,13 +1,13 @@
 # requirements.txt
 pyyaml
 numpy
-eccodes[optional]
+eccodes
 gridpp
-titanlib[optional]
+titanlib
 pyproj
 f90nml
 toml
-json
+json; python_version < '3'
 netCDF4
 cfunits
 requests
