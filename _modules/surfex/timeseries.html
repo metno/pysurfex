@@ -49,6 +49,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stids</span> <span class="o">=</span> <span class="n">stids</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">varname</span> <span class="o">=</span> <span class="n">varname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)):</span>
             <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -179,7 +180,7 @@
         <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
             <span class="c1"># Write for each time step</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating time series for: &quot;</span> <span class="o">+</span> <span class="n">this_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; time_step:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">this_time</span><span class="p">))</span>
-            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">=</span><span class="n">geo_in</span><span class="p">))</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">))</span>
             <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
 
             <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>

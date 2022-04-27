@@ -122,7 +122,7 @@
         <span class="k">return</span> <span class="n">stids</span></div></div>
 
 
-<div class="viewcode-block" id="get_datasources"><a class="viewcode-back" href="../../index.html#surfex.get_datasources">[docs]</a><span class="k">def</span> <span class="nf">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tolerate_nmissing</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="get_datasources"><a class="viewcode-back" href="../../index.html#surfex.get_datasources">[docs]</a><span class="k">def</span> <span class="nf">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main data source interface setting data ObservationSet objects based on settings dictionary</span>
@@ -132,7 +132,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">nmissing</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># nmissing = 0</span>
     <span class="n">datasources</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">obs_set</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
@@ -145,9 +145,9 @@
         <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
             <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;debug&quot;</span><span class="p">]})</span>
 
-        <span class="n">tolerate_nmissing</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="s2">&quot;tolerate_missing&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
-            <span class="n">tolerate_nmissing</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;tolerate_nmissing&quot;</span><span class="p">]</span>
+        <span class="c1"># tolerate_nmissing = False</span>
+        <span class="c1"># if &quot;tolerate_missing&quot; in settings[obs_set]:</span>
+        <span class="c1">#     tolerate_nmissing = settings[obs_set][&quot;tolerate_nmissing&quot;]</span>
 
         <span class="k">if</span> <span class="s2">&quot;filetype&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">]:</span>
             <span class="n">filetype</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">obs_set</span><span class="p">][</span><span class="s2">&quot;filetype&quot;</span><span class="p">]</span>
@@ -343,7 +343,8 @@
             <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">:</span>
                 <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
-
+                <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No time check implemented yet&quot;</span><span class="p">)</span>
                 <span class="n">my_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
                 <span class="n">my_stids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stids</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
                 <span class="n">my_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
@@ -822,7 +823,7 @@
 
 
 <span class="k">def</span> <span class="nf">snow_pseudo_obs_cryoclim</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">grid_snow_class</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">fg_geo</span><span class="p">,</span> <span class="n">grid_snow_fg</span><span class="p">,</span>
-                             <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">interpolator_method</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                             <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ny</span> <span class="o">=</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -862,7 +863,8 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">p_fg_snow_depth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
 
         <span class="n">p_snow_fg</span> <span class="o">=</span> <span class="n">p_fg_snow_depth</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="c1"># print(i, p_snow_fg, res_lons[i], res_lats[i])</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">p_snow_fg</span><span class="p">,</span> <span class="n">res_lons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">res_lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_snow_fg</span><span class="p">):</span>
             <span class="c1"># Check if in grid</span>
             <span class="n">nn</span> <span class="o">=</span> <span class="n">fg_grid</span><span class="o">.</span><span class="n">get_num_neighbours</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">res_lons</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">res_lats</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="mf">2500.</span><span class="p">)</span>
@@ -896,18 +898,7 @@
     <span class="k">return</span> <span class="n">qc</span>
 
 
-<span class="k">def</span> <span class="nf">set_geo_from_obs_set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
-    <span class="n">obs_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;validtime&quot;</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
-    <span class="n">obs_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;obs_type&quot;</span><span class="p">]</span>
-    <span class="n">varname</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">]</span>
-    <span class="n">inputfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;inputfile&quot;</span><span class="p">]</span>
-    <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">lonrange</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lonrange&quot;</span><span class="p">]</span>
-    <span class="n">latrange</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">latrange</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">latrange</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;latrange&quot;</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">set_geo_from_obs_set</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">obs_type</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">inputfile</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;obs&quot;</span><span class="p">:</span> <span class="p">{</span>

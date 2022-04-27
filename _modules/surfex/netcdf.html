@@ -79,7 +79,6 @@
 <span class="sd">            instantanious (float): Scaling factor to make an accumulated value as instantanius</span>
 <span class="sd">            units (str): CF unit for the variable to be read</span>
 <span class="sd">            lev_from_ind (bool): level list are indices and not values</span>
-<span class="sd">            debug:</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">         np.array: 5D array with values</span>
@@ -117,7 +116,7 @@
                         <span class="c1"># Time steps requested</span>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
                             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>  <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="s2">&quot;times_in_var&quot;</span><span class="p">,</span>
-                                         <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="s2">&quot;times&quot;</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                                         <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;times&quot;</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
                         <span class="k">if</span> <span class="n">times_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
                             <span class="n">times_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -756,12 +755,14 @@
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You must specify at least one file to read from!&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">t2m_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">t2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rh2m_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rh2m_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">sd_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sd_var</span> <span class="o">=</span> <span class="p">[</span><span class="mi">999</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    if t2m_var is None:</span>
+<span class="sd">        t2m_var = [999] * (nx * ny)</span>
+<span class="sd">    if rh2m_var is None:</span>
+<span class="sd">        rh2m_var = [999] * (nx * ny)</span>
+<span class="sd">    if sd_var is None:</span>
+<span class="sd">        sd_var = [999] * (nx * ny)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;OBSERVATIONS_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">yy</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.DAT&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
@@ -769,7 +770,15 @@
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">):</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sd_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">t2m_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">rh2m_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rh2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sd_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sd_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">oi2soda</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
