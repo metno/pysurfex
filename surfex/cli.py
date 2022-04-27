@@ -508,7 +508,10 @@ def run_masterodb(**kwargs):
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
             config = surfex.Configuration(input_data)
-            config.settings["GEOMETRY"].update({"GEO": geo})
+            if "GEOMETRY" in config.settings:
+                config.settings["GEOMETRY"].update({"GEO": geo})
+            else:
+                config.settings.update({"GEOMETRY": {"GEO": geo}})
         else:
             raise FileNotFoundError("File not found: " + config)
 
@@ -568,11 +571,8 @@ def run_masterodb(**kwargs):
         input_data = surfex.InlineForecastInputData(config, system_file_paths, check_existence=check_existence)
         mode = "offline"
     elif mode == "canari":
-        verbosity = 1
-        if debug:
-            verbosity = 10
         input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
-                                          verbosity=verbosity, perturbed_file_pattern=perturbed_file_pattern,
+                                          debug=debug, perturbed_file_pattern=perturbed_file_pattern,
                                           dtg=dtg)
         mode = "soda"
     else:
@@ -732,7 +732,10 @@ def run_surfex_binary(mode, **kwargs):
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
             config = surfex.Configuration(input_data)
-            config.settings["GEOMETRY"].update({"GEO": geo})
+            if "GEOMETRY" in config.settings:
+                config.settings["GEOMETRY"].update({"GEO": geo})
+            else:
+                config.settings.update({"GEOMETRY": {"GEO": geo}})
         else:
             raise FileNotFoundError("File not found: " + config)
 
@@ -744,9 +747,7 @@ def run_surfex_binary(mode, **kwargs):
         system_file_paths = surfex.SystemFilePathsFromFile(system_file_paths)
     else:
         raise FileNotFoundError("File not found: " + system_file_paths)
-    del(kwargs["system_file_paths"])
 
-    # my_geo = config.get_setting("GEOMETRY#GEO")
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
@@ -799,11 +800,8 @@ def run_surfex_binary(mode, **kwargs):
     elif mode == "offline":
         input_data = surfex.OfflineInputData(config, system_file_paths, check_existence=check_existence)
     elif mode == "soda":
-        verbosity = 1
-        if debug:
-            verbosity = 10
         input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
-                                          verbosity=verbosity,
+                                          debug=debug,
                                           masterodb=kwargs["masterodb"],
                                           perturbed_file_pattern=perturbed_file_pattern,
                                           dtg=dtg)
@@ -1557,7 +1555,7 @@ def run_plot_points(**kwargs):
 
         if geo is None:
             obs_time = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
-            varname = kwargs["varname"]
+            varname = variable
             inputfile = kwargs["inputfile"]
             geo = surfex.set_geo_from_obs_set(obs_time, obs_input_type, varname, inputfile,
                                               lonrange=None, latrange=None)

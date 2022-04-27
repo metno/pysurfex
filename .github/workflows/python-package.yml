@@ -77,7 +77,7 @@ jobs:
         pip install -e .[test]
     - name: Test with nosetests
       run: |
-        wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV" -O testdata.zip && rm -rf /tmp/cookies.txt
+        wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV" -O testdata.zip && rm -rf /tmp/cookies.txt
         unzip -o testdata.zip
         echo "Testdata"
         ./prepare_testdata.sh

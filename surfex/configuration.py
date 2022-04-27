@@ -22,6 +22,16 @@ class Configuration(object):
 
         self.debug = debug
         self.settings = conf
+        # Set default file names
+        if "CPGDFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CPGDFILE": "PGD"})
+        if "CPREPFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CPREPFILE": "PREP"})
+        if "CSURFFILE" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"CSURFFILE": "SURFOUT"})
+        if "LFAGMAP" not in self.settings["SURFEX"]["IO"]:
+            self.settings["SURFEX"]["IO"].update({"LFAGMAP": True})
+
 
     def dump_json(self, filename, indent=None, debug=False):
         if json is None:

@@ -11,7 +11,6 @@ class RunTestNC(unittest.TestCase):
         print("SETUP")
         self.testdata = "testdata/"
         self.rootdir = os.path.abspath(os.curdir)
-        self.config_exp = self.rootdir + "/surfex/cfg/config_exp.toml"
         self.config_exp_surfex = self.rootdir + "/surfex/cfg/config_exp_surfex.toml"
         self.grid = "conf_proj"
         self.domain = self.rootdir + "/test/settings/" + self.grid + "_test.json"
@@ -118,7 +117,7 @@ class RunTestNC(unittest.TestCase):
 
         config_file = "config_run_test_nc.toml"
         rte = "rte_run_test_nc.json"
-        config = surfex.merge_toml_env_from_files([self.config_exp, self.config_exp_surfex, this_config])
+        config = surfex.merge_toml_env_from_files([self.config_exp_surfex, this_config])
 
         # Prepare
         extra_files = [config_file, rte]
@@ -149,7 +148,6 @@ class RunTestNC(unittest.TestCase):
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # PREP
@@ -182,7 +180,6 @@ class RunTestNC(unittest.TestCase):
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # OFFLINE
@@ -247,7 +244,6 @@ class RunTestNC(unittest.TestCase):
             binary
         ]
         kwargs = surfex.parse_args_surfex_binary(argv, task)
-        # kwargs.update({"check_existence": False})
         surfex.run_surfex_binary(task, **kwargs)
 
         # Clean up
@@ -260,7 +256,7 @@ class RunTestNC(unittest.TestCase):
 
         config_file = "config_run_test_masterodb.toml"
         rte = "rte_run_test_masterodb.json"
-        config = surfex.merge_toml_env_from_files([self.config_exp, self.config_exp_surfex, this_config])
+        config = surfex.merge_toml_env_from_files([self.config_exp_surfex, this_config])
 
         # Prepare
         extra_files = [config_file, rte]
@@ -319,7 +315,6 @@ class RunTestNC(unittest.TestCase):
             "-b", binary
         ]
         kwargs = surfex.parse_args_masterodb(argv)
-        # kwargs.update({"check_existence": False})
         surfex.run_masterodb(**kwargs)
 
         # Clean up

@@ -734,15 +734,14 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
 
     for i in range(0, nx*ny):
         line = ""
-        if t2m_var is None:
+        if t2m_var is not None:
             line = line + " " + str(t2m_var[i])
-        if rh2m_var is None:
+        if rh2m_var is not None:
             line = line + " " + str(rh2m_var[i])
-        if sd_var is None:
+        if sd_var is not None:
             line = line + " " + str(sd_var[i])
         line = line + "\n"
         out.write(line)
-        out.write(str(sd_var[i]) + "\n")
         if debug:
             surfex.debug(__file__, oi2soda.__name__, "i", i)
 

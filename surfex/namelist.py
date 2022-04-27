@@ -374,10 +374,12 @@ class ExternalSurfexInputFile(object):
                                                              check_existence=check_existence,
                                                              check_parsing=check_parsing,
                                                              validtime=validtime, basedtg=basedtg, mbr=mbr,
-                                                             tstep=tstep, pert=pert, var=var,
-                                                             system_variables=system_variables)
+                                                             tstep=tstep, pert=pert, var=var)
+            print(basename, basedir, fname_with_path)
             hdr_file = basedir + "/" + basename + ".hdr"
             dir_file = basedir + "/" + basename + ".dir"
+            if linkbasename is None:
+                linkbasename = basename
             return {linkbasename + ".hdr": hdr_file, linkbasename + ".dir": dir_file}
         elif fname.endswith(".json"):
             return {}
@@ -1111,7 +1113,7 @@ class Ecoclimap(object):
             raise Exception("System file path must be set for this method")
         data = {}
         for fname in self.ecoclimap_files:
-            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname, default="climdir",
+            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname, default_dir="climdir",
                                                                 check_existence=check_existence)
             data.update({fname: fname_data})
         return data
@@ -1301,7 +1303,7 @@ class SodaInputData(surfex.JsonInputData):
     This class set
     """
 
-    def __init__(self, config, system_file_paths, check_existence=True, verbosity=6, masterodb=True,
+    def __init__(self, config, system_file_paths, check_existence=True, debug=False, masterodb=True,
                  perturbed_file_pattern=None, dtg=None):
 
         self.config = config
@@ -1320,7 +1322,7 @@ class SodaInputData(surfex.JsonInputData):
             self.add_data(ecoclimap.set_bin_files(check_existence=check_existence))
 
         # OBS
-        self.add_data(self.set_input_observations(check_existence=check_existence, verbosity=verbosity))
+        self.add_data(self.set_input_observations(check_existence=check_existence, debug=debug))
 
         # SEA
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
@@ -1346,7 +1348,7 @@ class SodaInputData(surfex.JsonInputData):
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
             pass
 
-    def set_input_observations(self, check_existence=True, verbosity=5):
+    def set_input_observations(self, check_existence=True, debug=False):
 
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
         if cfile_format_obs == "ASCII":
@@ -1365,7 +1367,7 @@ class SodaInputData(surfex.JsonInputData):
         data_dir = "obs_dir"
         obsfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
                                                          check_existence=check_existence, basedtg=self.dtg,
-                                                         verbosity=verbosity)
+                                                         debug=False)
         obssettings = {
             target: obsfile
         }
@@ -1465,34 +1467,33 @@ class SodaInputData(surfex.JsonInputData):
         hh = self.dtg.strftime("%H")
         ekf_settings = {}
 
-        # geo = self.config.get_setting("GEOMETRY#GEO")
-        # First guess for SURFEX
-        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
-
         # TODO
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
+        data_dir = "first_guess_dir"
+        first_guess = self.system_file_paths.get_system_path(data_dir, default_dir="assim_dir",
+                                                             validtime=self.dtg, basedtg=fg_dtg,
+                                                             check_existence=check_existence)
+        # First guess for SURFEX
+        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
         fg = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
+        first_guess = first_guess + "/" + fg
         if csurf_filetype == "ascii":
-            fg_file = surfex.AsciiSurfexFile(fg, geo=geo)
+            fg_file = surfex.AsciiSurfexFile(first_guess, geo=geo)
             fg = fg_file.filename
         elif csurf_filetype == "nc":
-            fg_file = surfex.NCSurfexFile(fg, geo=geo)
+            print(fg)
+            fg_file = surfex.NCSurfexFile(first_guess, geo=geo)
             fg = fg_file.filename
         elif csurf_filetype == "fa":
             lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
             # TODO for now assume that first guess always is a inline forecast with FA format
-            fg_file = surfex.FaSurfexFile(fg, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
+            fg_file = surfex.FaSurfexFile(first_guess, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
             fg = fg_file.filename
         else:
             raise NotImplementedError
 
-        data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_file(data_dir, fg, default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=check_existence)
-
-        # We newer run inline model for perturbations or in SODA
+        # We never run inline model for perturbations or in SODA
         extension = fg_file.extension
         if csurf_filetype == "fa":
             extension = "fa"
