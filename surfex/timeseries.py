@@ -12,6 +12,7 @@ class TimeSeries(object):
         self.stids = stids
         self.varname = varname
         self.index_pos = {}
+        self.debug = debug
 
         for i in range(0, len(self.lons)):
             lon = self.lons[i]
@@ -142,7 +143,7 @@ class TimeSeriesFromConverter(TimeSeries):
         while this_time <= end:
             # Write for each time step
             print("Creating time series for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(this_time))
-            values.append(converter.read_time_step(geo, this_time, cache, geo_in=geo_in))
+            values.append(converter.read_time_step(geo, this_time, cache))
             times.append(this_time)
 
             this_time = this_time + timedelta(seconds=interval)

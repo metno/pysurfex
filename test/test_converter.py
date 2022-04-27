@@ -77,7 +77,7 @@ class ConverterTest(unittest.TestCase):
     validtime = datetime(year=2020, month=2, day=1, hour=6)
     cache = surfex.Cache(debug, 7200)
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
-    field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
+    surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
     domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
@@ -113,5 +113,5 @@ class ConverterTest(unittest.TestCase):
     validtime = datetime(year=2020, month=11, day=13, hour=3)
     cache = surfex.Cache(debug, 7200)
     converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
-    field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
+    surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])

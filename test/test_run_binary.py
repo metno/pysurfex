@@ -3,7 +3,6 @@ import surfex
 import os
 import json
 import toml
-import socket
 
 
 class RunTestNC(unittest.TestCase):
@@ -16,7 +15,6 @@ class RunTestNC(unittest.TestCase):
         self.config_exp_surfex = self.rootdir + "/surfex/cfg/config_exp_surfex.toml"
         self.grid = "conf_proj"
         self.domain = self.rootdir + "/test/settings/" + self.grid + "_test.json"
-        host_name = socket.gethostname()
         self.system = self.rootdir + "/test/settings/test_system.json"
 
     def tearDown(self):

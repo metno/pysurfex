@@ -91,6 +91,10 @@ class Variable(object):
                 geo_in = None
                 if "geo_input" in self.var_dict:
                     geo_in = self.var_dict["geo_input"]
+                elif "geo_input_file" in self.var_dict:
+                    geo_in_file = self.var_dict["geo_input_file"]
+                    geo_in = surfex.get_geo_object(open(geo_in_file, "r"))
+
                 file_handler = surfex.file.get_surfex_io_object(filename, fileformat=fileformat,
                                                                 filetype=filetype, geo=geo_in, debug=self.debug)
             elif self.var_type == "obs":
@@ -223,7 +227,7 @@ class Variable(object):
             basetime = self.get_basetime(validtime)
             var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches, layers=layers,
                                                  basetime=basetime,
-                                                 interval=self.interval, datatype=datatype)
+                                                 interval=self.interval, datatype=datatype, )
         elif self.var_type == "fa":
             var = self.var_dict["name"]
         elif self.var_type == "obs":

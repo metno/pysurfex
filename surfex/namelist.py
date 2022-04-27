@@ -17,49 +17,94 @@ class SystemFilePaths(object):
         self.system_file_paths = system_file_paths
         # self.system_variables = None
 
-    def get_system_path(self, dtype, **kwargs):
-        # print(kwargs)
-        default_dir = None
-        if "default_dir" in kwargs:
-            default_dir = kwargs["default_dir"]
-        verbosity = 0
-        if "verbosity" in kwargs:
-            verbosity = kwargs["verbosity"]
-        if verbosity > 0:
+    def get_system_path(self, dtype, default_dir=None, debug=False, check_existence=False, check_parsing=False,
+                        validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
+        """
+        Get the system path for a given data type
+
+        Args:
+            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)
+            default_dir (str): A fallback if the desired dtype is not found
+            debug (bool): Enable debug
+            check_existence (bool): Check if the path found also exists
+            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
+            validtime (datetime.dateime): Parse setting with this as valid time
+            basedtg (datetime.dateime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member
+            tstep (int): Parse setting with this as time step
+            pert (int): Parse setting with this as pertubation number
+            var (str): Parse setting with this as variable
+
+        Returns:
+            data_dir (str):
+
+        Raises:
+            Exception: If path not found and check_existence is True
+
+        See Also:
+            self.parse_setting
+
+        """
+
+        if debug:
             print("Search for: " + dtype + " Default: " + str(default_dir))
 
-        data_dir = self.find_matching_data_dir(dtype, **kwargs)
+        data_dir = self.find_matching_data_dir(dtype, default_dir=default_dir,
+                                               check_existence=check_existence,  debug=debug,
+                                               check_parsing=check_parsing, validtime=validtime,
+                                               basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
         if data_dir is None:
             if default_dir is None:
                 raise Exception("No system path found for " + dtype)
             else:
-                if verbosity > 1:
+                if debug:
                     print("Find default path")
-                data_dir = self.find_matching_data_dir(default_dir, **kwargs)
+                data_dir = self.find_matching_data_dir(default_dir, default_dir=default_dir,
+                                                       check_existence=check_existence,  debug=debug,
+                                                       check_parsing=check_parsing, validtime=validtime,
+                                                       basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
                 if data_dir is None:
-                    if verbosity > 0:
+                    if debug:
                         print("No default path found for " + default_dir)
 
-        if verbosity > 3:
+        if debug:
             print(data_dir)
         return data_dir
 
-    def find_matching_data_dir(self, dtype, **kwargs):
-        # print("match ", kwargs)
-        default_dir = None
-        if "default_dir" in kwargs:
-            default_dir = kwargs["default_dir"]
-        verbosity = 0
-        if "verbosity" in kwargs:
-            verbosity = kwargs["verbosity"]
-        check_existence = False
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
+    def find_matching_data_dir(self, dtype, default_dir=None, check_existence=False, debug=False,
+                               check_parsing=False, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None,
+                               var=None):
+        """
+        Find a matching path from the system path for a given data type
+
+        Args:
+            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)
+            default_dir (str): A fallback if the desired dtype is not found
+            debug (bool): Enable debug
+            check_existence (bool): Check if the path found also exists
+            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
+            validtime (datetime.dateime): Parse setting with this as valid time
+            basedtg (datetime.dateime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member
+            tstep (int): Parse setting with this as time step
+            pert (int): Parse setting with this as pertubation number
+            var (str): Parse setting with this as variable
+
+        Returns:
+            data_dir (str):
+
+        Raises:
+            Exception: If path not found and check_existence is True
+
+        See Also:
+            self.parse_setting
+
+        """
 
         command = None
         for p in self.system_file_paths:
             if p == dtype:
-                if verbosity > 3:
+                if debug:
                     print("Found " + p, type(p), self.system_file_paths)
                 data_dir = self.system_file_paths[p]
                 # If dict, also a command is attached
@@ -68,15 +113,17 @@ class SystemFilePaths(object):
                         print(key, data_dir[key])
                         command = str(data_dir[key])
                         data_dir = str(key)
-                if verbosity > 2:
+                if debug:
                     print("Data directory before parsing is is: " + data_dir)
                 if not isinstance(data_dir, str):
                     raise Exception("data dir is not a string!")
-                data_dir = self.parse_setting(self.substitute_string(data_dir), **kwargs)
+                data_dir = self.parse_setting(self.substitute_string(data_dir), check_parsing=check_parsing,
+                                              validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert,
+                                              var=var, debug=debug)
                 # Add command to data_dir again
                 if command is not None:
                     data_dir = {data_dir: command}
-                if verbosity > 2:
+                if debug:
                     print("Data directory after parsing is is: " + data_dir)
                 if check_existence:
                     if not os.path.exists(data_dir) and default_dir is None:
@@ -84,28 +131,55 @@ class SystemFilePaths(object):
                 return data_dir
         return None
 
-    def get_system_file(self, dtype, fname, **kwargs):
-        verbosity = 0
-        if "verbosity" in kwargs:
-            verbosity = kwargs["verbosity"]
-        if verbosity > 5:
-            print("get_system_file", dtype, fname, kwargs)
+    def get_system_file(self, dtype, fname, default_dir=None, debug=False, check_existence=False, check_parsing=False,
+                        validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None, system_variables=None):
+        """
+        Get the system path for a given data type and add a file name to the path
+
+        Args:
+            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)
+            fname (str): Name of the file you want to join to the system path
+            default_dir (str): A fallback if the desired dtype is not found
+            debug (bool): Enable debug
+            check_existence (bool): Check if the path found also exists
+            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
+            validtime (datetime.dateime): Parse setting with this as valid time
+            basedtg (datetime.dateime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member
+            tstep (int): Parse setting with this as time step
+            pert (int): Parse setting with this as pertubation number
+            var (str): Parse setting with this as variable
+            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={"NAME": "Value"}
+
+        Returns:
+            data_dir (str):
+
+        Raises:
+            Exception: If path not found and check_existence is True
+
+        See Also:
+            self.parse_setting
+            self.substitute_string
+
+        """
+
         command = None
-        path = self.get_system_path(dtype, **kwargs)
+        path = self.get_system_path(dtype, default_dir=default_dir, debug=debug, check_existence=check_existence,
+                                    check_parsing=check_parsing, validtime=validtime, basedtg=basedtg, mbr=mbr,
+                                    tstep=tstep, pert=pert, var=var)
+
         # If dict, also a command is attached
         if isinstance(path, dict):
             for key in path:
                 command = str(path[key])
                 path = str(key)
-        fname = self.parse_setting(fname, **kwargs)
-        fname = self.substitute_string(fname)
+        fname = self.parse_setting(fname,  debug=debug, check_parsing=check_parsing, validtime=validtime,
+                                   basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+        fname = self.substitute_string(fname, system_variables=system_variables)
         if path is None:
             print("No path found for: " + dtype)
         else:
             fname = path + "/" + fname
-        check_existence = False
-        if "check_existence" in kwargs:
-            check_existence = kwargs["check_existence"]
         if check_existence:
             if not os.path.exists(fname):
                 raise FileNotFoundError(fname)
@@ -114,34 +188,32 @@ class SystemFilePaths(object):
         return fname
 
     @staticmethod
-    def parse_setting(setting, **kwargs):
-        verbosity = 0
-        if "verbosity" in kwargs:
-            verbosity = kwargs["verbosity"]
-        check_parsing = True
+    def parse_setting(setting, debug=False, check_parsing=False, validtime=None, basedtg=None, mbr=None,
+                      tstep=None, pert=None, var=None):
+        """Parse setting with date/time/experiment specific values
+
+        Args:
+            setting: The value of dictionary key which should be processes. Parser if type is str.
+            debug (bool): Enable debug
+            check_parsing (bool): Check if all @@ pairs were parsed
+            validtime (datetime.daetime): Parse setting with this as validtime
+            basedtg (datetime.datetime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
+            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
+            pert (int): Parse setting with this as perturbation number @PERT@
+            var (str): Parse setting with this as the variable (@VAR@)
+
+        Returns:
+            setting: Possibly parsed setting is type is str
+
+        See Also:
+            self.parse_setting
+            self.substitute_string
+
+        """
+
         # Check on arguments
-        if kwargs is not None and isinstance(setting, str):
-            validtime = None
-            if "validtime" in kwargs:
-                validtime = kwargs["validtime"]
-            mbr = None
-            if "mbr" in kwargs:
-                mbr = kwargs["mbr"]
-            basedtg = None
-            if "basedtg" in kwargs:
-                basedtg = kwargs["basedtg"]
-            tstep = None
-            if "tstep" in kwargs:
-                tstep = kwargs["tstep"]
-            pert = None
-            if "pert" in kwargs:
-                pert = kwargs["pert"]
-            var = None
-            if "var" in kwargs:
-                var = kwargs["var"]
-            sfx_exp_vars = None
-            if "sfx_exp_vars" in kwargs:
-                sfx_exp_vars = kwargs["sfx_exp_vars"]
+        if isinstance(setting, str):
 
             if basedtg is not None:
                 if isinstance(basedtg, str):
@@ -189,24 +261,14 @@ class SystemFilePaths(object):
                 setting = str(setting).replace("@EEE@", "")
 
             if pert is not None:
-                print("replace", pert, "in ", setting)
+                if debug:
+                    print("replace", pert, "in ", setting)
                 setting = str(setting).replace("@PERT@", str(pert))
-                print("replaced", pert, "in ", setting)
+                if debug:
+                    print("replaced", pert, "in ", setting)
 
             if var is not None:
                 setting = str(setting).replace("@VAR@", var)
-
-            if sfx_exp_vars is not None:
-                if verbosity > 2:
-                    print(sfx_exp_vars, setting)
-                for sfx_exp_var in sfx_exp_vars:
-                    if isinstance(sfx_exp_vars[sfx_exp_var], str):
-                        if verbosity > 4:
-                            print(str(setting), "  <--> ", "@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
-                        setting = str(setting).replace("@" + sfx_exp_var + "@", sfx_exp_vars[sfx_exp_var])
-
-            if "check_parsing" in kwargs:
-                check_parsing = kwargs["check_parsing"]
 
         if check_parsing:
             if isinstance(setting, str) and setting.count("@") > 1:
@@ -215,7 +277,19 @@ class SystemFilePaths(object):
         return setting
 
     @staticmethod
-    def substitute_string(setting, **kwargs):
+    def substitute_string(setting, system_variables=None):
+        """
+
+        Substitute setting if string with OS values of values from system_variables
+
+        Args:
+            setting: if setting is string it can be subst
+            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={"NAME": "Value"}
+
+        Returns:
+            setting: A setting possibly substituted if type is str
+
+        """
 
         if isinstance(setting, str):
             env_vals = ["USER", "HOME", "PWD"]
@@ -225,20 +299,44 @@ class SystemFilePaths(object):
                 else:
                     print(env_val + " not found in environment")
 
-            system_variables = None
-            if "system_variables" in kwargs:
-                system_variables = kwargs["system_variables"]
             if system_variables is not None:
                 print(system_variables)
                 for var in system_variables:
                     print(var, system_variables)
-                    setting = str(setting).replace("@" + str(var) + "@", str(system_variables[var]))
+                    setting = setting.replace("@" + str(var) + "@", str(system_variables[var]))
 
         return setting
 
-    def add_system_file_path(self, name, path, **kwargs):
-        path = self.substitute_string(path)
-        path = self.parse_setting(path, **kwargs)
+    def add_system_file_path(self, name, path, debug=False, system_variables=None, check_parsing=True,
+                             validtime=None, basedtg=None, mbr=None,
+                             tstep=None, pert=None, var=None):
+        """
+        Add a system file path to be used
+
+        Args:
+            name (str): The data type you want to get the path for (clim_dir/bin_dir etc)
+            path (str): Name of the file you want to join to the system path
+            debug (bool): Enable debug
+            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={"NAME": "Value"}
+            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
+            validtime (datetime.dateime): Parse setting with this as valid time
+            basedtg (datetime.dateime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member
+            tstep (int): Parse setting with this as time step
+            pert (int): Parse setting with this as pertubation number
+            var (str): Parse setting with this as variable
+
+        Returns:
+            None
+
+        See Also:
+            self.parse_setting
+            self.substitute_string
+
+        """
+        path = self.substitute_string(path, system_variables=system_variables)
+        path = self.parse_setting(path, debug=debug, check_parsing=check_parsing, validtime=validtime,
+                                  basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
         self.system_file_paths.update({name: path})
 
 
@@ -258,15 +356,26 @@ class ExternalSurfexInputFile(object):
     def __init__(self, system_file_paths):
         self.system_file_paths = system_file_paths
 
-    def set_input_data_from_format(self, dtype, fname, **kwargs):
-        fname_with_path = self.system_file_paths.get_system_file(dtype, fname, **kwargs)
+    def set_input_data_from_format(self, dtype, fname, default_dir=None, debug=False, check_existence=False,
+                                   check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None,
+                                   var=None, system_variables=None, linkbasename=None):
+
+        fname_with_path = self.system_file_paths.get_system_file(dtype, fname, default_dir=default_dir, debug=debug,
+                                                                 check_existence=check_existence,
+                                                                 check_parsing=check_parsing,
+                                                                 validtime=validtime, basedtg=basedtg, mbr=mbr,
+                                                                 tstep=tstep, pert=pert, var=var,
+                                                                 system_variables=system_variables)
 
         if fname.endswith(".dir"):
             basename = os.path.splitext(os.path.basename(fname))[0]
-            linkbasename = basename
-            if "linkbasename" in kwargs:
-                linkbasename = kwargs["linkbasename"]
-            basedir = self.system_file_paths.get_system_path(dtype, **kwargs)
+
+            basedir = self.system_file_paths.get_system_path(dtype, default_dir=default_dir, debug=debug,
+                                                             check_existence=check_existence,
+                                                             check_parsing=check_parsing,
+                                                             validtime=validtime, basedtg=basedtg, mbr=mbr,
+                                                             tstep=tstep, pert=pert, var=var,
+                                                             system_variables=system_variables)
             hdr_file = basedir + "/" + basename + ".hdr"
             dir_file = basedir + "/" + basename + ".dir"
             return {linkbasename + ".hdr": hdr_file, linkbasename + ".dir": dir_file}
@@ -278,7 +387,22 @@ class ExternalSurfexInputFile(object):
 
 class BaseNamelist(object):
     def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
-                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
+        """A base namelists class to be implemented by namelist implementations
+
+        Args:
+            program (str): Which surfex binary you want to run ["pgd", "prep", "offline", "soda"]
+            config (surfex.Configuration): A SURFEX configuration object
+            input_path (str): A path to search for json namelist blocks
+            forc_zs (bool): Set the surfex orography heigth to the same as in the forcing files
+            prep_file (str): Input file for prep
+            prep_filetype (str): The format of prep_file
+            prep_pgdfile (str): Input PGD file for prep in case it comes from SURFEX
+            prep_pgdfiletype (str): The format of the prep_pgdfile
+            dtg (datetime.datetime): The date/time you want to run
+            fcint (int): The intervall between the cycles. Used for first guesses.
+            geo (surfex.Geo): Surfex geometry. The domain you want to run on
+        """
 
         self.config = config
         self.input_path = input_path
@@ -291,8 +415,9 @@ class BaseNamelist(object):
         if self.dtg is None:
             check_parsing = False
         self.fcint = fcint
+        self.geo = geo
 
-        # TODO Should be taken from LL_LLIST
+        # The time stamp of next cycle file
         forecast_length = self.fcint
         if self.dtg is not None:
             self.end_of_forecast = self.dtg + timedelta(hours=forecast_length)
@@ -560,9 +685,9 @@ class BaseNamelist(object):
         sso = self.config.get_setting("SURFEX#SSO#SCHEME")
         self.input_list.append({"json": {"NAM_SSON": {"CROUGH": sso}}})
         if sso == "OROTUR":
-            geo = self.config.get_setting("GEOMETRY#GEO")
-            if isinstance(geo, surfex.ConfProj):
-                self.input_list.append({"json": {"NAM_SSON": {"XSOROT": geo.xdx}}})
+            # geo = self.config.get_setting("GEOMETRY#GEO")
+            if isinstance(self.geo, surfex.ConfProj):
+                self.input_list.append({"json": {"NAM_SSON": {"XSOROT": self.geo.xdx}}})
 
         # Perturbed offline settings
         self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
@@ -590,7 +715,7 @@ class BaseNamelist(object):
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-            nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
+            # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var in range(0, len(cvar_m)):
                 self.input_list.append({"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_m[var]}}})
                 self.input_list.append({"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}})
@@ -598,11 +723,10 @@ class BaseNamelist(object):
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
-
         # TODO the need for this in forecast must be removed!
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
-        nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
+        # nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         if len(nnco) != len(cobs_m):
             raise Exception("Mismatch in nnco/cobs_m")
@@ -632,7 +756,7 @@ class BaseNamelist(object):
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
-        nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
+        # nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         xerrobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#XERROBS_M")
         print(nnco, cobs_m, xerrobs_m)
         if len(nnco) != len(cobs_m) or len(nnco) != len(xerrobs_m):
@@ -744,7 +868,6 @@ class BaseNamelist(object):
                 "LBEV": self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
                 "LBFIXED": not self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B")
             }}})
-
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
             nvar = 0
@@ -914,57 +1037,60 @@ class BaseNamelist(object):
 
 
 class Sfx81(BaseNamelist):
-    def __init__(self, program, config, input_path, **kwargs):
-        BaseNamelist.__init__(self, program, config, input_path, **kwargs)
+    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
+        BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
+                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
 
 
 class Cy46(BaseNamelist):
     def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
-                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
         BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
                               prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
 
 
 class Cy43(BaseNamelist):
     def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
-                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
         BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
                               prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
 
 
 class Cy40(BaseNamelist):
     def __init__(self, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
-                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
         BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
                               prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
 
 
 class Namelist(Cy40, Cy43, Cy46, Sfx81, BaseNamelist):
     def __init__(self, cycle, program, config, input_path, forc_zs=False, prep_file=None, prep_filetype=None,
-                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3):
+                 prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3, geo=None):
         if cycle.lower() == "base":
             BaseNamelist.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
-                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                                  prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                                  prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
         elif cycle.lower() == "sfx81":
             Sfx81.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
-                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                           prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                           prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
         elif cycle.lower() == "cy46":
             Cy46.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
-                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                          prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                          prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
         elif cycle.lower() == "cy43":
             Cy43.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
-                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                          prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                          prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
         elif cycle.lower() == "cy40":
             Cy40.__init__(self, program, config, input_path, forc_zs=forc_zs, prep_file=prep_file,
-                              prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
-                              prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint)
+                          prep_filetype=prep_filetype, prep_pgdfile=prep_pgdfile,
+                          prep_pgdfiletype=prep_pgdfiletype, dtg=dtg, fcint=fcint, geo=geo)
         else:
             raise Exception()
 
@@ -1194,7 +1320,7 @@ class SodaInputData(surfex.JsonInputData):
             self.add_data(ecoclimap.set_bin_files(check_existence=check_existence))
 
         # OBS
-        self.add_data(self.set_input_observations(check_existence=check_existence))
+        self.add_data(self.set_input_observations(check_existence=check_existence, verbosity=verbosity))
 
         # SEA
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
@@ -1209,7 +1335,7 @@ class SodaInputData(surfex.JsonInputData):
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
                 self.add_data(self.set_input_vertical_soil_ekf(check_existence=check_existence, masterodb=masterodb,
-                                                                perturbed_file_pattern=perturbed_file_pattern))
+                                                               perturbed_file_pattern=perturbed_file_pattern))
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
                 self.add_data(self.set_input_vertical_soil_oi())
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF"):
@@ -1220,7 +1346,7 @@ class SodaInputData(surfex.JsonInputData):
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
             pass
 
-    def set_input_observations(self, check_existence=True):
+    def set_input_observations(self, check_existence=True, verbosity=5):
 
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
         if cfile_format_obs == "ASCII":
@@ -1238,7 +1364,8 @@ class SodaInputData(surfex.JsonInputData):
 
         data_dir = "obs_dir"
         obsfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
-                                                         check_existence=check_existence, basedtg=self.dtg, verbosity=5)
+                                                         check_existence=check_existence, basedtg=self.dtg,
+                                                         verbosity=verbosity)
         obssettings = {
             target: obsfile
         }
@@ -1327,7 +1454,7 @@ class SodaInputData(surfex.JsonInputData):
         oi_settings.update({target: lsmfile})
         return oi_settings
 
-    def set_input_vertical_soil_ekf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None):
+    def set_input_vertical_soil_ekf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None, geo=None):
 
         if self.dtg is None:
             raise Exception("You must set DTG")
@@ -1338,7 +1465,7 @@ class SodaInputData(surfex.JsonInputData):
         hh = self.dtg.strftime("%H")
         ekf_settings = {}
 
-        geo = self.config.get_setting("GEOMETRY#GEO")
+        # geo = self.config.get_setting("GEOMETRY#GEO")
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 
@@ -1396,8 +1523,8 @@ class SodaInputData(surfex.JsonInputData):
                 data_dir = "perturbed_run_dir"
                 if perturbed_file_pattern is None:
                     print("Use default CSURFFILE for perturbed file names")
-                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
-                                             + "." + extension
+                    perturbed_file_pattern = \
+                        self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) + "." + extension
 
                 # TODO depending on when perturbations are run
                 perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
@@ -1428,7 +1555,7 @@ class SodaInputData(surfex.JsonInputData):
             ekf_settings.update({target: lsmfile})
         return ekf_settings
 
-    def set_input_vertical_soil_enkf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None):
+    def set_input_vertical_soil_enkf(self, check_existence=True, masterodb=True, perturbed_file_pattern=None, geo=None):
 
         if self.dtg is None:
             raise Exception("You must set DTG")
@@ -1439,7 +1566,7 @@ class SodaInputData(surfex.JsonInputData):
         hh = self.dtg.strftime("%H")
         enkf_settings = {}
 
-        geo = self.config.get_setting("GEOMETRY#GEO")
+        # geo = self.config.get_setting("GEOMETRY#GEO")
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 
@@ -1478,26 +1605,25 @@ class SodaInputData(surfex.JsonInputData):
         enkf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(nens_m) + "." +
                               extension: first_guess})
 
-        nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-
-        pert_enkf = 0
-        pert_input = 0
+        # nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
+        # pert_enkf = 0
+        # pert_input = 0
         for p in range(0, nens_m):
-                data_dir = "perturbed_run_dir"
-                if perturbed_file_pattern is None:
-                    print("Use default CSURFFILE for perturbed file names")
-                    perturbed_file_pattern = self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) \
-                                             + "." + extension
+            data_dir = "perturbed_run_dir"
+            if perturbed_file_pattern is None:
+                print("Use default CSURFFILE for perturbed file names")
+                perturbed_file_pattern = \
+                    self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) + "." + extension
 
-                # TODO depending on when perturbations are run
-                perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
-                                                                       validtime=self.dtg, basedtg=fg_dtg,
-                                                                       check_existence=check_existence,
-                                                                       default_dir="assim_dir",
-                                                                       pert=p)
+            # TODO depending on when perturbations are run
+            perturbed_run = self.system_file_paths.get_system_file(data_dir, perturbed_file_pattern,
+                                                                   validtime=self.dtg, basedtg=fg_dtg,
+                                                                   check_existence=check_existence,
+                                                                   default_dir="assim_dir",
+                                                                   pert=p)
 
-                target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(p) + "." + extension
-                enkf_settings.update({target: perturbed_run})
+            target = "PREP_" + yy + mm + dd + "H" + hh + "_EKF_ENS" + str(p) + "." + extension
+            enkf_settings.update({target: perturbed_run})
 
         # LSM
         # Fetch first_guess needed for LSM for extrapolations

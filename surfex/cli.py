@@ -296,7 +296,7 @@ def first_guess_for_oi(**kwargs):
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.get_setting("GEOMETRY#GEO")
+        geo = config.geo
     else:
         if "domain" in kwargs:
             domain = kwargs["domain"]
@@ -421,7 +421,8 @@ def first_guess_for_oi(**kwargs):
             field[field < 0] = 0
 
         if np.isnan(np.sum(field)):
-            fill_nan_value = fg.variables[var]._FillValue
+            fill_nan_value = fg.variables[var].getncattr("_FillValue")
+            # fill_nan_value = fg.variables[var]._FillValue
             surfex.info("Field " + var + " got Nan. Fill with: " + str(fill_nan_value))
             field[np.where(np.isnan(field))] = fill_nan_value
 
@@ -490,6 +491,7 @@ def run_masterodb(**kwargs):
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        geo = config.geo
     else:
         if "domain" not in kwargs:
             raise Exception("Missing domain definition")
@@ -505,7 +507,8 @@ def run_masterodb(**kwargs):
         config = kwargs["config"]
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
-            config = surfex.Configuration(input_data, {}, geo=geo)
+            config = surfex.Configuration(input_data)
+            config.settings["GEOMETRY"].update({"GEO": geo})
         else:
             raise FileNotFoundError("File not found: " + config)
 
@@ -518,8 +521,6 @@ def run_masterodb(**kwargs):
     else:
         raise FileNotFoundError("File not found: " + system_file_paths)
     del(kwargs["system_file_paths"])
-
-    my_geo = config.get_setting("GEOMETRY#GEO")
 
     binary = kwargs["binary"]
     rte = kwargs["rte"]
@@ -546,7 +547,7 @@ def run_masterodb(**kwargs):
     # TODO
     perturbed_file_pattern = None
     if perturbed_file_pattern in kwargs:
-        kwargs["perturbed_file_pattern"]
+        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
 
     pgd_file_path = kwargs["pgd"]
     prep_file_path = kwargs["prep"]
@@ -571,14 +572,14 @@ def run_masterodb(**kwargs):
         if debug:
             verbosity = 10
         input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
-                                          verbosity=verbosity, perturbed_file_pattern = perturbed_file_pattern,
+                                          verbosity=verbosity, perturbed_file_pattern=perturbed_file_pattern,
                                           dtg=dtg)
         mode = "soda"
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
     my_settings = surfex.BaseNamelist(mode, config, namelist_path, dtg=dtg, fcint=3).get_namelist()
-    my_geo.update_namelist(my_settings)
+    geo.update_namelist(my_settings)
 
     # Create input
     my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -603,11 +604,11 @@ def run_masterodb(**kwargs):
             if binary is None:
                 my_batch = None
 
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, geo, input_file=pgd_file_path, lfagmap=lfagmap,
                                              masterodb=True)
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, geo, input_file=prep_file_path, lfagmap=lfagmap,
                                           masterodb=True)
-            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
+            surffile = surfex.SURFFile(my_format, my_surffile, geo, archive_file=output, lfagmap=lfagmap,
                                        masterodb=True)
 
             masterodb = surfex.Masterodb(my_pgdfile, my_prepfile, surffile, my_settings, input_data, binary=binary,
@@ -714,6 +715,7 @@ def run_surfex_binary(mode, **kwargs):
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        geo = config.geo
     else:
         if "domain" not in kwargs:
             raise Exception("Missing domain definition")
@@ -729,12 +731,13 @@ def run_surfex_binary(mode, **kwargs):
         config = kwargs["config"]
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
-            config = surfex.Configuration(input_data, {}, geo=geo)
+            config = surfex.Configuration(input_data)
+            config.settings["GEOMETRY"].update({"GEO": geo})
         else:
             raise FileNotFoundError("File not found: " + config)
 
-    if "config" in kwargs:
-        del(kwargs["config"])
+    # if "config" in kwargs:
+    #    del(kwargs["config"])
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -743,7 +746,7 @@ def run_surfex_binary(mode, **kwargs):
         raise FileNotFoundError("File not found: " + system_file_paths)
     del(kwargs["system_file_paths"])
 
-    my_geo = config.get_setting("GEOMETRY#GEO")
+    # my_geo = config.get_setting("GEOMETRY#GEO")
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
@@ -773,7 +776,7 @@ def run_surfex_binary(mode, **kwargs):
     # TODO
     perturbed_file_pattern = None
     if perturbed_file_pattern in kwargs:
-        kwargs["perturbed_file_pattern"]
+        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
 
     dtg = None
     if "dtg" in kwargs:
@@ -802,7 +805,7 @@ def run_surfex_binary(mode, **kwargs):
         input_data = surfex.SodaInputData(config, system_file_paths, check_existence=check_existence,
                                           verbosity=verbosity,
                                           masterodb=kwargs["masterodb"],
-                                          perturbed_file_pattern = perturbed_file_pattern,
+                                          perturbed_file_pattern=perturbed_file_pattern,
                                           dtg=dtg)
     elif mode == "perturbed":
         perturbed = True
@@ -861,7 +864,7 @@ def run_surfex_binary(mode, **kwargs):
                                       prep_file=prep_input_file, prep_filetype=prep_input_filetype,
                                       prep_pgdfile=prep_input_pgdfile, prep_pgdfiletype=prep_input_pgdfiletype,
                                       dtg=dtg, fcint=3).get_namelist()
-        my_geo.update_namelist(my_settings)
+        geo.update_namelist(my_settings)
 
         # Create input
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -875,16 +878,16 @@ def run_surfex_binary(mode, **kwargs):
         if debug:
             print(my_pgdfile, lfagmap)
         if need_pgd:
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path, lfagmap=lfagmap,
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, geo, input_file=pgd_file_path, lfagmap=lfagmap,
                                              masterodb=masterodb)
 
         if need_prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, input_file=prep_file_path, lfagmap=lfagmap,
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, geo, input_file=prep_file_path, lfagmap=lfagmap,
                                           masterodb=masterodb)
 
         surffile = None
         if need_prep and need_pgd:
-            surffile = surfex.SURFFile(my_format, my_surffile, my_geo, archive_file=output, lfagmap=lfagmap,
+            surffile = surfex.SURFFile(my_format, my_surffile, geo, archive_file=output, lfagmap=lfagmap,
                                        masterodb=masterodb)
 
         if perturbed:
@@ -892,12 +895,12 @@ def run_surfex_binary(mode, **kwargs):
                                     pgdfile=my_pgdfile, surfout=surffile, archive_data=my_archive,
                                     print_namelist=print_namelist, negpert=negpert)
         elif pgd:
-            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, my_geo, input_file=pgd_file_path,
+            my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, geo, input_file=pgd_file_path,
                                              archive_file=output, lfagmap=lfagmap, masterodb=masterodb)
             surfex.SURFEXBinary(binary, my_batch, my_pgdfile, my_settings, input_data,
                                 archive_data=my_archive, print_namelist=print_namelist)
         elif prep:
-            my_prepfile = surfex.PREPFile(my_format, my_prepfile, my_geo, archive_file=output, lfagmap=lfagmap,
+            my_prepfile = surfex.PREPFile(my_format, my_prepfile, geo, archive_file=output, lfagmap=lfagmap,
                                           masterodb=masterodb)
             surfex.SURFEXBinary(binary, my_batch, my_prepfile, my_settings, input_data, pgdfile=my_pgdfile,
                                 archive_data=my_archive, print_namelist=print_namelist)
@@ -1036,7 +1039,7 @@ def run_titan(**kwargs):
     if "debug" in kwargs:
         debug = kwargs["debug"]
 
-    domain_geo = None
+    geo = None
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
         if "config" in kwargs:
@@ -1047,14 +1050,20 @@ def run_titan(**kwargs):
         print("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
-        domain_geo = config.get_setting("GEOMETRY#GEO")
+        geo = config.geo
     elif "domain" in kwargs:
         if kwargs["domain"] is not None:
-            domain_geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
-        del(kwargs["domain"])
+            geo = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")))
 
     # Set domain geo if set
-    kwargs.update({"domain_geo": domain_geo})
+    if "domain_geo" in kwargs:
+        if geo is not None:
+            print("Override domain with domain_geo")
+            geo = kwargs["domain_geo"]
+
+    if geo is None:
+        raise Exception("You must set domain geometry!")
+    domain_geo = geo
 
     blacklist = None
     if "blacklist" in kwargs:
@@ -1062,7 +1071,7 @@ def run_titan(**kwargs):
     elif "blacklist_file" in kwargs:
         if kwargs["blacklist_file"] is not None:
             blacklist = json.load(open(kwargs["blacklist_file"], "r"))
-    kwargs.update({"blacklist": blacklist})
+    # kwargs.update({"blacklist": blacklist})
 
     if "input_file" in kwargs:
         input_file = kwargs["input_file"]
@@ -1087,7 +1096,7 @@ def run_titan(**kwargs):
     an_time = kwargs["dtg"]
     if isinstance(an_time, str):
         an_time = datetime.strptime(an_time, "%Y%m%d%H")
-    kwargs.update({"an_time": an_time})
+    # kwargs.update({"an_time": an_time})
     var = kwargs["variable"]
 
     tests = surfex.define_quality_control(tests, settings[var], an_time, domain_geo=domain_geo, blacklist=blacklist,
@@ -1547,7 +1556,11 @@ def run_plot_points(**kwargs):
             raise Exception("You must provide an obs type")
 
         if geo is None:
-            geo = surfex.set_geo_from_obs_set(**kwargs)
+            obs_time = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
+            varname = kwargs["varname"]
+            inputfile = kwargs["inputfile"]
+            geo = surfex.set_geo_from_obs_set(obs_time, obs_input_type, varname, inputfile,
+                                              lonrange=None, latrange=None)
 
         var_dict = {
             "filetype": obs_input_type,
@@ -2046,6 +2059,7 @@ def run_cryoclim_pseuodoobs(**kwargs):
                                          debug=debug)
     qc.write_output(output, indent=indent)
 
+
 def parse_args_shape2ign(argv):
     parser = ArgumentParser("Convert NVE shape files to IGN geometry")
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
@@ -2053,7 +2067,8 @@ def parse_args_shape2ign(argv):
     parser.add_argument('-c', '--catchment', dest="catchment", type=str, help="Catchment name",
                         default="None", required=False)
     parser.add_argument('-i', dest="infile", type=str,  help="Infile/directory", default=None, required=True)
-    parser.add_argument('-r', dest="ref_proj", type=str,  help="Reference projection (domain file)", default=None, required=True)
+    parser.add_argument('-r', dest="ref_proj", type=str,  help="Reference projection (domain file)", default=None,
+                        required=True)
     parser.add_argument('--indent', dest="indent", type=str, help="Indent", default=None, required=False)
     parser.add_argument('-o', '--output', dest="output", type=str, help="Output json geometry file", default=None,
                         required=False)
@@ -2068,6 +2083,7 @@ def parse_args_shape2ign(argv):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
 
+
 def run_shape2ign(**kwargs):
     catchment = kwargs["catchment"]
     infile = kwargs["infile"]
@@ -2075,91 +2091,5 @@ def run_shape2ign(**kwargs):
     debug = kwargs["debug"]
     indent = kwargs["indent"]
     ref_proj = kwargs["ref_proj"]
-    if indent is not None:
-        indent = int(indent)
 
-    from osgeo import ogr
-    import pyproj
-    import json
-
-    from_json = json.load(open(ref_proj, "r"))
-    geo = surfex.get_geo_object(from_json)
-    earth = 6.37122e+6
-    proj_string = "+proj=lcc +lat_0=" + str(geo.xlat0) + " +lon_0=" + str(geo.xlon0) + " +lat_1=" + \
-                  str(geo.xlat0) + " +lat_2=" + str(geo.xlat0) + " +units=m +no_defs +R=" + str(earth)
-
-    print(proj_string)
-    proj = pyproj.CRS.from_string(proj_string)
-    wgs84 = pyproj.CRS.from_string("EPSG:4326")
-
-    shpfile = ogr.Open(infile)
-    shape = shpfile.GetLayer(0)
-
-    feature = shape.GetFeature(2562)
-    feature_dict = json.loads(feature.ExportToJson())
-    print(feature_dict["properties"]["stNavn"])
-    print(feature_dict)
-
-    lons = []
-    lats = []
-    values = []
-    for p in feature_dict["geometry"]["coordinates"][0]:
-        lons.append(p[0])
-        lats.append(p[1])
-        values.append(p[2])
-
-    x, y = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(lons, lats)
-    x1 = min(x)
-    x2 = max(x)
-    y1 = min(y)
-    y2 = max(y)
-    print(x1, x2, y1, y2)
-    ring = ogr.Geometry(ogr.wkbLinearRing)
-    for p in range(0, len(x)):
-        ring.AddPoint(x[p], y[p])
-
-    poly = ogr.Geometry(ogr.wkbPolygon)
-    poly.AddGeometry(ring)
-
-    ign_x = []
-    ign_y = []
-    delta_x = 1000
-    delta_y = 1000
-    nx = int((x2 - x1) / delta_x) + 1
-    ny = int((y2 - y1) / delta_y) + 1
-    xdx = []
-    xdy = []
-
-    npoints = 0
-    for xp in range(0, nx):
-       xx = x1 + (xp * delta_x ) - delta_x
-       for yp in range(0, ny):
-         yy =  y1 + (yp * delta_y ) - delta_y
-         point = ogr.Geometry(ogr.wkbPoint)
-         point.AddPoint(xx, yy)
-         if not poly.Intersection(point).IsEmpty():
-             ign_x.append(xx)
-             xdx.append(delta_x)
-             ign_y.append(yy)
-             xdy.append(delta_y)
-             npoints = npoints + 1
-
-    nam_json = {"nam_pgd_grid": {
-                    "cgrid": "IGN"
-                },
-                "nam_ign": {
-                  "clambert": 7,
-                  "npoints": npoints,
-                  "xx": ign_x,
-                  "xy": ign_y,
-                  "xdx": xdx,
-                  "xdy": xdy,
-                  "xx_llcorner": 0,
-                  "xy_llcorner": 0,
-                  "xcellsize": "250",
-                  "ncols": 0,
-                  "nrows": 0
-                }
-              }
-
-    json.dump(nam_json, open(output, "w"), indent=indent)
+    surfex.shape2ign(catchment, infile, output, ref_proj, debug=debug, indent=indent)

@@ -12,7 +12,8 @@ except RuntimeError:
     eccodes = None
     print("ECCODES not found. Needed for bufr reading")
 # Needed in Python 3.5
-except:
+except Exception as ex:
+    print("Could not load eccodes " + str(ex))
     eccodes = None
     gribapi = None
 
@@ -20,6 +21,19 @@ except:
 class BufrObservationSet(surfex.obs.ObservationSet):
     def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None, debug=False,
                  label="bufr", use_first=False):
+        """Initialize a bufr observation set
+
+        Args:
+            bufrfile (str): Full path of the bufr file to read
+            variables(list): Variables to read
+            valid_dtg (datetime.datetime): DTG string with valid time
+            valid_range (datetime.timedelta): The allowed time range
+            lonrange (list): Allowed range of longitudes [min, max]
+            latrange (list): Allowed range of latitides [min, max]
+            debug (bool): Enable debugging
+            label (str): A label for the resulting observations set
+            use_first (bool): Use only the first valid observation for a point if more are found
+        """
 
         if debug:
             print(eccodes.__file__)
@@ -131,10 +145,10 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                 for key in keys:
                     try:
                         if debug:
-                           print("Decode: ", key)
+                            print("Decode: ", key)
                         val = eccodes.codes_get(bufr, key)
                         if debug:
-                            print("Got:", key,"=",val)
+                            print("Got:", key, "=", val)
                         if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
                             val = np.nan
                         if key == "latitude":
@@ -190,7 +204,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
 
                     except eccodes.CodesInternalError:
                         if debug:
-                            print('Report does not contain key="%s"' % (key))
+                            print('Report does not contain key="%s"' % key)
                         # all_found = False
                         # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
@@ -225,14 +239,18 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                                     try:
                                         value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
-                                    except:
+                                    except Exception as e:
+                                        if self.debug:
+                                            print("Got exception for " + var + ":" + str(e))
                                         value = np.nan
                                 else:
                                     if not np.isnan(t) and not np.isnan(td):
                                         try:
                                             value = self.td2rh(td, t)
                                             value = value * 0.01
-                                        except:
+                                        except Exception as e:
+                                            if self.debug:
+                                                print("Got exception for " + var + ":" + str(e))
                                             value = np.nan
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
@@ -273,14 +291,16 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                             nerror.update({var: nerror[var] + 1})
 
                         if debug:
-                            print("Check on position in space and time", lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
+                            print("Check on position in space and time", lon, lonrange[0], lonrange[1], lat,
+                                  latrange[0], latrange[1])
                         if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
                             obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
                             # print(value)
                             if not np.isnan(value):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
                                     if debug:
-                                        print("Valid DTG for station", obs_dtg, valid_dtg, valid_range, lon, lat, value, elev, stid)
+                                        print("Valid DTG for station", obs_dtg, valid_dtg, valid_range, lon, lat,
+                                              value, elev, stid)
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
                                     observations.append(surfex.obs.Observation(obs_dtg, lon, lat, value,

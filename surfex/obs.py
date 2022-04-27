@@ -85,7 +85,7 @@ class Observation(object):
         return stids
 
 
-def get_datasources(obs_time, settings, tolerate_nmissing=0):
+def get_datasources(obs_time, settings):
 
     """
     Main data source interface setting data ObservationSet objects based on settings dictionary
@@ -95,7 +95,7 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
 
     """
 
-    nmissing = 0
+    # nmissing = 0
     datasources = []
     for obs_set in settings:
         kwargs = {
@@ -108,9 +108,9 @@ def get_datasources(obs_time, settings, tolerate_nmissing=0):
         if "debug" in settings[obs_set]:
             kwargs.update({"debug": settings[obs_set]["debug"]})
 
-        tolerate_nmissing = False
-        if "tolerate_missing" in settings[obs_set]:
-            tolerate_nmissing = settings[obs_set]["tolerate_nmissing"]
+        # tolerate_nmissing = False
+        # if "tolerate_missing" in settings[obs_set]:
+        #     tolerate_nmissing = settings[obs_set]["tolerate_nmissing"]
 
         if "filetype" in settings[obs_set]:
             filetype = settings[obs_set]["filetype"]
@@ -306,7 +306,8 @@ class ObservationSet(object):
             lats.append(lat)
             if pos in self.index_pos:
                 ind = self.index_pos[pos]
-
+                if validtime is not None:
+                    print("No time check implemented yet")
                 my_times.append(times[ind])
                 my_stids.append(stids[ind])
                 my_values.append(values[ind])
@@ -785,7 +786,7 @@ class ObservationFromTitanJsonFile(ObservationSet):
 
 
 def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg,
-                             fg_threshold=2.0, new_snow_depth=0.01, interpolator_method="bilinear", debug=False):
+                             fg_threshold=2.0, new_snow_depth=0.01, debug=False):
     nx = grid_lons.shape[0]
     ny = grid_lons.shape[1]
 
@@ -825,7 +826,8 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
     for i in range(0, p_fg_snow_depth.shape[0]):
 
         p_snow_fg = p_fg_snow_depth[i]
-        # print(i, p_snow_fg, res_lons[i], res_lats[i])
+        if debug:
+            print(i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
             # Check if in grid
             nn = fg_grid.get_num_neighbours(float(res_lons[i]), float(res_lats[i]), 2500.)
@@ -859,18 +861,7 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
     return qc
 
 
-def set_geo_from_obs_set(**kwargs):
-
-    obs_time = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
-    obs_type = kwargs["obs_type"]
-    varname = kwargs["variable"]
-    inputfile = kwargs["inputfile"]
-    lonrange = None
-    if "lonrange" in kwargs:
-        lonrange = kwargs["lonrange"]
-    latrange = None
-    if latrange in kwargs:
-        latrange = kwargs["latrange"]
+def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, latrange=None):
 
     settings = {
         "obs": {

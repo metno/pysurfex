@@ -337,23 +337,23 @@ class Converter(object):
             field = self.cloud_base.read_variable(geo, validtime, cache)
             a = field.reshape(geo.nlons, geo.nlats)
 
-            def fill_field(a, radius=1):
-                ovalues = gridpp.neighbourhood(a, radius, gridpp.Mean)
-                n = 0
+            def fill_field(aa, radius=1):
+                ovalues = gridpp.neighbourhood(aa, radius, gridpp.Mean)
+                nn = 0
                 for i in range(0, geo.nlons):
                     for j in range(0, geo.nlats):
-                       if np.isnan(a[i][j]):
-                            n = n + 1
-                            #print("Sub ", i, j, n)
-                            a[i][j] = ovalues[i][j]
-                return a, n
+                        if np.isnan(aa[i][j]):
+                            nn = nn + 1
+                            # print("Sub ", i, j, nn)
+                            aa[i][j] = ovalues[i][j]
+                return aa, nn
 
             it = 0
             while np.any(np.isnan(a)):
-               print("Filling cloud base")
-               a, n = fill_field(a, radius=3)
-               it = it + 1
-               print("Iteration ", it, "NaNs:", n)
+                print("Filling cloud base")
+                a, n = fill_field(a, radius=3)
+                it = it + 1
+                print("Iteration ", it, "NaNs:", n)
 
             field = a.reshape(geo.nlons * geo.nlats)
 

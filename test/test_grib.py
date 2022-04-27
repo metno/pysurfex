@@ -86,5 +86,3 @@ class GribTest(unittest.TestCase):
         converter = surfex.read.Converter(self.converter, initial_basetime, defs, converter_conf, fileformat,
                                           debug=debug)
         surfex.read.ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
-
-

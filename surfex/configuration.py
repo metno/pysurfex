@@ -5,101 +5,47 @@ try:
 except Exception as ex:
     print("json lot loaded: ", str(ex))
     json = None
+import toml
 
 
 class Configuration(object):
 
-    def __init__(self, conf_dict, member_conf_dict, geo=None, debug=False):
+    def __init__(self, conf, debug=False):
+        """pysurfex configuration
+
+        Encapsulation of settings dictionary. Settings for a deterministic run or an individual member.
+
+        Args:
+            conf (dict): Actual psyurfex settings to run
+            debug (bool): Enable debug mode
+        """
 
         self.debug = debug
-        self.settings = conf_dict
-        if "GEOMETRY" not in self.settings:
-            self.settings.update({"GEOMETRY": {}})
-        if geo is None:
-            geo = "Not set"
-        self.settings["GEOMETRY"].update({"GEO": geo})
-
-        # Set default file names
-        if "CPGDFILE" not in self.settings["SURFEX"]["IO"]:
-            self.settings["SURFEX"]["IO"].update({"CPGDFILE": "PGD"})
-        if "CPREPFILE" not in self.settings["SURFEX"]["IO"]:
-            self.settings["SURFEX"]["IO"].update({"CPREPFILE": "PREP"})
-        if "CSURFFILE" not in self.settings["SURFEX"]["IO"]:
-            self.settings["SURFEX"]["IO"].update({"CSURFFILE": "SURFOUT"})
-        if "LFAGMAP" not in self.settings["SURFEX"]["IO"]:
-            self.settings["SURFEX"]["IO"].update({"LFAGMAP": True})
-
-        self.settings["SURFEX"]["ASSIM"]["ISBA"]["EKF"].update({"FILE_PATTERN": "SURFOUT_PERT@PERT@"})
-
-        # Find EPS information
-        self.members = None
-        if "FORECAST" in self.settings:
-            if "ENSMSEL" in self.settings["FORECAST"]:
-                self.members = self.get_setting("FORECAST#ENSMSEL")
-                if len(self.members) == 0:
-                    self.members = None
-        self.member_settings = None
-        self.task_limit = None
-
-        member_settings = {}
-        # Set EPS config
-        if self.members is not None:
-            for mbr in self.members:
-
-                if str(mbr) in member_conf_dict:
-                    mbr_configs = member_conf_dict[str(mbr)]
-                else:
-                    raise Exception("Could not find config for member " + str(mbr))
-                member_settings.update({str(mbr): mbr_configs})
-        self.member_settings = member_settings
-        # self.do_build = self.setting_is("COMPILE#BUILD", "yes")
-        self.ecoclimap_sg = self.setting_is("SURFEX#COVER#SG", True)
-        self.gmted = self.setting_is("SURFEX#ZS#YZS", "gmted2010.dir")
-
-        self.ekf = self.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
-        nncv = self.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-        perts = []
-        for p in range(0, len(nncv)):
-            if nncv[p] == 1:
-                perts.append(p)
-        self.perts = perts
+        self.settings = conf
 
     def dump_json(self, filename, indent=None, debug=False):
         if json is None:
             raise Exception("json module not loaded")
 
-        settings = {
-            "settings": self.settings,
-            "member_settings": self.member_settings
-        }
         if debug:
-            print(__file__, settings)
-        json.dump(settings, open(filename, "w"), indent=indent)
+            print(__file__, self.settings)
+        json.dump(self.settings, open(filename, "w"), indent=indent)
 
-    def max_fc_length(self, mbr=None):
-        ll_list = self.get_ll_list(mbr=mbr)
-        max_fc = -1
-        for ll in ll_list:
-            if int(ll) > int(max_fc):
-                max_fc = int(ll)
-        return max_fc
-
-    @staticmethod
-    def has_sfc_analysis(anasurf):
-        if anasurf in ["CANARI", "gridpp"]:
+    def setting_is(self, setting, value, sep="#", abort=True, default=None, debug=False, system_variables=None,
+                   check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
+        if self.get_setting(setting, sep=sep, abort=abort, default=default, debug=debug,
+                            system_variables=system_variables, check_parsing=check_parsing, validtime=validtime,
+                            basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var) == value:
             return True
         else:
             return False
 
-    def setting_is(self, setting, value, **kwargs):
-        if self.get_setting(setting, **kwargs) == value:
-            return True
-        else:
-            return False
-
-    def setting_is_not(self, setting, value, **kwargs):
+    def setting_is_not(self, setting, value, sep="#", abort=True, default=None, debug=False, system_variables=None,
+                       check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
         found = False
-        if self.get_setting(setting, **kwargs) == value:
+        if self.get_setting(setting, sep=sep, abort=abort, default=default, debug=debug,
+                            system_variables=system_variables, check_parsing=check_parsing, validtime=validtime,
+                            basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var) == value:
             found = True
 
         if found:
@@ -107,27 +53,64 @@ class Configuration(object):
         else:
             return True
 
-    def value_is_one_of(self, setting, value, **kwargs):
+    def value_is_one_of(self, settings, value, sep="#", abort=True, debug=False, system_variables=None,
+                        check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
+        """
+
+        Args:
+            settings (list):
+            value:
+            sep (str):
+            abort (bool):
+            debug (bool): Enable debug
+            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={"NAME": "Value"}
+            check_parsing (bool): Check if all @@ pairs were parsed
+            validtime (datetime.daetime): Parse setting with this as validtime
+            basedtg (datetime.datetime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
+            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
+            pert (int): Parse setting with this as perturbation number @PERT@
+            var (str): Parse setting with this as the variable (@VAR@)
+
+        Returns:
+            found (bool): True if value is found in any of the settings
+
+        See Also:
+            self.get_setting()
+            surfex.SystemFilePaths.parse_setting()
+            surfex.SystemFilePaths.substitute_string()
+
+        """
+        if type(settings) is not list:
+            raise Exception("Expected a list as input, got ", type(settings))
         found = False
-        setting = self.get_setting(setting, **kwargs)
-        # if type(setting) is not list:
-        #    raise Exception("Excpected a list as input, got ", type(setting))
-        for s in setting:
-            if s == value:
-                found = True
+        for s in settings:
+            setting = self.get_setting(s, sep=sep, abort=abort, debug=debug,
+                                       system_variables=system_variables, check_parsing=check_parsing,
+                                       validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+            if setting == value:
+                return True
+
         return found
 
-    def value_is_not_one_of(self, setting, value, **kwargs):
+    def value_is_not_one_of(self, setting, value, sep="#", abort=True, debug=False, system_variables=None,
+                            check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None,
+                            var=None):
 
-        found = self.value_is_one_of(setting, value, **kwargs)
+        found = self.value_is_one_of(setting, value, sep=sep, abort=abort, debug=debug,
+                                     system_variables=system_variables, check_parsing=check_parsing,
+                                     validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
         if found:
             return False
         else:
             return True
 
-    def setting_is_one_of(self, setting, values, **kwargs):
+    def setting_is_one_of(self, setting, values, sep="#", abort=True, debug=False, system_variables=None,
+                          check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
         found = False
-        setting = self.get_setting(setting, **kwargs)
+        setting = self.get_setting(setting, sep=sep, abort=abort, debug=debug,
+                                   system_variables=system_variables, check_parsing=check_parsing,
+                                   validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
         if type(values) is not list:
             raise Exception("Excpected a list as input, got ", type(values))
         for v in values:
@@ -135,37 +118,57 @@ class Configuration(object):
                 found = True
         return found
 
-    def setting_is_not_one_of(self, setting, values, **kwargs):
+    def setting_is_not_one_of(self, setting, values, sep="#", abort=True, debug=False,
+                              system_variables=None,  check_parsing=True, validtime=None, basedtg=None, mbr=None,
+                              tstep=None, pert=None, var=None):
 
-        found = self.setting_is_one_of(setting, values, **kwargs)
+        found = self.setting_is_one_of(setting, values, sep=sep, abort=abort, debug=debug,
+                                       system_variables=system_variables, check_parsing=check_parsing,
+                                       validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
         if found:
             return False
         else:
             return True
 
-    def get_setting(self, setting, **kwargs):
-        mbr = None
-        if "mbr" in kwargs:
-            mbr = kwargs["mbr"]
-        sep = "#"
-        if "sep" in kwargs:
-            sep = kwargs["sep"]
-        abort = True
-        if "abort" in kwargs:
-            abort = kwargs["abort"]
-        default = None
-        if "default" in kwargs:
-            default = kwargs["default"]
-        if mbr is None:
-            settings = self.settings
-        else:
-            if self.members is not None:
-                if str(mbr) in self.members:
-                    settings = self.member_settings[str(mbr)]
-                else:
-                    raise Exception("Not a valid member: " + str(mbr))
-            else:
-                raise Exception("No members found")
+    def get_setting(self, setting, sep="#", abort=True, default=None, debug=False, system_variables=None,
+                    check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None, pert=None, var=None):
+
+        """
+        Get configurations setting
+
+        Settings are nested in blocks. To get the full setting request setting joined by a seperation character.
+
+        E.g setting = "SURFEX#ASSIM#ASSIM_SCHEMES"
+
+        Args:
+            setting: The requested setting
+            default: A fallback setting in case setting is not found
+            sep (str): A separation character between different configuration blocks
+            abort (bool): Abort if setting is not found and default not set
+            debug (bool): Enable debug
+            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={"NAME": "Value"}
+            check_parsing (bool): Check if all @@ pairs were parsed
+            validtime (datetime.daetime): Parse setting with this as validtime
+            basedtg (datetime.datetime): Parse setting with this as base time
+            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
+            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
+            pert (int): Parse setting with this as perturbation number @PERT@
+            var (str): Parse setting with this as the variable (@VAR@)
+
+        Returns:
+            found (bool): True if value is found in any of the settings
+
+        See Also:
+            self.get_setting()
+            surfex.SystemFilePaths.parse_setting()
+            surfex.SystemFilePaths.substitute_string()
+
+        Raise:
+            KeyError
+
+        """
+
+        settings = self.settings
 
         if sep is None:
             keys = [setting]
@@ -181,8 +184,16 @@ class Configuration(object):
                     if key in this_setting:
                         this_setting = this_setting[key]
                         # Time information
-                        this_setting = surfex.SystemFilePaths.substitute_string(this_setting)
-                        this_setting = surfex.SystemFilePaths.parse_setting(this_setting, **kwargs)
+                        this_setting = surfex.SystemFilePaths.substitute_string(this_setting,
+                                                                                system_variables=system_variables)
+                        this_setting = surfex.SystemFilePaths.parse_setting(this_setting, debug=debug,
+                                                                            check_parsing=check_parsing,
+                                                                            validtime=validtime,
+                                                                            basedtg=basedtg,
+                                                                            mbr=mbr,
+                                                                            tstep=tstep,
+                                                                            pert=pert,
+                                                                            var=var)
                     else:
                         if default is not None:
                             this_setting = default
@@ -197,10 +208,10 @@ class Configuration(object):
                 this_setting = None
 
         if self.debug:
-            print("get_setting", setting, this_setting, mbr, type(this_setting))
+            print("get_setting", setting, this_setting, type(this_setting))
         return this_setting
 
-    def update_setting(self, setting, value, mbr=None, sep="#"):
+    def update_setting(self, setting, value, sep="#"):
 
         if sep is None:
             keys = [setting]
@@ -213,167 +224,7 @@ class Configuration(object):
             for key in reversed(keys[0:-1]):
                 dsetting = {key: dsetting}
 
-        if mbr is None:
-            self.settings = surfex.merge_toml_env(self.settings, dsetting)
-        else:
-            if self.members is not None and str(mbr) in self.members:
-                self.member_settings[str(mbr)] = surfex.merge_toml_env(self.member_settings[str(mbr)], dsetting)
-            else:
-                raise Exception("Not a valid member: " + str(mbr))
-
-    def get_total_unique_hh_list(self):
-        # Create a list of all unique HHs from all members
-        # print(self.members, self.get_hh_list())
-        hh_list_all = []
-        if self.members is not None:
-            for mbr in self.members:
-                hh_l = self.get_hh_list(mbr=mbr)
-                for hh in hh_l:
-                    hh = "{:02d}".format(int(hh))
-                    if hh not in hh_list_all:
-                        hh_list_all.append(hh)
-        else:
-            hh_l = self.get_hh_list()
-            for hh in hh_l:
-                hh = "{:02d}".format(int(hh))
-                if hh not in hh_list_all:
-                    hh_list_all.append(hh)
-
-        # print(hh_list_all)
-        # Sort this list
-        hh_list = []
-        for hh in sorted(hh_list_all):
-            hh_list.append(hh)
-
-        return hh_list
-
-    def get_fcint(self, cycle, mbr=None):
-        hh_list = self.get_hh_list(mbr=mbr)
-        fcint = None
-        if len(hh_list) > 1:
-            for hh in range(0, len(hh_list)):
-                h = int(hh_list[hh]) % 24
-                if h == int(cycle) % 24:
-                    if hh == 0:
-                        fcint = (int(hh_list[0]) - int(hh_list[len(hh_list) - 1])) % 24
-                    else:
-                        fcint = int(hh_list[hh]) - int(hh_list[hh - 1])
-        else:
-            fcint = 24
-        return fcint
-
-    def get_hh_list(self, mbr=None):
-        hh_list = self.get_setting("GENERAL#HH_LIST", mbr=mbr)
-        ll_list = self.get_setting("GENERAL#LL_LIST", mbr=mbr)
-        # print(hh_list, ll_list)
-        hh_list, ll_list = self.expand_hh_and_ll_list(hh_list, ll_list)
-        return hh_list
-
-    def get_ll_list(self, mbr=None):
-        hh_list = self.get_setting("GENERAL#HH_LIST", mbr=mbr)
-        ll_list = self.get_setting("GENERAL#LL_LIST", mbr=mbr)
-        hh_list, ll_list = self.expand_hh_and_ll_list(hh_list, ll_list)
-        return ll_list
-
-    @staticmethod
-    def expand_list(string, fmt="{:03d}", sep1=",", sep2=":", sep3="-", maxval=None, add_last=False, tstep=None):
-        elements = string.split(sep1)
-        expanded_list = []
-        if string.strip() == "":
-            return expanded_list
-
-        for i in range(0, len(elements)):
-            element = elements[i]
-            # print(element)
-            if element.find(sep2) > 0 or element.find(sep3) > 0:
-                step = 1
-                if element.find(sep2) > 0:
-                    p1, step = element.split(sep2)
-                else:
-                    p1 = element
-
-                start, end = p1.split(sep3)
-                for ll in range(int(start), int(end) + 1, int(step)):
-                    add = True
-                    if maxval is not None:
-                        if ll > maxval:
-                            add = False
-                    if add:
-                        if tstep is not None:
-                            if (ll * 60) % tstep == 0:
-                                ll = int(ll * 60 / tstep)
-                            else:
-                                print(ll)
-                                raise Exception("Time step is not a minute!")
-                        this_ll = fmt.format(ll)
-                        expanded_list.append(this_ll)
-            else:
-                # print(fmt, element)
-                # print(fmt.decode('ascii'))
-                add = True
-                ll = int(element)
-                if maxval is not None:
-                    if ll > maxval:
-                        add = False
-                if add:
-                    if tstep is not None:
-                        if (ll * 60) % tstep == 0:
-                            ll = int(ll * 60 / tstep)
-                        else:
-                            raise Exception("Time step is not a minute! " + str(ll))
-                    ll = fmt.format(ll)
-                    expanded_list.append(ll)
-
-        # Add last value if wanted and not existing
-        if maxval is not None and add_last:
-            if tstep is not None:
-                if (maxval * 60) % tstep == 0:
-                    maxval = int(maxval * 60 / tstep)
-                else:
-                    raise Exception("Time step is not a minute!")
-            if str(maxval) not in expanded_list:
-                ll = fmt.format(maxval)
-                expanded_list.append(ll)
-        return expanded_list
-
-    def expand_hh_and_ll_list(self, hh_list, ll_list, sep=":"):
-        # hhs = split_hh_and_ll(hh_list)
-        # lls = split_hh_and_ll(ll_list)
-        hhs = self.expand_list(hh_list, fmt="{:02d}")
-        lls_in = self.expand_list(ll_list, fmt="{:d}")
-        # print(hhs)
-        # print(lls_in)
-
-        lls = []
-        j = 0
-        for i in range(0, len(hhs)):
-            lls.append(lls_in[j])
-            j = j + 1
-            if j == len(lls_in):
-                j = 0
-
-        if len(hhs) != len(lls):
-            raise Exception
-
-        expanded_hh_list = []
-        expanded_ll_list = []
-        for i in range(0, len(hhs)):
-            ll = lls[i]
-            # print(i, hhs[i])
-            if hhs[i].find(sep) > 0:
-                p1, step = hhs[i].split(sep)
-                h1, h2 = p1.split("-")
-                for h in range(int(h1), int(h2) + 1, int(step)):
-                    hh = "{:02d}".format(h)
-                    expanded_hh_list.append(hh)
-                    expanded_ll_list.append(ll)
-            else:
-                hh = "{:02d}".format(int(hhs[i]))
-                expanded_hh_list.append(hh)
-                expanded_ll_list.append(ll)
-
-        # print(expanded_hh_list, expanded_ll_list)
-        return expanded_hh_list, expanded_ll_list
+        self.settings = surfex.merge_toml_env(self.settings, dsetting)
 
 
 class ConfigurationFromHarmonie(Configuration):
@@ -384,10 +235,16 @@ class ConfigurationFromHarmonie(Configuration):
     Some settings imply several changes in SURFEX configuration
 
     """
-    def __init__(self, env, conf_dict, debug=False):
+    def __init__(self, env, conf, debug=False):
+        """
 
-        member_conf_dict = conf_dict
-        Configuration.__init__(self, conf_dict, member_conf_dict, debug=debug)
+        Args:
+            env (dict): System environment e.g. os.environ
+            conf (dict): The default configuration for this deterministic run/ensemble member
+            debug (bool): Enable debug
+        """
+
+        Configuration.__init__(self, conf, debug=debug)
 
         # Set domain from environment variables. Geo is alway conf proj
         ezone = int(env["EZONE"])
@@ -420,13 +277,18 @@ class ConfigurationFromHarmonie(Configuration):
             }
         }
         geo = surfex.ConfProj(domain_dict)
-        self.settings["GEOMETRY"].update({"GEO": geo})
-        # self.update_setting("GEOMETRY#GEO", geo)
+        self.geo = geo
 
         if self.debug:
             print(self.get_setting("GEOMETRY#GEO"))
 
         self.settings.update({"FORECAST": {"PHYSICS": env["PHYSICS"]}})
+
+        # Ensemble member information
+        mbr = None
+        if "ENSMBR" in env:
+            mbr = env["ENSMBR"]
+        self.settings.update({"EPS": {"ENSMBR": mbr}})
 
         # IO
         cnmexp = os.environ["CNMEXP"]
@@ -574,7 +436,6 @@ class ConfigurationFromHarmonie(Configuration):
         if anasurf == "ENKF":
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF")
 
-
         # Active EKF control variables from CVAR_M
         if "NNCV" in env:
             nncv = env["NNCV"]
@@ -639,7 +500,6 @@ class ConfigurationFromHarmonie(Configuration):
         if "NOBSTYPE_M" in env:
             nobstype_m = env["NOBSTYPE_M"]
             self.update_setting("SURFEX#ASSIM#ISBA#OBS#NOBSTYPE_M", int(nobstype_m))
-
 
         # ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
@@ -712,15 +572,23 @@ class ConfigurationFromHarmonie(Configuration):
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", False)
 
 
-class ConfigurationFromJson(Configuration):
+class ConfigurationFromHarmonieAndConfigFile(ConfigurationFromHarmonie):
+    """
 
-    def __init__(self, all_settings, debug=False):
-        if json is None:
-            raise Exception("json module not loaded")
+    Initialize a configuration from envrionment and a toml configuration file
 
-        settings = all_settings["config"]
-        member_settings = all_settings["member_config"]
-        Configuration.__init__(self, settings, member_settings, debug=debug)
+    """
+    def __init__(self, env, conf_file, debug=False):
+        """Initialize a configuration from envrionment and a toml configuration file
+
+        Args:
+            env (dict): System environment e.g. os.environ
+            conf_file (str): Filename with configuration
+            debug (bool): Enable debug
+        """
+
+        conf = toml.load(open(conf_file, "r"))
+        ConfigurationFromHarmonie.__init__(self, env, conf, debug=debug)
 
 
 class ConfigurationFromJsonFile(Configuration):
@@ -729,7 +597,5 @@ class ConfigurationFromJsonFile(Configuration):
         if json is None:
             raise Exception("json module not loaded")
 
-        all_settings = json.load(open(filename, "r"))
-        settings = all_settings["config"]
-        member_settings = all_settings["member_config"]
-        Configuration.__init__(self, settings, member_settings, debug=debug)
+        settings = json.load(open(filename, "r"))
+        Configuration.__init__(self, settings, debug=debug)

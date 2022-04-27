@@ -1,4 +1,16 @@
 # requirements.txt
+pyyaml
+numpy
+eccodes[optional]
+gridpp
+titanlib[optional]
+pyproj
+f90nml
+toml
+json
+netCDF4
+cfunits
+requests
 #
 # installs dependencies from ./setup.py, and the package itself,
 # in editable mode

@@ -42,7 +42,6 @@ class Netcdf(object):
             instantanious (float): Scaling factor to make an accumulated value as instantanius
             units (str): CF unit for the variable to be read
             lev_from_ind (bool): level list are indices and not values
-            debug:
 
         Returns:
          np.array: 5D array with values
@@ -80,7 +79,7 @@ class Netcdf(object):
                         # Time steps requested
                         if self.debug:
                             surfex.debug(__file__, self.__class__.slice.__name__,  i, j, "times_in_var",
-                                         times_in_var[i],"times", times[j])
+                                         times_in_var[i], "times", times[j])
                         if times_in_var[i] == times[j]:
                             times_to_read.append(i)
                             if i > 0:
@@ -719,12 +718,14 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
 
+    '''
     if t2m_var is None:
         t2m_var = [999] * (nx * ny)
     if rh2m_var is None:
         rh2m_var = [999] * (nx * ny)
     if sd_var is None:
         sd_var = [999] * (nx * ny)
+    '''
 
     if output is None:
         out = open("OBSERVATIONS_" + str(yy) + str(mm) + str(dd) + "H" + str(hh)+".DAT", "w")
@@ -732,7 +733,16 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
         out = open(output, "w")
 
     for i in range(0, nx*ny):
-        out.write(str(t2m_var[i]) + " " + str(rh2m_var[i]) + " " + str(sd_var[i]) + "\n")
+        line = ""
+        if t2m_var is None:
+            line = line + " " + str(t2m_var[i])
+        if rh2m_var is None:
+            line = line + " " + str(rh2m_var[i])
+        if sd_var is None:
+            line = line + " " + str(sd_var[i])
+        line = line + "\n"
+        out.write(line)
+        out.write(str(sd_var[i]) + "\n")
         if debug:
             surfex.debug(__file__, oi2soda.__name__, "i", i)
 
