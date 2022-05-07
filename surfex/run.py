@@ -143,7 +143,7 @@ class PerturbedOffline(SURFEXBinary):
                     npert = 1
                 else:
                     npert = npert + 1
-                for n in range(0, npert):
+                for nn in range(0, npert):
                     ipert = ipert + 1
                     key = 'xtprt_m(' + str(ipert) + ')'
                     val = settings['nam_var'][key]
