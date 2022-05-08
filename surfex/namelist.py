@@ -1498,8 +1498,8 @@ class SodaInputData(surfex.JsonInputData):
         if csurf_filetype == "fa":
             extension = "fa"
 
-        ekf_settings.update({"PREP_INIT." + extension: first_guess})
-        ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: first_guess})
+        ekf_settings.update({"PREP_INIT." + extension: fg})
+        ekf_settings.update({"PREP_" + yy + mm + dd + "H" + hh + "." + extension: fg})
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
         llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")

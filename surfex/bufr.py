@@ -35,6 +35,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
             use_first (bool): Use only the first valid observation for a point if more are found
         """
 
+        self.debug = debug
         if debug:
             print(eccodes.__file__)
         if lonrange is None:
