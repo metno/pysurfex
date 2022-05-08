@@ -1,3 +1,4 @@
+
 import sys
 import surfex
 from argparse import ArgumentParser, Action
@@ -248,6 +249,13 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('--cb_converter', type=str, default="cloud_base", help="", nargs="?",
                         choices=["cloud_base"])
 
+    parser.add_argument('-sm_file', type=str, default=None, help="Soil moisture file", nargs="?")
+    parser.add_argument('-sm_format', type=str, default=None, help="Soil moisture file format", nargs="?",
+                        choices=["grib1", "grib2", "netcdf", "surfex"])
+    parser.add_argument('--sm_converter', type=str, default="none", help="", nargs="?",
+                        choices=["none", "smp"])
+
+    
     parser.add_argument('-laf_file', type=str, default=None, help="Land area fraction grib file", nargs="?")
     parser.add_argument('-laf_format', type=str, default=None, help="Snow depth file format", nargs="?",
                         choices=["grib1", "grib2", "netcdf", "surfex"])
@@ -264,7 +272,7 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('--config', '-c', dest="config", type=str, help="YAML config file",
                         default="first_guess.yml", nargs="?")
     parser.add_argument('variables', nargs="+", choices=["air_temperature_2m", "relative_humidity_2m",
-                                                         "surface_snow_thickness", "cloud_base"],
+                                                         "surface_snow_thickness", "cloud_base", "surface_soil_moisture"],
                         help="Variables to create first guess for")
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
     parser.add_argument('--version', action='version', version=surfex.__version__)
@@ -364,6 +372,14 @@ def first_guess_for_oi(**kwargs):
                 fileformat = kwargs["cb_format"]
             if "cb_converter" in kwargs and kwargs["cb_converter"] is not None:
                 converter = kwargs["cb_converter"]
+        elif var == "surface_soil_moisture":
+            if "sm_file" in kwargs and kwargs["sm_file"] is not None:
+                inputfile = kwargs["sm_file"]
+            if "sm_format" in kwargs and kwargs["sm_format"] is not None:
+                fileformat = kwargs["sm_format"]
+            if "sm_converter" in kwargs and kwargs["sm_converter"] is not None:
+                converter = kwargs["sm_converter"]
+                
         elif var == "altitude":
             if "altitude_file" in kwargs and kwargs["altitude_file"] is not None:
                 inputfile = kwargs["altitude_file"]
@@ -386,7 +402,9 @@ def first_guess_for_oi(**kwargs):
 
         if fileformat is None:
             raise Exception("You must set file format")
-
+        print(inputfile)
+        print(fileformat)
+        print(converter)
         config = yaml.safe_load(open(config_file, "r"))
         defs = config[fileformat]
         defs.update({"filepattern": inputfile})
@@ -1120,6 +1138,9 @@ def parse_args_oi2soda(argv):
     parser.add_argument('--sd_file', type=str, help="NetCDF file for SD", required=False, default=None)
     parser.add_argument('--sd_var', type=str, help="NetCDF variable name for SD", required=False,
                         default="surface_snow_thickness")
+    parser.add_argument('--sm_file', type=str, help="NetCDF file for SM", required=False, default=None)
+    parser.add_argument('--sm_var', type=str, help="NetCDF variable name for SM", required=False,
+                        default="surface_soil_moisture")
     parser.add_argument('dtg', nargs="?", type=str, help="DTG", default=None)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
     parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
@@ -1145,6 +1166,7 @@ def run_oi2soda(**kwargs):
     t2m_file = kwargs["t2m_file"]
     rh2m_file = kwargs["rh2m_file"]
     sd_file = kwargs["sd_file"]
+    sm_file = kwargs["sm_file"]
     output = kwargs["output"]
 
     t2m = None
@@ -1156,9 +1178,12 @@ def run_oi2soda(**kwargs):
     sd = None
     if sd_file is not None:
         sd = {"file": sd_file, "var": kwargs["sd_var"]}
+    sm = None
+    if sm_file is not None:
+        sm = {"file": sm_file, "var": kwargs["sm_var"]}
 
     dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
-    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, output=output, debug=debug)
+    surfex.oi2soda(dtg, t2m=t2m, rh2m=rh2m, sd=sd, sm=sm, output=output, debug=debug)
 
 
 def parse_lsm_file_assim(argv):
@@ -2039,6 +2064,29 @@ def parse_cryoclim_pseudoobs(argv):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
 
+def parse_sentinel_obs(argv):
+    parser = ArgumentParser("Create Sentinel-1 obs")
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--options', type=open, action=LoadFromFile, help="Load options from file")
+    parser.add_argument('-v', '--varname', dest="varname", type=str, help="Variable name",
+                        default="surface_soil_moisture", required=False)
+    parser.add_argument('-fg', dest="fg_file", type=str, help="First guess file", default=None, required=True)
+    parser.add_argument('-i', dest="infiles", type=str, nargs="+", help="Infiles", default=None, required=True)
+    parser.add_argument('-step', dest="thinning", type=int, help="Thinning step", required=False, default=4)
+    parser.add_argument('-indent', dest="indent", type=int, help="Indent", required=False, default=None)
+    parser.add_argument('-o', '--output', dest="output", type=str, help="Output image", default=None,
+                        required=False)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
 
 def run_cryoclim_pseuodoobs(**kwargs):
     debug = False
@@ -2057,6 +2105,24 @@ def run_cryoclim_pseuodoobs(**kwargs):
                                          debug=debug)
     qc.write_output(output, indent=indent)
 
+def run_sentinel_obs(**kwargs):
+    debug = False
+    if "debug" in kwargs:
+        debug = kwargs["debug"]
+    fg_file = kwargs["fg_file"]
+    infiles = kwargs["infiles"]
+    step = kwargs["thinning"]
+    output = kwargs["output"]
+    varname = kwargs["varname"]
+    indent = kwargs["indent"]
+
+
+    grid_lons, grid_lats, grid_sm_class = surfex.read_sentinel_nc(infiles)
+    fg_geo, validtime, grid_sm_fg, glafs, gelevs = surfex.read_first_guess_netcdf_file(fg_file, varname)
+    qc = surfex.sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg,
+                                         debug=debug)
+    qc.write_output(output, indent=indent)
+    
 
 def parse_args_shape2ign(argv):
     parser = ArgumentParser("Convert NVE shape files to IGN geometry")

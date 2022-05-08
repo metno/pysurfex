@@ -185,6 +185,9 @@ class Converter(object):
         elif self.name == "sdp":
             self.sdp1 = self.create_variable(fileformat, defs, conf[self.name]["sdp1"], debug)
             self.sdp2 = self.create_variable(fileformat, defs, conf[self.name]["sdp2"], debug)
+        elif self.name == "smp":
+            self.smp1 = self.create_variable(fileformat, defs, conf[self.name]["smp1"], debug)
+            self.smp2 = self.create_variable(fileformat, defs, conf[self.name]["smp2"], debug)
         elif self.name == "nature_town":
             self.nature_fraction = self.create_variable(fileformat, defs, conf[self.name]["nature_fraction"], debug)
             self.town_fraction = self.create_variable(fileformat, defs, conf[self.name]["town_fraction"], debug)
@@ -325,6 +328,10 @@ class Converter(object):
             sdp1 = self.sdp1.read_variable(geo, validtime, cache)
             sdp2 = self.sdp2.read_variable(geo, validtime, cache)
             field = np.where(np.isnan(sdp1), sdp2, sdp1)
+        elif self.name == "smp":
+            smp1 = self.smp1.read_variable(geo, validtime, cache)
+            smp2 = self.smp2.read_variable(geo, validtime, cache)
+            field = np.where(np.isnan(smp1), smp2, smp1)
         elif self.name == "nature_town":
             nature = self.nature_fraction.read_variable(geo, validtime, cache)
             town = self.town_fraction.read_variable(geo, validtime, cache)

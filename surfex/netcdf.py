@@ -524,24 +524,28 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
                      "relative_humidity_2m": "relative_humidity",
                      "altitude": "altitude",
                      "surface_snow_thickness": "surface_snow_thickness",
+                     "surface_soil_moisture": "surface_soil_moisture",
                      "cloud_base": "cloud_base",
                      "land_area_fraction": "land_area_fraction"}
     long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
                  "relative_humidity_2m": "Screen level relative humidity (RH2M)",
                  "altitude": "Altitude",
                  "surface_snow_thickness": "Surface snow thickness",
+                 "surface_soil_moisture": "Surface soil moisture",
                  "cloud_base": "Cloud base",
                  "land_area_fraction": "Land Area Fraction"}
     units = {"air_temperature_2m": "K",
              "relative_humidity_2m": "1",
              "altitude": "m",
              "surface_snow_thickness": "m",
+             "surface_soil_moisture": "m3/m3",
              "cloud_base": "m",
              "land_area_fraction": "1"}
     fillvalue = {"air_temperature_2m": "9.96921e+36",
                  "relative_humidity_2m": "9.96921e+36",
                  "altitude": "9.96921e+36",
                  "surface_snow_thickness": "9.96921e+36",
+                 "surface_soil_moisture": "9.96921e+36",
                  "cloud_base": "9.96921e+36",
                  "land_area_fraction": "9.96921e+36"}
 
@@ -647,7 +651,7 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
     fh.close()
 
 
-def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
+def oi2soda(dtg, t2m=None, rh2m=None, sd=None, sm=None, output=None, debug=False):
 
     def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
 
@@ -673,6 +677,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
     t2m_var = None
     rh2m_var = None
     sd_var = None
+    sm_var = None
     if t2m is not None:
         t2m_fh = netCDF4.Dataset(t2m["file"], "r")
         if debug:
@@ -715,6 +720,21 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
         sd_var = sd_var.filled(fill_value=999.)
         sd_var = sd_var.tolist()
 
+    if sm is not None:
+        sm_fh = netCDF4.Dataset(sm["file"], "r")
+        if debug:
+            surfex.debug(__file__, oi2soda.__name__, "SM", sm["var"], sm_fh.variables[sm["var"]].shape)
+
+        i = i + 1
+        nx, ny = check_input_to_soda_dimensions(nx, ny, sm_fh.variables[sm["var"]].shape[1],
+                                                sm_fh.variables[sm["var"]].shape[0])
+
+        sm_var = sm_fh.variables[sm["var"]][:]
+        sm_var = sm_var.reshape([ny * nx], order="C")
+        sm_var = sm_var.filled(fill_value=999.)
+        sm_var = sm_var.tolist()
+
+
     if i == 0:
         raise Exception("You must specify at least one file to read from!")
 
@@ -725,6 +745,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
         rh2m_var = [999] * (nx * ny)
     if sd_var is None:
         sd_var = [999] * (nx * ny)
+    if sm_var is None:
+        sm_var = [999] * (nx * ny)
     '''
 
     if output is None:
@@ -740,6 +762,8 @@ def oi2soda(dtg, t2m=None, rh2m=None, sd=None, output=None, debug=False):
             line = line + " " + str(rh2m_var[i])
         if sd_var is not None:
             line = line + " " + str(sd_var[i])
+        if sm_var is not None:
+            line = line + " " + str(sm_var[i])            
         line = line + "\n"
         out.write(line)
         if debug:
@@ -771,3 +795,27 @@ def read_cryoclim_nc(infiles):
         raise Exception("No files were read properly")
 
     return grid_lons, grid_lats, grid_snow_class
+
+def read_sentinel_nc(infiles):
+    grid_lons = None
+    grid_lats = None
+    grid_sm = None
+    for filename in infiles:
+        if os.path.exists(filename):
+            surfex.info("Reading: " + filename)
+            nc = netCDF4.Dataset(filename, "r")
+            grid_lons = nc["LON"][:]
+            grid_lats = nc["LAT"][:]
+            grid_sm = nc["surface_soil_moisture"][:]
+            if grid_sm is None:
+                grid_sm = grid_sm
+#            grid_sm[grid_snow_class_read == 1] = 1
+#            grid_snow_class[grid_snow_class_read == 0] = 0
+            nc.close()
+        else:
+            surfex.warning("Warning file " + filename + " does not exists")
+
+    if grid_lons is None or grid_lats is None or grid_sm is None:
+        raise Exception("No files were read properly")
+
+    return grid_lons, grid_lats, grid_sm
