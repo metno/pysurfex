@@ -1,4 +1,4 @@
-__version__ = '0.0.1a21'
+__version__ = '0.0.1a22'
 import sys
 import os
 if "PYSURFEX_EXPERIMENT" in os.environ:
