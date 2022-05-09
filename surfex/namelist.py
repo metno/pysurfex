@@ -687,7 +687,6 @@ class BaseNamelist(object):
         sso = self.config.get_setting("SURFEX#SSO#SCHEME")
         self.input_list.append({"json": {"NAM_SSON": {"CROUGH": sso}}})
         if sso == "OROTUR":
-            # geo = self.config.get_setting("GEOMETRY#GEO")
             if isinstance(self.geo, surfex.ConfProj):
                 self.input_list.append({"json": {"NAM_SSON": {"XSOROT": self.geo.xdx}}})
 
@@ -1567,7 +1566,6 @@ class SodaInputData(surfex.JsonInputData):
         hh = self.dtg.strftime("%H")
         enkf_settings = {}
 
-        # geo = self.config.get_setting("GEOMETRY#GEO")
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
 

@@ -290,7 +290,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.geo = geo
 
         if self.debug:
-            print(self.get_setting("GEOMETRY#GEO"))
+            print("GEO", self.geo)
 
         self.settings.update({"FORECAST": {"PHYSICS": env["PHYSICS"]}})
 

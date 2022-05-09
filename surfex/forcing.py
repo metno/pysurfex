@@ -516,7 +516,7 @@ def set_forcing_config(**kwargs):
         surfex.info("Using default config from: " + config_exp)
         input_data = toml.load(open(config_exp, "r"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
-        geo_out = config.get_setting("GEOMETRY#GEO")
+        geo_out = config.geo
     elif "domain" in kwargs and kwargs["domain"] is not None:
         geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")), debug=debug)
     else:

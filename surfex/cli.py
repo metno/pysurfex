@@ -526,10 +526,6 @@ def run_masterodb(**kwargs):
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
             config = surfex.Configuration(input_data)
-            if "GEOMETRY" in config.settings:
-                config.settings["GEOMETRY"].update({"GEO": geo})
-            else:
-                config.settings.update({"GEOMETRY": {"GEO": geo}})
         else:
             raise FileNotFoundError("File not found: " + config)
 
@@ -750,10 +746,6 @@ def run_surfex_binary(mode, **kwargs):
         if os.path.exists(config):
             input_data = toml.load(open(config, "r"))
             config = surfex.Configuration(input_data)
-            if "GEOMETRY" in config.settings:
-                config.settings["GEOMETRY"].update({"GEO": geo})
-            else:
-                config.settings.update({"GEOMETRY": {"GEO": geo}})
         else:
             raise FileNotFoundError("File not found: " + config)
 
