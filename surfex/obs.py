@@ -860,6 +860,78 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
     qc = surfex.QCDataSet(validtime, obs, flags, cis, lafs, providers)
     return qc
 
+def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg,
+                             fg_threshold=1., new_sm=0.01, debug=False):
+    nx = grid_lons.shape[0]
+    ny = grid_lons.shape[1]
+
+    nx = int(nx / step)
+    ny = int(ny / step)
+
+    # TODO rewrite to use lonlatvals geo
+    counter = 0
+    ii = 0
+    res_lons = []
+    res_lats = []
+    p_sm_class = {}
+    for i in range(0, nx):
+        jj = 0
+        for j in range(0, ny):
+            res_lons.append(grid_lons[ii, jj])
+            res_lats.append(grid_lats[ii, jj])
+            p_sm_class.update({str(counter): grid_sm_class[ii, jj]})
+            counter = counter + 1
+            jj = jj + step
+        ii = ii + step
+
+    # TODO move from here
+    # interpolator = surfex.Interpolation(interpolator_method, fg_geo, geo_out, debug=debug)
+    # p_fg_snow_depth = interpolator.interpolate(grid_snow_fg)
+    import gridpp
+    points = gridpp.Points(np.asarray(res_lons), np.asarray(res_lats))
+    fg_grid = gridpp.Grid(fg_geo.lons, fg_geo.lats)
+    p_fg_sm = gridpp.bilinear(fg_grid, points, grid_sm_fg)
+
+    # Ordering of points must be the same.....
+    obs = []
+    flags = []
+    cis = []
+    lafs = []
+    providers = []
+    for i in range(0, p_fg_sm.shape[0]):
+
+        p_sm_fg = p_fg_sm[i]
+        if not np.isnan(p_sm_fg):
+            # Check if in grid
+            nn = fg_grid.get_num_neighbours(float(res_lons[i]), float(res_lats[i]), 2500.)
+            # print(float(res_lats[i]), float(res_lons[i]), nn)
+            if nn > 0:
+                obs_value = np.nan
+                if ( (p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0)) :
+                    if p_sm_fg <= fg_threshold:
+                        obs_value = p_sm_fg
+                    else:
+                        obs_value = 999
+
+                else:
+                    obs_value = p_sm_class[str(i)]
+                        
+#                elif p_sm_class[str(i)] == -999:
+#                    if p_sm_fg <= fg_threshold:
+#                        obs_value = p_sm_fg
+                
+                if not np.isnan(obs_value):
+                    flags.append(0)
+                    cis.append(0)
+                    lafs.append(0)
+                    providers.append(0)
+                    obs.append(surfex.Observation(validtime, res_lons[i], res_lats[i], obs_value, varname="surface_soil_moisture"))
+
+    print("Possible pesudo-observations: ", nx * ny)
+    print("Pseudo-observations created: ", len(obs))
+    qc = surfex.QCDataSet(validtime, obs, flags, cis, lafs, providers)
+    return qc
+
 
 def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, latrange=None):
 
