@@ -34,9 +34,11 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     bgrid = gridpp.Grid(glats, glons, gelevs)
     points = gridpp.Points(lats, lons, elevs)
     if interpol == "bilinear":
-        pbackground = gridpp.bilinear(bgrid, points, background)
+        # pbackground = gridpp.bilinear(bgrid, points, background)
+        pbackground = gridpp.simple_gradient(bgrid, points, elev_gradient, gridpp.Bilinear)
     elif interpol == "nearest":
-        pbackground = gridpp.nearest(bgrid, points, background)
+        # pbackground = gridpp.nearest(bgrid, points, background)
+        pbackground = gridpp.simple_gradient(bgrid, points, elev_gradient, gridpp.Nearest)
     else:
         raise NotImplementedError
 
