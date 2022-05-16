@@ -35,10 +35,10 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     points = gridpp.Points(lats, lons, elevs)
     if interpol == "bilinear":
         # pbackground = gridpp.bilinear(bgrid, points, background)
-        pbackground = gridpp.simple_gradient(bgrid, points, elev_gradient, gridpp.Bilinear)
+        pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient, gridpp.Bilinear)
     elif interpol == "nearest":
         # pbackground = gridpp.nearest(bgrid, points, background)
-        pbackground = gridpp.simple_gradient(bgrid, points, elev_gradient, gridpp.Nearest)
+        pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient, gridpp.Nearest)
     else:
         raise NotImplementedError
 
@@ -60,9 +60,12 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
         values = values2
         points = gridpp.Points(lats2, lons2, elevs2)
         if interpol == "bilinear":
-            pbackground = gridpp.bilinear(bgrid, points, background)
+            # pbackground = gridpp.bilinear(bgrid, points, background)
+            pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient, gridpp.Bilinear)
+
         elif interpol == "nearest":
-            pbackground = gridpp.nearest(bgrid, points, background)
+            # pbackground = gridpp.nearest(bgrid, points, background)
+            pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient, gridpp.Nearest)
         else:
             raise NotImplementedError
 
@@ -73,7 +76,6 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     else:
         raise NotImplementedError
 
-    # TODO What about elev_gradients?
     field = gridpp.optimal_interpolation(bgrid, background, points, values, variance_ratios, pbackground, structure,
                                          max_locations)
     field = np.asarray(field)
