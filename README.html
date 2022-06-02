@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Python API to SURFEX (pysurfex) &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -37,7 +38,7 @@
   <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
 <p><a class="reference external" href="https://coveralls.io/github/metno/pysurfex">https://coveralls.io/github/metno/pysurfex</a></p>
 <section id="python-api-to-surfex-pysurfex">
-<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this headline">¶</a></h1>
+<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this heading">¶</a></h1>
 <dl class="simple">
 <dt>An API in python to the external surface model SURFEX.</dt><dd><ul class="simple">
 <li><p>Prepare input and namelists to a SURFEX binary</p></li>
@@ -52,7 +53,7 @@
 </dl>
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
-<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this headline">¶</a></h2>
+<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
 </div>
@@ -62,7 +63,7 @@
 </div>
 </section>
 <section id="installation-on-debian-based-linux-system">
-<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
+<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
 <span class="c1"># Python tools</span>
@@ -82,7 +83,7 @@ sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
 </section>
 <section id="general-dependencies-from-pypi">
-<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
+<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
 netCDF4
@@ -138,7 +139,7 @@ Testdata from https://docs.google.com/uc?export<span class="o">=</span>download<
 folder:</p>
 </section>
 <section id="install-pysurfex">
-<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this headline">¶</a></h2>
+<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
 </pre></div>
 </div>
@@ -148,7 +149,7 @@ folder:</p>
 </div>
 </section>
 <section id="create-documentation">
-<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this headline">¶</a></h2>
+<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
 <span class="c1"># Create html documentation</span>
 make html
@@ -160,7 +161,7 @@ make latexpdf
 </div>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
 <p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
 </section>
 </section>
@@ -203,7 +204,7 @@ make latexpdf
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -220,7 +221,7 @@ make latexpdf
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
     </div>
   </body>
 </html>

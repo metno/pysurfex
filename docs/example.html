@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Examples &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -35,7 +36,7 @@
           <div class="body" role="main">
             
   <section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
 <p>Example on a Lambert conf proj domain</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
@@ -69,7 +70,7 @@
 </div>
 </section>
 <section id="run-open-surfex-8-1">
-<h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this headline">¶</a></h1>
+<h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
 <li><p>Assume pysurfex is installed and in your path</p></li>
 <li><p>Assume pysurfex installation directory is “path-to-pysurfex”</p></li>
@@ -107,7 +108,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.jso
 </div>
 </section>
 <section id="run-open-surfex-8-1-on-centos7-ppi">
-<h1>Run open-SURFEX 8.1 on centos7 PPI<a class="headerlink" href="#run-open-surfex-8-1-on-centos7-ppi" title="Permalink to this headline">¶</a></h1>
+<h1>Run open-SURFEX 8.1 on centos7 PPI<a class="headerlink" href="#run-open-surfex-8-1-on-centos7-ppi" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
 <li><p>Let us assume that you have your surfex binaries in PATH and that they are called PGD, PREP, OFFLINE and SODA</p></li>
 </ul>
@@ -150,7 +151,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
 </div>
 </section>
 <section id="run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version">
-<h1>Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)<a class="headerlink" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version" title="Permalink to this headline">¶</a></h1>
+<h1>Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)<a class="headerlink" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version" title="Permalink to this heading">¶</a></h1>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load modules</span>
 module load suv/surfex/cy43-dev Python/3.7.3 gridpp/0.6.0 suv/pysurfex/0.0.1-dev
 
@@ -224,7 +225,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -241,7 +242,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
     </div>
   </body>
 </html>

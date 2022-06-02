@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>PYSURFEX documentation &#8212; SURFEX Python API (pysurfex)  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -35,14 +36,14 @@
           <div class="body" role="main">
             
   <section id="pysurfex-documentation">
-<h1>PYSURFEX documentation<a class="headerlink" href="#pysurfex-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>PYSURFEX documentation<a class="headerlink" href="#pysurfex-documentation" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
 <p><a class="reference external" href="https://coveralls.io/github/metno/pysurfex">https://coveralls.io/github/metno/pysurfex</a></p>
 </section>
 <section id="python-api-to-surfex-pysurfex">
-<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this headline">¶</a></h1>
+<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this heading">¶</a></h1>
 <dl class="simple">
 <dt>An API in python to the external surface model SURFEX.</dt><dd><ul class="simple">
 <li><p>Prepare input and namelists to a SURFEX binary</p></li>
@@ -57,7 +58,7 @@
 </dl>
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
-<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this headline">¶</a></h2>
+<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
 </div>
@@ -67,7 +68,7 @@
 </div>
 </section>
 <section id="installation-on-debian-based-linux-system">
-<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this headline">¶</a></h2>
+<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
 <span class="c1"># Python tools</span>
@@ -87,7 +88,7 @@ sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
 </section>
 <section id="general-dependencies-from-pypi">
-<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this headline">¶</a></h2>
+<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 scipy
 netCDF4
@@ -143,7 +144,7 @@ Testdata from https://docs.google.com/uc?export<span class="o">=</span>download<
 folder:</p>
 </section>
 <section id="install-pysurfex">
-<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this headline">¶</a></h2>
+<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
 </pre></div>
 </div>
@@ -153,7 +154,7 @@ folder:</p>
 </div>
 </section>
 <section id="create-documentation">
-<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this headline">¶</a></h2>
+<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
 <span class="c1"># Create html documentation</span>
 make html
@@ -165,12 +166,12 @@ make latexpdf
 </div>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
 <p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
 </section>
 </section>
 <section id="id1">
-<h1>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<h1>Examples<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
 <p>Example on a Lambert conf proj domain</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
@@ -204,7 +205,7 @@ make latexpdf
 </div>
 </section>
 <section id="run-open-surfex-8-1">
-<h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this headline">¶</a></h1>
+<h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
 <li><p>Assume pysurfex is installed and in your path</p></li>
 <li><p>Assume pysurfex installation directory is “path-to-pysurfex”</p></li>
@@ -242,7 +243,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s system.jso
 </div>
 </section>
 <section id="run-open-surfex-8-1-on-centos7-ppi">
-<h1>Run open-SURFEX 8.1 on centos7 PPI<a class="headerlink" href="#run-open-surfex-8-1-on-centos7-ppi" title="Permalink to this headline">¶</a></h1>
+<h1>Run open-SURFEX 8.1 on centos7 PPI<a class="headerlink" href="#run-open-surfex-8-1-on-centos7-ppi" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
 <li><p>Let us assume that you have your surfex binaries in PATH and that they are called PGD, PREP, OFFLINE and SODA</p></li>
 </ul>
@@ -285,7 +286,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
 </div>
 </section>
 <section id="run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version">
-<h1>Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)<a class="headerlink" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version" title="Permalink to this headline">¶</a></h1>
+<h1>Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)<a class="headerlink" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version" title="Permalink to this heading">¶</a></h1>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load modules</span>
 module load suv/surfex/cy43-dev Python/3.7.3 gridpp/0.6.0 suv/pysurfex/0.0.1-dev
 
@@ -325,7 +326,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
 </pre></div>
 </div>
 <section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="surfex.Grib">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">Grib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/grib.html#Grib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Grib" title="Permalink to this definition">¶</a></dt>
@@ -580,7 +581,7 @@ offline -c config_exp_surfex.toml -r rte.json --domain domain.json -s ppi.json -
 <dd><p>Main interface to read a field is done through a converter.
 The converter name is default “None” to read a plain field without any conversion.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – name of the converter</p></li>
 <li><p><strong>initial_time</strong> (<em>datetime.datetime</em>) – The valid time you want to read</p></li>
@@ -598,7 +599,7 @@ The converter name is default “None” to read a plain field without any conve
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">ConvertedInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#ConvertedInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.ConvertedInput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converted input</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>geo</strong> (<a class="reference internal" href="#surfex.Geo" title="surfex.Geo"><em>surfex.Geo</em></a>) – Surfex geometry</p></li>
 <li><p><strong>var_name</strong> (<em>str</em>) – Variable name</p></li>
@@ -613,7 +614,7 @@ The converter name is default “None” to read a plain field without any conve
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">ConstantValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#ConstantValue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.ConstantValue" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a field to a constant value</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>geo</strong> (<a class="reference internal" href="#surfex.Geo" title="surfex.Geo"><em>surfex.Geo</em></a>) – Geometry object</p></li>
 <li><p><strong>var_name</strong> (<em>str</em>) – Variable name</p></li>
@@ -828,7 +829,7 @@ Uses internally the SystemFilePaths class</p>
 
 </section>
 <section id="class-methods">
-<h2>Class methods<a class="headerlink" href="#class-methods" title="Permalink to this headline">¶</a></h2>
+<h2>Class methods<a class="headerlink" href="#class-methods" title="Permalink to this heading">¶</a></h2>
 <dl class="py method">
 <dt class="sig sig-object py" id="surfex.Grib.__init__">
 <span class="sig-prename descclassname"><span class="pre">Grib.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/grib.html#Grib.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Grib.__init__" title="Permalink to this definition">¶</a></dt>
@@ -845,10 +846,10 @@ Uses internally the SystemFilePaths class</p>
 <dd><p>Reads a 2-D field and interpolates it to requested positions</p>
 <p>Arguments:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>vector with inpterpolated values</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>np.array</p>
 </dd>
 </dl>
@@ -1391,7 +1392,7 @@ haversine formula. Values can be vectors.</p>
 <span class="sig-prename descclassname"><span class="pre">Fa.</span></span><span class="sig-name descname"><span class="pre">points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">varname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/fa.html#Fa.points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Fa.points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a 2-D field and interpolates it to requested positions</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>varname</strong> (<em>str</em>) – Variable name</p></li>
 <li><p><strong>geo</strong> (<a class="reference internal" href="#surfex.Geo" title="surfex.Geo"><em>surfex.Geo</em></a>) – Geometry</p></li>
@@ -1399,10 +1400,10 @@ haversine formula. Values can be vectors.</p>
 <li><p><strong>interpolation</strong> (<em>str</em>) – Interpoaltion method</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>vector with inpterpolated values</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -1618,7 +1619,7 @@ haversine formula. Values can be vectors.</p>
 <span class="sig-prename descclassname"><span class="pre">Converter.</span></span><span class="sig-name descname"><span class="pre">create_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileformat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/read.html#Converter.create_variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Converter.create_variable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a variable</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fileformat</strong> (<em>str</em>) – Fileformat</p></li>
 <li><p><strong>defs</strong> (<em>dict</em>) – defs</p></li>
@@ -1626,13 +1627,13 @@ haversine formula. Values can be vectors.</p>
 <li><p><strong>debug</strong> (<em>bool</em>) – Debug option</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NotImplementedError</strong> – Not implemented</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The read field</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>field</p>
 </dd>
 </dl>
@@ -1674,7 +1675,7 @@ haversine formula. Values can be vectors.</p>
 <dd><p>pysurfex configuration</p>
 <p>Encapsulation of settings dictionary. Settings for a deterministic run or an individual member.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>conf</strong> (<em>dict</em>) – Actual psyurfex settings to run</p></li>
 <li><p><strong>debug</strong> (<em>bool</em>) – Enable debug mode</p></li>
@@ -1697,7 +1698,7 @@ haversine formula. Values can be vectors.</p>
 <dt class="sig sig-object py" id="surfex.Configuration.value_is_one_of">
 <span class="sig-prename descclassname"><span class="pre">Configuration.</span></span><span class="sig-name descname"><span class="pre">value_is_one_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/configuration.html#Configuration.value_is_one_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Configuration.value_is_one_of" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>settings</strong> (<em>list</em>) – </p></li>
 <li><p><strong>value</strong> – </p></li>
@@ -1714,10 +1715,10 @@ haversine formula. Values can be vectors.</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as the variable (&#64;VAR&#64;)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if value is found in any of the settings</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>found (bool)</p>
 </dd>
 </dl>
@@ -1751,7 +1752,7 @@ surfex.SystemFilePaths.substitute_string()</p>
 <p>Settings are nested in blocks. To get the full setting request setting joined by a seperation character.</p>
 <p>E.g setting = “SURFEX#ASSIM#ASSIM_SCHEMES”</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>setting</strong> – The requested setting</p></li>
 <li><p><strong>default</strong> – A fallback setting in case setting is not found</p></li>
@@ -1768,10 +1769,10 @@ surfex.SystemFilePaths.substitute_string()</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as the variable (&#64;VAR&#64;)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if value is found in any of the settings</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>found (bool)</p>
 </dd>
 </dl>
@@ -1782,7 +1783,7 @@ surfex.SystemFilePaths.parse_setting()
 surfex.SystemFilePaths.substitute_string()</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>KeyError</strong> – </p>
 </dd>
 </dl>
@@ -1797,7 +1798,7 @@ surfex.SystemFilePaths.substitute_string()</p>
 <dt class="sig sig-object py" id="surfex.ConfigurationFromHarmonie.__init__">
 <span class="sig-prename descclassname"><span class="pre">ConfigurationFromHarmonie.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/configuration.html#ConfigurationFromHarmonie.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.ConfigurationFromHarmonie.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>env</strong> (<em>dict</em>) – System environment e.g. os.environ</p></li>
 <li><p><strong>conf</strong> (<em>dict</em>) – The default configuration for this deterministic run/ensemble member</p></li>
@@ -1848,7 +1849,7 @@ surfex.SystemFilePaths.substitute_string()</p>
 <span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">get_system_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.get_system_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.get_system_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the system path for a given data type</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dtype</strong> (<em>str</em>) – The data type you want to get the path for (clim_dir/bin_dir etc)</p></li>
 <li><p><strong>default_dir</strong> (<em>str</em>) – A fallback if the desired dtype is not found</p></li>
@@ -1863,10 +1864,10 @@ surfex.SystemFilePaths.substitute_string()</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as variable</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>data_dir (str)</p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>Exception</strong> – If path not found and check_existence is True</p>
 </dd>
 </dl>
@@ -1881,7 +1882,7 @@ surfex.SystemFilePaths.substitute_string()</p>
 <span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">find_matching_data_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.find_matching_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.find_matching_data_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find a matching path from the system path for a given data type</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dtype</strong> (<em>str</em>) – The data type you want to get the path for (clim_dir/bin_dir etc)</p></li>
 <li><p><strong>default_dir</strong> (<em>str</em>) – A fallback if the desired dtype is not found</p></li>
@@ -1896,10 +1897,10 @@ surfex.SystemFilePaths.substitute_string()</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as variable</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>data_dir (str)</p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>Exception</strong> – If path not found and check_existence is True</p>
 </dd>
 </dl>
@@ -1914,7 +1915,7 @@ surfex.SystemFilePaths.substitute_string()</p>
 <span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">get_system_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.get_system_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.get_system_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the system path for a given data type and add a file name to the path</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dtype</strong> (<em>str</em>) – The data type you want to get the path for (clim_dir/bin_dir etc)</p></li>
 <li><p><strong>fname</strong> (<em>str</em>) – Name of the file you want to join to the system path</p></li>
@@ -1931,10 +1932,10 @@ surfex.SystemFilePaths.substitute_string()</p>
 <li><p><strong>system_variables</strong> (<em>dict</em>) – Arbitrary settings to substitute &#64;NAME&#64; = system_variables={“NAME”: “Value”}</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>data_dir (str)</p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>Exception</strong> – If path not found and check_existence is True</p>
 </dd>
 </dl>
@@ -1950,7 +1951,7 @@ self.substitute_string</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">parse_setting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">setting</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.parse_setting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.parse_setting" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse setting with date/time/experiment specific values</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>setting</strong> – The value of dictionary key which should be processes. Parser if type is str.</p></li>
 <li><p><strong>debug</strong> (<em>bool</em>) – Enable debug</p></li>
@@ -1963,10 +1964,10 @@ self.substitute_string</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as the variable (&#64;VAR&#64;)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Possibly parsed setting is type is str</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>setting</p>
 </dd>
 </dl>
@@ -1982,16 +1983,16 @@ self.substitute_string</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">substitute_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">setting</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.substitute_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.substitute_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Substitute setting if string with OS values of values from system_variables</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>setting</strong> – if setting is string it can be subst</p></li>
 <li><p><strong>system_variables</strong> (<em>dict</em>) – Arbitrary settings to substitute &#64;NAME&#64; = system_variables={“NAME”: “Value”}</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A setting possibly substituted if type is str</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>setting</p>
 </dd>
 </dl>
@@ -2002,7 +2003,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">SystemFilePaths.</span></span><span class="sig-name descname"><span class="pre">add_system_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#SystemFilePaths.add_system_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SystemFilePaths.add_system_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a system file path to be used</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – The data type you want to get the path for (clim_dir/bin_dir etc)</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – Name of the file you want to join to the system path</p></li>
@@ -2017,7 +2018,7 @@ self.substitute_string</p>
 <li><p><strong>var</strong> (<em>str</em>) – Parse setting with this as variable</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -2048,7 +2049,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">BaseNamelist.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forc_zs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfiletype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#BaseNamelist.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.BaseNamelist.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base namelists class to be implemented by namelist implementations</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>program</strong> (<em>str</em>) – Which surfex binary you want to run [“pgd”, “prep”, “offline”, “soda”]</p></li>
 <li><p><strong>config</strong> (<a class="reference internal" href="#surfex.Configuration" title="surfex.Configuration"><em>surfex.Configuration</em></a>) – A SURFEX configuration object</p></li>
@@ -2156,7 +2157,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">Cy43.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forc_zs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfiletype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#Cy43.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Cy43.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base namelists class to be implemented by namelist implementations</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>program</strong> (<em>str</em>) – Which surfex binary you want to run [“pgd”, “prep”, “offline”, “soda”]</p></li>
 <li><p><strong>config</strong> (<a class="reference internal" href="#surfex.Configuration" title="surfex.Configuration"><em>surfex.Configuration</em></a>) – A SURFEX configuration object</p></li>
@@ -2179,7 +2180,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">Cy40.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forc_zs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfiletype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#Cy40.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Cy40.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base namelists class to be implemented by namelist implementations</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>program</strong> (<em>str</em>) – Which surfex binary you want to run [“pgd”, “prep”, “offline”, “soda”]</p></li>
 <li><p><strong>config</strong> (<a class="reference internal" href="#surfex.Configuration" title="surfex.Configuration"><em>surfex.Configuration</em></a>) – A SURFEX configuration object</p></li>
@@ -2202,7 +2203,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">Namelist.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forc_zs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prep_pgdfiletype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/namelist.html#Namelist.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Namelist.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base namelists class to be implemented by namelist implementations</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>program</strong> (<em>str</em>) – Which surfex binary you want to run [“pgd”, “prep”, “offline”, “soda”]</p></li>
 <li><p><strong>config</strong> (<a class="reference internal" href="#surfex.Configuration" title="surfex.Configuration"><em>surfex.Configuration</em></a>) – A SURFEX configuration object</p></li>
@@ -2350,7 +2351,7 @@ self.substitute_string</p>
 <span class="sig-prename descclassname"><span class="pre">BufrObservationSet.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bufrfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_dtg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lonrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bufr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/bufr.html#BufrObservationSet.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.BufrObservationSet.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a bufr observation set</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bufrfile</strong> (<em>str</em>) – Full path of the bufr file to read</p></li>
 <li><p><strong>variables</strong> (<em>list</em>) – Variables to read</p></li>
@@ -2410,10 +2411,10 @@ self.substitute_string</p>
 <dt class="sig sig-object py" id="surfex.Netcdf.num_time">
 <span class="sig-prename descclassname"><span class="pre">Netcdf.</span></span><span class="sig-name descname"><span class="pre">num_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/netcdf.html#Netcdf.num_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Netcdf.num_time" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>field</strong> – </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(int) length of time dimension</p>
 </dd>
 </dl>
@@ -2521,13 +2522,13 @@ self.substitute_string</p>
 
 </section>
 <section id="methods">
-<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="surfex.define_quality_control">
 <span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">define_quality_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">an_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_geo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blacklist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/titan.html#define_quality_control"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.define_quality_control" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to define different QC test from a dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>test_list</strong> (<em>list</em>) – List of tests</p></li>
 <li><p><strong>settings</strong> (<em>dict</em>) – Test settings</p></li>
@@ -2537,10 +2538,10 @@ self.substitute_string</p>
 <li><p><strong>debug</strong> (<em>bool</em>) – Turn on debugging</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of QualityControl objects</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tests(list)</p>
 </dd>
 </dl>
@@ -2592,13 +2593,13 @@ settings: dict</p>
 <span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">unixtime_to_datenum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/util.html#unixtime_to_datenum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.unixtime_to_datenum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts unixtime into datenum</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>time</strong> (<em>int</em>) – unixtime in seconds since 1970</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>datenum value</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
@@ -2847,7 +2848,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
 
 <ul class="simple">
 <li><dl class="field-list simple">
-<dt class="field-odd">ref</dt>
+<dt class="field-odd">ref<span class="colon">:</span></dt>
 <dd class="field-odd"><p><cite>README</cite></p>
 </dd>
 </dl>
@@ -2856,7 +2857,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
 </section>
 </section>
 <section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
@@ -2912,7 +2913,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -2929,7 +2930,7 @@ Modify <code class="docutils literal notranslate"><span class="pre">source</span
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
     </div>
   </body>
 </html>
