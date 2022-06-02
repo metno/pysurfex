@@ -89,10 +89,8 @@ setup(
         "cfunits",
         "pyproj == 2.2",
         "pyyaml",
-        "tomlkit",
         "toml",
         "netCDF4",
-        "jsonmerge",
         "datetime",
         "f90nml",
         "cfunits",
@@ -103,7 +101,7 @@ setup(
         "python-csv",
         "db-sqlite3",
         "titanlib >= 0.3.0.dev3",
-        "gridpp >= 0.5.0.post1"
+        "gridpp >= 0.6.0.dev16"
     ],
 
     # Not on pypi

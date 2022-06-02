@@ -1,20 +1,6 @@
-# requirements.txt
-pyyaml
-numpy
-eccodes
-gridpp
-titanlib
-pyproj
-f90nml
-toml
-json; python_version < '3'
-netCDF4
-cfunits
-requests
-#
-# installs dependencies from ./setup.py, and the package itself,
-# in editable mode
--e .
+# Use setup.py
+
+.
 
 # This is an implicit value, here for clarity
 --index-url https://pypi.python.org/simple/

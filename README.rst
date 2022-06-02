@@ -69,9 +69,7 @@ General dependencies (from pypi)
   pyproj
   pyyaml
   toml
-  tomlkit
   netCDF4
-  jsonmerge
   datetime
   f90nml
   requests

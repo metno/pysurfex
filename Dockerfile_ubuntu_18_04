@@ -1,0 +1,28 @@
+FROM ubuntu:18.04
+
+WORKDIR /pysurfex
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-pyproj \
+    libeccodes-dev \
+    libudunits2-dev \
+    zip \
+    wget
+
+# Install remaining requirements
+WORKDIR /pysurfex
+
+# Install
+COPY . .
+
+WORKDIR /pysurfex
+RUN python3 -m pip install --upgrade pip
+# RUN pip3 install .
+RUN pip3 install -r requirements.txt
+RUN wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9" -O testdata.zip && rm -rf /tmp/cookies.txt
+RUN unzip -o testdata.zip
+#RUN nosetests
