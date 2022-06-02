@@ -429,7 +429,8 @@ def first_guess_for_oi(**kwargs):
             nx = geo.nlons
             ny = geo.nlats
             fg = surfex.create_netcdf_first_guess_template(variables, nx, ny, output, geo=geo)
-            fg.variables["time"][:] = float(validtime.strftime("%s"))
+            epoch = float((validtime - datetime(1970,1,1)).total_seconds())
+            fg.variables["time"][:] = epoch
             fg.variables["longitude"][:] = np.transpose(geo.lons)
             fg.variables["latitude"][:] = np.transpose(geo.lats)
             fg.variables["x"][:] = [i for i in range(0, nx)]
