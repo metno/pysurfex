@@ -4,7 +4,6 @@ import os
 import copy
 from abc import abstractmethod, ABCMeta
 import numpy as np
-from surfex.util import data_merge
 import surfex
 
 
@@ -275,7 +274,7 @@ class Converter(object):
         var_dict = copy.deepcopy(var_dict)
         if var_dict is None:
             raise Exception("Variable is not set")
-        merged_dict = data_merge(defs, var_dict)
+        merged_dict = surfex.data_merge(defs, var_dict)
 
         var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time)
 
@@ -404,26 +403,14 @@ class Converter(object):
             field[field > 1] = 1.0
         elif self.name == "cloud_base":
             logging.info("Converter cloud_base")
-            import gridpp
 
             field = self.cloud_base.read_variable(geo, validtime, cache)
             field_2d = field.reshape(geo.nlons, geo.nlats)
 
-            def fill_field(field_tmp, radius=1):
-                ovalues = gridpp.neighbourhood(field_tmp, radius, gridpp.Mean)
-                nans = 0
-                for i in range(0, geo.nlons):
-                    for j in range(0, geo.nlats):
-                        if np.isnan(field_tmp[i][j]):
-                            nans = nans + 1
-                            # print("Sub ", i, j, nn)
-                            field_tmp[i][j] = ovalues[i][j]
-                return field_tmp, nans
-
             iteration = 0
             while np.any(np.isnan(field_2d)):
                 logging.debug("Filling cloud base")
-                field_2d, nans = fill_field(field_2d, radius=3)
+                field_2d, nans = surfex.fill_field(field_2d, geo, radius=3)
                 iteration = iteration + 1
                 logging.debug("Iteration %s NaNs: %s", iteration, nans)
 

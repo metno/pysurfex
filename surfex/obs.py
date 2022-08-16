@@ -981,13 +981,9 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
             jjj = jjj + step
         iii = iii + step
 
-    # TODO move from here
-    # interpolator = surfex.Interpolation(interpolator_method, fg_geo, geo_out, debug=debug)
-    # p_fg_snow_depth = interpolator.interpolate(grid_snow_fg)
-    import gridpp
-    points = gridpp.Points(np.asarray(res_lons), np.asarray(res_lats))
-    fg_grid = gridpp.Grid(fg_geo.lons, fg_geo.lats)
-    p_fg_snow_depth = gridpp.bilinear(fg_grid, points, grid_snow_fg)
+    p_fg_snow_depth = surfex.grid2points(fg_geo.lons, fg_geo.lats,
+                                         np.asarray(res_lons), np.asarray(res_lats),
+                                         grid_snow_fg)
 
     # Ordering of points must be the same.....
     obs = []
@@ -1001,8 +997,10 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
         logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
             # Check if in grid
-            neighbours = fg_grid.get_num_neighbours(float(res_lons[i]), float(res_lats[i]), 2500.)
-            # print(float(res_lats[i]), float(res_lons[i]), nn)
+            neighbours = surfex.get_num_neighbours(fg_geo.lons, fg_geo.lats,
+                                                   float(res_lons[i]), float(res_lats[i]),
+                                                   distance=2500.)
+
             if neighbours > 0:
                 obs_value = np.nan
                 if p_snow_class[str(i)] == 1:
@@ -1071,13 +1069,9 @@ def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo
             jjj = jjj + step
         iii = iii + step
 
-    # TODO move from here
-    # interpolator = surfex.Interpolation(interpolator_method, fg_geo, geo_out, debug=debug)
-    # p_fg_snow_depth = interpolator.interpolate(grid_snow_fg)
-    import gridpp
-    points = gridpp.Points(np.asarray(res_lons), np.asarray(res_lats))
-    fg_grid = gridpp.Grid(fg_geo.lons, fg_geo.lats)
-    p_fg_sm = gridpp.bilinear(fg_grid, points, grid_sm_fg)
+    p_fg_sm = surfex.grid2points(fg_geo.lons, fg_geo.lats,
+                                 np.asarray(res_lons), np.asarray(res_lats),
+                                 grid_sm_fg)
 
     # Ordering of points must be the same.....
     obs = []
@@ -1090,8 +1084,10 @@ def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo
         p_sm_fg = p_fg_sm[i]
         if not np.isnan(p_sm_fg):
             # Check if in grid
-            neighbours = fg_grid.get_num_neighbours(float(res_lons[i]), float(res_lats[i]), 2500.)
-            # print(float(res_lats[i]), float(res_lons[i]), nn)
+            neighbours = surfex.get_num_neighbours(fg_geo.lons, fg_geo.lats,
+                                                   float(res_lons[i]), float(res_lats[i]),
+                                                   distance=2500.)
+
             if neighbours > 0:
                 obs_value = np.nan
                 if ((p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0)):

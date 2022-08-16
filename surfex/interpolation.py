@@ -152,3 +152,63 @@ class Interpolation(object):
 
         alpha = np.rad2deg(np.arctan2(dlon, dlat))
         return alpha
+
+
+def fill_field(field_tmp, geo, radius=1):
+    """Fill field.
+
+    Args:
+        field_tmp (_type_): _description_
+        radius (int, optional): _description_. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    """
+    ovalues = gridpp.neighbourhood(field_tmp, radius, gridpp.Mean)
+    nans = 0
+    for i in range(0, geo.nlons):
+        for j in range(0, geo.nlats):
+            if np.isnan(field_tmp[i][j]):
+                nans = nans + 1
+                # print("Sub ", i, j, nn)
+                field_tmp[i][j] = ovalues[i][j]
+    return field_tmp, nans
+
+
+def grid2points(grid_lons, grid_lats, p_lons, p_lats, grid_values, operator="bilinear"):
+    """Convert a grid to points.
+
+    Args:
+        grid_lons (_type_): _description_
+        grid_lats (_type_): _description_
+        p_lons (_type_): _description_
+        p_lats (_type_): _description_
+        grid_values (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    points = gridpp.Points(p_lons, p_lats)
+    fg_grid = gridpp.Grid(grid_lons, grid_lats)
+    if operator == "bilinear":
+        return gridpp.bilinear(fg_grid, points, grid_values)
+    if operator == "linear":
+        return gridpp.nearest(fg_grid, points, grid_values)
+
+
+def get_num_neighbours(grid_lons, grid_lats, p_lon, p_lat, distance=2500.):
+    """Get number of neighbours.
+
+    Args:
+        grid_lons (_type_): _description_
+        grid_lats (_type_): _description_
+        p_lon (_type_): _description_
+        p_lat (_type_): _description_
+        distance (_type_, optional): _description_. Defaults to 2500..
+
+    Returns:
+        _type_: _description_
+
+    """
+    fg_grid = gridpp.Grid(grid_lons, grid_lats)
+    return fg_grid.get_num_neighbours(p_lon, p_lat, distance)
