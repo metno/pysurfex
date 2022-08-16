@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
-
-import surfex
+"""Merge json QC dataset files."""
 import sys
-
+import logging
+import surfex
 
 if __name__ == "__main__":
     kwargs = surfex.parse_args_merge_qc_data(sys.argv[1:])
-    surfex.merge_qc_data(**kwargs)
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    logging.info("************ merge_qc_data ******************")
+    surfex.merge_qc_data(kwargs["validtime"], kwargs["filenames"], ["output"], indent=["indent"])

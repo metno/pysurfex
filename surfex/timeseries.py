@@ -1,10 +1,26 @@
+"""Time series."""
 from datetime import datetime, timedelta
-import surfex
+import logging
 import json
+import surfex
 
 
 class TimeSeries(object):
-    def __init__(self, times, values, lons, lats, stids, stids_file=None, varname="NA", debug=False):
+    """Time series."""
+
+    def __init__(self, times, values, lons, lats, stids, stids_file=None, varname="NA"):
+        """Construct time series.
+
+        Args:
+            times (_type_): _description_
+            values (_type_): _description_
+            lons (_type_): _description_
+            lats (_type_): _description_
+            stids (_type_): _description_
+            stids_file (_type_, optional): _description_. Defaults to None.
+            varname (str, optional): _description_. Defaults to "NA".
+
+        """
         self.times = times
         self.values = values
         self.lons = lons
@@ -12,10 +28,8 @@ class TimeSeries(object):
         self.stids = stids
         self.varname = varname
         self.index_pos = {}
-        self.debug = debug
 
-        for i in range(0, len(self.lons)):
-            lon = self.lons[i]
+        for i, lon in enumerate(self.lons):
             lat = self.lats[i]
             pos = surfex.Observation.format_lon(lon) + ":" + surfex.Observation.format_lat(lat)
             self.index_pos.update({pos: i})
@@ -24,8 +38,16 @@ class TimeSeries(object):
             self.stids = self.update_stids_from_file(stids_file)
 
     def update_stids_from_file(self, filename):
+        """Update stids from file.
+
+        Args:
+            filename (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         stids = self.stids
-        ids_from_file = json.load(open(filename, "r"))
+        ids_from_file = json.load(open(filename, "r", encoding="utf-8"))
         for stid in ids_from_file:
             lon = ids_from_file[stid]["lon"]
             lat = ids_from_file[stid]["lat"]
@@ -35,10 +57,16 @@ class TimeSeries(object):
         return stids
 
     def write_json(self, filename, indent=None):
+        """Write json file.
+
+        Args:
+            filename (_type_): _description_
+            indent (_type_, optional): _description_. Defaults to None.
+        """
         data = {}
-        for i in range(0, len(self.times)):
+        for i, time_val in enumerate(self.times):
             data.update({
-                self.times[i].strftime("%Y%m%d%H%M%S"): {
+                time_val.strftime("%Y%m%d%H%M%S"): {
                     "values": self.values[i].tolist()
                 }
             })
@@ -49,12 +77,28 @@ class TimeSeries(object):
             "varname": self.varname,
             "data": data
         }
-        json.dump(data, open(filename, "w"), indent=indent)
+        json.dump(data, open(filename, "w", encoding="utf-8"), indent=indent)
 
 
 class TimeSeriesFromJson(TimeSeries):
-    def __init__(self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None, debug=False):
-        data = json.load(open(filename, "r"))
+    """Time series from json."""
+
+    def __init__(self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None):
+        """Construct.
+
+        Args:
+            filename (_type_): _description_
+            starttime (_type_, optional): _description_. Defaults to None.
+            endtime (_type_, optional): _description_. Defaults to None.
+            interval (_type_, optional): _description_. Defaults to None.
+            lons (_type_, optional): _description_. Defaults to None.
+            lats (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            Exception: _description_
+            Exception: _description_
+        """
+        data = json.load(open(filename, "r", encoding="utf-8"))
         times = []
         values = []
         ts_lons = data["lons"]
@@ -64,18 +108,18 @@ class TimeSeriesFromJson(TimeSeries):
         lons1 = []
         lats1 = []
         stids1 = []
-        for i in range(0, len(ts_lons)):
+        for i, ts_lon in enumerate(ts_lons):
             if lons is not None and lats is not None:
-                lon1 = surfex.Observation.format_lon(float(ts_lons[i]))
+                lon1 = surfex.Observation.format_lon(float(ts_lon))
                 lat1 = surfex.Observation.format_lat(float(ts_lats[i]))
                 if len(lons) != len(lats):
                     raise Exception("Mismach in longitudes and latitudes")
-                for j in range(0, len(lons)):
-                    lon = surfex.Observation.format_lon(float(lons[j]))
+                for j, lon in enumerate(lons):
+                    lon = surfex.Observation.format_lon(float(lon))
                     lat = surfex.Observation.format_lat(float(lats[j]))
                     if lon == lon1 and lat == lat1:
                         mask.append(i)
-                        lons1.append(ts_lons[i])
+                        lons1.append(ts_lon)
                         lats1.append(ts_lats[i])
                         stids1.append(ts_stids[i])
                         break
@@ -89,16 +133,17 @@ class TimeSeriesFromJson(TimeSeries):
             if len(mask) != len(lons):
                 print(ts_lons, ts_lats)
                 print(lons, lats)
-                raise Exception("You asked for " + str(len(lons) - len(mask)) + " position(s) not in the file")
+                raise Exception("You asked for " + str(len(lons) - len(mask))
+                                + " position(s) not in the file")
 
         varname = data["varname"]
         validtime = None
         if starttime is not None:
             validtime = starttime
 
-        for dt in data["data"]:
+        for dtime in data["data"]:
             add = True
-            this_time = datetime.strptime(dt, "%Y%m%d%H%M%S")
+            this_time = datetime.strptime(dtime, "%Y%m%d%H%M%S")
             if starttime is not None and this_time < starttime:
                 add = False
             if endtime is not None and this_time > endtime:
@@ -109,8 +154,8 @@ class TimeSeriesFromJson(TimeSeries):
             if add:
                 times.append(this_time)
                 this_values = []
-                for i in range(0, len(mask)):
-                    this_values.append(data["data"][dt]["values"][mask[i]])
+                for mask_ind in mask:
+                    this_values.append(data["data"][dtime]["values"][mask_ind])
                 values.append(this_values)
             else:
                 print("Skip this time ", this_time)
@@ -118,31 +163,44 @@ class TimeSeriesFromJson(TimeSeries):
             if validtime is not None:
                 if interval is not None:
                     validtime = validtime + timedelta(seconds=interval)
-        TimeSeries.__init__(self, times, values, lons1, lats1, stids1, varname=varname, debug=debug)
+        TimeSeries.__init__(self, times, values, lons1, lats1, stids1, varname=varname)
 
 
 class TimeSeriesFromConverter(TimeSeries):
+    """Time-Series from a converter."""
 
-    """
-    Time-Series object
-    """
+    def __init__(self, var, fileformat, conf, geo, converter, start, end, interval=3600,
+                 cache=None, stids_file=None, geo_in=None):
+        """Construct.
 
-    def __init__(self, var, fileformat, conf, geo, converter, start, end, interval=3600, geo_in=None, cache=None,
-                 stids_file=None, debug=False):
+        Args:
+            var (_type_): _description_
+            fileformat (_type_): _description_
+            conf (_type_): _description_
+            geo (_type_): _description_
+            converter (_type_): _description_
+            start (_type_): _description_
+            end (_type_): _description_
+            interval (int, optional): _description_. Defaults to 3600.
+            geo_in (_type_, optional): _description_. Defaults to None.
+            cache (_type_, optional): _description_. Defaults to None.
+            stids_file (_type_, optional): _description_. Defaults to None.
 
-        validtime = start
+        """
+        # validtime = start
         basetime = start
         defs = {}
 
-        converter = surfex.Converter(converter, validtime, defs, conf[var][fileformat]["converter"], fileformat,
-                                     basetime)
+        converter = surfex.Converter(
+            converter, basetime, defs, conf[var][fileformat]["converter"], fileformat)
         times = []
         values = []
         # Loop output time steps
         this_time = start
         while this_time <= end:
             # Write for each time step
-            print("Creating time series for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(this_time))
+            logging.info("Creating time series for: %s time_step: %s",
+                         this_time.strftime('%Y%m%d%H'), str(this_time))
             values.append(converter.read_time_step(geo, this_time, cache))
             times.append(this_time)
 
@@ -151,9 +209,10 @@ class TimeSeriesFromConverter(TimeSeries):
                 cache.clean_fields(this_time)
 
         if stids_file is not None:
-            stids = surfex.Observation.get_stid_from_stationlist(stids_file, geo.lonlist, geo.latlist)
+            stids = surfex.Observation.get_stid_from_stationlist(
+                stids_file, geo.lonlist, geo.latlist)
         else:
             stids = ["NA"] * geo.nlons
 
-        TimeSeries.__init__(self, times, values, geo.lonlist, geo.latlist, stids, stids_file=stids_file, varname=var,
-                            debug=debug)
+        TimeSeries.__init__(self, times, values, geo.lonlist, geo.latlist, stids,
+                            stids_file=stids_file, varname=var)

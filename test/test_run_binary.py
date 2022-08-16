@@ -1,14 +1,21 @@
+"""Test ruinning a binary emulator."""
 import unittest
-import surfex
+import logging
 import os
 import json
-import toml
+import tomlkit
+import surfex
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
 
 
 class RunTestNC(unittest.TestCase):
+    """Test running NC filetype."""
 
     def setUp(self):
-        print("SETUP")
+        """Set up."""
         self.testdata = "testdata/"
         self.rootdir = os.path.abspath(os.curdir)
         self.config_exp_surfex = self.rootdir + "/surfex/cfg/config_exp_surfex.toml"
@@ -17,10 +24,16 @@ class RunTestNC(unittest.TestCase):
         self.system = self.rootdir + "/test/settings/test_system.json"
 
     def tearDown(self):
-        pass
+        """Tear down."""
 
     @staticmethod
     def _clean_offline_test_nc(prepare=False, extra_files=None):
+        """Clean before test.
+
+        Args:
+            prepare (bool, optional): To prepare or not. Defaults to False.
+            extra_files (list, optional): List of extra files. Defaults to None.
+        """
         files = ["ecoclimapI_covers_param.bin",
                  "ecoclimapII_af_covers_param.bin",
                  "ecoclimapII_eu_covers_param.bin",
@@ -61,16 +74,16 @@ class RunTestNC(unittest.TestCase):
                  ]
         if extra_files is not None:
             files = files + extra_files
-        for f in files:
-            if os.path.islink(f):
-                print("Removing symlink " + f)
-                os.unlink(f)
-            if os.path.exists(f):
-                print("Removing " + f)
-                os.remove(f)
+        for dfn in files:
+            if os.path.islink(dfn):
+                logging.debug("Removing symlink %s", dfn)
+                os.unlink(dfn)
+            if os.path.exists(dfn):
+                logging.debug("Removing %s", dfn)
+                os.remove(dfn)
             else:
                 if not prepare:
-                    print("Not found " + f)
+                    logging.debug("Not found %s", dfn)
 
     @staticmethod
     def _clean_masterodb_test(prepare=False, extra_files=None):
@@ -98,19 +111,19 @@ class RunTestNC(unittest.TestCase):
 
         if extra_files is not None:
             files = files + extra_files
-        for f in files:
-            if os.path.islink(f):
-                print("Removing symlink " + f)
-                os.unlink(f)
-            if os.path.exists(f):
-                print("Removing " + f)
-                os.remove(f)
+        for dfn in files:
+            if os.path.islink(dfn):
+                logging.debug("Removing symlink %s", dfn)
+                os.unlink(dfn)
+            if os.path.exists(dfn):
+                logging.debug("Removing %s", dfn)
+                os.remove(dfn)
             else:
                 if not prepare:
-                    print("Not found " + f)
+                    logging.debug("Not found %s", dfn)
 
     def test_run_test_nc(self):
-
+        """Test run NC."""
         my_format = "NC"
         this_config = self.rootdir + "/test/settings/" + my_format.lower() + ".toml"
         extension = ".nc"
@@ -125,8 +138,10 @@ class RunTestNC(unittest.TestCase):
 
         # PGD
         task = "pgd"
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        with open(config_file, mode="w", encoding="utf-8") as file_handler:
+            tomlkit.dump(config, file_handler)
 
         output = os.getcwd() + "/unittest_PGD_TEST_" + self.grid + extension
         if "PGD_BINARY" in os.environ and os.environ["PGD_BINARY"] != "":
@@ -153,10 +168,14 @@ class RunTestNC(unittest.TestCase):
         # PREP
         task = "prep"
 
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        with open(config_file, mode="w", encoding="utf-8") as file_handler:
+            tomlkit.dump(config, file_handler)
 
-        pgd = output
+        # pgd = output
+        pgd = f"{self.rootdir}/testdata/CONF_PROJ/climate/PGD.nc"
+        logging.debug("TRYGVE %s ", pgd)
         output = os.getcwd() + "/unittest_PREP_TEST_" + self.grid + extension
         if "PREP_BINARY" in os.environ and os.environ["PREP_BINARY"] != "":
             binary = os.environ["PREP_BINARY"]
@@ -185,8 +204,10 @@ class RunTestNC(unittest.TestCase):
         # OFFLINE
         task = "offline"
 
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        with open(config_file, mode="w", encoding="utf-8") as file_handler:
+            tomlkit.dump(config, file_handler)
 
         if "OFFLINE_BINARY" in os.environ and os.environ["OFFLINE_BINARY"] != "":
             binary = os.environ["OFFLINE_BINARY"]
@@ -218,8 +239,10 @@ class RunTestNC(unittest.TestCase):
         # SODA
         task = "soda"
 
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        with open(config_file, mode="w", encoding="utf-8") as file_handler:
+            tomlkit.dump(config, file_handler)
 
         if "SODA_BINARY" in os.environ and os.environ["SODA_BINARY"] != "":
             binary = os.environ["SODA_BINARY"]
@@ -250,7 +273,7 @@ class RunTestNC(unittest.TestCase):
         self._clean_offline_test_nc(extra_files=extra_files)
 
     def test_masterodb(self):
-
+        """Test masterodb."""
         my_format = "FA"
         this_config = self.rootdir + "/test/settings/" + my_format.lower() + ".toml"
 
@@ -263,8 +286,10 @@ class RunTestNC(unittest.TestCase):
         self._clean_masterodb_test(prepare=True, extra_files=extra_files)
 
         # Forecast
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        with open(config_file, mode="w", encoding="utf-8") as file_handler:
+            tomlkit.dump(config, file_handler)
 
         binary = self.rootdir + "/test/bin/MASTERODB"
         pgd = "Const.Clim.sfx"
@@ -292,8 +317,10 @@ class RunTestNC(unittest.TestCase):
         surfex.run_masterodb(**kwargs)
 
         # CANARI
-        json.dump(dict(os.environ), open(rte, "w"))
-        toml.dump(config, open(config_file, "w"))
+        with open(rte, mode="w", encoding="utf-8") as file_handler:
+            json.dump(dict(os.environ), file_handler)
+        # with open(config_file, mode="w", encoding="utf-8") as file_handler:
+        #    toml.dump(config, file_handler)
 
         binary = self.rootdir + "/test/bin/MASTERODB_CANARI"
         prep = output
@@ -322,12 +349,12 @@ class RunTestNC(unittest.TestCase):
 
     @staticmethod
     def test_input_json_from_file():
-
+        """Test input from a json file."""
         fname = "test_in" + str(os.getpid())
-        fh = open(fname, "w")
-        # {"testfile":{ "fname": "ln -sf"}}}
-        fh.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname + "\": \"ln -sf @INFILE@ @TARGET@\"}}")
-        fh.close()
+        with open(fname, mode="w", encoding="utf-8") as file_handler:
+            # {"testfile":{ "fname": "ln -sf"}}}
+            file_handler.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname
+                               + "\": \"ln -sf @INFILE@ @TARGET@\"}}")
 
         my_input = surfex.JsonInputDataFromFile(fname)
         my_input.prepare_input()
@@ -336,14 +363,13 @@ class RunTestNC(unittest.TestCase):
 
     @staticmethod
     def test_output_json_from_file():
-
+        """Test output from a json file."""
         fname = "test_out_" + str(os.getpid())
         file_to_archive = "test_to_archive_" + str(os.getpid())
         destination = "test_archive_destination_" + str(os.getpid())
         os.system("touch " + file_to_archive)
-        fh = open(fname, "w")
-        fh.write("{\"" + file_to_archive + "\": {\"" + destination + "\": \"cp\"}}")
-        fh.close()
+        with open(fname, mode="w", encoding="utf-8") as file_handler:
+            file_handler.write("{\"" + file_to_archive + "\": {\"" + destination + "\": \"cp\"}}")
 
         my_output = surfex.JsonOutputDataFromFile(fname)
         my_output.archive_files()

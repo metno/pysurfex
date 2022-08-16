@@ -1,31 +1,52 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Setup for pip."""
 
+from os import path
+import codecs
 from setuptools import setup, find_packages
 # To use a consistent encoding
-from codecs import open
-from os import path
 
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with codecs.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
     # print(long_description)
 
 
 def read(rel_path):
-    with open(path.join(here, rel_path), 'r') as fp:
-        return fp.read()
+    """Read path.
+
+    Args:
+        rel_path (str): Relative path.
+
+    Returns:
+        str: Relattive path.
+
+    """
+    with codecs.open(path.join(here, rel_path), 'r') as f_p:
+        return f_p.read()
 
 
 def get_version(rel_path):
+    """Get the version.
+
+    Args:
+        rel_path (str): Realtive path
+
+    Raises:
+        RuntimeError: If not found.
+
+    Returns:
+        str: Version
+
+    """
     for line in read(rel_path).splitlines():
         if line.startswith('__version__'):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
+    raise RuntimeError("Unable to find version string.")
 
 
 setup(
@@ -112,7 +133,6 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-    #    'dev': ['check-manifest'],
         'test': [
             "coverage",
             "coveralls",
@@ -159,7 +179,7 @@ setup(
         'bin/modify_forcing',
         'bin/FirstGuess4gridpp',
         'bin/gridpp',
-        'bin/json-gui2toml',
+        'bin/json_gui2toml',
         'bin/masterodb',
         'bin/merge_json_namelist_settings',
         'bin/merge_toml_files',

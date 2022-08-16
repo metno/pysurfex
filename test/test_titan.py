@@ -1,12 +1,20 @@
+"""Test titan."""
 import unittest
-import surfex
+import logging
 import json
 import os
+import surfex
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
 
 
 class TitanTest(unittest.TestCase):
+    """Test titan."""
 
     def setUp(self):
+        """Set up."""
         self.testdata = "testdata/"
         self.qc_settings = {
             "t2m": {
@@ -207,8 +215,11 @@ class TitanTest(unittest.TestCase):
         }
 
     def test_titan_t2m(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_t2m.json", "w"))
-        json.dump({}, open("unittest_blacklist_t2m.json", "w"))
+        """Test titan for t2m."""
+        with open("unittest_qc_settings_t2m.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_t2m.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_t2m.json",
             "-v", "t2m",
@@ -223,8 +234,11 @@ class TitanTest(unittest.TestCase):
         surfex.run_titan(**kwargs)
 
     def test_titan_t2m_harmonie(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_t2m_hm.json", "w"))
-        json.dump({}, open("unittest_blacklist_t2m_hm.json", "w"))
+        """Test titan for t2m from harmonie."""
+        with open("unittest_qc_settings_t2m_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_t2m_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_t2m_hm.json",
             "-v", "t2m",
@@ -235,14 +249,18 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        env = json.load(open("test/settings/hm_env.json", "r"))
+        with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
+            env = json.load(file_handler)
         os.environ.update(env)
         kwargs = surfex.parse_args_titan(argv)
         surfex.run_titan(**kwargs)
 
     def test_titan_rh2m(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_rh2m.json", "w"))
-        json.dump({}, open("unittest_blacklist_rh2m.json", "w"))
+        """Test titan for rh2m."""
+        with open("unittest_qc_settings_rh2m.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_rh2m.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_rh2m.json",
             "-v", "rh2m",
@@ -257,8 +275,11 @@ class TitanTest(unittest.TestCase):
         surfex.run_titan(**kwargs)
 
     def test_titan_rh2m_harmonie(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_rh2m_hm.json", "w"))
-        json.dump({}, open("unittest_blacklist_rh2m_hm.json", "w"))
+        """Test titan for rh2m from harmonie."""
+        with open("unittest_qc_settings_rh2m_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_rh2m_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_rh2m_hm.json",
             "-v", "rh2m",
@@ -269,14 +290,18 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        env = json.load(open("test/settings/hm_env.json", "r"))
+        with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
+            env = json.load(file_handler)
         os.environ.update(env)
         kwargs = surfex.parse_args_titan(argv)
         surfex.run_titan(**kwargs)
 
     def test_titan_sd(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_sd.json", "w"))
-        json.dump({}, open("unittest_blacklist_sd.json", "w"))
+        """Test titan for sd."""
+        with open("unittest_qc_settings_sd.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_sd.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_sd.json",
             "-v", "sd",
@@ -291,8 +316,11 @@ class TitanTest(unittest.TestCase):
         surfex.run_titan(**kwargs)
 
     def test_titan_sd_harmonie(self):
-        json.dump(self.qc_settings, open("unittest_qc_settings_sd_hm.json", "w"))
-        json.dump({}, open("unittest_blacklist_sd_hm.json", "w"))
+        """Test titan for sd from harmonie."""
+        with open("unittest_qc_settings_sd_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump(self.qc_settings, file_handler)
+        with open("unittest_blacklist_sd_hm.json", mode="w", encoding="utf-8") as file_handler:
+            json.dump({}, file_handler)
         argv = [
             "-i", "unittest_qc_settings_sd_hm.json",
             "-v", "sd",
@@ -303,7 +331,8 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        env = json.load(open("test/settings/hm_env.json", "r"))
+        with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
+            env = json.load(file_handler)
         os.environ.update(env)
         kwargs = surfex.parse_args_titan(argv)
         surfex.run_titan(**kwargs)

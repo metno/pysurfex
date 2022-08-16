@@ -1,13 +1,24 @@
-import surfex
+"""Interpolation."""
+import logging
 import numpy as np
 import gridpp
 
 
 class Interpolation(object):
+    """Interpolation."""
 
-    def __init__(self, operator, geo_in, geo_out, debug=False):
+    def __init__(self, operator, geo_in, geo_out):
+        """Construct an intrpolation object.
 
-        self.debug = debug
+        Args:
+            operator (_type_): _description_
+            geo_in (_type_): _description_
+            geo_out (_type_): _description_
+
+        Raises:
+            Exception: _description_
+
+        """
         self.operator = operator
         self.geo_in = geo_in
         self.geo_out = geo_out
@@ -21,9 +32,8 @@ class Interpolation(object):
             self.var_lons = grid_lons
             self.var_lats = grid_lats
             self.identical = self.geo_out.is_identical(self.geo_in)
-            if self.debug:
-                surfex.debug(__file__, self.__class__.__name__, "grid_lons.shape", grid_lons.shape)
-                surfex.debug(__file__, self.__class__.__name__, "grid_lats.shape", grid_lats.shape)
+            logging.debug("grid_lons.shape %s", grid_lons.shape)
+            logging.debug("grid_lats.shape %s", grid_lats.shape)
             self.grid = gridpp.Grid(grid_lons, grid_lats)
         else:
             self.var_lons = None
@@ -35,33 +45,48 @@ class Interpolation(object):
         lons = np.array(self.geo_out.lonlist)
         lats = np.array(self.geo_out.latlist)
         self.npoints = self.geo_out.npoints
-        if self.debug:
-            surfex.debug(__file__, self.__class__.__name__, "Output lons shape:", lons.shape)
-            surfex.debug(__file__, self.__class__.__name__, "Output lats shape:", lats.shape)
+        logging.debug("Output lons shape: %s", lons.shape)
+        logging.debug("Output lats shape: %s", lats.shape)
         self.points = gridpp.Points(lons, lats)
 
     def interpolate(self, field2d, undefined=None):
+        """Do interpolation.
 
+        Args:
+            field2d (_type_): _description_
+            undefined (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            Exception: _description_
+            Exception: _description_
+            NotImplementedError: _description_
+
+        Returns:
+            np.array: interpolated_field
+
+        """
         if field2d is None and undefined is not None:
             return np.full((self.geo_out.nlons * self.geo_out.nlats), undefined)
         elif field2d is None:
             raise Exception("You try to interpolate a missing field!")
         else:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.interpolate.__name__, "field2d.shape", field2d.shape)
-                surfex.debug(__file__, self.__class__.interpolate.__name__, "gridpp.__file__", gridpp.__file__)
+            logging.debug("field2d.shape %s", field2d.shape)
+            logging.debug("gridpp.__file__ = %s", gridpp.__file__)
             if self.identical or self.operator == "none":
                 if self.operator == "none":
                     if not self.identical:
-                        raise Exception("Input domain and ouput domain differ. You must interpolate!")
-                    surfex.info("No interpolation chosen")
+                        raise Exception("Input domain and ouput domain differ. "
+                                        "You must interpolate!")
+                    logging.info("No interpolation chosen")
                 else:
-                    surfex.info("Input and output domain are identical. No interpolation is needed")
+                    logging.info("Input and output domain are identical. "
+                                 "No interpolation is needed")
                 interpolated_field = field2d.reshape(self.npoints)
             else:
                 sub_lons, sub_lats = self.geo_out.subset(self.geo_in)
                 if len(sub_lons) == 0 and len(sub_lats) == 0:
-                    surfex.info("Doing \"" + self.operator + "\" interpolation for " + str(self.npoints) + " points")
+                    logging.info("Doing '%s' interpolation for %s points", self.operator,
+                                 str(self.npoints))
                     if self.operator == "nearest":
                         interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
                     elif self.operator == "bilinear":
@@ -71,51 +96,59 @@ class Interpolation(object):
                     else:
                         raise NotImplementedError(self.operator)
                 else:
-                    surfex.info("Output domain is a subset of input domain")
+                    logging.info("Output domain is a subset of input domain")
                     new_field = np.ndarray([len(sub_lons), len(sub_lats)])
-                    for i in range(0, len(sub_lons)):
-                        for j in range(0, len(sub_lats)):
-                            new_field[i, j] = field2d[sub_lons[i], sub_lats[j]]
+                    for i, sub_lon in enumerate(sub_lons):
+                        for j, sub_lat in enumerate(sub_lats):
+                            new_field[i, j] = field2d[sub_lon, sub_lat]
                     interpolated_field = new_field.reshape(self.npoints)
             return interpolated_field
 
     def rotate_wind_to_geographic(self):
-        pass
+        """Not implemented."""
 
     @staticmethod
     def distance(lon1, lat1, lon2, lat2):
-        """
+        """Compute distance.
+
         Computes the great circle distance between two points using the
         haversine formula. Values can be vectors.
         """
         # Convert from degrees to radians
-        pi = 3.14159265
-        lon1 = lon1 * 2 * pi / 360.
-        lat1 = lat1 * 2 * pi / 360.
-        lon2 = lon2 * 2 * pi / 360.
-        lat2 = lat2 * 2 * pi / 360.
+        pi_constant = 3.14159265
+        lon1 = lon1 * 2 * pi_constant / 360.
+        lat1 = lat1 * 2 * pi_constant / 360.
+        lon2 = lon2 * 2 * pi_constant / 360.
+        lat2 = lat2 * 2 * pi_constant / 360.
         dlon = lon2 - lon1
         dlat = lat2 - lat1
-        a = np.sin(dlat / 2.) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.) ** 2
-        c = 2 * np.arcsin(np.sqrt(a)) * 6.367e6
-        return c
+        aval = np.sin(dlat / 2.) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.) ** 2
+        cval = 2 * np.arcsin(np.sqrt(aval)) * 6.367e6
+        return cval
 
     def alpha_grid_rot(self):
+        """Calculate alpha."""
         lon = self.var_lons
         lat = self.var_lats
-        nx = lat.shape[0]
+        n_x = lat.shape[0]
         # ny = lat.shape[1]
         dlon = np.zeros(lat.shape)
         dlat = np.zeros(lat.shape)
-        i1 = np.arange(nx - 1)
+        i_1 = np.arange(n_x - 1)
 
-        dlon[0:-1, :] = np.sign(lon[i1 + 1, :] - lon[i1, :]) * self.distance(lon[i1, :], lat[i1, :], lon[i1 + 1, :],
-                                                                             lat[i1, :])
-        dlat[0:-1, :] = -np.sign(lat[i1 + 1, :] - lat[i1, :]) * self.distance(lon[i1, :], lat[i1, :], lon[i1, :],
-                                                                              lat[i1 + 1, :])
+        dlon[0:-1, :] = np.sign(lon[i_1 + 1, :] - lon[i_1, :]) * self.distance(lon[i_1, :],
+                                                                               lat[i_1, :],
+                                                                               lon[i_1 + 1, :],
+                                                                               lat[i_1, :])
+        dlat[0:-1, :] = -np.sign(lat[i_1 + 1, :] - lat[i_1, :]) * self.distance(lon[i_1, :],
+                                                                                lat[i_1, :],
+                                                                                lon[i_1, :],
+                                                                                lat[i_1 + 1, :])
 
-        dlon[-1, :] = np.sign(lon[-1, :] - lon[-2, :]) * self.distance(lon[-2, :], lat[-2, :], lon[-1, :], lat[-2, :])
-        dlat[-1, :] = -np.sign(lat[-1, :] - lat[-2, :]) * self.distance(lon[-2, :], lat[-2, :], lon[-2, :], lat[-1, :])
+        dlon[-1, :] = np.sign(lon[-1, :] - lon[-2, :]) * self.distance(lon[-2, :], lat[-2, :],
+                                                                       lon[-1, :], lat[-2, :])
+        dlat[-1, :] = -np.sign(lat[-1, :] - lat[-2, :]) * self.distance(lon[-2, :], lat[-2, :],
+                                                                        lon[-2, :], lat[-1, :])
 
         alpha = np.rad2deg(np.arctan2(dlon, dlat))
         return alpha

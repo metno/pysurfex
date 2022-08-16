@@ -1,14 +1,22 @@
+"""Test forcing."""
 import unittest
+import logging
 import surfex
 
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
+
+
 class ForcingTest(unittest.TestCase):
+    """Test forcing."""
 
     def setUp(self):
+        """Set up."""
         self.testdata = "testdata/"
 
     def test_forcing_nc(self):
-
+        """Test forcing from netcdf files."""
         argv = ["2020111303", "2020111306",
                 "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc",
@@ -29,7 +37,7 @@ class ForcingTest(unittest.TestCase):
         surfex.forcing.run_time_loop(options, var_objs, att_objs)
 
     def test_forcing_grib1(self):
-
+        """Test forcing from netcdf grib1 files."""
         argv = ["2020111303", "2020111306",
                 "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib1",
@@ -50,7 +58,7 @@ class ForcingTest(unittest.TestCase):
         surfex.forcing.run_time_loop(options, var_objs, att_objs)
 
     def test_forcing_grib2(self):
-
+        """Test forcing from grib2 files."""
         argv = ["2020111303", "2020111306",
                 "-d", "test/settings/conf_proj_test.json",
                 "-p", self.testdata + "/fc@YYYY@@MM@@DD@@HH@+@LLLL@grib2",

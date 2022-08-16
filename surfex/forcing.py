@@ -1,40 +1,54 @@
+"""Forcing."""
 import abc
-import netCDF4
-import numpy as np
 import time
 import copy
 import shutil
-import surfex
-import toml
 import os
 import json
 from datetime import datetime, timedelta
+import logging
+import netCDF4
+import numpy as np
+import toml
+import surfex
 
 
+# TODO: should be abstract?
 class SurfexForcing(object):
+    """Surfex forcing class."""
+
     def __init__(self):
-        pass
+        """Construct object."""
 
 
 class SurfexNetCDFForcing(SurfexForcing):
+    """NetCDF surfex forcing."""
+
     def __init__(self, filename, geo):
+        """Construct netcdf forcing."""
         SurfexForcing.__init__(self)
-        self.io = surfex.ForcingFileNetCDF(filename, geo)
+        self.io_object = surfex.ForcingFileNetCDF(filename, geo)
 
 
 class SurfexOutputForcing(object):
-    """
-    Main output class for SURFEX forcing
-    """
+    """Main output class for SURFEX forcing."""
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, base_time, geo, ntimes, var_objs, debug, time_step_intervall):
+    def __init__(self, base_time, geo, ntimes, var_objs, time_step_intervall):
+        """Construct output forcing.
+
+        Args:
+            base_time (_type_): _description_
+            geo (_type_): _description_
+            ntimes (_type_): _description_
+            var_objs (_type_): _description_
+            time_step_intervall (_type_): _description_
+        """
         self.time_step_intervall = time_step_intervall
         self.valid_time = None
         self.base_time = base_time
         self.geo = geo
-        self.debug = debug
         self.ntimes = ntimes
         self.time_step = 0
         self.time_step_value = 0
@@ -43,16 +57,16 @@ class SurfexOutputForcing(object):
 
     def _check_sanity(self):
         if len(self.var_objs) != self.nparameters:
-            raise Exception("Inconsistent number of parameter. " + str(len(self.var_objs)) + " != " +
-                            str(self.nparameters))
+            raise Exception(f"Inconsistent number of parameter. {str(len(self.var_objs))} != "
+                            f"{str(self.nparameters)}")
 
         # Check if all parameters are present
-        for i in range(0, len(self.var_objs)):
-            self.parameters[self.var_objs[i].var_name] = 1
+        for var_obj in self.var_objs:
+            self.parameters[var_obj.var_name] = 1
 
-        for key in self.parameters:
-            if self.parameters[key] == 0:
-                raise Exception("Required parameter " + str(key) + " is missing!")
+        for key, value in self.parameters.items():
+            if value == 0:
+                raise Exception(f"Required parameter {str(key)} is missing!")
 
     # Time dependent parameter
     nparameters = 11
@@ -72,15 +86,12 @@ class SurfexOutputForcing(object):
 
     @abc.abstractmethod
     def write_forcing(self, var_objs, this_time, cache):
+        """Write forcing."""
         raise NotImplementedError('users must define writeForcing to use this base class')
 
 
 class NetCDFOutput(SurfexOutputForcing):
-    """
-
-    Forcing in NetCDF format
-
-    """
+    """Forcing in NetCDF format."""
 
     forcing_file = {}
 
@@ -98,15 +109,31 @@ class NetCDFOutput(SurfexOutputForcing):
         "CO2": "CO2air",
     }
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, time_step, fmt="netcdf"):
-        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, cache.debug, time_step)
+    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache,
+                 time_step, fmt="netcdf"):
+        """Construct netcdf forcing.
+
+        Args:
+            base_time (_type_): _description_
+            geo (_type_): _description_
+            fname (_type_): _description_
+            ntimes (_type_): _description_
+            var_objs (_type_): _description_
+            att_objs (_type_): _description_
+            att_time (_type_): _description_
+            cache (_type_): _description_
+            time_step (_type_): _description_
+            fmt (str, optional): _description_. Defaults to "netcdf".
+
+        """
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, time_step)
         if fmt == "netcdf":
             self.output_format = "NETCDF3_64BIT"
         elif fmt == "nc4":
             self.output_format = "NETCDF4"
         else:
             raise NotImplementedError(format)
-        surfex.info("Forcing type is netCDF")
+        logging.info("Forcing type is netCDF")
         self.forcing_file = {}
         if fname is None:
             fname = "FORCING.nc"
@@ -116,34 +143,39 @@ class NetCDFOutput(SurfexOutputForcing):
         self._define_forcing(geo, att_objs, att_time, cache)
 
     def write_forcing(self, var_objs, this_time, cache):
+        """Write forcing.
 
+        Args:
+            var_objs (_type_): _description_
+            this_time (_type_): _description_
+            cache (_type_): _description_
+
+        """
         # VARS
-        for i in range(0, len(self.var_objs)):
-            this_obj = self.var_objs[i]
+        for this_obj in self.var_objs:
             this_var = this_obj.var_name
-            surfex.info("Preparing variable " + this_obj.var_name)
+            logging.info("Preparing variable %s", this_obj.var_name)
             tic = time.time()
             field = this_obj.read_time_step(this_time, cache)
             field = field.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             toc = time.time()
-            surfex.info("Preparation took " + str(toc - tic) + " seconds")
+            logging.info("Preparation took %s seconds", str(toc - tic))
             self.forcing_file[self.translation[this_var]][self.time_step, :] = field
 
         self.forcing_file['TIME'][self.time_step] = self.time_step_value
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
-        surfex.info("Define netcdf forcing")
+        logging.info("Define netcdf forcing")
 
-        zs = None
+        zs_oro = None
         zref = None
         uref = None
-        for i in range(0, len(att_objs)):
-            this_obj = att_objs[i]
+        for this_obj in att_objs:
             this_var = this_obj.var_name
-            surfex.info("Define: " + this_obj.var_name)
+            logging.info("Define: %s", this_obj.var_name)
             if this_var == "ZS":
-                zs = this_obj.read_time_step(att_time, cache)
-                zs = zs.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
+                zs_oro = this_obj.read_time_step(att_time, cache)
+                zs_oro = zs_oro.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
             elif this_var == "ZREF":
                 zref = this_obj.read_time_step(att_time, cache)
                 zref = zref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
@@ -152,143 +184,151 @@ class NetCDFOutput(SurfexOutputForcing):
                 uref = uref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
 
         # DIMS
-        self.forcing_file['NPOINTS'] = self.file_handler.createDimension("Number_of_points", geo.npoints)
+        self.forcing_file['NPOINTS'] = self.file_handler.createDimension("Number_of_points",
+                                                                         geo.npoints)
         self.forcing_file['NTIMES'] = self.file_handler.createDimension("time", self.ntimes)
 
         # DEFINE VARS
         self.forcing_file['TIME'] = self.file_handler.createVariable("time", "f4", ("time",))
-        self.forcing_file['TIME'].units = "hours since %s:00:00 0:00" % self.base_time.strftime("%Y-%m-%d %H")
+        self.forcing_file['TIME'].units = "hours since " \
+                                          + f"{self.base_time.strftime('%Y-%m-%d %H')}:00:00 0:00"
         self.forcing_file['TSTEP'] = self.file_handler.createVariable("FRC_TIME_STP", "f4")
         self.forcing_file['TSTEP'].longname = "Forcing_Time_Step"
         self.forcing_file['TSTEP'][:] = self.time_step_intervall
-        self.forcing_file['LON'] = self.file_handler.createVariable("LON", "f4", ("Number_of_points",))
+        self.forcing_file['LON'] = self.file_handler.createVariable(
+            "LON", "f4", ("Number_of_points",))
         self.forcing_file['LON'].longname = "Longitude"
         self.forcing_file['LON'][:] = geo.lonlist
-        self.forcing_file['LAT'] = self.file_handler.createVariable("LAT", "f4", ("Number_of_points",))
+        self.forcing_file['LAT'] = self.file_handler.createVariable(
+            "LAT", "f4", ("Number_of_points",))
         self.forcing_file['LAT'].longname = "Latitude"
         self.forcing_file['LAT'][:] = geo.latlist
-        self.forcing_file['ZS'] = self.file_handler.createVariable("ZS", "f4", ("Number_of_points",))
+        self.forcing_file['ZS'] = self.file_handler.createVariable(
+            "ZS", "f4", ("Number_of_points",))
         self.forcing_file['ZS'].longname = "Surface_Orography"
-        self.forcing_file['ZS'][:] = zs
-        self.forcing_file['ZREF'] = self.file_handler.createVariable("ZREF", "f4", ("Number_of_points",))
+        self.forcing_file['ZS'][:] = zs_oro
+        self.forcing_file['ZREF'] = self.file_handler.createVariable(
+            "ZREF", "f4", ("Number_of_points",))
         self.forcing_file['ZREF'].longname = "Reference_Height"
         self.forcing_file['ZREF'].units = "m"
         self.forcing_file['ZREF'][:] = zref
-        self.forcing_file['UREF'] = self.file_handler.createVariable("UREF", "f4", ("Number_of_points",))
+        self.forcing_file['UREF'] = self.file_handler.createVariable(
+            "UREF", "f4", ("Number_of_points",))
         self.forcing_file['UREF'].longname = "Reference_Height_for_Wind"
         self.forcing_file['UREF'].units = "m"
         self.forcing_file['UREF'][:] = uref
 
         # Define time dependent variables
-        for i in range(0, len(self.var_objs)):
-            this_obj = self.var_objs[i]
+        for this_obj in self.var_objs:
             this_var = this_obj.var_name
 
             if this_var == "TA":
-                self.forcing_file['Tair'] = self.file_handler.createVariable("Tair", "f4",
-                                                                             ("time", "Number_of_points",))
+                self.forcing_file['Tair'] = self.file_handler.createVariable(
+                    "Tair", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Tair'].longname = "Near_Surface_Air_Temperature"
                 self.forcing_file['Tair'].units = "K"
             elif this_var == "QA":
-                self.forcing_file['Qair'] = self.file_handler.createVariable("Qair", "f4", ("time",
-                                                                                            "Number_of_points",))
+                self.forcing_file['Qair'] = self.file_handler.createVariable(
+                    "Qair", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Qair'].longname = "Near_Surface_Specific_Humidity"
                 self.forcing_file['Qair'].units = "kg/kg"
             elif this_var == "PS":
-                self.forcing_file['PSurf'] = self.file_handler.createVariable("PSurf", "f4", ("time",
-                                                                                              "Number_of_points",))
+                self.forcing_file['PSurf'] = self.file_handler.createVariable(
+                    "PSurf", "f4", ("time", "Number_of_points",))
                 self.forcing_file['PSurf'].longname = "Surface_Pressure"
                 self.forcing_file['PSurf'].units = "Pa"
             elif this_var == "DIR_SW":
-                self.forcing_file['DIR_SWdown'] = self.file_handler.createVariable("DIR_SWdown", "f4",
-                                                                                   ("time", "Number_of_points",))
-                self.forcing_file['DIR_SWdown'].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
+                self.forcing_file['DIR_SWdown'] = self.file_handler.createVariable(
+                    "DIR_SWdown", "f4", ("time", "Number_of_points",))
+                self.forcing_file['DIR_SWdown'].longname = \
+                    "Surface_Incident_Downwelling_Shortwave_Radiation"
                 self.forcing_file['DIR_SWdown'].units = "W/m2"
             elif this_var == "SCA_SW":
-                self.forcing_file['SCA_SWdown'] = self.file_handler.createVariable("SCA_SWdown", "f4",
-                                                                                   ("time", "Number_of_points",))
-                self.forcing_file['SCA_SWdown'].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
+                self.forcing_file['SCA_SWdown'] = self.file_handler.createVariable(
+                    "SCA_SWdown", "f4", ("time", "Number_of_points",))
+                self.forcing_file['SCA_SWdown'].longname = \
+                    "Surface_Incident_Diffuse_Shortwave_Radiation"
                 self.forcing_file['SCA_SWdown'].units = "W/m2"
             elif this_var == "LW":
-                self.forcing_file['LWdown'] = self.file_handler.createVariable("LWdown", "f4", ("time",
-                                                                                                "Number_of_points",))
+                self.forcing_file['LWdown'] = self.file_handler.createVariable(
+                    "LWdown", "f4", ("time", "Number_of_points",))
                 self.forcing_file['LWdown'].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
                 self.forcing_file['LWdown'].units = "W/m2"
             elif this_var == "RAIN":
-                self.forcing_file['Rainf'] = self.file_handler.createVariable("Rainf", "f4", ("time",
-                                                                                              "Number_of_points",))
+                self.forcing_file['Rainf'] = self.file_handler.createVariable(
+                    "Rainf", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Rainf'].longname = "Rainfall_Rate"
                 self.forcing_file['Rainf'].units = "kg/m2/s"
             elif this_var == "SNOW":
-                self.forcing_file['Snowf'] = self.file_handler.createVariable("Snowf", "f4", ("time",
-                                                                                              "Number_of_points",))
+                self.forcing_file['Snowf'] = self.file_handler.createVariable(
+                    "Snowf", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Snowf'].longname = "Snowfall_Rate"
                 self.forcing_file['Snowf'].units = "kg/m2/s"
             elif this_var == "WIND":
-                self.forcing_file['Wind'] = self.file_handler.createVariable("Wind", "f4", ("time",
-                                                                                            "Number_of_points",))
+                self.forcing_file['Wind'] = self.file_handler.createVariable(
+                    "Wind", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Wind'].longname = "Wind_Speed"
                 self.forcing_file['Wind'].units = "m/s"
             elif this_var == "WIND_DIR":
-                self.forcing_file['Wind_DIR'] = self.file_handler.createVariable("Wind_DIR", "f4",
-                                                                                 ("time", "Number_of_points",))
+                self.forcing_file['Wind_DIR'] = self.file_handler.createVariable(
+                    "Wind_DIR", "f4", ("time", "Number_of_points",))
                 self.forcing_file['Wind_DIR'].longname = "Wind_Direction"
             elif this_var == "CO2":
-                self.forcing_file['CO2air'] = self.file_handler.createVariable("CO2air", "f4", ("time",
-                                                                                                "Number_of_points",))
+                self.forcing_file['CO2air'] = self.file_handler.createVariable(
+                    "CO2air", "f4", ("time", "Number_of_points",))
                 self.forcing_file['CO2air'].longname = "Near_Surface_CO2_Concentration"
                 self.forcing_file['CO2air'].units = "kg/m3"
             else:
-                raise NotImplementedError("This should never happen! " + this_var + " is not defined!")
+                raise NotImplementedError(f"This should never happen! {this_var} is not defined!")
 
     def finalize(self):
-        if self.debug:
-            surfex.debug(__file__, self.__class__.finalize.__name__, "Close file")
+        """Finalize the forcing. Close the file."""
+        logging.debug("Close file")
         self.file_handler.close()
         shutil.move(self.tmp_fname, self.fname)
 
 
 class AsciiOutput(SurfexOutputForcing):
-    """
+    """Forcing in ASCII format."""
 
-    Forcing in ASCII format
-
-    """
-
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache, time_step):
-        debug = False
-        if cache is not None:
-            debug = cache.debug
-        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, debug, time_step)
+    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache,
+                 time_step):
+        """Construct ASCII forcing output."""
+        SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, time_step)
         self.output_format = "ascii"
-        surfex.info("Forcing type is ASCII")
+        logging.info("Forcing type is ASCII")
         self.forcing_file = {}
         self.file_handler = {}
         if fname is None:
             fname = "Params_config.txt"
         self.fname = fname
-        self.debug = cache.debug
         self._define_forcing(geo, att_objs, att_time, cache)
 
     def write_forcing(self, var_objs, this_time, cache):
-        for i in range(0, len(self.var_objs)):
-            this_obj = self.var_objs[i]
+        """Write forcing.
+
+        Args:
+            var_objs (_type_): _description_
+            this_time (_type_): _description_
+            cache (_type_): _description_
+
+        """
+        for this_obj in self.var_objs:
             this_var = this_obj.var_name
-            surfex.info("Write var name" + this_obj.var_name)
+            logging.info("Write var name %s", this_obj.var_name)
             field = this_obj.read_time_step(this_time, cache)
             fmt = "%20.8f"
             cols = 50
             write_formatted_array(self.file_handler[this_var], field, cols, fmt)
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
-        zs = None
+        zs_oro = None
         zref = None
         uref = None
-        for i in range(0, len(att_objs)):
-            this_obj = att_objs[i]
+        for this_obj in att_objs:
             this_var = this_obj.var_name
             if this_var == "ZS":
-                zs = this_obj.read_time_step(att_time, cache)
+                zs_oro = this_obj.read_time_step(att_time, cache)
             elif this_var == "ZREF":
                 zref = this_obj.read_time_step(att_time, cache)
             elif this_var == "UREF":
@@ -300,36 +340,37 @@ class AsciiOutput(SurfexOutputForcing):
                                                           microsecond=0)).total_seconds()
         fmt = "%15.8f"
         cols = 50
-        f = open(self.fname, 'w')
-        f.write(str(geo.npoints) + '\n')
-        f.write(str(self.ntimes) + '\n')
-        f.write(str(self.time_step_intervall) + '\n')
-        f.write(self.base_time.strftime("%Y") + '\n')
-        f.write(self.base_time.strftime("%m") + '\n')
-        f.write(self.base_time.strftime("%d") + '\n')
-        f.write(str(second) + '\n')
-        write_formatted_array(f, geo.lons, cols, fmt)
-        write_formatted_array(f, geo.lats, cols, fmt)
-        write_formatted_array(f, zs, cols, fmt)
-        write_formatted_array(f, zref, cols, fmt)
-        write_formatted_array(f, uref, cols, fmt)
-        f.close()
+        file_handler = open(self.fname, 'w', encoding="utf-8")
+        file_handler.write(str(geo.npoints) + '\n')
+        file_handler.write(str(self.ntimes) + '\n')
+        file_handler.write(str(self.time_step_intervall) + '\n')
+        file_handler.write(self.base_time.strftime("%Y") + '\n')
+        file_handler.write(self.base_time.strftime("%m") + '\n')
+        file_handler.write(self.base_time.strftime("%d") + '\n')
+        file_handler.write(str(second) + '\n')
+        write_formatted_array(file_handler, geo.lons, cols, fmt)
+        write_formatted_array(file_handler, geo.lats, cols, fmt)
+        write_formatted_array(file_handler, zs_oro, cols, fmt)
+        write_formatted_array(file_handler, zref, cols, fmt)
+        write_formatted_array(file_handler, uref, cols, fmt)
+        file_handler.close()
 
         for key in self.parameters:
             nam = key
             if key == "WIND_DIR":
                 nam = "DIR"
             self.forcing_file[key] = "Forc_" + nam + '.txt'
-            self.file_handler[key] = open(self.forcing_file[key], 'w')
+            self.file_handler[key] = open(self.forcing_file[key], 'w', encoding="utf-8")
 
     def finalize(self):
-        if self.debug:
-            surfex.info("Close file")
+        """Finalize forcing."""
+        logging.debug("Close file")
         for key in self.parameters:
             self.file_handler[key].close()
 
 
 def write_formatted_array(file, array, columns, fileformat):
+    """Write a formatted array."""
     astr = np.empty(array.size - array.size % columns, dtype="float64")
     astr = array[0:astr.size]
     astr = astr.reshape((columns, astr.size / columns), order='F')
@@ -344,15 +385,11 @@ def write_formatted_array(file, array, columns, fileformat):
 
 
 def run_time_loop(options, var_objs, att_objs):
-
+    """Run time loop."""
     tic = time.time()
     this_time = options['start']
-    debug = False
-    if "debug" in options:
-        debug = options['debug']
-        if debug:
-            surfex.debug(__file__, run_time_loop.__name__, "Debug mode activated in cache")
-    cache = surfex.cache.Cache(debug, options['cache_interval'])
+
+    cache = surfex.cache.Cache(options['cache_interval'])
     time_step = options['timestep']
     single = False
     if "single" in options:
@@ -367,20 +404,23 @@ def run_time_loop(options, var_objs, att_objs):
         time_step = 1
         if ntimes == 1:
             ntimes = 2
-            surfex.info("Print single time step twice", 0)
+            logging.info("Print single time step twice %s", 0)
         else:
             raise Exception("Option single should be used with one time step")
 
     # Create output object
-    if str.lower(options['output_format']) == "netcdf" or str.lower(options['output_format']) == "nc4":
+    if str.lower(options['output_format']) == "netcdf" or \
+            str.lower(options['output_format']) == "nc4":
         # Set att_time the same as start
         att_time = options['start']
-        output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
+        output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'],
+                                             options['output_file'], ntimes,
                                              var_objs, att_objs, att_time, cache, time_step,
                                              fmt=str.lower(options['output_format']))
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
-        output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'], options['output_file'], ntimes,
+        output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'],
+                                            options['output_file'], ntimes,
                                             var_objs, att_objs, att_time, cache, time_step)
     else:
         raise NotImplementedError("Invalid output format " + options['output_format'])
@@ -390,7 +430,8 @@ def run_time_loop(options, var_objs, att_objs):
     while this_time <= options['stop']:
 
         # Write for each time step
-        surfex.info("Creating forcing for: " + this_time.strftime('%Y%m%d%H') + " time_step:" + str(output.time_step))
+        logging.info("Creating forcing for: %s  time_step: %s",
+                     this_time.strftime('%Y%m%d%H'), str(output.time_step))
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
         if not single:
@@ -402,30 +443,31 @@ def run_time_loop(options, var_objs, att_objs):
             output.time_step_value = 0
             if output.time_step > 1:
                 this_time = this_time + timedelta(seconds=options['timestep'])
-  
+
     # Finalize forcing
     output.finalize()
     toc = time.time()
-    surfex.info("Forcing generation took " + str(toc - tic) + " seconds")
+    logging.info("Forcing generation took %s seconds", str(toc - tic))
 
 
-def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height, first_base_time,
-                     timestep, debug=False):
+def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height,
+                     first_base_time, timestep):
+    """Set the input parameter for a specific SURFEX forcing variable based on input.
+
+    Args:
+        sfx_var (str): _description_
+        merged_conf (_type_): _description_
+        geo (_type_): _description_
+        forcingformat (_type_): _description_
+        selected_converter (_type_): _description_
+        ref_height (_type_): _description_
+        first_base_time (_type_): _description_
+        timestep (_type_): _description_
+
+    Returns:
+        _type_: _description_
+
     """
-    Set the input parameter for a specific SURFEX forcing variable based on input
-
-    :param sfx_var:
-    :param merged_conf:
-    :param geo:
-    :param forcingformat:
-    :param selected_converter:
-    :param ref_height:
-    :param first_base_time:
-    :param timestep:
-    :param debug:
-    :return:
-    """
-
     #########################################
     # 1. Gobal configuration from yaml file
     #########################################
@@ -456,10 +498,11 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
         else:
             if ref_height in conf[sfx_var]:
                 if forcingformat not in conf[sfx_var][ref_height]:
-                    raise KeyError(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var + " and format: " +
-                          forcingformat)
+                    msg = f"{str(conf[sfx_var])}: " \
+                          + f"Missing definitions for {sfx_var} and format: {forcingformat}"
+                    raise KeyError(msg)
                 if conf[sfx_var][ref_height][forcingformat] is None:
-                    raise KeyError(str(conf[sfx_var]) + "\n Missing definitions for " + sfx_var)
+                    raise KeyError(f"{str(conf[sfx_var])}: Missing definitions for {sfx_var}")
                 if "converter" in conf[sfx_var][ref_height][forcingformat]:
                     conf_dict = copy.deepcopy(conf[sfx_var][ref_height][forcingformat]["converter"])
                 else:
@@ -490,8 +533,8 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
     else:
 
         # Construct the converter
-        converter = surfex.read.Converter(selected_converter, first_base_time, defs, conf_dict, forcingformat,
-                                          debug=debug)
+        converter = surfex.read.Converter(selected_converter, first_base_time, defs, conf_dict,
+                                          forcingformat)
 
         # Construct the input object
         obj = surfex.read.ConvertedInput(geo, sfx_var, converter)
@@ -499,13 +542,8 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
 
 
 def set_forcing_config(**kwargs):
-
-    debug = False
-    if "debug" in kwargs:
-        debug = kwargs["debug"]
-    if debug:
-        surfex.debug(__file__, set_forcing_config.__name__, "Debug mode activated")
-    fb = None
+    """Set the forcing config."""
+    file_base = None
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
         if "config_exp_surfex" in kwargs:
@@ -513,12 +551,12 @@ def set_forcing_config(**kwargs):
                 config_exp = kwargs["config_exp_surfex"]
         if config_exp is None:
             config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
-        surfex.info("Using default config from: " + config_exp)
-        input_data = toml.load(open(config_exp, "r"))
+        logging.info("Using default config from: %s", config_exp)
+        input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
         config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
         geo_out = config.geo
     elif "domain" in kwargs and kwargs["domain"] is not None:
-        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r")), debug=debug)
+        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
     else:
         raise Exception("No geometry is set")
 
@@ -533,18 +571,18 @@ def set_forcing_config(**kwargs):
     uval = "default"
     uval_converter = "none"
 
-    ta = "default"
-    ta_converter = "none"
-    qa = "default"
-    qa_converter = "none"
-    ps = "default"
-    ps_converter = "none"
+    tair = "default"
+    tair_converter = "none"
+    qair = "default"
+    qair_converter = "none"
+    psurf = "default"
+    psurf_converter = "none"
     dir_sw = "default"
     dir_sw_converter = "none"
     sca_sw = "default"
     sca_sw_converter = "none"
-    lw = "default"
-    lw_converter = "none"
+    lw_rad = "default"
+    lw_rad_converter = "none"
     rain = "default"
     rain_converter = "none"
     snow = "default"
@@ -561,12 +599,12 @@ def set_forcing_config(**kwargs):
         dtg_stop = kwargs["dtg_stop"]
         input_format = kwargs["input_format"]
         output_format = kwargs["output_format"]
-        of = kwargs["of"]
+        outfile = kwargs["of"]
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
         if "fb" in kwargs:
-            fb = kwargs["fb"]
+            file_base = kwargs["fb"]
         if "geo_out" in kwargs:
             geo_out = kwargs["geo_out"]
         if "user_config" in kwargs:
@@ -590,17 +628,17 @@ def set_forcing_config(**kwargs):
         if "uval" in kwargs:
             uval = kwargs["uval"]
         if "ta" in kwargs:
-            ta = kwargs["ta"]
+            tair = kwargs["ta"]
         if "ta_converter" in kwargs:
-            ta_converter = kwargs["ta_converter"]
+            tair_converter = kwargs["ta_converter"]
         if "qa" in kwargs:
-            qa = kwargs["qa"]
+            qair = kwargs["qa"]
         if "qa_converter" in kwargs:
-            qa_converter = kwargs["qa_converter"]
+            qair_converter = kwargs["qa_converter"]
         if "ps" in kwargs:
-            ps = kwargs["ps"]
+            psurf = kwargs["ps"]
         if "ps_converter" in kwargs:
-            ps_converter = kwargs["ps_converter"]
+            psurf_converter = kwargs["ps_converter"]
         if "dir_sw" in kwargs:
             dir_sw = kwargs["dir_sw"]
         if "dir_sw_converter" in kwargs:
@@ -610,9 +648,9 @@ def set_forcing_config(**kwargs):
         if "sca_sw_converter" in kwargs:
             sca_sw_converter = kwargs["sca_sw_converter"]
         if "lw" in kwargs:
-            lw = kwargs["lw"]
+            lw_rad = kwargs["lw"]
         if "lw_converter" in kwargs:
-            lw_converter = kwargs["lw_converter"]
+            lw_rad_converter = kwargs["lw_converter"]
         if "rain" in kwargs:
             rain = kwargs["rain"]
         if "rain_converter" in kwargs:
@@ -635,7 +673,7 @@ def set_forcing_config(**kwargs):
             co2_converter = kwargs["co2_converter"]
 
     except ValueError:
-        raise Exception("Needed input is missing")
+        raise Exception("Needed input is missing") from ValueError
 
     # Time information
     if (int(dtg_start) or int(dtg_stop)) < 1000010100:
@@ -643,10 +681,10 @@ def set_forcing_config(**kwargs):
 
     start = datetime.strptime(str.strip(str(dtg_start)), '%Y%m%d%H')
     stop = datetime.strptime(str.strip(str(dtg_stop)), '%Y%m%d%H')
-    if fb is None:
+    if file_base is None:
         first_base_time = start
     else:
-        first_base_time = datetime.strptime(str.strip(str(fb)), '%Y%m%d%H')
+        first_base_time = datetime.strptime(str.strip(str(file_base)), '%Y%m%d%H')
 
     # Merge all settings with user all settings
     merged_conf = surfex.deep_update(config, user_config)
@@ -660,7 +698,7 @@ def set_forcing_config(**kwargs):
         geo_input = kwargs["geo_input"]
         if geo_input is not None:
             if os.path.exists(geo_input):
-                geo_input = surfex.get_geo_object(json.load(open(geo_input, "r")))
+                geo_input = surfex.get_geo_object(json.load(open(geo_input, "r", encoding="utf-8")))
                 merged_conf[fileformat]["geo_input"] = geo_input
             else:
                 surfex.info("Input geometry " + geo_input + " does not exist")
@@ -668,9 +706,9 @@ def set_forcing_config(**kwargs):
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
     att_objs = []
-    for i in range(0, len(atts)):
+    for att_var in atts:
 
-        att_var = atts[i]
+        # att_var = atts[i]
         # Override with command line options for a given variable
         ref_height = None
         cformat = fileformat
@@ -695,32 +733,32 @@ def set_forcing_config(**kwargs):
         else:
             raise NotImplementedError
 
-        att_objs.append(set_input_object(atts[i], merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         first_base_time, timestep, debug))
+        att_objs.append(set_input_object(att_var, merged_conf, geo_out, cformat, selected_converter,
+                                         ref_height, first_base_time, timestep))
 
     # Set forcing variables (time dependent)
-    variables = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR", "CO2"]
+    variables = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR",
+                 "CO2"]
     var_objs = []
     # Search in config file for parameters to override
-    for i in range(0, len(variables)):
+    for sfx_var in variables:
 
         ref_height = None
-        sfx_var = variables[i]
         cformat = fileformat
         if sfx_var == "TA":
-            if ta != "default":
-                cformat = ta
-            selected_converter = ta_converter
+            if tair != "default":
+                cformat = tair
+            selected_converter = tair_converter
             ref_height = zref
         elif sfx_var == "QA":
-            if qa != "default":
-                cformat = qa
-            selected_converter = qa_converter
+            if qair != "default":
+                cformat = qair
+            selected_converter = qair_converter
             ref_height = zref
         elif sfx_var == "PS":
-            if ps != "default":
-                cformat = ps
-            selected_converter = ps_converter
+            if psurf != "default":
+                cformat = psurf
+            selected_converter = psurf_converter
         elif sfx_var == "DIR_SW":
             if dir_sw != "default":
                 cformat = dir_sw
@@ -730,9 +768,9 @@ def set_forcing_config(**kwargs):
                 cformat = sca_sw
             selected_converter = sca_sw_converter
         elif sfx_var == "LW":
-            if lw != "default":
-                cformat = lw
-            selected_converter = lw_converter
+            if lw_rad != "default":
+                cformat = lw_rad
+            selected_converter = lw_rad_converter
         elif sfx_var == "RAIN":
             if rain != "default":
                 cformat = rain
@@ -757,18 +795,17 @@ def set_forcing_config(**kwargs):
             selected_converter = co2_converter
         else:
             raise NotImplementedError
-        var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter, ref_height,
-                                         first_base_time, timestep, debug=debug))
+        var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter,
+                                         ref_height, first_base_time, timestep))
 
     # Save options
     options = dict()
     options['output_format'] = output_format
-    options['output_file'] = of
+    options['output_file'] = outfile
     options['start'] = start
     options['stop'] = stop
     options['timestep'] = timestep
     options['geo_out'] = geo_out
-    options['debug'] = debug
     options['single'] = False
     if "single" in kwargs:
         options['single'] = kwargs["single"]
@@ -778,6 +815,7 @@ def set_forcing_config(**kwargs):
 
 
 def modify_forcing(**kwargs):
+    """Modify forcing."""
     infile = kwargs["input_file"]
     outfile = kwargs["output_file"]
     time_step = kwargs["time_step"]
@@ -790,7 +828,7 @@ def modify_forcing(**kwargs):
         print("Modify variable " + var)
         print("input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step)
         print("output", ofile[var][0, :], ofile[var][0, :].shape)
-        ofile[var][0,:] = ifile[var][time_step, :]
+        ofile[var][0, :] = ifile[var][time_step, :]
         ofile.sync()
 
     ifile.close()

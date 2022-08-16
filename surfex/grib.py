@@ -1,6 +1,8 @@
+"""Grib treatment."""
+import logging
 import numpy as np
-import surfex
 import pyproj
+import surfex
 try:
     import eccodes
     import gribapi
@@ -17,26 +19,36 @@ except:
 
 
 class Grib(object):
+    """Grib class."""
 
-    def __init__(self, fname, debug=False):
-        self.debug = debug
+    def __init__(self, fname):
+        """Construct grib object.
+
+        Args:
+            fname (str): File name.
+
+        """
         self.fname = fname
         self.projection = None
         self.lons = None
         self.lats = None
         self.nearest = None
         self.linear = None
-        if self.debug:
-            surfex.debug(__file__, self.__class__.__name__, "Grib constructor")
+        logging.debug("Grib constructor")
 
     def field(self, gribvar, time):
+        """Read field in grib file.
 
+        Args:
+            gribvar (GribVariable1/2): Grib variable to read.
+            time (datetime.datetime): Valid time to read.
+
+        Returns:
+            np.ndarray: Field
+
+        """
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
-
-        """
-
-        """
 
         geography = ["bitmapPresent",
                      "Nx",
@@ -56,19 +68,18 @@ class Grib(object):
                      "longitudeOfSouthernPoleInDegrees"
                      ]
 
-        if self.debug:
-            surfex.debug(__file__, self.__class__.field.__name__, "Look for ", gribvar.generate_grib_id())
+        logging.debug("Look for %s", gribvar.generate_grib_id())
 
         field = None
         geo_out = None
-        fh = open(self.fname)
+        file_handler = open(self.fname, mode="rb")
         while 1:
-            gid = eccodes.codes_grib_new_from_file(fh)
+            gid = eccodes.codes_grib_new_from_file(file_handler)
 
             if gid is None:
-                surfex.warning("Could not find key")
+                logging.warning("Could not find key")
                 gribvar.print_keys()
-                fh.close()
+                file_handler.close()
                 return field, geo_out
             else:
                 # print("\n Next key")
@@ -85,44 +96,43 @@ class Grib(object):
                             try:
                                 geo.update({key: eccodes.codes_get(gid, key)})
                             except eccodes.CodesInternalError as err:
-                                surfex.warning('Error with key="%s" : %s' % (key, err.msg))
+                                surfex.warning('Error with key="%s" : %s', key, err.msg)
 
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.field.__name__,
-                                         'There are %d values, average is %f, min is %f, max is %f' % (
-                                             eccodes.codes_get_size(gid, 'values'),
-                                             eccodes.codes_get(gid, 'average'),
-                                             eccodes.codes_get(gid, 'min'),
-                                             eccodes.codes_get(gid, 'max'))
-                                         )
+                        logging.debug('There are %d values, average is %f, min is %f, max is %f',
+                                      eccodes.codes_get_size(gid, 'values'),
+                                      eccodes.codes_get(gid, 'average'),
+                                      eccodes.codes_get(gid, 'min'),
+                                      eccodes.codes_get(gid, 'max'))
 
                         values = eccodes.codes_get_values(gid)
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.field.__name__, "Look for ", "Values: ", values)
-                        nx = geo["Nx"]
-                        ny = geo["Ny"]
+                        logging.debug("Look for Values: %s", values)
+                        n_x = geo["Nx"]
+                        n_y = geo["Ny"]
 
                         lon0 = geo["LoVInDegrees"]
                         lat0 = geo["LaDInDegrees"]
                         ll_lon = geo["longitudeOfFirstGridPointInDegrees"]
                         ll_lat = geo["latitudeOfFirstGridPointInDegrees"]
-                        dx = geo["DxInMetres"]
-                        dy = geo["DyInMetres"]
+                        d_x = geo["DxInMetres"]
+                        d_y = geo["DyInMetres"]
 
                         # TODO Check time consistency
-                        surfex.info("Grib record found is hopefullly valid for time " + str(time))
+                        logging.info("Grib record found is hopefullly valid for time %s", str(time))
 
                         earth = 6.37122e+6
-                        proj_string = "+proj=lcc +lat_0=" + str(lat0) + " +lon_0=" + str(lon0) + " +lat_1=" + \
-                                      str(lat0) + " +lat_2=" + str(lat0) + " +units=m +no_defs +R=" + str(earth)
+                        proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} "\
+                                      f"+lat_1={str(lat0)} +lat_2={str(lat0)} "\
+                                      f"+units=m +no_defs +R={str(earth)}"
 
                         proj = pyproj.CRS.from_string(proj_string)
                         wgs84 = pyproj.CRS.from_string("EPSG:4326")
-                        x0, y0 = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(ll_lon, ll_lat)
-                        xc = x0 + 0.5 * (nx - 1) * dx
-                        yc = y0 + 0.5 * (ny - 1) * dy
-                        lonc, latc = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xc, yc)
-                        field = np.reshape(values, [nx, ny], order="F")
+                        x_0, y_0 = pyproj.Transformer.from_crs(
+                            wgs84, proj, always_xy=True).transform(ll_lon, ll_lat)
+                        x_c = x_0 + 0.5 * (n_x - 1) * d_x
+                        y_c = y_0 + 0.5 * (n_y - 1) * d_y
+                        lonc, latc = pyproj.Transformer.from_crs(
+                            proj, wgs84, always_xy=True).transform(x_c, y_c)
+                        field = np.reshape(values, [n_x, n_y], order="F")
 
                         if geo["bitmapPresent"] == 1:
                             missing_value = eccodes.codes_get(gid, "missingValue")
@@ -137,10 +147,10 @@ class Grib(object):
                                 "nam_conf_proj_grid": {
                                     "xloncen": lonc,
                                     "xlatcen": latc,
-                                    "nimax": nx,
-                                    "njmax": ny,
-                                    "xdx":  dx,
-                                    "xdy": dy,
+                                    "nimax": n_x,
+                                    "njmax": n_y,
+                                    "xdx": d_x,
+                                    "xdy": d_y,
                                     "ilone": 0,
                                     "ilate": 0
                                 }
@@ -150,7 +160,7 @@ class Grib(object):
                         raise NotImplementedError(str(grid_type) + " not implemented yet!")
 
                     eccodes.codes_release(gid)
-                    fh.close()
+                    file_handler.close()
 
                     if geo_out is None:
                         raise Exception("No geometry is found in file")
@@ -159,42 +169,60 @@ class Grib(object):
                 eccodes.codes_release(gid)
 
     def points(self, gribvar, geo, validtime=None, interpolation="bilinear"):
+        """Read a 2-D field and interpolates it to requested positions.
 
-        """
-        Reads a 2-D field and interpolates it to requested positions
-
-        Arguments:
-
+        Args:
+            gribvar (GribVariable1/2): Grib variable
+            geo (surfex.Geo): Surfex geometry
+            validtime (datetime.datetime, optional): Valid time. Defaults to None.
+            interpolation (str, optional): Interpolation method. Defaults to "bilinear".
 
         Returns:
-            np.array: vector with inpterpolated values
+             np.array: vector with interpolated values
 
         """
-
         field, geo_in = self.field(gribvar, validtime)
         interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 
 
-class Grib1Variable(object):
-    def __init__(self, par, typ, level, tri, debug=False):
+class Grib1Variable():
+    """Grib1 variable."""
+
+    def __init__(self, par, typ, level, tri):
+        """Construct grib1 variable.
+
+        Args:
+            par (int): IndicatorOfParameter
+            typ (int): TypeOfLevel
+            level (int): NumberOFLevel
+            tri (int): TimeRangeIndicator
+
+        """
         self.version = 1
         self.par = int(par)
         self.typ = int(typ)
         self.level = int(level)
         self.tri = int(tri)
-        self.debug = debug
 
     def is_accumulated(self):
+        """Check if accumulated."""
         if self.tri == 4:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.is_accumulated.__name__, "Value is accumulated")
+            logging.debug("Value is accumulated")
             return True
         else:
             return False
 
     def matches(self, gid):
+        """Check if matchees.
+
+        Args:
+            gid (_type_): _description_
+
+        Returns:
+            bool: True if found
+        """
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
@@ -205,22 +233,19 @@ class Grib1Variable(object):
             typ = int(eccodes.codes_get_long(gid, "levelType"))
             tri = int(eccodes.codes_get_long(gid, "timeRangeIndicator"))
 
-            if self.debug:
-                surfex.debug(__file__, self.__class__.matches.__name__, "Checking grib1 record: ", par, typ, lev, tri)
-                surfex.debug(__file__, self.__class__.matches.__name__, self.generate_grib_id())
+            logging.debug("Checking grib1 record: %s %s %s %s", par, typ, lev, tri)
+            logging.debug(self.generate_grib_id())
             if self.par == par and self.level == lev and self.typ == typ and self.tri == tri:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.matches.__name__,
-                                 "Found matching grib1 record: ",  par, lev, typ, tri)
+                logging.debug("Found matching grib1 record: %s %s %s %s", par, lev, typ, tri)
                 return True
             else:
                 return False
         else:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.matches.__name__, "Record is not grib1")
+            logging.warning("Record is not grib1")
             return False
 
     def print_keys(self):
+        """Print keys."""
         print("\n")
         print("Version:", self.version)
         print("indicatorOfParameter:", self.par)
@@ -229,25 +254,48 @@ class Grib1Variable(object):
         print("timeRangeIndicator:", self.tri)
 
     def generate_grib_id(self):
+        """Generate grib1 ID."""
         par = self.par
         typ = self.typ
         level = self.level
         tri = self.tri
-        return ":grib1:%d:%d:%d:%d:" % (par, typ, level, tri)
+        return f":grib1:{str(par)}:{str(typ)}:{str(level)}:{str(tri)}"
 
 
 class Grib2Variable(object):
-    def __init__(self, discipline, pc, pn, lt, lev, tsp=-1, debug=False):
+    """Grib2 variable."""
+
+    def __init__(self, discipline, pca, pnr, typ, lev, tsp=-1):
+        """Construct a grib2 variable.
+
+        Args:
+            discipline (_type_): _description_
+            pca (_type_): _description_
+            pnr (_type_): _description_
+            typ (_type_): _description_
+            lev (_type_): _description_
+            tsp (int, optional): _description_. Defaults to -1.
+        """
         self.version = 2
         self.discipline = int(discipline)
-        self.parameterCategory = int(pc)
-        self.parameterNumber = int(pn)
-        self.levelType = int(lt)
+        self.parameter_category = int(pca)
+        self.parameter_number = int(pnr)
+        self.level_type = int(typ)
         self.level = int(lev)
-        self.typeOfStatisticalProcessing = int(tsp)
-        self.debug = debug
+        self.type_of_statistical_processing = int(tsp)
 
     def matches(self, gid):
+        """Check if matches.
+
+        Args:
+            gid (_type_): _description_
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            _type_: _description_
+        """
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
@@ -259,56 +307,57 @@ class Grib2Variable(object):
             level_type = int(eccodes.codes_get_long(gid, "levelType"))
             level = int(eccodes.codes_get(gid, "level"))
             try:
-                type_of_statistical_processing = eccodes.codes_get(gid, "typeOfStatisticalProcessing")
+                type_of_statistical_processing = eccodes.codes_get(
+                    gid, "typeOfStatisticalProcessing")
                 type_of_statistical_processing = int(type_of_statistical_processing)
             except gribapi.errors.KeyValueNotFoundError:
                 type_of_statistical_processing = -1
 
-            if self.debug:
-                surfex.debug(__file__, self.__class__.matches.__name__, "Checking grib2 record: ", discipline,
-                             parameter_category, parameter_number, level_type, level, type_of_statistical_processing)
-                surfex.debug(__file__, self.__class__.matches.__name__, self.generate_grib_id())
+            logging.debug("Checking grib2 record: %s %s %s %s %s %s",
+                          discipline, parameter_category, parameter_number, level_type, level,
+                          type_of_statistical_processing)
+            logging.debug("grib2 ID: %s", self.generate_grib_id())
             if self.discipline == discipline and \
-                    self.parameterCategory == parameter_category and \
-                    self.parameterNumber == parameter_number and \
-                    self.levelType == level_type and \
+                    self.parameter_category == parameter_category and \
+                    self.parameter_number == parameter_number and \
+                    self.level_type == level_type and \
                     self.level == level and \
-                    self.typeOfStatisticalProcessing == type_of_statistical_processing:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.matches.__name__,
-                                 "Found matching grib2 record: ", discipline, parameter_category, parameter_number,
-                                 level_type, level)
+                    self.type_of_statistical_processing == type_of_statistical_processing:
+                logging.debug("Found matching grib2 record: %s %s %s %s %s",
+                              discipline, parameter_category, parameter_number,
+                              level_type, level)
                 return True
             else:
                 return False
         else:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.matches.__name__, "Record is not grib2")
+            logging.warning("Record is not grib2")
             return False
 
     def is_accumulated(self):
-        if self.typeOfStatisticalProcessing == 1:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.matches.__name__,  "Parameter is accumulated")
+        """Check if accumulated."""
+        if self.type_of_statistical_processing == 1:
+            logging.debug("Parameter is accumulated")
             return True
         else:
             return False
 
     def print_keys(self):
+        """Print keys."""
         print("\n")
         print("Version:", self.version)
         print("discipline:", self.discipline)
-        print("parameterCategory:", self.parameterCategory)
-        print("parameterNumber:", self.parameterNumber)
-        print("levelType:", self.levelType)
+        print("parameterCategory:", self.parameter_category)
+        print("parameterNumber:", self.parameter_number)
+        print("levelType:", self.level_type)
         print("level:", self.level)
-        print("typeOfStatisticalProcessing:", self.typeOfStatisticalProcessing)
+        print("typeOfStatisticalProcessing:", self.type_of_statistical_processing)
 
     def generate_grib_id(self):
-        dis = self.discipline
-        pc = self.parameterCategory
-        pn = self.parameterNumber
-        lt = self.levelType
-        lev = self.level
-        tsp = self.typeOfStatisticalProcessing
-        return ":grib2:%d:%d:%d:%s:%d:%d:" % (dis, pc, pn, lt, lev, tsp)
+        """Generate grib2 ID."""
+        dis = str(self.discipline)
+        pca = str(self.parameter_category)
+        pnr = str(self.parameter_number)
+        typ = str(self.level_type)
+        lev = str(self.level)
+        tsp = str(self.type_of_statistical_processing)
+        return f":grib2:{dis}:{pca}:{pnr}:{typ}:{lev}:{tsp}"

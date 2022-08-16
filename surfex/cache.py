@@ -1,12 +1,19 @@
+"""Cache."""
+import logging
 import datetime
-import surfex
 
 
 class Cache:
+    """Cache."""
 
-    def __init__(self, debug, max_age):
+    def __init__(self, max_age):
+        """Construct cache.
+
+        Args:
+            max_age (int): Maximum age in seconds.
+
+        """
         self._files = []
-        self.debug = debug
         self.max_age = max_age
         self.file_handler = []
         self.interpolators = {}
@@ -14,55 +21,97 @@ class Cache:
 
     @property
     def files(self):
+        """Files property."""
         return self._files
 
     def set_file_handler(self, filename, file_handler):
+        """Set file handler.
+
+        Args:
+            filename (_type_): _description_
+            file_handler (_type_): _description_
+
+        """
         self.files.append(filename)
         self.file_handler.append(file_handler)
-        if self.debug:
-            surfex.debug(__file__, self.__class__.set_file_handler.__name__, "filename ->", str(filename))
-            surfex.debug(__file__, self.__class__.set_file_handler.__name__, "file_handler ->", str(file_handler))
+        logging.debug("filename -> %s", str(filename))
+        logging.debug("file_handler -> %s", str(file_handler))
 
     def get_file_handler(self, filename):
-        fh = None
-        for f in range(0, len(self.files)):
-            if self.files[f] == filename:
-                fh = self.file_handler[f]
-        return fh
+        """Get the file handler.
+
+        Args:
+            filename (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
+        f_h = None
+        for findex, check_fname in enumerate(self.files):
+            if check_fname == filename:
+                f_h = self.file_handler[findex]
+        return f_h
 
     def file_open(self, filename):
+        """Test if file is open.
+
+        Args:
+            filename (str): Filename
+
+        Returns:
+            _type_: _description_
+        """
         found = False
-        for f in range(0, len(self.files)):
-            if self.files[f] == filename:
+        for check_fname in self.files:
+            if check_fname == filename:
                 found = True
         return found
 
     def interpolator_is_set(self, inttype, geo_in, geo_out):
+        """Check if interpolator is set.
+
+        Args:
+            inttype (_type_): _description_
+            geo_in (_type_): _description_
+            geo_out (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
         if inttype in self.interpolators:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, self.interpolators)
-                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, inttype)
-                surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, "identifier_out: ",
-                             self.interpolators[inttype])
+            logging.debug("interpolators: %s", self.interpolators)
+            logging.debug("inttype: %s", inttype)
+            logging.debug("identifier_out: %s", self.interpolators[inttype])
             if identifier_out in self.interpolators[inttype]:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.interpolator_is_set.__name__, identifier_out)
-                    surfex.debug(__file__, self.__class__.interpolator_is_set.__name__,
-                                 self.interpolators[inttype][identifier_out])
+                logging.debug("identifier_out: %s", identifier_out)
+                logging.debug("interpolators: %s", self.interpolators[inttype][identifier_out])
                 if identifier_in in self.interpolators[inttype][identifier_out]:
                     return True
                 else:
-                    surfex.debug(__file__, self.__class__.__name__, "Could not find in ", identifier_in)
+                    logging.debug("Could not find in %s", identifier_in)
                     return False
             else:
-                surfex.debug(__file__, self.__class__.__name__, "Could not find out", identifier_out)
+                logging.debug("Could not find out %s", identifier_out)
                 return False
         else:
             return False
 
     def get_interpolator(self, inttype, geo_in, geo_out):
+        """Get interpolator.
+
+        Args:
+            inttype (_type_): _description_
+            geo_in (_type_): _description_
+            geo_out (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
         if self.interpolator_is_set(inttype, geo_in, geo_out):
@@ -71,104 +120,179 @@ class Cache:
             return None
 
     def update_interpolator(self, inttype, geo_in, geo_out, value):
+        """Update interpolator.
+
+        Args:
+            inttype (_type_): _description_
+            geo_in (_type_): _description_
+            geo_out (_type_): _description_
+            value (_type_): _description_
+
+        """
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
 
-        if self.debug:
-            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
-                         "Update interpolator ", inttype, identifier_in, identifier_out)
+        logging.debug("Update interpolator %s %s %s", inttype, identifier_in, identifier_out)
         if inttype in self.interpolators:
             out_geos = {}
             if identifier_out in self.interpolators[inttype]:
                 for out_grid in self.interpolators[inttype]:
                     in_geos = {}
-                    for f in self.interpolators[inttype][out_grid]:
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
-                                         "Found ", f, " for grid ", out_grid)
-                        in_geos.update({f: self.interpolators[inttype][out_grid][f]})
+                    for fint in self.interpolators[inttype][out_grid]:
+                        logging.debug("Found %s for grid %s", fint, out_grid)
+                        in_geos.update({fint: self.interpolators[inttype][out_grid][fint]})
                     if identifier_out == out_grid:
-                        if self.debug:
-                            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
-                                         "Update: ", identifier_in, " for out geo", identifier_out)
+                        logging.debug("Update: %s for out geo %s", identifier_in, identifier_out)
                         in_geos.update({identifier_in: value})
                     out_geos.update({out_grid: in_geos})
             else:
-                if self.debug:
-                    surfex.debug(__file__, self.__class__.update_interpolator.__name__,
-                                 "Setting new: ", identifier_in, " for out geo", identifier_out)
+                logging.debug("Setting new: %s for out geo %s", identifier_in, identifier_out)
                 out_geos.update({identifier_out: {identifier_in: value}})
             self.interpolators.update({inttype: out_geos})
         else:
             self.interpolators.update({inttype: {identifier_out: {identifier_in: value}}})
-        if self.debug:
-            surfex.debug(__file__, self.__class__.update_interpolator.__name__,
-                         "Updated interpolator: ", self.interpolators)
+        logging.debug("Updated interpolator: %s", self.interpolators)
 
     def save_field(self, id_str, field):
-        if self.debug:
-            surfex.debug(__file__, self.__class__.__name__, "Saving ", id_str)
+        """Save field."""
+        logging.debug("Saving %s", id_str)
         self.saved_fields[id_str] = field
-    
+
     def clean_fields(self, this_time):
-        if self.debug:
-            surfex.debug(__file__, self.__class__.clean_fields.__name__, "Clean fields")
+        """Clean fields.
+
+        Args:
+            this_time (_type_): _description_
+
+        """
+        logging.debug("Clean fields")
         del_keys = []
         for key in self.saved_fields:
-            yyyy = int(key[-10:-6])
-            mm = int(key[-6:-4])
-            dd = int(key[-4:-2])
-            hh = int(float(key[-2:]))
-            field_time = datetime.datetime(yyyy, mm, dd, hh)
-            td = (this_time - field_time).total_seconds()
-            if td > self.max_age:
+            year = int(key[-10:-6])
+            month = int(key[-6:-4])
+            day = int(key[-4:-2])
+            hour = int(float(key[-2:]))
+            field_time = datetime.datetime(year, month, day, hour)
+            time_duration = (this_time - field_time).total_seconds()
+            if time_duration > self.max_age:
                 del_keys.append(key)
 
-        for i in range(len(del_keys)):
-            del self.saved_fields[del_keys[i]]
+        for del_key in del_keys:
+            del self.saved_fields[del_key]
 
     def is_saved(self, id_str):
-        if self.debug:
-            surfex.debug(__file__, self.__class__.is_saved.__name__, " Check: ", id_str)
-            if len(self.saved_fields) > 0:
-                surfex.debug(__file__, self.__class__.is_saved.__name__, "Saved fields:")
-                for key in self.saved_fields:
-                    surfex.debug(__file__, self.__class__.is_saved.__name__, " - ", key)
+        """Check if saved.
+
+        Args:
+            id_str (_type_): _description_
+
+        Returns:
+            bool: If found
+        """
+        logging.debug(" Check: %s", id_str)
+        if len(self.saved_fields) > 0:
+            logging.debug("Saved fields:")
+            for key in self.saved_fields:
+                logging.debug(" - %s", key)
         if id_str in self.saved_fields:
-            if self.debug:
-                surfex.debug(__file__, self.__class__.is_saved.__name__, "Found ", id_str)
+            logging.debug("Found %s", id_str)
             return True
         else:
             return False
 
     @staticmethod
     def generate_grib_id(gribvar, filename, validtime):
+        """Generate grib id.
+
+        Args:
+            gribvar (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         if gribvar.version == 1:
             grib_id = gribvar.generate_grib_id()
-            return grib_id + "%s:%s" % (filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+            return grib_id + f"{filename.split('/')[-1]}:{validtime.strftime('%Y%m%d%H')}"
         elif gribvar.version == 2:
             grib_id = gribvar.generate_grib_id()
-            return grib_id + "%s:%s" % (filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+            return grib_id + f"{filename.split('/')[-1]}:{validtime.strftime('%Y%m%d%H')}"
         else:
             raise NotImplementedError
 
     @staticmethod
     def generate_netcdf_id(var, filename, validtime):
+        """Generate netcdf id.
+
+        Args:
+            var (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         varname = var.name
         level = str(var.level)
         member = str(var.member)
-        return "%s%s%s%s%s" % (varname, level, member, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+        return f"{varname}{level}{member}{filename.split('/')[-1]}{validtime.strftime('%Y%m%d%H')}"
 
     @staticmethod
     def generate_surfex_id(varname, patches, layers, filename, validtime):
-        return "%s%s%s%s%s" % (varname, patches, layers, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+        """Generate surfex id.
+
+        Args:
+            varname (_type_): _description_
+            patches (_type_): _description_
+            layers (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
+        return f"{varname}{patches}{layers}{filename.split('/')[-1]}"\
+               f"{validtime.strftime('%Y%m%d%H')}"
 
     @staticmethod
     def generate_obs_id(varname, filename, validtime):
-        return "%s%s%s" % (varname, filename.split("/")[-1], validtime.strftime('%Y%m%d%H'))
+        """Generate obs id.
+
+        Args:
+            varname (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
+        return f"{varname}{filename.split('/')[-1]}{validtime.strftime('%Y%m%d%H')}"
 
     @staticmethod
     def generate_id(id_type, var, filename, validtime):
+        """Generate id.
+
+        Args:
+            id_type (_type_): _description_
+            var (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         if id_type == "netcdf":
             return Cache.generate_netcdf_id(var, filename, validtime)
         elif id_type == "grib1" or id_type == "grib2":

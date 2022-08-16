@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
-
-import surfex
+"""Modify the forcing setting first time step from previous forcing."""
+import logging
 import sys
+import surfex
 
 if __name__ == "__main__":
 
     kwargs = surfex.parse_args_modify_forcing(sys.argv[1:])
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    logging.info("************ modify_forcing ******************")
     surfex.modify_forcing(**kwargs)

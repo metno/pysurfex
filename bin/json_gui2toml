@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Convert json settings from gui to toml files."""
+import sys
+import os
+import logging
+import json
+import argparse
+import surfex
+
+
+def parse():
+    """Parse the command line input arguments."""
+    parser = argparse.ArgumentParser("Creating the TOML settings file to run SURFEX from "
+                                     "JSON files from GUI")
+
+    parser.add_argument('--version', action='version',
+                        version=f'surfex {surfex.__version__}')
+    parser.add_argument('--input', '-i', type=str, nargs="?", required=True,
+                        help="Input TOML file if wanted")
+    parser.add_argument('--output', '-o', required=True, nargs='?')
+    parser.add_argument('--debug', help="Show debug information", action="store_true")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args()
+
+    return args.input, args.output, args.debug
+
+
+def recursive_items(dictionary):
+    """Recursive.
+
+    Args:
+        dictionary (_type_): _description_
+
+    Yields:
+        _type_: _description_
+    """
+    for my_key, my_value in dictionary.items():
+        if isinstance(my_value, dict):
+            yield from recursive_items(my_value)
+        else:
+            yield my_key, my_value
+
+
+if __name__ == "__main__":
+
+    input_file, output_file, debug = parse()
+    if debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    logging.info("************ json_gui2toml ******************")
+
+    logging.info("Writing settings to %s", output_file)
+    ofh = open(output_file, mode="w", encoding="utf-8")
+    if os.path.exists(input_file):
+        print("Read toml settings from " + input_file)
+        with open(input_file, mode="r", encoding="utf-8") as ifile:
+            input_data = json.load(ifile)
+        for key, value in recursive_items(input_data):
+            if isinstance(value, bool):
+                if value:
+                    val = ".TRUE."
+                else:
+                    val = ".FALSE."
+            else:
+                val = value
+            logging.debug('%s=%s', key, val)
+            ofh.write(key + '=' + val + '\n')
+    else:
+        raise FileNotFoundError(f"Input file does not exist: {input_file}")
+    ofh.close()
