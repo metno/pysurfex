@@ -75,17 +75,20 @@ jobs:
     - name: Install package
       run: |
         pip install -e .[test]
-    - name: Test with nosetests
+    - name: Test and create coverage
       run: |
         wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9" -O testdata.zip && rm -rf /tmp/cookies.txt
         unzip -o testdata.zip
         echo "Testdata"
         ./prepare_testdata.sh
-        export PATH=$PWD/test/bin:/usr/bin/:$PATH && export CLIENTID=${{secrets.CLIENTID}} && nosetests
+        export PATH=$PWD/test/bin:/usr/bin/:$PATH
+        export CLIENTID=${{secrets.CLIENTID}}
+        coverage run --source=. -m unittest discover
     - name: Coveralls
       if: ${{ matrix.python-version == 3.6 }}
       run: |
-        CLIENTID=${{ secrets.CLIENTID }} ./create_coverage.sh
+        export CLIENTID=${{ secrets.CLIENTID }}
+        # coverage html -d coverage
         COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
     - name: Create documentation
       if: ${{ matrix.python-version == 3.6 }}

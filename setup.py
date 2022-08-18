@@ -137,8 +137,7 @@ setup(
             "coverage",
             "coveralls",
             "pep8",
-            "nose",
-            "nose-timer"
+            "tomlkit"
         ],
         'plot': ['matplotlib'],
         'plot_on_map': ['cartopy'],
