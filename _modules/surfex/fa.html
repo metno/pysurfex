@@ -36,16 +36,26 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.fa</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">pyproj</span>
+<span></span><span class="sd">&quot;&quot;&quot;FA support.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pyproj</span>
 <span class="kn">import</span> <span class="nn">surfex</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">epygram</span>
+    <span class="kn">import</span> <span class="nn">epygram</span>  <span class="c1"># type: ignore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">epygram</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="Fa"><a class="viewcode-back" href="../../index.html#surfex.Fa">[docs]</a><span class="k">class</span> <span class="nc">Fa</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fichier Arpege.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Fa.__init__"><a class="viewcode-back" href="../../index.html#surfex.Fa.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a FA object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fname (str): filename</span>
+<span class="sd">            debug (bool, optional): _description_. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="kc">None</span>
@@ -54,8 +64,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nearest</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Fa.field"><a class="viewcode-back" href="../../index.html#surfex.Fa.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Fa.field"><a class="viewcode-back" href="../../index.html#surfex.Fa.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read a field.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            varname (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: np.field, surfex.Geometry</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">epygram</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You need epygram to read FA files&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -63,28 +86,30 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">readfield</span><span class="p">(</span><span class="n">varname</span><span class="p">)</span>
 
             <span class="c1"># TODO: check time</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not checking validtime for FA variable at the moment: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">validtime</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not checking validtime for FA variable at the moment: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">validtime</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;lambert&quot;</span><span class="p">:</span>
-                <span class="n">ny</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s2">&quot;Y_CIzone&quot;</span><span class="p">]</span>
-                <span class="n">nx</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s2">&quot;X_CIzone&quot;</span><span class="p">]</span>
+                <span class="n">n_y</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s2">&quot;Y_CIzone&quot;</span><span class="p">]</span>
+                <span class="n">n_x</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s2">&quot;X_CIzone&quot;</span><span class="p">]</span>
                 <span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">gimme_corners_ll</span><span class="p">()[</span><span class="s2">&quot;ll&quot;</span><span class="p">]</span>
                 <span class="n">lon0</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">projection</span><span class="p">[</span><span class="s1">&#39;reference_lon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;degrees&#39;</span><span class="p">)</span>
                 <span class="n">lat0</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">projection</span><span class="p">[</span><span class="s1">&#39;reference_lat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;degrees&#39;</span><span class="p">)</span>
-                <span class="n">dx</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;X_resolution&quot;</span><span class="p">]</span>
-                <span class="n">dy</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;Y_resolution&quot;</span><span class="p">]</span>
+                <span class="n">d_x</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;X_resolution&quot;</span><span class="p">]</span>
+                <span class="n">d_y</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;Y_resolution&quot;</span><span class="p">]</span>
 
                 <span class="c1"># TODO: Can I get centre point directly?</span>
                 <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e+6</span>
-                <span class="n">proj_string</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
-                              <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
+                <span class="n">proj_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lat_1=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>\
+                              <span class="sa">f</span><span class="s2">&quot; +lat_2=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +units=m +no_defs +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
                 <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
                 <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
-                <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
-                <span class="n">xc</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
-                <span class="n">yc</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
-                <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
+                <span class="n">x_0</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span>
+                                                       <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+                <span class="n">x_c</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span>
+                <span class="n">y_c</span> <span class="o">=</span> <span class="n">y_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span>
+                <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span>
+                                                         <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_c</span><span class="p">,</span> <span class="n">y_c</span><span class="p">)</span>
 
                 <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -94,10 +119,10 @@
                     <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
                         <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="n">lonc</span><span class="p">,</span>
                         <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="n">latc</span><span class="p">,</span>
-                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="p">,</span>
-                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ny</span><span class="p">,</span>
-                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">dx</span><span class="p">,</span>
-                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">dy</span><span class="p">,</span>
+                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
+                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
+                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">d_x</span><span class="p">,</span>
+                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">d_y</span><span class="p">,</span>
                         <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                         <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="mi">0</span>
                     <span class="p">}</span>
@@ -109,9 +134,7 @@
             <span class="k">return</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">geo_out</span></div>
 
 <div class="viewcode-block" id="Fa.points"><a class="viewcode-back" href="../../index.html#surfex.Fa.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reads a 2-D field and interpolates it to requested positions</span>
+        <span class="sd">&quot;&quot;&quot;Read a 2-D field and interpolates it to requested positions.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            varname (str): Variable name</span>
@@ -120,8 +143,8 @@
 <span class="sd">            interpolation (str): Interpoaltion method</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            np.array: vector with inpterpolated values</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
 
@@ -162,7 +185,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

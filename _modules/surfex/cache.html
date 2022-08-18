@@ -36,15 +36,22 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.cache</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
+<span></span><span class="sd">&quot;&quot;&quot;Cache.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 
 
 <div class="viewcode-block" id="Cache"><a class="viewcode-back" href="../../index.html#surfex.Cache">[docs]</a><span class="k">class</span> <span class="nc">Cache</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Cache.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Cache.__init__"><a class="viewcode-back" href="../../index.html#surfex.Cache.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span> <span class="n">max_age</span><span class="p">):</span>
+<div class="viewcode-block" id="Cache.__init__"><a class="viewcode-back" href="../../index.html#surfex.Cache.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_age</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct cache.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_age (int): Maximum age in seconds.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_files</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_age</span> <span class="o">=</span> <span class="n">max_age</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span> <span class="o">=</span> <span class="p">{}</span>
@@ -52,55 +59,97 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Files property.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_files</span>
 
 <div class="viewcode-block" id="Cache.set_file_handler"><a class="viewcode-back" href="../../index.html#surfex.Cache.set_file_handler">[docs]</a>    <span class="k">def</span> <span class="nf">set_file_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set file handler.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            file_handler (_type_): _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">set_file_handler</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;filename -&gt;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">set_file_handler</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;file_handler -&gt;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_handler</span><span class="p">))</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;file_handler -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_handler</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Cache.get_file_handler"><a class="viewcode-back" href="../../index.html#surfex.Cache.get_file_handler">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="n">fh</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
-                <span class="n">fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">fh</span></div>
+        <span class="sd">&quot;&quot;&quot;Get the file handler.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f_h</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">findex</span><span class="p">,</span> <span class="n">check_fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">check_fname</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">f_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">findex</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">f_h</span></div>
 
 <div class="viewcode-block" id="Cache.file_open"><a class="viewcode-back" href="../../index.html#surfex.Cache.file_open">[docs]</a>    <span class="k">def</span> <span class="nf">file_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test if file is open.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): Filename</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">check_fname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_fname</span> <span class="o">==</span> <span class="n">filename</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">found</span></div>
 
 <div class="viewcode-block" id="Cache.interpolator_is_set"><a class="viewcode-back" href="../../index.html#surfex.Cache.interpolator_is_set">[docs]</a>    <span class="k">def</span> <span class="nf">interpolator_is_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if interpolator is set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inttype (_type_): _description_</span>
+<span class="sd">            geo_in (_type_): _description_</span>
+<span class="sd">            geo_out (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">inttype</span><span class="p">)</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;identifier_out: &quot;</span><span class="p">,</span>
-                             <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">])</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;interpolators: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;inttype: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;identifier_out: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">identifier_out</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                 <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">])</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;identifier_out: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;interpolators: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">identifier_in</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">identifier_out</span><span class="p">]:</span>
                     <span class="k">return</span> <span class="kc">True</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Could not find in &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not find in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Could not find out&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Could not find out </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Cache.get_interpolator"><a class="viewcode-back" href="../../index.html#surfex.Cache.get_interpolator">[docs]</a>    <span class="k">def</span> <span class="nf">get_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get interpolator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inttype (_type_): _description_</span>
+<span class="sd">            geo_in (_type_): _description_</span>
+<span class="sd">            geo_out (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolator_is_set</span><span class="p">(</span><span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
@@ -109,104 +158,179 @@
             <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Cache.update_interpolator"><a class="viewcode-back" href="../../index.html#surfex.Cache.update_interpolator">[docs]</a>    <span class="k">def</span> <span class="nf">update_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update interpolator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inttype (_type_): _description_</span>
+<span class="sd">            geo_in (_type_): _description_</span>
+<span class="sd">            geo_out (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">identifier_in</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
         <span class="n">identifier_out</span> <span class="o">=</span> <span class="n">geo_out</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">update_interpolator</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                         <span class="s2">&quot;Update interpolator &quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Update interpolator </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">inttype</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inttype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">:</span>
             <span class="n">out_geos</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="n">identifier_out</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
                 <span class="k">for</span> <span class="n">out_grid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">]:</span>
                     <span class="n">in_geos</span> <span class="o">=</span> <span class="p">{}</span>
-                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">update_interpolator</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                         <span class="s2">&quot;Found &quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">&quot; for grid &quot;</span><span class="p">,</span> <span class="n">out_grid</span><span class="p">)</span>
-                        <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">f</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">][</span><span class="n">f</span><span class="p">]})</span>
+                    <span class="k">for</span> <span class="n">fint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">]:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2"> for grid </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fint</span><span class="p">,</span> <span class="n">out_grid</span><span class="p">)</span>
+                        <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fint</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">[</span><span class="n">inttype</span><span class="p">][</span><span class="n">out_grid</span><span class="p">][</span><span class="n">fint</span><span class="p">]})</span>
                     <span class="k">if</span> <span class="n">identifier_out</span> <span class="o">==</span> <span class="n">out_grid</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">update_interpolator</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                         <span class="s2">&quot;Update: &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="s2">&quot; for out geo&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Update: </span><span class="si">%s</span><span class="s2"> for out geo </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
                         <span class="n">in_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
                     <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">out_grid</span><span class="p">:</span> <span class="n">in_geos</span><span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">update_interpolator</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                 <span class="s2">&quot;Setting new: &quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="s2">&quot; for out geo&quot;</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting new: </span><span class="si">%s</span><span class="s2"> for out geo </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">identifier_in</span><span class="p">,</span> <span class="n">identifier_out</span><span class="p">)</span>
                 <span class="n">out_geos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">identifier_out</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">}})</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="n">out_geos</span><span class="p">})</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">inttype</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_out</span><span class="p">:</span> <span class="p">{</span><span class="n">identifier_in</span><span class="p">:</span> <span class="n">value</span><span class="p">}}})</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">update_interpolator</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                         <span class="s2">&quot;Updated interpolator: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updated interpolator: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolators</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cache.save_field"><a class="viewcode-back" href="../../index.html#surfex.Cache.save_field">[docs]</a>    <span class="k">def</span> <span class="nf">save_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Saving &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Save field.&quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Saving </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">id_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span></div>
-    
+
 <div class="viewcode-block" id="Cache.clean_fields"><a class="viewcode-back" href="../../index.html#surfex.Cache.clean_fields">[docs]</a>    <span class="k">def</span> <span class="nf">clean_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this_time</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">clean_fields</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Clean fields&quot;</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Clean fields.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            this_time (_type_): _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Clean fields&quot;</span><span class="p">)</span>
         <span class="n">del_keys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
-            <span class="n">yyyy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
-            <span class="n">mm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
-            <span class="n">dd</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
-            <span class="n">hh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span>
-            <span class="n">field_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">yyyy</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">hh</span><span class="p">)</span>
-            <span class="n">td</span> <span class="o">=</span> <span class="p">(</span><span class="n">this_time</span> <span class="o">-</span> <span class="n">field_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">td</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_age</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span>
+            <span class="n">field_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">)</span>
+            <span class="n">time_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">this_time</span> <span class="o">-</span> <span class="n">field_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">time_duration</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_age</span><span class="p">:</span>
                 <span class="n">del_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">del_keys</span><span class="p">)):</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">del_keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span></div>
+        <span class="k">for</span> <span class="n">del_key</span> <span class="ow">in</span> <span class="n">del_keys</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">del_key</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Cache.is_saved"><a class="viewcode-back" href="../../index.html#surfex.Cache.is_saved">[docs]</a>    <span class="k">def</span> <span class="nf">is_saved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_saved</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot; Check: &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_saved</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Saved fields:&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_saved</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot; - &quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Check if saved.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id_str (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: If found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; Check: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Saved fields:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; - </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">id_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_saved</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Found &quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Cache.generate_grib_id"><a class="viewcode-back" href="../../index.html#surfex.Cache.generate_grib_id">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="n">gribvar</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate grib id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gribvar (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">grib_id</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">grib_id</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">grib_id</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">elif</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">grib_id</span> <span class="o">=</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">grib_id</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">grib_id</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="Cache.generate_netcdf_id"><a class="viewcode-back" href="../../index.html#surfex.Cache.generate_netcdf_id">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_netcdf_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate netcdf id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            var (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">varname</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span>
         <span class="n">level</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
         <span class="n">member</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">member</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">varname</span><span class="si">}{</span><span class="n">level</span><span class="si">}{</span><span class="n">member</span><span class="si">}{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 <div class="viewcode-block" id="Cache.generate_surfex_id"><a class="viewcode-back" href="../../index.html#surfex.Cache.generate_surfex_id">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_surfex_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">patches</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">patches</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span></div>
+        <span class="sd">&quot;&quot;&quot;Generate surfex id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            varname (_type_): _description_</span>
+<span class="sd">            patches (_type_): _description_</span>
+<span class="sd">            layers (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">varname</span><span class="si">}{</span><span class="n">patches</span><span class="si">}{</span><span class="n">layers</span><span class="si">}{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>\
+               <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 <div class="viewcode-block" id="Cache.generate_obs_id"><a class="viewcode-back" href="../../index.html#surfex.Cache.generate_obs_id">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_obs_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">))</span></div>
+        <span class="sd">&quot;&quot;&quot;Generate obs id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            varname (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">varname</span><span class="si">}{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_id</span><span class="p">(</span><span class="n">id_type</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id_type (_type_): _description_</span>
+<span class="sd">            var (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_netcdf_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span> <span class="ow">or</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
@@ -255,7 +379,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

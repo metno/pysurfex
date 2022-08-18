@@ -36,52 +36,51 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.read</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
-<span class="kn">from</span> <span class="nn">surfex.util</span> <span class="kn">import</span> <span class="n">data_merge</span>
+<span></span><span class="sd">&quot;&quot;&quot;Converter and read data.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>   <span class="c1"># Python 2.x</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>         <span class="c1"># Python 3.x</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
 
 
 <div class="viewcode-block" id="ReadData"><a class="viewcode-back" href="../../index.html#surfex.ReadData">[docs]</a><span class="k">class</span> <span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read data class.&quot;&quot;&quot;</span>
+
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
 <div class="viewcode-block" id="ReadData.__init__"><a class="viewcode-back" href="../../index.html#surfex.ReadData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct readData object.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span></div>
         <span class="c1"># print &quot;Constructed &quot;+self.__class__.__name__+&quot; for &quot; + self.var_name</span>
 
 <div class="viewcode-block" id="ReadData.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ReadData.read_time_step">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To be implemented.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ReadData.print_info"><a class="viewcode-back" href="../../index.html#surfex.ReadData.print_info">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To be implemented.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define read_time_step to use this base class&#39;</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">Points</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span> <span class="o">=</span> <span class="n">interpolator</span>
+<span class="c1"># class Points(object):</span>
+<span class="c1">#    def __init__(self, values, interpolator):</span>
+<span class="c1">#        self.values = values</span>
+<span class="c1">#        self.interpolator = interpolator</span>
 
-
-<span class="k">class</span> <span class="nc">TwoDField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
+<span class="c1"># class TwoDField(object):</span>
+<span class="c1">#    def __init__(self, values, geo):</span>
+<span class="c1">#        self.values = values</span>
+<span class="c1">#        self.geo = geo</span>
 
 
 <span class="c1"># Direct data can be ead with this class with converter = None</span>
 <div class="viewcode-block" id="ConvertedInput"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput">[docs]</a><span class="k">class</span> <span class="nc">ConvertedInput</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Converted input</span>
+    <span class="sd">&quot;&quot;&quot;Converted input.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        geo (surfex.Geo): Surfex geometry</span>
@@ -90,10 +89,28 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ConvertedInput.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct converted input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            geo (_type_): _description_</span>
+<span class="sd">            var_name (_type_): _description_</span>
+<span class="sd">            converter (_type_): _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">converter</span></div>
 
 <div class="viewcode-block" id="ConvertedInput.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.read_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read time  step.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (_type_): _description_</span>
+<span class="sd">            cache (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="c1"># Preserve positive values for precipitation</span>
         <span class="c1"># TODO</span>
@@ -102,40 +119,62 @@
         <span class="k">return</span> <span class="n">field</span></div>
 
 <div class="viewcode-block" id="ConvertedInput.print_info"><a class="viewcode-back" href="../../index.html#surfex.ConvertedInput.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div></div>
+        <span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="ConstantValue"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue">[docs]</a><span class="k">class</span> <span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Set a field to a constant value</span>
+    <span class="sd">&quot;&quot;&quot;Constant value converter.&quot;&quot;&quot;</span>
 
-<span class="sd">    :param geo: Geometry object</span>
-<span class="sd">    :type geo: surfex.Geo</span>
-<span class="sd">    :param var_name: Variable name</span>
-<span class="sd">    :type var_name: str</span>
-<span class="sd">    :param var_dict: Variable definition</span>
-<span class="sd">    :type var_dict: dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="ConstantValue.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a field to a constant value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            geo (surfex.Geo): Geometry object</span>
+<span class="sd">            var_name (str): Variable name</span>
+<span class="sd">            var_dict (dict): Variable definition</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span> <span class="o">=</span> <span class="n">var_dict</span>
         <span class="k">if</span> <span class="s2">&quot;value&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Constant value must have a value!&quot;</span><span class="p">)</span>
-            <span class="k">raise</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Constant value must have a value!&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ConstantValue.read_time_step"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.read_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read time step.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (_type_): _description_</span>
+<span class="sd">            cache (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)])</span>
         <span class="n">field</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="c1"># print field.shape</span>
         <span class="k">return</span> <span class="n">field</span></div>
 
 <div class="viewcode-block" id="ConstantValue.print_info"><a class="viewcode-back" href="../../index.html#surfex.ConstantValue.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span></div></div>
+        <span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span></div></div>
 
 
 <div class="viewcode-block" id="remove_existing_file"><a class="viewcode-back" href="../../index.html#surfex.remove_existing_file">[docs]</a><span class="k">def</span> <span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove existing file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f_in (_type_): _description_</span>
+<span class="sd">        f_out (_type_): _description_</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: _description_</span>
+<span class="sd">        IsADirectoryError: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">f_in</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Input file not set&quot;</span><span class="p">)</span>
     <span class="c1"># If files are not the same file</span>
@@ -157,7 +196,8 @@
 
 
 <div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#surfex.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Converter.</span>
+
 <span class="sd">    Main interface to read a field is done through a converter.</span>
 <span class="sd">    The converter name is default &quot;None&quot; to read a plain field without any conversion.</span>
 
@@ -167,111 +207,134 @@
 <span class="sd">        defs (dict): A dictionary defining the variables</span>
 <span class="sd">        conf (dict): A dictionary defining the converter</span>
 <span class="sd">        fileformat (str): Fileformat of the converter</span>
-<span class="sd">        debug (bool): Debug option</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Converter.__init__"><a class="viewcode-back" href="../../index.html#surfex.Converter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initializing the converter</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Converter.__init__"><a class="viewcode-back" href="../../index.html#surfex.Converter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the converter.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            name (_type_): _description_</span>
+<span class="sd">            initial_time (_type_): _description_</span>
+<span class="sd">            defs (_type_): _description_</span>
+<span class="sd">            conf (_type_): _description_</span>
+<span class="sd">            fileformat (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span> <span class="o">=</span> <span class="n">initial_time</span>
         <span class="c1"># self.validtime = validtime</span>
         <span class="c1"># self.basetime = basetime</span>
 
-        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Converter name:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Converter config: &quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Converter name: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Converter config: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;conf: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; is missing in converter definition&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rh&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;p&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">r_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rh&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;winddir&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;totalprec&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;snow&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;snow&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcrain&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;phi2m&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;swe2sd&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sweclim&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sea2land&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sea</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sea&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sea</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sea&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;tap&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tap1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tap1&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tap2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tap2&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tap1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tap1&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tap2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tap2&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rhp&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rhp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rhp1&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rhp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rhp2&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rhp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rhp1&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rhp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;rhp2&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sdp&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sdp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sdp1&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sdp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sdp2&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sdp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sdp1&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sdp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sdp2&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;smp&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp1&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp2&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp1&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp2&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nature_town&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town_fraction&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span>
+                                                        <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature_fraction&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span>
+                                                      <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town_fraction&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;cloud_base&quot;</span><span class="p">],</span> <span class="n">debug</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span>
+                                                   <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;cloud_base&quot;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
 
-        <span class="c1"># print &quot;Constructed the converter &quot; + self.name</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed the converter </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Converter.print_info"><a class="viewcode-back" href="../../index.html#surfex.Converter.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">print_info</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
-<div class="viewcode-block" id="Converter.create_variable"><a class="viewcode-back" href="../../index.html#surfex.Converter.create_variable">[docs]</a>    <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a variable</span>
+<div class="viewcode-block" id="Converter.create_variable"><a class="viewcode-back" href="../../index.html#surfex.Converter.create_variable">[docs]</a>    <span class="k">def</span> <span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            fileformat (str): Fileformat</span>
 <span class="sd">            defs (dict): defs</span>
 <span class="sd">            var_dict (dict): Variable dictionary</span>
-<span class="sd">            debug(bool): Debug option</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">             NotImplementedError: Not implemented</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            field: The read field</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Finally we can merge the variable with the default settings</span>
         <span class="c1"># Create deep copies not to inherit between variables</span>
         <span class="n">defs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">defs</span><span class="p">)</span>
         <span class="n">var_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">var_dict</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">var_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Variable is not set&quot;</span><span class="p">)</span>
-        <span class="n">merged_dict</span> <span class="o">=</span> <span class="n">data_merge</span><span class="p">(</span><span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">)</span>
+        <span class="n">merged_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">data_merge</span><span class="p">(</span><span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">)</span>
 
-        <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-            <span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">var</span></div>
 
     <span class="k">def</span> <span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read time step.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            geo (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+<span class="sd">            cache (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gravity</span> <span class="o">=</span> <span class="mf">9.81</span>
         <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># field = np.empty(geo.npoints)</span>
@@ -279,8 +342,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;winddir&quot;</span><span class="p">:</span>
-            <span class="n">field_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-            <span class="n">field_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">field_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">field_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="c1"># field_y = self.y.read_variable(geo,validtime,cache)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span><span class="p">:</span>
                 <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">field_x</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">field_y</span><span class="p">))</span>
@@ -290,16 +353,16 @@
                 <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">field_x</span><span class="p">,</span> <span class="n">field_y</span><span class="p">))</span> <span class="o">+</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q&quot;</span><span class="p">:</span>
-            <span class="n">field_rh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rh</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># %</span>
-            <span class="n">field_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
-            <span class="n">field_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In Pa</span>
+            <span class="n">field_r_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_h</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># %</span>
+            <span class="n">field_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
+            <span class="n">field_pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In Pa</span>
 
-            <span class="n">field_p_mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field_p</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
-            <span class="n">field_t_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">field_t</span><span class="p">,</span> <span class="mf">273.15</span><span class="p">)</span>
+            <span class="n">field_p_mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field_pres</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+            <span class="n">field_t_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">field_temp</span><span class="p">,</span> <span class="mf">273.15</span><span class="p">)</span>
 
             <span class="n">exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">17.67</span><span class="p">,</span> <span class="n">field_t_c</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">field_t_c</span><span class="p">,</span> <span class="mf">243.5</span><span class="p">))</span>
-            <span class="n">es</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">6.112</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exp</span><span class="p">))</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">0.622</span><span class="p">,</span> <span class="n">field_rh</span> <span class="o">/</span> <span class="mf">100.</span><span class="p">)</span> <span class="o">*</span> <span class="n">es</span><span class="p">,</span> <span class="n">field_p_mb</span><span class="p">)</span>
+            <span class="n">esat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">6.112</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exp</span><span class="p">))</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">0.622</span><span class="p">,</span> <span class="n">field_r_h</span> <span class="o">/</span> <span class="mf">100.</span><span class="p">)</span> <span class="o">*</span> <span class="n">esat</span><span class="p">,</span> <span class="n">field_p_mb</span><span class="p">)</span>
 
             <span class="c1"># ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))</span>
             <span class="c1"># ZE = ZRH * ZES</span>
@@ -315,13 +378,13 @@
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcrain&quot;</span><span class="p">:</span>
             <span class="n">field_totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-            <span class="n">field_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">field_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">field_totalprec</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field_t</span> <span class="o">&lt;=</span> <span class="mf">274.16</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
             <span class="n">field_totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="c1"># field_rh = self.rh.read_variable(geo, validtime,cache) #</span>
-            <span class="n">field_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
+            <span class="n">field_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
             <span class="c1"># field_p = self.p.read_variable(geo, validtime,cache)   # In Pa</span>
             <span class="c1"># tc = field_t + 273.15</span>
             <span class="c1"># e  = (field_rh)*0.611*exp((17.63*tc)/(tc+243.04));</span>
@@ -344,7 +407,8 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sweclim&quot;</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swe</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-            <span class="n">rhoclim</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;01&quot;</span><span class="p">:</span> <span class="mf">222.</span><span class="p">,</span> <span class="s2">&quot;02&quot;</span><span class="p">:</span> <span class="mf">233.</span><span class="p">,</span> <span class="s2">&quot;03&quot;</span><span class="p">:</span> <span class="mf">240.</span><span class="p">,</span> <span class="s2">&quot;04&quot;</span><span class="p">:</span> <span class="mf">278.</span><span class="p">,</span> <span class="s2">&quot;05&quot;</span><span class="p">:</span> <span class="mf">212.</span><span class="p">,</span> <span class="s2">&quot;06&quot;</span><span class="p">:</span> <span class="mf">312.</span><span class="p">,</span> <span class="s2">&quot;07&quot;</span><span class="p">:</span> <span class="mf">312.</span><span class="p">,</span> <span class="s2">&quot;08&quot;</span><span class="p">:</span> <span class="mf">143.</span><span class="p">,</span>
+            <span class="n">rhoclim</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;01&quot;</span><span class="p">:</span> <span class="mf">222.</span><span class="p">,</span> <span class="s2">&quot;02&quot;</span><span class="p">:</span> <span class="mf">233.</span><span class="p">,</span> <span class="s2">&quot;03&quot;</span><span class="p">:</span> <span class="mf">240.</span><span class="p">,</span> <span class="s2">&quot;04&quot;</span><span class="p">:</span> <span class="mf">278.</span><span class="p">,</span> <span class="s2">&quot;05&quot;</span><span class="p">:</span> <span class="mf">212.</span><span class="p">,</span> <span class="s2">&quot;06&quot;</span><span class="p">:</span> <span class="mf">312.</span><span class="p">,</span>
+                       <span class="s2">&quot;07&quot;</span><span class="p">:</span> <span class="mf">312.</span><span class="p">,</span> <span class="s2">&quot;08&quot;</span><span class="p">:</span> <span class="mf">143.</span><span class="p">,</span>
                        <span class="s2">&quot;09&quot;</span><span class="p">:</span> <span class="mf">143.</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mf">161.</span><span class="p">,</span> <span class="s2">&quot;11&quot;</span><span class="p">:</span> <span class="mf">182.</span><span class="p">,</span> <span class="s2">&quot;12&quot;</span><span class="p">:</span> <span class="mf">213.</span><span class="p">}</span>
             <span class="n">month</span> <span class="o">=</span> <span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">month</span> <span class="ow">in</span> <span class="n">rhoclim</span><span class="p">:</span>
@@ -376,31 +440,20 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nature</span><span class="p">,</span> <span class="n">town</span><span class="p">)</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter cloud_base&quot;</span><span class="p">)</span>
-            <span class="kn">import</span> <span class="nn">gridpp</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Converter cloud_base&quot;</span><span class="p">)</span>
 
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-            <span class="n">a</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
+            <span class="n">field_2d</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">fill_field</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-                <span class="n">ovalues</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Mean</span><span class="p">)</span>
-                <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">aa</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]):</span>
-                            <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
-                            <span class="c1"># print(&quot;Sub &quot;, i, j, nn)</span>
-                            <span class="n">aa</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalues</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
-                <span class="k">return</span> <span class="n">aa</span><span class="p">,</span> <span class="n">nn</span>
+            <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">field_2d</span><span class="p">)):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Filling cloud base&quot;</span><span class="p">)</span>
+                <span class="n">field_2d</span><span class="p">,</span> <span class="n">nans</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">fill_field</span><span class="p">(</span><span class="n">field_2d</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Iteration </span><span class="si">%s</span><span class="s2"> NaNs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iteration</span><span class="p">,</span> <span class="n">nans</span><span class="p">)</span>
 
-            <span class="n">it</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filling cloud base&quot;</span><span class="p">)</span>
-                <span class="n">a</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">fill_field</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-                <span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration &quot;</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="s2">&quot;NaNs:&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-
-            <span class="n">field</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span> <span class="o">*</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
+            <span class="c1"># Reshape back to 1D</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">field_2d</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span> <span class="o">*</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
@@ -440,7 +493,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

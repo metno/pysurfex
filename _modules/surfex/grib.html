@@ -36,9 +36,11 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.grib</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
+<span></span><span class="sd">&quot;&quot;&quot;Grib treatment.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyproj</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">eccodes</span>
     <span class="kn">import</span> <span class="nn">gribapi</span>
@@ -55,26 +57,36 @@
 
 
 <div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#surfex.Grib">[docs]</a><span class="k">class</span> <span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Grib class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Grib.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+<div class="viewcode-block" id="Grib.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct grib object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fname (str): File name.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nearest</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Grib constructor&quot;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Grib constructor&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Grib.field"><a class="viewcode-back" href="../../index.html#surfex.Grib.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read field in grib file.</span>
 
-        <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eccodes not found. Needed for reading grib files&quot;</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            gribvar (GribVariable1/2): Grib variable to read.</span>
+<span class="sd">            time (datetime.datetime): Valid time to read.</span>
 
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Field</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eccodes not found. Needed for reading grib files&quot;</span><span class="p">)</span>
 
         <span class="n">geography</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bitmapPresent&quot;</span><span class="p">,</span>
                      <span class="s2">&quot;Nx&quot;</span><span class="p">,</span>
@@ -94,19 +106,18 @@
                      <span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span>
                      <span class="p">]</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Look for &quot;</span><span class="p">,</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Look for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
 
         <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">geo_out</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">gid</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_grib_new_from_file</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+            <span class="n">gid</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_grib_new_from_file</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">gid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find key&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find key&quot;</span><span class="p">)</span>
                 <span class="n">gribvar</span><span class="o">.</span><span class="n">print_keys</span><span class="p">()</span>
-                <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_out</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># print(&quot;\n Next key&quot;)</span>
@@ -123,44 +134,43 @@
                             <span class="k">try</span><span class="p">:</span>
                                 <span class="n">geo</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">key</span><span class="p">)})</span>
                             <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                                <span class="n">surfex</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Error with key=&quot;</span><span class="si">%s</span><span class="s1">&quot; : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
+                                <span class="n">surfex</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Error with key=&quot;</span><span class="si">%s</span><span class="s1">&quot; : </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
 
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                         <span class="s1">&#39;There are </span><span class="si">%d</span><span class="s1"> values, average is </span><span class="si">%f</span><span class="s1">, min is </span><span class="si">%f</span><span class="s1">, max is </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                                             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_size</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">),</span>
-                                             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;average&#39;</span><span class="p">),</span>
-                                             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">),</span>
-                                             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">))</span>
-                                         <span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;There are </span><span class="si">%d</span><span class="s1"> values, average is </span><span class="si">%f</span><span class="s1">, min is </span><span class="si">%f</span><span class="s1">, max is </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_size</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">),</span>
+                                      <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;average&#39;</span><span class="p">),</span>
+                                      <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">),</span>
+                                      <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">))</span>
 
                         <span class="n">values</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_values</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Look for &quot;</span><span class="p">,</span> <span class="s2">&quot;Values: &quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
-                        <span class="n">nx</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;Nx&quot;</span><span class="p">]</span>
-                        <span class="n">ny</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;Ny&quot;</span><span class="p">]</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Look for Values: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+                        <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;Nx&quot;</span><span class="p">]</span>
+                        <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;Ny&quot;</span><span class="p">]</span>
 
                         <span class="n">lon0</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;LoVInDegrees&quot;</span><span class="p">]</span>
                         <span class="n">lat0</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;LaDInDegrees&quot;</span><span class="p">]</span>
                         <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
                         <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                        <span class="n">dx</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;DxInMetres&quot;</span><span class="p">]</span>
-                        <span class="n">dy</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;DyInMetres&quot;</span><span class="p">]</span>
+                        <span class="n">d_x</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;DxInMetres&quot;</span><span class="p">]</span>
+                        <span class="n">d_y</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;DyInMetres&quot;</span><span class="p">]</span>
 
                         <span class="c1"># TODO Check time consistency</span>
-                        <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Grib record found is hopefullly valid for time &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Grib record found is hopefullly valid for time </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
 
                         <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e+6</span>
-                        <span class="n">proj_string</span> <span class="o">=</span> <span class="s2">&quot;+proj=lcc +lat_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lon_0=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_1=&quot;</span> <span class="o">+</span> \
-                                      <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +lat_2=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; +units=m +no_defs +R=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span>
+                        <span class="n">proj_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>\
+                                      <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>\
+                                      <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
                         <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
                         <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
-                        <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
-                        <span class="n">xc</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
-                        <span class="n">yc</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
-                        <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
-                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
+                        <span class="n">x_0</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
+                            <span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+                        <span class="n">x_c</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span>
+                        <span class="n">y_c</span> <span class="o">=</span> <span class="n">y_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span>
+                        <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
+                            <span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_c</span><span class="p">,</span> <span class="n">y_c</span><span class="p">)</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
 
                         <span class="k">if</span> <span class="n">geo</span><span class="p">[</span><span class="s2">&quot;bitmapPresent&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                             <span class="n">missing_value</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;missingValue&quot;</span><span class="p">)</span>
@@ -175,10 +185,10 @@
                                 <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
                                     <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="n">lonc</span><span class="p">,</span>
                                     <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="n">latc</span><span class="p">,</span>
-                                    <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="p">,</span>
-                                    <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ny</span><span class="p">,</span>
-                                    <span class="s2">&quot;xdx&quot;</span><span class="p">:</span>  <span class="n">dx</span><span class="p">,</span>
-                                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">dy</span><span class="p">,</span>
+                                    <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
+                                    <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
+                                    <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">d_x</span><span class="p">,</span>
+                                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">d_y</span><span class="p">,</span>
                                     <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                                     <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="mi">0</span>
                                 <span class="p">}</span>
@@ -188,7 +198,7 @@
                         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">grid_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not implemented yet!&quot;</span><span class="p">)</span>
 
                     <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
-                    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
                     <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No geometry is found in file&quot;</span><span class="p">)</span>
@@ -197,42 +207,60 @@
                 <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Grib.points"><a class="viewcode-back" href="../../index.html#surfex.Grib.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read a 2-D field and interpolates it to requested positions.</span>
 
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reads a 2-D field and interpolates it to requested positions</span>
-
-<span class="sd">        Arguments:</span>
-
+<span class="sd">        Args:</span>
+<span class="sd">            gribvar (GribVariable1/2): Grib variable</span>
+<span class="sd">            geo (surfex.Geo): Surfex geometry</span>
+<span class="sd">            validtime (datetime.datetime, optional): Valid time. Defaults to None.</span>
+<span class="sd">            interpolation (str, optional): Interpolation method. Defaults to &quot;bilinear&quot;.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.array: vector with inpterpolated values</span>
+<span class="sd">             np.array: vector with interpolated values</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">gribvar</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="n">interpolator</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div></div>
 
 
-<div class="viewcode-block" id="Grib1Variable"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Grib1Variable.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib1Variable"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Grib1 variable.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Grib1Variable.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct grib1 variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            par (int): IndicatorOfParameter</span>
+<span class="sd">            typ (int): TypeOfLevel</span>
+<span class="sd">            level (int): NumberOFLevel</span>
+<span class="sd">            tri (int): TimeRangeIndicator</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">typ</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Grib1Variable.is_accumulated"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable.is_accumulated">[docs]</a>    <span class="k">def</span> <span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if accumulated.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">is_accumulated</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Value is accumulated&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Value is accumulated&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Grib1Variable.matches"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if matchees.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gid (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eccodes not found. Needed for reading grib files&quot;</span><span class="p">)</span>
 
@@ -243,22 +271,19 @@
             <span class="n">typ</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_long</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;levelType&quot;</span><span class="p">))</span>
             <span class="n">tri</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_long</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;timeRangeIndicator&quot;</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Checking grib1 record: &quot;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking grib1 record: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">==</span> <span class="n">par</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">lev</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span> <span class="o">==</span> <span class="n">typ</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">==</span> <span class="n">tri</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                 <span class="s2">&quot;Found matching grib1 record: &quot;</span><span class="p">,</span>  <span class="n">par</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found matching grib1 record: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Record is not grib1&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib1&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Grib1Variable.print_keys"><a class="viewcode-back" href="../../index.html#surfex.Grib1Variable.print_keys">[docs]</a>    <span class="k">def</span> <span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;indicatorOfParameter:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
@@ -267,25 +292,48 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timeRangeIndicator:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate grib1 ID.&quot;&quot;&quot;</span>
         <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span>
         <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span>
         <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span>
         <span class="n">tri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span>
-        <span class="k">return</span> <span class="s2">&quot;:grib1:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib1:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
 <div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Grib2Variable.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="n">lt</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Grib2 variable.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Grib2Variable.__init__"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pca</span><span class="p">,</span> <span class="n">pnr</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a grib2 variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            discipline (_type_): _description_</span>
+<span class="sd">            pca (_type_): _description_</span>
+<span class="sd">            pnr (_type_): _description_</span>
+<span class="sd">            typ (_type_): _description_</span>
+<span class="sd">            lev (_type_): _description_</span>
+<span class="sd">            tsp (int, optional): _description_. Defaults to -1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameterCategory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pc</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameterNumber</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pn</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">levelType</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pca</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pnr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level_type</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lev</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tsp</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tsp</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Grib2Variable.matches"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if matches.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gid (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eccodes not found. Needed for reading grib files&quot;</span><span class="p">)</span>
 
@@ -297,59 +345,60 @@
             <span class="n">level_type</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get_long</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;levelType&quot;</span><span class="p">))</span>
             <span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">))</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">)</span>
+                <span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span>
+                    <span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">)</span>
                 <span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">type_of_statistical_processing</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">gribapi</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">KeyValueNotFoundError</span><span class="p">:</span>
                 <span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Checking grib2 record: &quot;</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span>
-                             <span class="n">parameter_category</span><span class="p">,</span> <span class="n">parameter_number</span><span class="p">,</span> <span class="n">level_type</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">type_of_statistical_processing</span><span class="p">)</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking grib2 record: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="n">discipline</span><span class="p">,</span> <span class="n">parameter_category</span><span class="p">,</span> <span class="n">parameter_number</span><span class="p">,</span> <span class="n">level_type</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span>
+                          <span class="n">type_of_statistical_processing</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grib2 ID: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">())</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">==</span> <span class="n">discipline</span> <span class="ow">and</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">parameterCategory</span> <span class="o">==</span> <span class="n">parameter_category</span> <span class="ow">and</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">parameterNumber</span> <span class="o">==</span> <span class="n">parameter_number</span> <span class="ow">and</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">levelType</span> <span class="o">==</span> <span class="n">level_type</span> <span class="ow">and</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span> <span class="o">==</span> <span class="n">parameter_category</span> <span class="ow">and</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span> <span class="o">==</span> <span class="n">parameter_number</span> <span class="ow">and</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">level_type</span> <span class="o">==</span> <span class="n">level_type</span> <span class="ow">and</span> \
                     <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">level</span> <span class="ow">and</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span> <span class="o">==</span> <span class="n">type_of_statistical_processing</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                 <span class="s2">&quot;Found matching grib2 record: &quot;</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">parameter_category</span><span class="p">,</span> <span class="n">parameter_number</span><span class="p">,</span>
-                                 <span class="n">level_type</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">==</span> <span class="n">type_of_statistical_processing</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found matching grib2 record: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                              <span class="n">discipline</span><span class="p">,</span> <span class="n">parameter_category</span><span class="p">,</span> <span class="n">parameter_number</span><span class="p">,</span>
+                              <span class="n">level_type</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Record is not grib2&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib2&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Grib2Variable.is_accumulated"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable.is_accumulated">[docs]</a>    <span class="k">def</span> <span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">matches</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>  <span class="s2">&quot;Parameter is accumulated&quot;</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Check if accumulated.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parameter is accumulated&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="Grib2Variable.print_keys"><a class="viewcode-back" href="../../index.html#surfex.Grib2Variable.print_keys">[docs]</a>    <span class="k">def</span> <span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;discipline:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterCategory:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterCategory</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterNumber:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterNumber</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;levelType:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelType</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterCategory:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterNumber:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;levelType:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level_type</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">dis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span>
-        <span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterCategory</span>
-        <span class="n">pn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterNumber</span>
-        <span class="n">lt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelType</span>
-        <span class="n">lev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span>
-        <span class="n">tsp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfStatisticalProcessing</span>
-        <span class="k">return</span> <span class="s2">&quot;:grib2:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dis</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="n">lt</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="p">)</span></div>
+        <span class="sd">&quot;&quot;&quot;Generate grib2 ID.&quot;&quot;&quot;</span>
+        <span class="n">dis</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
+        <span class="n">pca</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>
+        <span class="n">pnr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span><span class="p">)</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level_type</span><span class="p">)</span>
+        <span class="n">lev</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">tsp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib2:</span><span class="si">{</span><span class="n">dis</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pca</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pnr</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">lev</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">tsp</span><span class="si">}</span><span class="s2">&quot;</span></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -385,7 +434,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

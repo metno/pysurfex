@@ -36,29 +36,27 @@
           <div class="body" role="main">
             
   <h1>Source code for surfex.configuration</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">json</span>
-<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;json lot loaded: &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
-    <span class="n">json</span> <span class="o">=</span> <span class="kc">None</span>
+<span></span><span class="sd">&quot;&quot;&quot;Configuration.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">toml</span>
+<span class="kn">import</span> <span class="nn">surfex</span>
 
 
 <div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configuration class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Configuration.__init__"><a class="viewcode-back" href="../../index.html#surfex.Configuration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;pysurfex configuration</span>
+<div class="viewcode-block" id="Configuration.__init__"><a class="viewcode-back" href="../../index.html#surfex.Configuration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct the pysurfex configuration.</span>
 
-<span class="sd">        Encapsulation of settings dictionary. Settings for a deterministic run or an individual member.</span>
+<span class="sd">        Encapsulation of settings dictionary.</span>
+<span class="sd">        Settings for a deterministic run or an individual member.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            conf (dict): Actual psyurfex settings to run</span>
-<span class="sd">            debug (bool): Enable debug mode</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">conf</span>
         <span class="c1"># Set default file names</span>
         <span class="k">if</span> <span class="s2">&quot;CPGDFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
@@ -70,30 +68,82 @@
         <span class="k">if</span> <span class="s2">&quot;LFAGMAP&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;LFAGMAP&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span></div>
 
+    <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dump configuration to json file.</span>
 
-    <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="sd">        Args:</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            indent (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;json module not loaded&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;settings </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Configuration.setting_is"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-                            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+<div class="viewcode-block" id="Configuration.setting_is"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if setting is value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            default (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Configuration.setting_is_not"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is_not"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if setting is not value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            default (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-                            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
             <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
@@ -101,17 +151,18 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Configuration.value_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Configuration.value_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if value is one of the settings.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            settings (list):</span>
 <span class="sd">            value:</span>
 <span class="sd">            sep (str):</span>
 <span class="sd">            abort (bool):</span>
-<span class="sd">            debug (bool): Enable debug</span>
-<span class="sd">            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
+<span class="sd">            system_variables (dict): Arbitrary settings to substitute</span>
+<span class="sd">                                     @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
 <span class="sd">            check_parsing (bool): Check if all @@ pairs were parsed</span>
 <span class="sd">            validtime (datetime.daetime): Parse setting with this as validtime</span>
 <span class="sd">            basedtg (datetime.datetime): Parse setting with this as base time</span>
@@ -129,62 +180,133 @@
 <span class="sd">            surfex.SystemFilePaths.substitute_string()</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Expected a list as input, got &quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
-            <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                                       <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                                       <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">check_s</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">check_s</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                                       <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                                       <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                                       <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                                       <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">found</span></div>
 
-<div class="viewcode-block" id="Configuration.value_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.value_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if value is not one of.</span>
 
-        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                                     <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                                     <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                                     <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                                     <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                                     <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                                     <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Configuration.setting_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                          <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.setting_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if setting is one of values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            values (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
                                    <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                                   <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+                                   <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                                   <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Excpected a list as input, got &quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">val</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">found</span></div>
 
-<div class="viewcode-block" id="Configuration.setting_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                              <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="Configuration.setting_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                              <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if setting is not one of values.</span>
 
-        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                                       <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                                       <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            values (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is_one_of</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                                       <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                                       <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                                       <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                                       <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Configuration.get_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_setting">[docs]</a>    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Configuration.get_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_setting">[docs]</a>    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get configurations setting.</span>
 
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get configurations setting</span>
-
-<span class="sd">        Settings are nested in blocks. To get the full setting request setting joined by a seperation character.</span>
+<span class="sd">        Settings are nested in blocks.</span>
+<span class="sd">        To get the full setting request setting joined by a separation character.</span>
 
 <span class="sd">        E.g setting = &quot;SURFEX#ASSIM#ASSIM_SCHEMES&quot;</span>
 
@@ -193,8 +315,8 @@
 <span class="sd">            default: A fallback setting in case setting is not found</span>
 <span class="sd">            sep (str): A separation character between different configuration blocks</span>
 <span class="sd">            abort (bool): Abort if setting is not found and default not set</span>
-<span class="sd">            debug (bool): Enable debug</span>
-<span class="sd">            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
+<span class="sd">            system_variables (dict): Arbitrary settings to substitute</span>
+<span class="sd">                                     @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
 <span class="sd">            check_parsing (bool): Check if all @@ pairs were parsed</span>
 <span class="sd">            validtime (datetime.daetime): Parse setting with this as validtime</span>
 <span class="sd">            basedtg (datetime.datetime): Parse setting with this as base time</span>
@@ -215,7 +337,6 @@
 <span class="sd">            KeyError</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span>
 
         <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -225,23 +346,17 @@
 
         <span class="k">if</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
             <span class="n">this_setting</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_setting&quot;</span><span class="p">,</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_setting </span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">this_setting</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">this_setting</span><span class="p">:</span>
                         <span class="n">this_setting</span> <span class="o">=</span> <span class="n">this_setting</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
                         <span class="c1"># Time information</span>
-                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span><span class="n">this_setting</span><span class="p">,</span>
-                                                                                <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">)</span>
-                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span><span class="n">this_setting</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
-                                                                            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                                                                            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-                                                                            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-                                                                            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-                                                                            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-                                                                            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-                                                                            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span>
+                            <span class="n">this_setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">)</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
+                            <span class="n">this_setting</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="n">this_setting</span> <span class="o">=</span> <span class="n">default</span>
@@ -255,12 +370,17 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_setting&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">this_setting</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_setting </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">this_setting</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">this_setting</span></div>
 
 <div class="viewcode-block" id="Configuration.update_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.update_setting">[docs]</a>    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the setting.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -276,23 +396,24 @@
 
 
 <div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Set the configuration from Harmonie environment.</span>
+
 <span class="sd">    This class sets up a SURFEX configuration from an environment based Harmonie run with it&#39;s</span>
 <span class="sd">    corresponding configuration.</span>
 
 <span class="sd">    Some settings imply several changes in SURFEX configuration</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="ConfigurationFromHarmonie.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigurationFromHarmonie.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constuct the Configuration object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env (dict): System environment e.g. os.environ</span>
 <span class="sd">            conf (dict): The default configuration for this deterministic run/ensemble member</span>
-<span class="sd">            debug (bool): Enable debug</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
 
         <span class="c1"># Set domain from environment variables. Geo is alway conf proj</span>
         <span class="n">ezone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;EZONE&quot;</span><span class="p">])</span>
@@ -327,8 +448,7 @@
         <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ConfProj</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GEO&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GEO: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">:</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">]}})</span>
 
@@ -362,7 +482,8 @@
         <span class="c1"># NPATCH Number of patches over land in SURFEX (see also LISBA_CANOPY)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#NPATCH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NPATCH&quot;</span><span class="p">]))</span>
 
-        <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX (must be .FALSE. for NPATCH&gt;1)</span>
+        <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX</span>
+        <span class="c1"># (must be .FALSE. for NPATCH&gt;1)</span>
         <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
             <span class="n">canopy</span> <span class="o">=</span> <span class="kc">True</span>
@@ -430,7 +551,8 @@
         <span class="c1"># XSCALE_H_TREE  Scale the tree height with this factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#XSCALE_H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSCALE_H_TREE&quot;</span><span class="p">])</span>
         <span class="k">if</span> <span class="s2">&quot;LFAKETREE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> \
+                    <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
                 <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">False</span>
@@ -543,7 +665,7 @@
         <span class="k">if</span> <span class="s2">&quot;NENS_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
             <span class="n">nens_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NENS_M&quot;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NENS_M&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nens_m</span><span class="p">))</span>
-        
+
         <span class="c1"># Observations</span>
         <span class="k">if</span> <span class="s2">&quot;NOBSTYPE_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
             <span class="n">nobstype_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NOBSTYPE_M&quot;</span><span class="p">]</span>
@@ -574,7 +696,7 @@
                 <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">,</span>  <span class="n">snow_cycles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">,</span> <span class="n">snow_cycles</span><span class="p">)</span>
 
         <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="s2">&quot;LSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
@@ -621,32 +743,32 @@
 
 
 <span class="k">class</span> <span class="nc">ConfigurationFromHarmonieAndConfigFile</span><span class="p">(</span><span class="n">ConfigurationFromHarmonie</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.&quot;&quot;&quot;</span>
 
-<span class="sd">    Initialize a configuration from envrionment and a toml configuration file</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env (dict): System environment e.g. os.environ</span>
 <span class="sd">            conf_file (str): Filename with configuration</span>
-<span class="sd">            debug (bool): Enable debug</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">conf</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
-        <span class="n">ConfigurationFromHarmonie</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">ConfigurationFromHarmonie</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ConfigurationFromJsonFile</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configuration from a json file.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;json module not loaded&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct the configuration.</span>
 
-        <span class="n">settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
-        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): File name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -682,7 +804,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>
