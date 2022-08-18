@@ -1,17 +1,19 @@
+"""Test geometry."""
 import unittest
-import surfex
 import json
+import logging
+import surfex
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
 
 
 class GeoTest(unittest.TestCase):
-
-    # def test_geo_base_not_implemented(self):
-    #    my_settings = {}
-    #    with self.assertRaises(NotImplementedError):
-    #        my_geo = surfex.geo.SurfexGeo(None, 1, 1, 1, 1, 1)
-    #        my_geo.update_namelist(my_settings)
+    """Test geometry."""
 
     def setUp(self):
+        """Set up."""
         self.domain_conf_proj = {
             "nam_conf_proj_grid": {
                 "xlatcen": 60,
@@ -33,11 +35,13 @@ class GeoTest(unittest.TestCase):
         }
 
     def test_geo_not_defined(self):
+        """Test geometry not defined."""
         domain = {"nam_pgd_grid": {"cgrid": "not_existing"}}
         with self.assertRaises(NotImplementedError):
             surfex.geo.get_geo_object(domain)
 
     def test_get_geo_obj(self):
+        """Test get geometry object."""
         domain = {"not_existing": {"some_key": "some_value"}}
         with self.assertRaises(KeyError):
             surfex.geo.get_geo_object(domain)
@@ -47,7 +51,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.get_geo_object(domain)
 
     def test_geo_conf_proj(self):
-
+        """Test conf proj geometry."""
         my_geo = surfex.geo.get_geo_object(self.domain_conf_proj)
 
         json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
@@ -77,6 +81,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.ConfProj(new_domain)
 
     def test_geo_lonlat_reg(self):
+        """Test lonlat geometry."""
         domain = {
             "nam_pgd_grid": {
                 "cgrid": "LONLAT REG"
@@ -122,6 +127,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.LonLatReg(domain)
 
     def test_geo_lonlatval(self):
+        """Test lonlatval geometry."""
         domain = {
             "nam_pgd_grid": {
                 "cgrid": "LONLATVAL"
@@ -149,6 +155,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.LonLatVal(domain)
 
     def test_geo_cartesian(self):
+        """Test cartesian geometry."""
         domain = {
             "nam_pgd_grid": {
                 "cgrid": "CARTESIAN"
@@ -178,6 +185,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.Cartesian(domain)
 
     def test_geo_ign(self):
+        """Test ign geometry."""
         domain = {
             "nam_pgd_grid": {
                 "cgrid": "IGN"
@@ -237,6 +245,7 @@ class GeoTest(unittest.TestCase):
             surfex.geo.IGN(domain)
 
     def test_set_domain(self):
+        """Test set domain."""
         domains = {"NAME": {"nam_pgd_grid": {"cgrid": "some_projection"}}}
         domain = surfex.geo.set_domain(domains, "NAME")
         self.assertEqual(domains["NAME"]["nam_pgd_grid"]["cgrid"], domain["nam_pgd_grid"]["cgrid"])
@@ -248,10 +257,12 @@ class GeoTest(unittest.TestCase):
         with self.assertRaises(Exception):
             surfex.geo.set_domain(domains, "NAME")
 
-        domains = json.load(open("test/settings/domains.json", "r"))
+        with open("test/settings/domains.json", mode="r", encoding="utf-8") as file_handler:
+            domains = json.load(file_handler)
         domain_name = "CONF_PROJ_TEST"
         domain_json = surfex.geo.set_domain(domains, domain_name)
-        saved_domain = json.load(open("test/settings/conf_proj_test.json"))
+        with open("test/settings/conf_proj_test.json", mode="r", encoding="utf-8") as file_handler:
+            saved_domain = json.load(file_handler)
         self.assertDictEqual(domain_json, saved_domain)
 
 

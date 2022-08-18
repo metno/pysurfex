@@ -1,17 +1,39 @@
+"""Geometry."""
 from abc import ABC, abstractmethod
+import os
 import math
-import pyproj
 import json
+import logging
+import pyproj
 import numpy as np
 import surfex
-import os
+try:
+    from osgeo import ogr  # type: ignore
+except Exception:
+    ogr = None
 
 
 class Geo(object):
-    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None, debug=False):
-        self.debug = debug
+    """Geometry."""
+
+    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None):
+        """Construct geometry.
+
+        Args:
+            npoints (_type_): _description_
+            nlons (_type_): _description_
+            nlats (_type_): _description_
+            lons (_type_): _description_
+            lats (_type_): _description_
+            from_json (_type_, optional): _description_. Defaults to None.
+            proj (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            Exception: _description_
+
+        """
         can_interpolate = False
-        if type(lons) != np.ndarray or type(lats) != np.ndarray:
+        if not isinstance(lons, np.ndarray) or not isinstance(lats, np.ndarray):
             raise Exception("Longitudes and latitudes must be numpy nd arrays")
         self.proj = proj
         self.npoints = npoints
@@ -33,6 +55,7 @@ class Geo(object):
         self.json = from_json
 
     def identifier(self):
+        """Create identifier."""
         f_lon = ""
         l_lon = ""
         if self.lonlist is not None:
@@ -44,55 +67,104 @@ class Geo(object):
             f_lat = str(round(float(self.latlist[0]), 2))
             l_lat = str(round(float(self.latlist[-1]), 2))
 
-        tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" + f_lon + ":" + l_lon +\
-              ":" + f_lat + ":" + l_lat + ":"
+        tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" \
+              + f_lon + ":" + l_lon + ":" + f_lat + ":" + l_lat + ":"
         tag = tag.replace(" ", "")
-        if self.debug:
-            print(tag)
+        logging.debug("TAG: %s", tag)
         return tag
 
     def is_identical(self, geo_to_check):
+        """Check if geometries are identical.
+
+        Args:
+            geo_to_check (surfex.Geo): Geo to check.
+
+        Returns:
+            bool: True if identical.
+
+        """
         if self.identifier() == geo_to_check.identifier():
-            if self.debug:
-                surfex.debug(__file__, self.__class__.is_identical.__name__, "Geometries are identical")
+            logging.debug("Geometries are identical")
             return True
         else:
             return False
 
-    def write_proj_info(self, fg):
-        return fg
+    def write_proj_info(self):
+        """Write proj info.
+
+        Returns:
+            None: Do nothing for now.
+        """
+        return None
 
 
 class SurfexGeo(ABC, Geo):
-    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json, debug=False):
+    """Abstract surfex geometry class.
+
+    Args:
+        ABC (_type_): _description_
+        Geo (_type_): _description_
+    """
+
+    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json):
+        """Construct a surfex geometry.
+
+        Args:
+            proj (_type_): _description_
+            npoints (_type_): _description_
+            nlons (_type_): _description_
+            nlats (_type_): _description_
+            lons (_type_): _description_
+            lats (_type_): _description_
+            from_json (_type_): _description_
+
+        """
         self.mask = None
         self.proj = proj
-        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj, debug=debug)
+        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj)
 
     @abstractmethod
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         return NotImplementedError
 
     @abstractmethod
     def subset(self, geo):
-        return NotImplementedError
+        """Find subset of geo.
 
-    @abstractmethod
-    def write_proj_info(self, fg):
+        Args:
+            geo (surfex.Geo): Geometry to check.
+        """
         return NotImplementedError
 
 
 class ConfProj(SurfexGeo):
-    def __init__(self, from_json, debug=False):
+    """Conf proj."""
+
+    def __init__(self, from_json):
+        """Construct conf proj geo.
+
+        Args:
+            from_json (_type_): _description_
+            debug (bool, optional): _description_. Defaults to False.
+
+        """
         self.cgrid = "CONF PROJ"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
-        if debug:
-            print(__file__, "from_json:", from_json)
+        logging.debug("from_json: %s", from_json)
         self.ilone = None
         self.ilate = None
         if "nam_conf_proj_grid" in domain_dict:
-            if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" in domain_dict["nam_conf_proj_grid"]:
+            if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" \
+                    in domain_dict["nam_conf_proj_grid"]:
                 self.nimax = domain_dict["nam_conf_proj_grid"]["nimax"]
                 self.njmax = domain_dict["nam_conf_proj_grid"]["njmax"]
                 self.xloncen = domain_dict["nam_conf_proj_grid"]["xloncen"]
@@ -118,35 +190,46 @@ class ConfProj(SurfexGeo):
             raise KeyError("Missing key4")
 
         earth = 6.37122e+6
-        proj_string = "+proj=lcc +lat_0=" + str(self.xlat0) + " +lon_0=" + str(self.xlon0) + " +lat_1=" + \
-                      str(self.xlat0) + " +lat_2=" + str(self.xlat0) + " +units=m +no_defs +R=" + str(earth)
+        proj_string = f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} " \
+                      f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} " \
+                      f"+units=m +no_defs +R={str(earth)}"
 
         proj = pyproj.CRS.from_string(proj_string)
         wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
         xloncen, xlatcen = \
-            pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(self.xloncen, self.xlatcen)
+            pyproj.Transformer.from_crs(wgs84, proj,
+                                        always_xy=True).transform(self.xloncen, self.xlatcen)
 
-        x0 = float(xloncen) - (0.5 * ((float(self.nimax) - 1.0) * self.xdx))
-        y0 = float(xlatcen) - (0.5 * ((float(self.njmax) - 1.0) * self.xdy))
-        self.x0 = x0
-        self.y0 = y0
-        x = np.empty([self.nimax])
-        y = np.empty([self.njmax])
+        x_0 = float(xloncen) - (0.5 * ((float(self.nimax) - 1.0) * self.xdx))
+        y_0 = float(xlatcen) - (0.5 * ((float(self.njmax) - 1.0) * self.xdy))
+        self.x_0 = x_0
+        self.y_0 = y_0
+        xxx = np.empty([self.nimax])
+        yyy = np.empty([self.njmax])
         for i in range(0, self.nimax):
-            x[i] = x0 + (float(i) * self.xdx)
+            xxx[i] = x_0 + (float(i) * self.xdx)
         for j in range(0, self.njmax):
-            y[j] = y0 + (float(j) * self.xdy)
-        self.x = x
-        self.y = y
-        xv, yv = np.meshgrid(x, y)
-        lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(xv, yv)
+            yyy[j] = y_0 + (float(j) * self.xdy)
+        self.xxx = xxx
+        self.yyy = yyy
+        x_v, y_v = np.meshgrid(xxx, yyy)
+        lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(x_v, y_v)
 
         npoints = self.nimax * self.njmax
-        SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax, np.reshape(lons, [npoints], order="F"),
-                           np.reshape(lats, [npoints], order="F"), from_json, debug=debug)
+        SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax,
+                           np.reshape(lons, [npoints], order="F"),
+                           np.reshape(lats, [npoints], order="F"), from_json)
 
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist object.
+
+        Returns:
+            nml (f90nml.Namelist): Namelist object.
+        """
         if self.ilate is None or self.ilate is None:
             nml.update({
                 "nam_pgd_grid": {
@@ -190,6 +273,14 @@ class ConfProj(SurfexGeo):
         return nml
 
     def subset(self, geo):
+        """Find subset of geo.
+
+        Args:
+            geo (surfex.Geo): Geometry to check.
+
+        Returns:
+            (list, list): lons, lats
+        """
         lons = []
         lats = []
         if hasattr(geo, "cgrid") and geo.cgrid == self.cgrid:
@@ -206,54 +297,53 @@ class ConfProj(SurfexGeo):
                 is_subset = False
 
             if is_subset:
-                surfex.info("Grids have same projection and grid spacing", 0)
-                x0 = None
-                y0 = None
+                logging.info("Grids have same projection and grid spacing")
+                x_0 = None
+                y_0 = None
 
                 for i in range(0, geo.nimax):
                     # print("Test i:", i, geo.x[i], self.x0)
-                    if round(self.x0, 4) == round(geo.x[i], 4):
-                        x0 = i
+                    if round(self.x_0, 4) == round(geo.xxx[i], 4):
+                        x_0 = i
                         break
                 for j in range(0, geo.njmax):
                     # print("Test j:", j, geo.y[j], self.y0)
-                    if round(self.y0, 4) == round(geo.y[j], 4):
-                        y0 = j
+                    if round(self.y_0, 4) == round(geo.yyy[j], 4):
+                        y_0 = j
                         break
-                if x0 is not None and y0 is not None:
-                    surfex.info("Grid is a subset of input grid " + str(x0) + " " + str(y0), 0)
-                    lons = np.arange(x0, x0 + self.nimax, 1).tolist()
-                    lats = np.arange(y0, y0 + self.njmax, 1).tolist()
+                if x_0 is not None and y_0 is not None:
+                    logging.info("Grid is a subset of input grid %s %s", str(x_0), str(y_0))
+                    lons = np.arange(x_0, x_0 + self.nimax, 1).tolist()
+                    lats = np.arange(y_0, y_0 + self.njmax, 1).tolist()
 
         return lons, lats
 
-    def write_proj_info(self, fg):
-        fg.setncattr("gridtype", "lambert")
-        fg.setncattr("dlon", float(self.xdx))
-        fg.setncattr("dlat", float(self.xdy))
-        fg.setncattr("projlat", float(self.xlat0))
-        fg.setncattr("projlat2", float(self.xlat0))
-        fg.setncattr("projlon", float(self.xlon0))
-        fg.setncattr("lonc", float(self.xloncen))
-        fg.setncattr("latc", float(self.xlatcen))
-        return fg
-
 
 class LonLatVal(SurfexGeo):
-    def __init__(self, from_json, debug=False):
+    """LonLatVal."""
+
+    def __init__(self, from_json):
+        """Construct a LonLatVal geometry.
+
+        Used also for points/observations.
+
+        Args:
+            from_json (dict): Domain description,
+
+        """
         self.cgrid = "LONLATVAL"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
             if "xx" and "xy" and "xdx" and "xdy" in domain_dict["nam_lonlatval"]:
-                self.xx = domain_dict["nam_lonlatval"]["xx"]
-                self.xy = domain_dict["nam_lonlatval"]["xy"]
+                self.x_x = domain_dict["nam_lonlatval"]["xx"]
+                self.x_y = domain_dict["nam_lonlatval"]["xy"]
                 self.xdx = domain_dict["nam_lonlatval"]["xdx"]
                 self.xdy = domain_dict["nam_lonlatval"]["xdy"]
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = pyproj.CRS.from_string(proj4)
-                SurfexGeo.__init__(self, proj, len(self.xx), len(self.xx), len(self.xy), np.asarray(self.xx),
-                                   np.asarray(self.xy), from_json, debug=debug)
+                SurfexGeo.__init__(self, proj, len(self.x_x), len(self.x_x), len(self.x_y),
+                                   np.asarray(self.x_x), np.asarray(self.x_y), from_json)
                 self.can_interpolate = False
             else:
                 raise KeyError("Missing keys")
@@ -261,13 +351,21 @@ class LonLatVal(SurfexGeo):
             raise KeyError("Missing key")
 
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist object.
+
+        Returns:
+            nml (f90nml.Namelist): Namelist object.
+        """
         nml.update({
             "nam_pgd_grid": {
                 "cgrid": self.cgrid
             },
             "nam_lonlatval": {
-                "xx": self.xx,
-                "xy": self.xy,
+                "xx": self.x_x,
+                "xy": self.x_y,
                 "xdx": self.xdx,
                 "xdy": self.xdy
             }
@@ -275,21 +373,33 @@ class LonLatVal(SurfexGeo):
         return nml
 
     def subset(self, geo):
+        """Find subset of geo.
+
+        Args:
+            geo (surfex.Geo): Geometry to check.
+        """
+        logging.info("Subset not implemented")
         lons = []
         lats = []
         return lons, lats
 
-    def write_proj_info(self, fg):
-        raise NotImplementedError
-
 
 class Cartesian(SurfexGeo):
-    def __init__(self, from_json, debug=False):
+    """Cartesian."""
+
+    def __init__(self, from_json):
+        """Construct Cartesian geometry.
+
+        Args:
+            from_json (_type_): _description_
+
+        """
         self.cgrid = "CARTESIAN"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
-            if "xlat0" and "xlon0" and "nimax" and "njmax" and "xdx" and "xdy" in domain_dict["nam_cartesian"]:
+            if "xlat0" and "xlon0" and "nimax" and "njmax" and "xdx" and "xdy" in \
+                    domain_dict["nam_cartesian"]:
                 self.xlat0 = domain_dict["nam_cartesian"]["xlat0"]
                 self.xlon0 = domain_dict["nam_cartesian"]["xlon0"]
                 self.nimax = domain_dict["nam_cartesian"]["nimax"]
@@ -298,8 +408,8 @@ class Cartesian(SurfexGeo):
                 self.xdy = domain_dict["nam_cartesian"]["xdy"]
                 proj = None
                 # proj, npoints, nlons, nlats, lons, lats
-                SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax, np.asarray([]),
-                                   np.asarray([]), from_json, debug=debug)
+                SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax,
+                                   np.asarray([]), np.asarray([]), from_json)
                 self.can_interpolate = False
             else:
                 print("Missing keys")
@@ -309,6 +419,14 @@ class Cartesian(SurfexGeo):
             raise KeyError
 
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist object.
+
+        Returns:
+            nml (f90nml.Namelist): Namelist object.
+        """
         print(nml)
         nml.update({
             "nam_pgd_grid": {
@@ -326,17 +444,27 @@ class Cartesian(SurfexGeo):
         return nml
 
     def subset(self, geo):
-        print("Subset not implemented")
+        """Find subset of geo.
+
+        Args:
+            geo (surfex.Geo): Geometry to check.
+        """
+        logging.info("Subset not implemented")
         lons = []
         lats = []
         return lons, lats
 
-    def write_proj_info(self, fg):
-        raise NotImplementedError
-
 
 class LonLatReg(SurfexGeo):
-    def __init__(self, from_json, debug=False):
+    """LonLatReg."""
+
+    def __init__(self, from_json):
+        """Construct the LonLatReg geometry.
+
+        Args:
+            from_json (dict): Domain definition.
+
+        """
         self.cgrid = "LONLAT REG"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
@@ -365,17 +493,25 @@ class LonLatReg(SurfexGeo):
 
         dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
         dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
-        print(dlon, dlat)
+        logging.debug("%s %s", dlon, dlat)
         for j in range(0, self.nlat):
             for i in range(0, self.nlon):
                 lons.append(self.xlonmin + i * dlon)
                 lats.append(self.xlatmin + j * dlat)
 
         # proj, npoints, nlons, nlats, lons, lats
-        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat, np.asarray(lons), np.asarray(lats),
-                           from_json, debug=debug)
+        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat,
+                           np.asarray(lons), np.asarray(lats), from_json)
 
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist object.
+
+        Returns:
+            nml (f90nml.Namelist): Namelist object.
+        """
         nml.update({
             "nam_pgd_grid": {
                 "cgrid": self.cgrid
@@ -392,28 +528,40 @@ class LonLatReg(SurfexGeo):
         return nml
 
     def subset(self, geo):
-        print("Subset not implemented")
+        """Find subset of geo.
+
+        Args:
+            geo (surfex.Geo): Geometry to check.
+        """
+        logging.info("Subset not implemented")
         lons = []
         lats = []
         return lons, lats
 
-    def write_proj_info(self, fg):
-        raise NotImplementedError
-
 
 class IGN(SurfexGeo):
-    def __init__(self, from_json, recreate=False, debug=False):
+    """IGN."""
+
+    def __init__(self, from_json, recreate=False):
+        """Construct a IGN geometry.
+
+        Args:
+            from_json (dict): Domain definition.
+            recreate (bool, optional): Recreate the cached mask. Defaults to False.
+
+        """
         self.cgrid = "IGN"
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
-            if "clambert" and "npoints" and "xx" and "xy" and "xdx" and "xdy" and "xx_llcorner" and "xy_llcorner"  \
-                    and "xcellsize" and "ncols" and "nrows" in domain_dict["nam_ign"]:
+            if "clambert" and "npoints" and "xx" and "xy" and "xdx" and "xdy" and "xx_llcorner" \
+                    and "xy_llcorner" and "xcellsize" and "ncols" and "nrows" \
+                    in domain_dict["nam_ign"]:
 
                 self.clambert = domain_dict["nam_ign"]["clambert"]
                 npoints = domain_dict["nam_ign"]["npoints"]
-                self.xx = domain_dict["nam_ign"]["xx"]
-                self.xy = domain_dict["nam_ign"]["xy"]
+                self.x_x = domain_dict["nam_ign"]["xx"]
+                self.x_y = domain_dict["nam_ign"]["xy"]
                 self.xdx = domain_dict["nam_ign"]["xdx"]
                 self.xdy = domain_dict["nam_ign"]["xdy"]
                 self.xx_llcorner = domain_dict["nam_ign"]["xx_llcorner"]
@@ -429,7 +577,8 @@ class IGN(SurfexGeo):
             raise KeyError
 
         if self.clambert == 7:
-            proj4 = "+proj=lcc +lat_0=63.5 +lon_0=15.0 +lat_1=63.5 +lat_2=63.5 +no_defs +R=6.37122e+6"
+            proj4 = "+proj=lcc +lat_0=63.5 +lon_0=15.0 +lat_1=63.5 +lat_2=63.5 " \
+                    "+no_defs +R=6.37122e+6"
             self.xloncen = 17
             self.xlatcen = 63.
             self.xlon0 = 15
@@ -440,33 +589,45 @@ class IGN(SurfexGeo):
         proj = pyproj.CRS.from_string(proj4)
         wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
-        pxall = self.get_coord(self.xx, self.xdx, "x", recreate)
-        pyall = self.get_coord(self.xy, self.xdy, "y", recreate)
-        self.mask = self.ign_mask(pxall, pyall, self.xx, self.xy, recreate)
+        pxall = self.get_coord(self.x_x, self.xdx, "x", recreate)
+        pyall = self.get_coord(self.x_y, self.xdy, "y", recreate)
+        self.mask = self.ign_mask(pxall, pyall, self.x_x, self.x_y, recreate)
 
         # proj, npoints, nlons, nlats, lons, lats
         lons = []
         lats = []
         for i in range(0, npoints):
-            lon, lat = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(self.xx[i], self.xy[i])
+            lon, lat = pyproj.Transformer.from_crs(proj, wgs84,
+                                                   always_xy=True).transform(self.x_x[i],
+                                                                             self.x_y[i])
             lons.append(lon)
             lats.append(lat)
 
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons), np.asarray(lats), from_json,
-                           debug=debug)
+        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons),
+                           np.asarray(lats), from_json)
         self.can_interpolate = False
 
     @staticmethod
     def get_coord(pin, pdin, coord, recreate=False):
+        """Get the IGN coordinates.
 
+        Args:
+            pin (_type_): _description_
+            pdin (_type_): _description_
+            coord (_type_): _description_
+            recreate (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            _type_: _description_
+
+        """
         pout = []
         cache = "/tmp/." + coord + "_cached"
         if os.path.isfile(cache) and not recreate:
-            f = open(cache)
-            cached_coord = f.read().splitlines()
-            f.close()
-            for i in range(0, len(cached_coord)):
-                pout.append(float(cached_coord[i]))
+            with open(cache, mode="r", encoding="utf-8") as file_handler:
+                cached_coord = file_handler.read().splitlines()
+            for c_coord in cached_coord:
+                pout.append(float(c_coord))
             return pout
 
         zdout = []
@@ -485,14 +646,14 @@ class IGN(SurfexGeo):
                 zdout.append(0.)
 
         # print ksize
-        for i in range(0, len(pin)):
+        for i, pinval in enumerate(pin):
             for j in range(0, ksize):
                 # print i,j,len(pin),ksize,pout[j],pin[i]
-                if pout[j] == pin[i]:
+                if pout[j] == pinval:
                     break
                 if j == ksize - 1:
                     ksize = ksize + 1
-                    pout.append(pin[i])
+                    pout.append(pinval)
                     zdout.append(float(pdin[i]) / 2.)
 
             # Mesh constrains
@@ -516,58 +677,77 @@ class IGN(SurfexGeo):
         # Sort pout
         pout = sorted(pout)
 
-        f = open(cache, "w")
-        for i in range(0, len(pout)):
-            f.write(str(pout[i]) + "\n")
-        print("Cached coordinates for : ", coord)
-        f.close()
-
+        with open(cache, mode="w", encoding="utf-8") as file_handler:
+            for pout_val in pout:
+                file_handler.write(str(pout_val) + "\n")
+        logging.info("Cached coordinates for : %s", coord)
         return pout
 
     @staticmethod
-    def ign_mask(pxall, pyall, xx, yy, recreate):
+    def ign_mask(pxall, pyall, xxx, yyy, recreate):
+        """Create the IGN mask.
+
+        Args:
+            pxall (_type_): _description_
+            pyall (_type_): _description_
+            xxx (_type_): _description_
+            yyy (_type_): _description_
+            recreate (_type_): _description_
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            _type_: _description_
+        """
         mask = []
 
         cache = "/tmp/.mask"
         if os.path.isfile(cache) and not recreate:
-            f = open(cache)
-            cached_mask = f.read().splitlines()
-            f.close()
-            for i in range(0, len(cached_mask)):
-                mask.append(int(cached_mask[i]))
+            with open(cache, mode="r", encoding="utf-8") as file_handler:
+                cached_mask = file_handler.read().splitlines()
 
-            if len(mask) != len(xx) or len(mask) != len(yy):
-                raise Exception("Cached mask mismatch! ", len(mask), len(xx), len(yy))
+            for cached_mask_ind in cached_mask:
+                mask.append(int(cached_mask_ind))
+
+            if len(mask) != len(xxx) or len(mask) != len(yyy):
+                raise Exception("Cached mask mismatch! ", len(mask), len(xxx), len(yyy))
 
             return mask
 
-        print("Creating mask. This takes time:")
+        logging.warning("Creating mask. This takes time:")
         count = -1
 
-        for i in range(0, len(pxall)):
-            for j in range(0, len(pyall)):
+        for i, pxall_val in enumerate(pxall):
+            for pyall_val in pyall:
 
                 count = count + 1
-                for k in range(0, len(xx)):
-                    if xx[k] == pxall[i] and yy[k] == pyall[j]:
+                for k, xval in enumerate(xxx):
+                    if xval == pxall_val and yyy[k] == pyall_val:
                         # print i,j,k,l,xx[k],pxall[i],yy[k],pyall[j]
                         mask.append(count)
                         break
 
-            print(i, "/", len(pxall))
+            logging.debug("%s/%s", i, len(pxall))
 
         # Cache mask for later use
-        # if len(mask) != len(xx) or len(mask) != len(yy): print "Mask mismatch! ", len(mask), len(xx), len(yy); exit(1)
-        f = open(cache, "w")
-        for i in range(0, len(mask)):
-            f.write(str(mask[i])+"\n")
+        with open(cache, mode="w", encoding="utf-8") as file_handler:
+            for mask_ind in mask:
+                file_handler.write(str(mask_ind) + "\n")
 
         # f.write("mask="+str(mask)+"\n")
-        print("Created mask: ", mask)
-        f.close()
+        logging.info("Created mask: %s", mask)
         return mask
 
     def update_namelist(self, nml):
+        """Update namelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist object.
+
+        Returns:
+            nml (f90nml.Namelist): Namelist object.
+        """
         nml.update({
             "nam_pgd_grid": {
                 "cgrid": self.cgrid
@@ -575,8 +755,8 @@ class IGN(SurfexGeo):
             "nam_ign": {
                 "clambert": self.clambert,
                 "npoints": self.npoints,
-                "xx": self.xx,
-                "xy": self.xy,
+                "xx": self.x_x,
+                "xy": self.x_y,
                 "xdx": self.xdx,
                 "xdy": self.xdy,
                 "xx_llcorner": self.xx_llcorner,
@@ -589,16 +769,27 @@ class IGN(SurfexGeo):
         return nml
 
     def subset(self, geo):
-        print("Subset not implemented")
+        """Find subset of geo.
+
+        Args:
+            geo (surfex.Geo): Geometry to check.
+        """
+        logging.info("Subset not implemented")
         lons = []
         lats = []
         return lons, lats
 
-    def write_proj_info(self, fg):
-        raise NotImplementedError
 
+def get_geo_object(from_json):
+    """Get a surfex geometry object from a dictionary.
 
-def get_geo_object(from_json, debug=False):
+    Args:
+        from_json (dict): Domain definition.
+
+    Returns:
+        surfex.Geo: Surfex geometry.
+
+    """
     domain_dict = {}
     for key in from_json:
         lower_case_dict = {}
@@ -608,26 +799,36 @@ def get_geo_object(from_json, debug=False):
 
     if "nam_pgd_grid" in domain_dict:
         if "cgrid" in domain_dict["nam_pgd_grid"]:
-            if domain_dict["nam_pgd_grid"]["cgrid"] == "CONF PROJ":
-                return ConfProj(from_json, debug=debug)
-            elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLATVAL":
-                return LonLatVal(from_json, debug=debug)
-            elif domain_dict["nam_pgd_grid"]["cgrid"] == "LONLAT REG":
-                return LonLatReg(from_json, debug=debug)
-            elif domain_dict["nam_pgd_grid"]["cgrid"] == "IGN":
-                return IGN(from_json, debug=debug)
-            elif domain_dict["nam_pgd_grid"]["cgrid"] == "CARTESIAN":
-                return Cartesian(from_json, debug=debug)
-            else:
-                raise NotImplementedError
-        else:
-            raise KeyError("Missing grid information cgrid")
-    else:
-        raise KeyError("nam_pgd_grid not set!")
+            cgrid = domain_dict["nam_pgd_grid"]["cgrid"]
+            if cgrid == "CONF PROJ":
+                return ConfProj(from_json)
+            if cgrid == "LONLATVAL":
+                return LonLatVal(from_json)
+            if cgrid == "LONLAT REG":
+                return LonLatReg(from_json)
+            if cgrid == "IGN":
+                return IGN(from_json)
+            if cgrid == "CARTESIAN":
+                return Cartesian(from_json)
+            raise NotImplementedError(f"CGRID={cgrid} is not implemented")
+
+        raise KeyError("Missing grid information cgrid")
+    raise KeyError("nam_pgd_grid not set!")
 
 
 def set_domain(settings, domain, hm_mode=False):
-    if type(settings) is dict:
+    """Set domain.
+
+    Args:
+        settings (_type_): _description_
+        domain (_type_): _description_
+        hm_mode (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        dict: Domain dictionary
+
+    """
+    if isinstance(settings, dict):
         if domain in settings:
             if hm_mode:
 
@@ -657,25 +858,32 @@ def set_domain(settings, domain, hm_mode=False):
             else:
                 domain_dict = settings[domain]
             return domain_dict
-        else:
-            print("Domain not found: " + domain)
-            raise Exception("Domain not found: " + domain)
-    else:
-        print("Settings should be a dict")
-        raise Exception("Settings should be a dict")
+
+        logging.error("Domain not found: %s", domain)
+        raise Exception("Domain not found: " + domain)
+    logging.error("Settings should be a dict")
+    raise Exception("Settings should be a dict")
 
 
-def shape2ign(catchment, infile, output, ref_proj, debug=False, indent=None):
-    from osgeo import ogr
+def shape2ign(catchment, infile, output, ref_proj, indent=None):
+    """Read a shape file and convert to IGN geo.
 
-    from_json = json.load(open(ref_proj, "r"))
+    Args:
+        catchment (_type_): _description_
+        infile (_type_): _description_
+        output (_type_): _description_
+        ref_proj (_type_): _description_
+        indent (_type_, optional): _description_. Defaults to None.
+
+    """
+    from_json = json.load(open(ref_proj, mode="r", encoding="utf-8"))
     geo = surfex.get_geo_object(from_json)
     earth = 6.37122e+6
-    proj_string = "+proj=lcc +lat_0=" + str(geo.xlat0) + " +lon_0=" + str(geo.xlon0) + " +lat_1=" + \
-                  str(geo.xlat0) + " +lat_2=" + str(geo.xlat0) + " +units=m +no_defs +R=" + str(earth)
+    proj_string = f"+proj=lcc +lat_0={str(geo.xlat0)} +lon_0={str(geo.xlon0)} " \
+                  f"+lat_1={str(geo.xlat0)} +lat_2={str(geo.xlat0)} " \
+                  f"+units=m +no_defs +R={str(earth)}"
 
-    if debug:
-        print(proj_string)
+    logging.debug(proj_string)
     proj = pyproj.CRS.from_string(proj_string)
     wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
@@ -683,31 +891,29 @@ def shape2ign(catchment, infile, output, ref_proj, debug=False, indent=None):
     shape = shpfile.GetLayer(0)
 
     # TODO find index
-    print("TODO: find ", catchment, " index")
+    logging.info("TODO: find %s index", catchment)
     feature = shape.GetFeature(2562)
     feature_dict = json.loads(feature.ExportToJson())
-    if debug:
-        print(feature_dict["properties"]["stNavn"])
-        print(feature_dict)
+    logging.debug(feature_dict["properties"]["stNavn"])
+    logging.debug(feature_dict)
 
     lons = []
     lats = []
     values = []
-    for p in feature_dict["geometry"]["coordinates"][0]:
-        lons.append(p[0])
-        lats.append(p[1])
-        values.append(p[2])
+    for point in feature_dict["geometry"]["coordinates"][0]:
+        lons.append(point[0])
+        lats.append(point[1])
+        values.append(point[2])
 
-    x, y = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(lons, lats)
-    x1 = min(x)
-    x2 = max(x)
-    y1 = min(y)
-    y2 = max(y)
-    if debug:
-        print(x1, x2, y1, y2)
+    xxx, yyy = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(lons, lats)
+    x_1 = min(xxx)
+    x_2 = max(xxx)
+    y_1 = min(yyy)
+    y_2 = max(yyy)
+    logging.debug("%s %s %s %s", x_1, x_2, y_1, y_2)
     ring = ogr.Geometry(ogr.wkbLinearRing)
-    for p in range(0, len(x)):
-        ring.AddPoint(x[p], y[p])
+    for point, xval in enumerate(xxx):
+        ring.AddPoint(xval, yyy[point])
 
     poly = ogr.Geometry(ogr.wkbPolygon)
     poly.AddGeometry(ring)
@@ -716,22 +922,22 @@ def shape2ign(catchment, infile, output, ref_proj, debug=False, indent=None):
     ign_y = []
     delta_x = 1000
     delta_y = 1000
-    nx = int((x2 - x1) / delta_x) + 1
-    ny = int((y2 - y1) / delta_y) + 1
+    n_x = int((x_2 - x_1) / delta_x) + 1
+    n_y = int((y_2 - y_1) / delta_y) + 1
     xdx = []
     xdy = []
 
     npoints = 0
-    for xp in range(0, nx):
-        xx = x1 + (xp * delta_x) - delta_x
-        for yp in range(0, ny):
-            yy = y1 + (yp * delta_y) - delta_y
+    for x_p in range(0, n_x):
+        xxx = x_1 + (x_p * delta_x) - delta_x
+        for y_p in range(0, n_y):
+            yyy = y_1 + (y_p * delta_y) - delta_y
             point = ogr.Geometry(ogr.wkbPoint)
-            point.AddPoint(xx, yy)
+            point.AddPoint(xxx, yyy)
             if not poly.Intersection(point).IsEmpty():
-                ign_x.append(xx)
+                ign_x.append(xxx)
                 xdx.append(delta_x)
-                ign_y.append(yy)
+                ign_y.append(yyy)
                 xdy.append(delta_y)
                 npoints = npoints + 1
 
@@ -753,5 +959,5 @@ def shape2ign(catchment, infile, output, ref_proj, debug=False, indent=None):
             "nrows": 0
         }
     }
-
-    json.dump(nam_json, open(output, "w"), indent=indent)
+    with open(output, "w", encoding="utf-8") as file_handler:
+        json.dump(nam_json, file_handler, indent=indent)

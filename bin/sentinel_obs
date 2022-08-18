@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
-import surfex
+"""Create observation data set from sentinel data."""
+import logging
 import sys
+import surfex
 
 if __name__ == "__main__":
     kwargs = surfex.parse_sentinel_obs(sys.argv[1:])
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    logging.info("************ sentinel_obs ******************")
     surfex.run_sentinel_obs(**kwargs)

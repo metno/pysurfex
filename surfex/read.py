@@ -1,49 +1,48 @@
+"""Converter and read data."""
+import logging
 import os
-import surfex
-from surfex.util import data_merge
 import copy
 from abc import abstractmethod, ABCMeta
 import numpy as np
-
-try:
-    from StringIO import StringIO   # Python 2.x
-except ImportError:
-    from io import StringIO         # Python 3.x
+import surfex
 
 
 class ReadData(object):
+    """Read data class."""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, geo, var_name):
+        """Construct readData object."""
         self.geo = geo
         self.var_name = var_name
         # print "Constructed "+self.__class__.__name__+" for " + self.var_name
 
     @abstractmethod
     def read_time_step(self, validtime, cache):
+        """To be implemented."""
         raise NotImplementedError('users must define read_time_step to use this base class')
 
     @abstractmethod
     def print_info(self):
+        """To be implemented."""
         raise NotImplementedError('users must define read_time_step to use this base class')
 
 
-class Points(object):
-    def __init__(self, values, interpolator):
-        self.values = values
-        self.interpolator = interpolator
+# class Points(object):
+#    def __init__(self, values, interpolator):
+#        self.values = values
+#        self.interpolator = interpolator
 
-
-class TwoDField(object):
-    def __init__(self, values, geo):
-        self.values = values
-        self.geo = geo
+# class TwoDField(object):
+#    def __init__(self, values, geo):
+#        self.values = values
+#        self.geo = geo
 
 
 # Direct data can be ead with this class with converter = None
 class ConvertedInput(ReadData):
-    """
-    Converted input
+    """Converted input.
 
     Args:
         geo (surfex.Geo): Surfex geometry
@@ -52,10 +51,28 @@ class ConvertedInput(ReadData):
     """
 
     def __init__(self, geo, var_name, converter):
+        """Construct converted input.
+
+        Args:
+            geo (_type_): _description_
+            var_name (_type_): _description_
+            converter (_type_): _description_
+
+        """
         ReadData.__init__(self, geo, var_name)
         self.converter = converter
 
     def read_time_step(self, validtime, cache):
+        """Read time  step.
+
+        Args:
+            validtime (_type_): _description_
+            cache (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         field = self.converter.read_time_step(self.geo, validtime, cache)
         # Preserve positive values for precipitation
         # TODO
@@ -64,40 +81,62 @@ class ConvertedInput(ReadData):
         return field
 
     def print_info(self):
-        self.converter.print_info()
+        """Print info."""
+        return self.converter.print_info()
 
 
 class ConstantValue(ReadData):
-    """
-    Set a field to a constant value
+    """Constant value converter."""
 
-    :param geo: Geometry object
-    :type geo: surfex.Geo
-    :param var_name: Variable name
-    :type var_name: str
-    :param var_dict: Variable definition
-    :type var_dict: dict
-    """
     def __init__(self, geo, var_name, var_dict):
+        """Set a field to a constant value.
+
+        Args:
+            geo (surfex.Geo): Geometry object
+            var_name (str): Variable name
+            var_dict (dict): Variable definition
+
+        """
         ReadData.__init__(self, geo, var_name)
         self.var_dict = var_dict
         if "value" in self.var_dict:
             self.value = self.var_dict["value"]
         else:
-            print("Constant value must have a value!")
-            raise
+            raise Exception("Constant value must have a value!")
 
     def read_time_step(self, validtime, cache):
+        """Read time step.
+
+        Args:
+            validtime (_type_): _description_
+            cache (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         field = np.array([float(i) for i in range(0, self.geo.npoints)])
         field.fill(self.value)
         # print field.shape
         return field
 
     def print_info(self):
-        print(self.var_name)
+        """Print info."""
+        return self.var_name
 
 
 def remove_existing_file(f_in, f_out):
+    """Remove existing file.
+
+    Args:
+        f_in (_type_): _description_
+        f_out (_type_): _description_
+
+    Raises:
+        FileNotFoundError: _description_
+        IsADirectoryError: _description_
+
+    """
     if f_in is None:
         raise FileNotFoundError("Input file not set")
     # If files are not the same file
@@ -119,7 +158,8 @@ def remove_existing_file(f_in, f_out):
 
 
 class Converter(object):
-    """
+    """Converter.
+
     Main interface to read a field is done through a converter.
     The converter name is default "None" to read a plain field without any conversion.
 
@@ -129,111 +169,134 @@ class Converter(object):
         defs (dict): A dictionary defining the variables
         conf (dict): A dictionary defining the converter
         fileformat (str): Fileformat of the converter
-        debug (bool): Debug option
 
     """
 
-    def __init__(self, name, initial_time, defs, conf, fileformat, debug=False):
-        """
-        Initializing the converter
-        """
+    def __init__(self, name, initial_time, defs, conf, fileformat):
+        """Initialize the converter.
 
+        Args:
+            name (_type_): _description_
+            initial_time (_type_): _description_
+            defs (_type_): _description_
+            conf (_type_): _description_
+            fileformat (_type_): _description_
+
+        Raises:
+            KeyError: _description_
+            NotImplementedError: _description_
+
+        """
         self.name = name
         self.initial_time = initial_time
         # self.validtime = validtime
         # self.basetime = basetime
 
-        if debug:
-            surfex.debug(__file__, self.__class__.__name__, "Converter name:", self.name)
-            surfex.debug(__file__, self.__class__.__name__, "Converter config: ", conf)
+        logging.debug("Converter name: %s", self.name)
+        logging.debug("Converter config: %s", conf)
         if self.name not in conf:
-            print(conf)
+            logging.debug("conf: %s", conf)
             raise KeyError(self.name + " is missing in converter definition")
 
         if self.name == "none":
-            self.var = self.create_variable(fileformat, defs, conf[self.name], debug)
+            self.var = self.create_variable(fileformat, defs, conf[self.name])
         elif name == "rh2q":
-            self.rh = self.create_variable(fileformat, defs, conf[self.name]["rh"], debug)
-            self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
-            self.p = self.create_variable(fileformat, defs, conf[self.name]["p"], debug)
+            self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
         elif name == "windspeed" or name == "winddir":
-            self.x = self.create_variable(fileformat, defs, conf[self.name]["x"], debug)
-            self.y = self.create_variable(fileformat, defs, conf[self.name]["y"], debug)
+            self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
+            self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
         elif name == "totalprec":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
-            self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"], debug)
+            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"])
         elif name == "calcsnow":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
-            self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
+            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "calcrain":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"], debug)
-            self.t = self.create_variable(fileformat, defs, conf[self.name]["t"], debug)
+            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "phi2m":
-            self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"], debug)
+            self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"])
         elif self.name == "swe2sd":
-            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"], debug)
+            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"])
         elif self.name == "sweclim":
-            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"], debug)
+            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"])
         elif self.name == "sea2land":
-            self.sea = self.create_variable(fileformat, defs, conf[self.name]["sea"], debug)
+            self.sea = self.create_variable(fileformat, defs, conf[self.name]["sea"])
         elif self.name == "tap":
-            self.tap1 = self.create_variable(fileformat, defs, conf[self.name]["tap1"], debug)
-            self.tap2 = self.create_variable(fileformat, defs, conf[self.name]["tap2"], debug)
+            self.tap1 = self.create_variable(fileformat, defs, conf[self.name]["tap1"])
+            self.tap2 = self.create_variable(fileformat, defs, conf[self.name]["tap2"])
         elif self.name == "rhp":
-            self.rhp1 = self.create_variable(fileformat, defs, conf[self.name]["rhp1"], debug)
-            self.rhp2 = self.create_variable(fileformat, defs, conf[self.name]["rhp2"], debug)
+            self.rhp1 = self.create_variable(fileformat, defs, conf[self.name]["rhp1"])
+            self.rhp2 = self.create_variable(fileformat, defs, conf[self.name]["rhp2"])
         elif self.name == "sdp":
-            self.sdp1 = self.create_variable(fileformat, defs, conf[self.name]["sdp1"], debug)
-            self.sdp2 = self.create_variable(fileformat, defs, conf[self.name]["sdp2"], debug)
+            self.sdp1 = self.create_variable(fileformat, defs, conf[self.name]["sdp1"])
+            self.sdp2 = self.create_variable(fileformat, defs, conf[self.name]["sdp2"])
         elif self.name == "smp":
-            self.smp1 = self.create_variable(fileformat, defs, conf[self.name]["smp1"], debug)
-            self.smp2 = self.create_variable(fileformat, defs, conf[self.name]["smp2"], debug)
+            self.smp1 = self.create_variable(fileformat, defs, conf[self.name]["smp1"])
+            self.smp2 = self.create_variable(fileformat, defs, conf[self.name]["smp2"])
         elif self.name == "nature_town":
-            self.nature_fraction = self.create_variable(fileformat, defs, conf[self.name]["nature_fraction"], debug)
-            self.town_fraction = self.create_variable(fileformat, defs, conf[self.name]["town_fraction"], debug)
+            self.nature_fraction = self.create_variable(fileformat, defs,
+                                                        conf[self.name]["nature_fraction"])
+            self.town_fraction = self.create_variable(fileformat, defs,
+                                                      conf[self.name]["town_fraction"])
         elif self.name == "cloud_base":
-            self.cloud_base = self.create_variable(fileformat, defs, conf[self.name]["cloud_base"], debug)
+            self.cloud_base = self.create_variable(fileformat, defs,
+                                                   conf[self.name]["cloud_base"])
         else:
             raise NotImplementedError("Converter " + self.name + " not implemented")
 
-        # print "Constructed the converter " + self.name
+        logging.debug("Constructed the converter %s", self.name)
 
     def print_info(self):
-        surfex.debug(__file__, self.__class__.print_info.__name__, "", self.name)
+        """Print info."""
+        return f"name: {self.name}"
 
-    def create_variable(self, fileformat, defs, var_dict, debug):
-        """
-        Create a variable
+    def create_variable(self, fileformat, defs, var_dict):
+        """Create a variable.
 
         Args:
             fileformat (str): Fileformat
             defs (dict): defs
             var_dict (dict): Variable dictionary
-            debug(bool): Debug option
 
         Raises:
              NotImplementedError: Not implemented
 
         Returns:
             field: The read field
-        """
 
+        """
         # Finally we can merge the variable with the default settings
         # Create deep copies not to inherit between variables
         defs = copy.deepcopy(defs)
         var_dict = copy.deepcopy(var_dict)
         if var_dict is None:
             raise Exception("Variable is not set")
-        merged_dict = data_merge(defs, var_dict)
+        merged_dict = surfex.data_merge(defs, var_dict)
 
-        var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time, debug=debug)
+        var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time)
 
-        if debug:
-            var.print_variable_info()
+        logging.debug(var.print_variable_info())
         return var
 
     def read_time_step(self, geo, validtime, cache):
+        """Read time step.
 
+        Args:
+            geo (_type_): _description_
+            validtime (_type_): _description_
+            cache (_type_): _description_
+
+        Raises:
+            Exception: _description_
+            NotImplementedError: _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         gravity = 9.81
         field = None
         # field = np.empty(geo.npoints)
@@ -241,8 +304,8 @@ class Converter(object):
         if self.name == "none":
             field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
-            field_x = self.x.read_variable(geo, validtime, cache)
-            field_y = self.y.read_variable(geo, validtime, cache)
+            field_x = self.x_wind.read_variable(geo, validtime, cache)
+            field_y = self.y_wind.read_variable(geo, validtime, cache)
             # field_y = self.y.read_variable(geo,validtime,cache)
             if self.name == "windspeed":
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
@@ -252,16 +315,16 @@ class Converter(object):
                 field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180, 360)
 
         elif self.name == "rh2q":
-            field_rh = self.rh.read_variable(geo, validtime, cache)  # %
-            field_t = self.t.read_variable(geo, validtime, cache)  # In K
-            field_p = self.p.read_variable(geo, validtime, cache)  # In Pa
+            field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
+            field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
+            field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
 
-            field_p_mb = np.divide(field_p, 100.)
-            field_t_c = np.subtract(field_t, 273.15)
+            field_p_mb = np.divide(field_pres, 100.)
+            field_t_c = np.subtract(field_temp, 273.15)
 
             exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
-            es = np.multiply(6.112, np.exp(exp))
-            field = np.divide(np.multiply(0.622, field_rh / 100.) * es, field_p_mb)
+            esat = np.multiply(6.112, np.exp(exp))
+            field = np.divide(np.multiply(0.622, field_r_h / 100.) * esat, field_p_mb)
 
             # ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
             # ZE = ZRH * ZES
@@ -277,13 +340,13 @@ class Converter(object):
 
         elif self.name == "calcrain":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
-            field_t = self.t.read_variable(geo, validtime, cache)
+            field_t = self.temp.read_variable(geo, validtime, cache)
             field = field_totalprec
             field[field_t <= 274.16] = 0
         elif self.name == "calcsnow":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             # field_rh = self.rh.read_variable(geo, validtime,cache) #
-            field_t = self.t.read_variable(geo, validtime, cache)  # In K
+            field_t = self.temp.read_variable(geo, validtime, cache)  # In K
             # field_p = self.p.read_variable(geo, validtime,cache)   # In Pa
             # tc = field_t + 273.15
             # e  = (field_rh)*0.611*exp((17.63*tc)/(tc+243.04));
@@ -306,7 +369,8 @@ class Converter(object):
             field = np.divide(field, rho)
         elif self.name == "sweclim":
             field = self.swe.read_variable(geo, validtime, cache)
-            rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312., "07": 312., "08": 143.,
+            rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312.,
+                       "07": 312., "08": 143.,
                        "09": 143., "10": 161., "11": 182., "12": 213.}
             month = validtime.strftime("%m")
             if month in rhoclim:
@@ -338,31 +402,20 @@ class Converter(object):
             field = np.add(nature, town)
             field[field > 1] = 1.0
         elif self.name == "cloud_base":
-            print("Converter cloud_base")
-            import gridpp
+            logging.info("Converter cloud_base")
 
             field = self.cloud_base.read_variable(geo, validtime, cache)
-            a = field.reshape(geo.nlons, geo.nlats)
+            field_2d = field.reshape(geo.nlons, geo.nlats)
 
-            def fill_field(aa, radius=1):
-                ovalues = gridpp.neighbourhood(aa, radius, gridpp.Mean)
-                nn = 0
-                for i in range(0, geo.nlons):
-                    for j in range(0, geo.nlats):
-                        if np.isnan(aa[i][j]):
-                            nn = nn + 1
-                            # print("Sub ", i, j, nn)
-                            aa[i][j] = ovalues[i][j]
-                return aa, nn
+            iteration = 0
+            while np.any(np.isnan(field_2d)):
+                logging.debug("Filling cloud base")
+                field_2d, nans = surfex.fill_field(field_2d, geo, radius=3)
+                iteration = iteration + 1
+                logging.debug("Iteration %s NaNs: %s", iteration, nans)
 
-            it = 0
-            while np.any(np.isnan(a)):
-                print("Filling cloud base")
-                a, n = fill_field(a, radius=3)
-                it = it + 1
-                print("Iteration ", it, "NaNs:", n)
-
-            field = a.reshape(geo.nlons * geo.nlats)
+            # Reshape back to 1D
+            field = field_2d.reshape(geo.nlons * geo.nlats)
 
         else:
             raise NotImplementedError("Converter " + self.name + " not implemented")

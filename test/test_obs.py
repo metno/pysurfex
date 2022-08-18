@@ -1,11 +1,19 @@
+"""Observation tests."""
 import unittest
-import surfex
+import logging
 from datetime import datetime
+import surfex
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
 
 
 class ObsTest(unittest.TestCase):
+    """Observation tests."""
 
     def setUp(self):
+        """Set up."""
         self.testdata = "testdata/"
         self.settings = {
             "t2m": {
@@ -14,16 +22,14 @@ class ObsTest(unittest.TestCase):
                     "varname": "Temperature",
                     "filetype": "netatmo",
                     "lonrange": [9.5, 10.5],
-                    "latrange": [59.5, 60.5],
-                    "debug": True
+                    "latrange": [59.5, 60.5]
                 },
                 "bufr_label": {
                     "filepattern": self.testdata + "/ob2020111306",
                     "filetype": "bufr",
                     "varname": "airTemperatureAt2M",
                     "unit": "K",
-                    "range": 1800,
-                    "debug": True
+                    "range": 1800
                 },
                 "frost_label": {
                     "varname": "air_temperature",
@@ -45,22 +51,19 @@ class ObsTest(unittest.TestCase):
                     "varname": "Humidity",
                     "filetype": "netatmo",
                     "lonrange": [9.5, 10.5],
-                    "latrange": [59.5, 60.5],
-                    "debug": True
+                    "latrange": [59.5, 60.5]
                 },
                 "bufr_label": {
                     "filepattern": self.testdata + "/ob2020111306",
                     "filetype": "bufr",
                     "varname": "relativeHumidityAt2M",
                     "unit": "1",
-                    "range": 1800,
-                    "debug": True
+                    "range": 1800
                 },
                 "frost_label": {
                     "varname": "relative_humidity",
                     "unit": "1",
                     "filetype": "frost",
-                    "debug": True,
                     "lonrange": [10, 11],
                     "latrange": [59, 60],
                     "level": {
@@ -76,54 +79,53 @@ class ObsTest(unittest.TestCase):
                     "filetype": "bufr",
                     "varname": "totalSnowDepth",
                     "unit": "m",
-                    "range": 1800,
-                    "debug": True
+                    "range": 1800
                 },
                 "frost_label": {
                     "varname": "surface_snow_thickness",
                     "unit": "m",
                     "filetype": "frost",
-                    "debug": True,
                     "lonrange": [10, 11],
-                    "latrange": [59, 60],
+                    "latrange": [59, 60]
                 }
             }
         }
 
     def test_obs_t2m(self):
-
+        """Test t2m observations."""
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["t2m"]
-        print(settings)
+        logging.debug(settings)
         datasources = surfex.get_datasources(an_time, settings)
-        for d in datasources:
-            ft = settings[d.label]["filetype"]
-            d.write_json_file("unittest_" + ft + "_t2m.json", indent=2)
-            print(d.size)
+        for das in datasources:
+            fit = settings[das.label]["filetype"]
+            das.write_json_file("unittest_" + fit + "_t2m.json", indent=2)
+            logging.debug(das.size)
 
     def test_obs_rh2m(self):
-
+        """Test rh2m observations."""
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["rh2m"]
-        print(settings)
+        logging.debug("RH2M settings %s", settings)
         datasources = surfex.get_datasources(an_time, settings)
-        for d in datasources:
-            ft = settings[d.label]["filetype"]
-            d.write_json_file("unittest_" + ft + "_rh2m.json", indent=2)
-            print(d.size)
+        for das in datasources:
+            fit = settings[das.label]["filetype"]
+            das.write_json_file("unittest_" + fit + "_rh2m.json", indent=2)
+            logging.debug(das.size)
 
     def test_obs_sd(self):
-
+        """Test sd observations."""
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["sd"]
-        print(settings)
+        logging.debug(settings)
         datasources = surfex.get_datasources(an_time, settings)
-        for d in datasources:
-            ft = settings[d.label]["filetype"]
-            d.write_json_file("unittest_" + ft + "_sd.json", indent=2)
-            print(d.size)
+        for das in datasources:
+            fit = settings[das.label]["filetype"]
+            das.write_json_file("unittest_" + fit + "_sd.json", indent=2)
+            logging.debug(das.size)
 
     def test_bufr2json(self):
+        """Test bufr to json conversion."""
         argv = [
             "-v", "airTemperatureAt2M",
             "-b", self.testdata + "/ob2020111306",

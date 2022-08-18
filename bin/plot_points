@@ -1,7 +1,19 @@
 #!/usr/bin/env python3
-
-import surfex
+"""Plot points using a converter."""
+import logging
 import sys
+import surfex
 
-kwargs = surfex.parse_args_plot_points(sys.argv[1:])
-surfex.run_plot_points(**kwargs)
+
+if __name__ == "__main__":
+
+    kwargs = surfex.parse_args_plot_points(sys.argv[1:])
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    logging.info("************ plot_points ******************")
+    surfex.run_plot_points(**kwargs)

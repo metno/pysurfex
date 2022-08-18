@@ -1,14 +1,22 @@
+"""Test converter."""
 import unittest
-import surfex
+import logging
 from datetime import datetime
-import numpy as np
 import json
+import numpy as np
+import surfex
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
+                    level=logging.DEBUG)
 
 
 class ConverterTest(unittest.TestCase):
+    """Test converter."""
 
     testdata = "testdata/"
-    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    with open("test/settings/domains.json", mode="r", encoding="utf-8") as file_handler:
+        domains = json.load(file_handler)
+    domain = surfex.geo.set_domain(domains, "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
@@ -36,15 +44,16 @@ class ConverterTest(unittest.TestCase):
 
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
-    debug = False
 
     validtime = datetime(year=2020, month=2, day=1, hour=6)
-    cache = surfex.Cache(debug, 7200)
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    cache = surfex.Cache(7200)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat)
     field = surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
-    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    with open("test/settings/domains.json", mode="r", encoding="utf-8") as file_handler:
+        domains = json.load(file_handler)
+    domain = surfex.geo.set_domain(domains, "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "surfex"
@@ -61,7 +70,7 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "varname": "FRAC_NATURE",
-                        "filepattern": testdata + "/PGD_CONF_PROJ.txt"
+                        "filepattern": testdata + "/CONF_PROJ/climate/PGD.txt"
                     }
                 }
             }
@@ -72,15 +81,16 @@ class ConverterTest(unittest.TestCase):
 
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
-    debug = False
 
     validtime = datetime(year=2020, month=2, day=1, hour=6)
-    cache = surfex.Cache(debug, 7200)
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    cache = surfex.Cache(7200)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat)
     surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
-    domain = surfex.geo.set_domain(json.load(open("test/settings/domains.json", "r")), "CONF_PROJ_TEST")
+    with open("test/settings/domains.json", mode="r", encoding="utf-8") as file_handler:
+        domains = json.load(file_handler)
+    domain = surfex.geo.set_domain(domains, "CONF_PROJ_TEST")
     my_geo = surfex.geo.get_geo_object(domain)
 
     fileformat = "netcdf"
@@ -108,10 +118,9 @@ class ConverterTest(unittest.TestCase):
 
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
-    debug = False
 
     validtime = datetime(year=2020, month=11, day=13, hour=3)
-    cache = surfex.Cache(debug, 7200)
-    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat, validtime)
+    cache = surfex.Cache(7200)
+    converter = surfex.read.Converter(converter, validtime, defs, converter_conf, fileformat)
     surfex.read.ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])

@@ -1,106 +1,89 @@
-import sys
+"""Misc."""
 import os
-from datetime import datetime
+# from datetime import datetime
 import collections
 import toml
 
 
-def error(message):
-    """ Write error message to console and abort """
-    print("\033[1;31mError: " + message + "\033[0m")
-    sys.exit(1)
-
-
-def debug(path, name, *args):
-    """ Write debug to console """
-    message = ""
-    for arg in args:
-        message = message + " " + str(arg)
-    print("\033[1;34m" + str(path) + "::" + name + " " + message + "\033[0m")
-
-
-def info(message, level=0):
-    """ Write a information message to console """
-    if level < 1:
-        print("\033[1;92mINFO: " + message + "\033[0m")
-
-
-def warning(message):
-    """ Write a warning message to console """
-    print("\033[1;33mWarning: " + message + "\033[0m")
-
-
-def unixtime_to_datenum(time):
-
-    """ Converts unixtime into datenum
-
-    Arguments:
-      time (int): unixtime in seconds since 1970
-
-    Returns:
-      int: datenum value
-    """
-   
-    dt = datetime.utcfromtimestamp(time)
-    try:
-        from matplotlib import dates
-        dt2 = dates.date2num(dt)
-        return dt2
-    except ImportError:
-        raise Exception("You need to have dates installed")
+# def unixtime_to_datenum(time):
+#
+#    """ Converts unixtime into datenum
+#
+#    Arguments:
+#      time (int): unixtime in seconds since 1970
+#
+#    Returns:
+#      int: datenum value
+#
+#    """
+#    dt = datetime.utcfromtimestamp(time)
+#    try:
+#        from matplotlib import dates
+#        dt2 = dates.date2num(dt)
+#        return dt2
+#    except ImportError:
+#        raise Exception("You need to have dates installed")
 
 
 class YamlReaderError(Exception):
-    pass
+    """Error."""
 
 
-def data_merge(a, b):
-    """merges b into a and return merged result
+def data_merge(aaa, bbb):
+    """Merge bbb into aaa and return merged result.
 
-    NOTE: tuples and arbitrary objects are not handled as it is totally ambiguous what should happen"""
+    NOTE: tuples and arbitrary objects are not handled as it is
+    totally ambiguous what should happen
+
+    """
     key = None
     # ## debug output
     # sys.stderr.write("DEBUG: %s to %s\n" %(b,a))
     try:
-        if a is None or isinstance(a, str) or isinstance(a, int) or isinstance(a, float):
+        if aaa is None or isinstance(aaa, str) or isinstance(aaa, int) or isinstance(aaa, float):
             # border case for first run or if a is a primitive
-            a = b
-        elif isinstance(a, list):
+            aaa = bbb
+        elif isinstance(aaa, list):
             # lists can be only appended
-            if isinstance(b, list):
+            if isinstance(bbb, list):
                 # merge lists
-                a.extend(b)
+                aaa.extend(bbb)
             else:
                 # append to list
-                a.append(b)
-        elif isinstance(a, dict):
+                aaa.append(bbb)
+        elif isinstance(aaa, dict):
             # dicts must be merged
-            if isinstance(b, dict):
-                for key in b:
-                    if key in a:
-                        a[key] = data_merge(a[key], b[key])
+            if isinstance(bbb, dict):
+                for key in bbb:
+                    if key in aaa:
+                        aaa[key] = data_merge(aaa[key], bbb[key])
                     else:
-                        a[key] = b[key]
+                        aaa[key] = bbb[key]
             else:
-                raise YamlReaderError('Cannot merge non-dict "%s" into dict "%s"' % (b, a))
+                raise YamlReaderError(f'Cannot merge non-dict "{bbb}" into dict "{aaa}"')
         else:
-            raise YamlReaderError('NOT IMPLEMENTED "%s" into "%s"' % (b, a))
-    except TypeError as e:
-        raise YamlReaderError('TypeError "%s" in key "%s" when merging "%s" into "%s"' % (e, key, b, a))
-    return a
+            raise YamlReaderError(f'NOT IMPLEMENTED "{bbb}" into "{aaa}"')
+    except TypeError as exc:
+        raise YamlReaderError(f'TypeError "{exc}" in key "{key}" when merging '
+                              f' "{bbb}" into "{aaa}"') \
+            from TypeError
+    return aaa
 
 
 def merge_toml_env(old_env, mods):
+    """Merge."""
     # print(mods)
     return deep_update(old_env, mods)
 
 
 def merge_toml_env_from_files(toml_files):
+    """Merge."""
     merged_env = {}
     for toml_file in toml_files:
         if os.path.exists(toml_file):
             # print(toml_file)
-            modification = toml.load(open(toml_file, "r"))
+            with open(toml_file, mode="r", encoding="utf-8") as file_handler:
+                modification = toml.load(file_handler)
             # print(modification)
             merged_env = merge_toml_env(merged_env, modification)
             # print(merged_env)
@@ -110,8 +93,8 @@ def merge_toml_env_from_files(toml_files):
 
 
 def deep_update(source, overrides):
-    """
-    Update a nested dictionary or similar mapping.
+    """Update a nested dictionary or similar mapping.
+
     Modify ``source`` in place.
     """
     for key, value in overrides.items():
