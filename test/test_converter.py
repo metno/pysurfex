@@ -40,8 +40,7 @@ class ConverterTest(unittest.TestCase):
         }
     }
 
-    print(var, fileformat)
-
+    logging.debug("var=%s fileformat=%s", var, fileformat)
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 
@@ -70,15 +69,14 @@ class ConverterTest(unittest.TestCase):
                 "converter": {
                     "none": {
                         "varname": "FRAC_NATURE",
-                        "filepattern": testdata + "/CONF_PROJ/climate/PGD.txt"
+                        "filepattern": testdata + "/PGD_CONF_PROJ.txt"
                     }
                 }
             }
         }
     }
 
-    print(var, fileformat)
-
+    logging.debug("var=%s fileformat=%s", var, fileformat)
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 
@@ -114,8 +112,7 @@ class ConverterTest(unittest.TestCase):
         }
     }
 
-    print(var, fileformat)
-
+    logging.debug("var=%s fileformat=%s", var, fileformat)
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 

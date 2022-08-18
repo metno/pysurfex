@@ -174,8 +174,7 @@ class RunTestNC(unittest.TestCase):
             tomlkit.dump(config, file_handler)
 
         # pgd = output
-        pgd = f"{self.rootdir}/testdata/CONF_PROJ/climate/PGD.nc"
-        logging.debug("TRYGVE %s ", pgd)
+        pgd = f"{self.rootdir}/testdata/PGD_CONF_PROJ.txt"
         output = os.getcwd() + "/unittest_PREP_TEST_" + self.grid + extension
         if "PREP_BINARY" in os.environ and os.environ["PREP_BINARY"] != "":
             binary = os.environ["PREP_BINARY"]
