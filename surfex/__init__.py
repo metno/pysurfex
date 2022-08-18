@@ -1,5 +1,5 @@
 """pysurfex module."""
-__version__ = '0.0.1a22'
+__version__ = '0.0.2'
 
 from .file import SurfexIO, SurfexSurfIO, AsciiSurfexFile, NetCDFSurfexFile, ForcingFileNetCDF, \
     SurfFileTypeExtension, FaSurfexFile, SurfexFileVariable, NCSurfexFile, TexteSurfexFile, \
