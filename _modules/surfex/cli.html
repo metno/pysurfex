@@ -718,7 +718,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">mode</span> <span class="o">+</span> <span class="s2">&quot; is not implemented!&quot;</span><span class="p">)</span>
 
-    <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+    <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span>
+                                      <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+    <span class="c1"># my_settings = surfex.NamelistBlocks(mode, config, namelist_path,</span>
+    <span class="c1">#                                    dtg=dtg, fcint=3).get_namelist()</span>
     <span class="n">geo</span><span class="o">.</span><span class="n">update_namelist</span><span class="p">(</span><span class="n">my_settings</span><span class="p">)</span>
 
     <span class="c1"># Create input</span>
@@ -887,9 +890,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;File not found: &quot;</span> <span class="o">+</span> <span class="n">config</span><span class="p">)</span>
 
-    <span class="c1"># if &quot;config&quot; in kwargs:</span>
-    <span class="c1">#    del(kwargs[&quot;config&quot;])</span>
-
     <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;system_file_paths&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">):</span>
         <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
@@ -985,10 +985,6 @@
     <span class="k">if</span> <span class="n">need_prep</span><span class="p">:</span>
         <span class="n">prep_file_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep&quot;</span><span class="p">]</span>
 
-    <span class="n">sfx_version</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;sfx_version&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">sfx_version</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sfx_version&quot;</span><span class="p">]</span>
-
     <span class="n">pert</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;pert&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">pert</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pert&quot;</span><span class="p">]</span>
@@ -1011,16 +1007,20 @@
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;File not found: &quot;</span> <span class="o">+</span> <span class="n">archive</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TRYGVE0 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pgd_file_path</span><span class="p">)</span>
-        <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Namelist</span><span class="p">(</span><span class="n">sfx_version</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">,</span>
-                                      <span class="n">prep_file</span><span class="o">=</span><span class="n">prep_input_file</span><span class="p">,</span> <span class="n">prep_filetype</span><span class="o">=</span><span class="n">prep_input_filetype</span><span class="p">,</span>
-                                      <span class="n">prep_pgdfile</span><span class="o">=</span><span class="n">prep_input_pgdfile</span><span class="p">,</span>
-                                      <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="n">prep_input_pgdfiletype</span><span class="p">,</span>
-                                      <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+        <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">,</span>
+                                          <span class="n">prep_file</span><span class="o">=</span><span class="n">prep_input_file</span><span class="p">,</span>
+                                          <span class="n">prep_filetype</span><span class="o">=</span><span class="n">prep_input_filetype</span><span class="p">,</span>
+                                          <span class="n">prep_pgdfile</span><span class="o">=</span><span class="n">prep_input_pgdfile</span><span class="p">,</span>
+                                          <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="n">prep_input_pgdfiletype</span><span class="p">,</span>
+                                          <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+        <span class="c1"># my_settings = surfex.NamelistBlocks(mode, config, namelist_path, forc_zs=forc_zs,</span>
+        <span class="c1">#                                    prep_file=prep_input_file,</span>
+        <span class="c1">#                                    prep_filetype=prep_input_filetype,</span>
+        <span class="c1">#                                    prep_pgdfile=prep_input_pgdfile,</span>
+        <span class="c1">#                                    prep_pgdfiletype=prep_input_pgdfiletype,</span>
+        <span class="c1">#                                    dtg=dtg, fcint=3).get_namelist()</span>
         <span class="n">geo</span><span class="o">.</span><span class="n">update_namelist</span><span class="p">(</span><span class="n">my_settings</span><span class="p">)</span>
 
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TRYGVE1 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pgd_file_path</span><span class="p">)</span>
         <span class="c1"># Create input</span>
         <span class="n">my_format</span> <span class="o">=</span> <span class="n">my_settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;csurf_filetype&quot;</span><span class="p">]</span>
         <span class="n">my_pgdfile</span> <span class="o">=</span> <span class="n">my_settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;cpgdfile&quot;</span><span class="p">]</span>
@@ -1033,7 +1033,6 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pgdfile=</span><span class="si">%s</span><span class="s2"> lfagmap=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">my_pgdfile</span><span class="p">,</span> <span class="n">lfagmap</span><span class="p">,</span> <span class="n">pgd_file_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">need_pgd</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Need pgd&quot;</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TRYGVE2 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pgd_file_path</span><span class="p">)</span>
             <span class="n">my_pgdfile</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">PGDFile</span><span class="p">(</span><span class="n">my_format</span><span class="p">,</span> <span class="n">my_pgdfile</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="n">pgd_file_path</span><span class="p">,</span>
                                              <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span>
                                              <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
@@ -1076,6 +1075,151 @@
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> already exists!&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">parse_args_create_namelist</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for creating a namelist.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        argv (list): List with arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Parsed arguments.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Create namelist&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">surfex</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Debug&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--wrapper&#39;</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Execution wrapper command&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Type of namelist&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--method&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prep_file&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prep_filetype&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prep_pgdfile&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prep_pgdfiletype&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--forc_zs&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set model ZS to forcing ZS&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--forcing_dir&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--harmonie&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Surfex configuration created from Harmonie environment&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--system_file_paths&#39;</span><span class="p">,</span> <span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input file paths on your system&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--namelist_path&#39;</span><span class="p">,</span> <span class="s1">&#39;-n&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--domain&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;JSON file with domain&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--dtg&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">kwargs</span>
+
+
+<span class="k">def</span> <span class="nf">run_create_namelist</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a namelist.&quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
+        <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;config&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">config_exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">config_exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config_exp</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/cfg/config_exp_surfex.toml&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using default config from: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">config_exp</span><span class="p">)</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">config_exp</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">input_data</span><span class="p">)</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">geo</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;domain&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing domain definition&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;config&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing config&quot;</span><span class="p">)</span>
+
+        <span class="n">domain</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">domain</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+                <span class="n">domain_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+            <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">get_geo_object</span><span class="p">(</span><span class="n">domain_json</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;File not found: &quot;</span> <span class="o">+</span> <span class="n">domain</span><span class="p">)</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+                <span class="n">input_data</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">Configuration</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;File not found: &quot;</span> <span class="o">+</span> <span class="n">config</span><span class="p">)</span>
+
+    <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;system_file_paths&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">):</span>
+        <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;File not found: &quot;</span> <span class="o">+</span> <span class="n">system_file_paths</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;forcing_dir&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">system_file_paths</span><span class="o">.</span><span class="n">add_system_file_path</span><span class="p">(</span><span class="s2">&quot;forcing_dir&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;forcing_dir&quot;</span><span class="p">])</span>
+
+    <span class="n">prep_input_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;prep_file&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">prep_input_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep_file&quot;</span><span class="p">]</span>
+    <span class="n">prep_input_pgdfile</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;prep_pgdfile&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">prep_input_pgdfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep_pgdfile&quot;</span><span class="p">]</span>
+    <span class="n">prep_input_filetype</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;prep_filetype&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">prep_input_filetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep_filetype&quot;</span><span class="p">]</span>
+    <span class="n">prep_input_pgdfiletype</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;prep_pgdfiletype&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">prep_input_pgdfiletype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prep_pgdfiletype&quot;</span><span class="p">]</span>
+
+    <span class="c1"># TODO</span>
+    <span class="n">perturbed_file_pattern</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">perturbed_file_pattern</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">perturbed_file_pattern</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;perturbed_file_pattern&quot;</span><span class="p">]</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;OPTIONS.nam&quot;</span>
+    <span class="n">dtg</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;dtg&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">dtg</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dtg&quot;</span><span class="p">:</span> <span class="n">dtg</span><span class="p">})</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;kwargs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+
+    <span class="n">namelist_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;namelist_path&quot;</span><span class="p">]</span>
+    <span class="n">forc_zs</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="s2">&quot;forc_zs&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">forc_zs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;forc_zs&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;method&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;blocks&quot;</span><span class="p">:</span>
+        <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">NamelistBlocks</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">,</span>
+                                            <span class="n">prep_file</span><span class="o">=</span><span class="n">prep_input_file</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+                                            <span class="n">prep_filetype</span><span class="o">=</span><span class="n">prep_input_filetype</span><span class="p">,</span>
+                                            <span class="n">prep_pgdfile</span><span class="o">=</span><span class="n">prep_input_pgdfile</span><span class="p">,</span>
+                                            <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="n">prep_input_pgdfiletype</span><span class="p">,</span>
+                                            <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">my_settings</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">namelist_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="n">forc_zs</span><span class="p">,</span>
+                                          <span class="n">prep_file</span><span class="o">=</span><span class="n">prep_input_file</span><span class="p">,</span>
+                                          <span class="n">prep_filetype</span><span class="o">=</span><span class="n">prep_input_filetype</span><span class="p">,</span>
+                                          <span class="n">prep_pgdfile</span><span class="o">=</span><span class="n">prep_input_pgdfile</span><span class="p">,</span>
+                                          <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="n">prep_input_pgdfiletype</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+                                          <span class="n">dtg</span><span class="o">=</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">get_namelist</span><span class="p">()</span>
+    <span class="n">geo</span><span class="o">.</span><span class="n">update_namelist</span><span class="p">(</span><span class="n">my_settings</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">my_settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="parse_args_gridpp"><a class="viewcode-back" href="../../index.html#surfex.parse_args_gridpp">[docs]</a><span class="k">def</span> <span class="nf">parse_args_gridpp</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
