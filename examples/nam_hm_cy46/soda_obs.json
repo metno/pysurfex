@@ -1,0 +1,12 @@
+{
+    "NAM_OBS": {
+       "COBS_M(@VAR@)": "@COBS_M(@VAR@)@",
+       "NNCO(@VAR@)": "@NNCO(@VAR@)@",
+       "XERROBS_M(@VAR@)": "@XERROBS_M(@VAR@)@",
+       "NOBSTYPE": "@NOBSTYPE@",
+       "LOBSHEADER": "@LOBSHEADER@",
+       "LOBSNAT": "@LOBSNAT@",
+       "CFILE_FORMAT_OBS": "@CFILE_FORMAT_OBS@",
+       "LSWE": "@LSWE@"
+    }
+}

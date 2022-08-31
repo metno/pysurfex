@@ -1,0 +1,6 @@
+{
+  "NAM_PREP_FLAKE":
+      {
+          "LCLIM_LAKE": "@LCLIM_LAKE@"
+      }
+}

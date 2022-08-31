@@ -1,0 +1,16 @@
+{
+    "NAM_ASSIM": {
+        "LAROME": "@LAROME@",
+        "CFILE_FORMAT_CLIM": "@CFILE_FORMAT_CLIM@",
+        "CFILE_FORMAT_FG": "@CFILE_FORMAT_FG@"
+    },
+    "NAM_NACVEG": {
+        "XSIGT2MO": "@XSIGT2MO@",
+        "XSIGH2MO": "@XSIGH2MO@",
+        "XRCLIMCA": "@XRCLIMCA@",
+        "XRCLISST": "@XRCLISST@",
+        "NECHGU": "@NECHGU@",
+        "LOBS2M": "@LOBS2M@",
+        "LOBSWG": "@LOBSWG@"
+    }
+}

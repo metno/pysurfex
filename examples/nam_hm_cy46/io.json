@@ -1,0 +1,20 @@
+{
+    "NAM_IO_OFFLINE": {
+        "CSURF_FILETYPE": "@CSURF_FILETYPE@",
+        "CTIMESERIES_FILETYPE": "@CTIMESERIES_FILETYPE@",
+        "CFORCING_FILETYPE": "@CFORCING_FILETYPE@",
+        "CPGDFILE": "@CPGDFILE@",
+        "CPREPFILE": "@CPREPFILE@",
+        "CSURFFILE": "@CSURFFILE@",
+        "XTSTEP_SURF": "@XTSTEP_SURF@",
+        "XTSTEP_OUTPUT": "@XTSTEP_OUTPUT@",
+        "LSET_FORC_ZS": "@LSET_FORC_ZS@",
+        "LRESTART": true,
+        "LRESTART_2M": true,
+        "NHALO": 0,
+        "LFAGMAP": true
+    },
+    "NAM_WRITE_SURF_ATM": {
+        "LSPLIT_PATCH": "@LSPLIT_PATCH@"
+    }
+}

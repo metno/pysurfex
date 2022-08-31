@@ -1,0 +1,7 @@
+{
+    "NAM_DATA_FLAKE": {
+        "YWATER_DEPTH": "GlobalLakeDepth",
+        "YWATER_DEPTHFILETYPE": "DIRECT",
+        "YWATER_DEPTH_STATUS": "GlobalLakeStatus"
+    }
+}

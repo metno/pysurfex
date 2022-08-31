@@ -1,0 +1,9 @@
+{
+    "NAM_SURF_ATM": {
+        "XRIMAX": "@XRIMAX@"
+    },
+    "NAM_SURF_CSTS": {
+        "xz0sn": 0.003,
+        "xz0hsn": 0.0003
+    }
+}

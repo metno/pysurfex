@@ -1,0 +1,21 @@
+{
+    "NAM_ASSIM": {
+        "CASSIM_ISBA": "EKF",
+        "LLINCHECK": "@LLINCHECK@"
+    },
+    "NAM_VAR": {
+       "CVAR_M(@VAR@)": "@CVAR_M(@VAR@)@",
+       "NNCV(@VAR@)": "@NNCV(@VAR@)@",
+       "XTPRT_M(@VAR@)": "@XTPRT_M(@VAR@)@",
+       "XSIGMA_M(@VAR@)": "@XSIGMA_M(@VAR@)@",
+       "XSCALE_Q": "@XSCALE_Q@",
+       "XALPHA": "@XALPHA@",
+       "NVAR": "@NVAR@",
+       "NIVAR": "@NIVAR@"
+    },
+    "NAM_IO_VARASSIM": {
+       "LPRT": "@LPRT@",
+       "LBEV": "@LBEV@",
+       "LBFIXED": "@LBFIXED@"
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "NAM_PREP_SEAFLUX": {
+        "CSEAICE_SCHEME": "@CSEAICE_SCHEME@",
+        "LSEA_SBL": false
+    }
+}
