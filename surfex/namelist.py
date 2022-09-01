@@ -1434,7 +1434,7 @@ class EcoclimapSG(Ecoclimap):
         mmm = int(decade / 3) + 1
         cmm = f"{mmm:02d}"
         cdd = ((decade % 3) * 10) + 5
-        cdd = "{cdd:02d}"
+        cdd = f"{cdd:02d}"
         filename = filename.replace("@MM@", str(cmm))
         filename = filename.replace("@CDD@", str(cdd))
         return filename
