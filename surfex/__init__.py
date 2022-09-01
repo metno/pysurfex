@@ -42,10 +42,11 @@ from .cli import parse_args_bufr2json, parse_args_create_forcing, parse_args_fir
     parse_args_set_geo_from_stationlist, parse_args_shape2ign, parse_args_surfex_binary, \
     parse_args_titan, parse_cryoclim_pseudoobs, parse_merge_namelist_settings, \
     parse_merge_toml_settings, parse_plot_timeseries_args, parse_sentinel_obs, \
+    parse_args_create_namelist, \
     parse_timeseries2json, run_plot_points, run_bufr2json, run_cryoclim_pseuodoobs, run_gridpp, \
     run_lsm_file_assim, run_masterodb, run_merge_namelist_settings, run_merge_toml_settings, \
     run_oi2soda, run_plot_timeseries_from_json, run_sentinel_obs, run_shape2ign, \
-    run_surfex_binary, run_timeseries2json, run_titan, first_guess_for_oi, \
+    run_surfex_binary, run_timeseries2json, run_titan, first_guess_for_oi, run_create_namelist, \
     set_geo_from_stationlist, hm2pysurfex, merge_qc_data, LoadFromFile
 from .namelist import Namelist, BaseNamelist, PgdInputData, PrepInputData, SodaInputData, \
     OfflineInputData, InlineForecastInputData, Ecoclimap, EcoclimapSG, ExternalSurfexInputFile, \
@@ -171,6 +172,7 @@ __all__ = ["AsciiOutput",
            "oi2soda",
            "parse_args_bufr2json",
            "parse_args_create_forcing",
+           "parse_args_create_namelist",
            "parse_args_first_guess_for_oi",
            "parse_args_gridpp",
            "parse_args_hm2pysurfex",
@@ -202,6 +204,7 @@ __all__ = ["AsciiOutput",
            "run_plot_points",
            "run_bufr2json",
            "run_cryoclim_pseuodoobs",
+           "run_create_namelist",
            "run_gridpp",
            "run_lsm_file_assim",
            "run_masterodb",

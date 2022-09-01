@@ -1,0 +1,6 @@
+{
+    "NAM_SEAICEn": {
+         "LVOLATILE_SIC": "@LVOLATILE_SIC@",
+         "XSIC_EFOLDING_TIME": "@XSIC_EFOLDING_TIME@"
+    }
+}

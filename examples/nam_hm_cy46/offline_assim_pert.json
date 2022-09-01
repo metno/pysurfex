@@ -1,0 +1,12 @@
+{
+    "NAM_ASSIM": {
+       "CASSIM_ISBA": "@CASSIM_ISBA@"
+    },
+    "NAM_VAR": {
+       "CVAR_M(@VAR@)": "@CVAR_M(@VAR@)@",
+       "NNCV(@VAR@)": "@NNCV(@VAR@)@",
+       "XTPRT_M(@VAR@)": "@XTPRT_M(@VAR@)@",
+       "XSIGMA_M(@VAR@)": "@XSIGMA_M(@VAR@)@",
+       "NVAR": "@NVAR@"
+    }
+}

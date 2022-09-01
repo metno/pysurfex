@@ -1,0 +1,12 @@
+{
+    "NAM_PREP_ISBA": {
+       "LISBA_CANOPY": "@LISBA_CANOPY@",
+       "lextrap_tg": true,
+       "lextrap_wg": true,
+       "lextrap_wgi": true,
+       "lextrap_sn": true
+    },
+    "nam_diag_isban": {
+        "lpatch_budget": true
+    }
+}

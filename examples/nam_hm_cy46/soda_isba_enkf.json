@@ -1,0 +1,8 @@
+{
+    "NAM_VAR": {
+        "CVAR_M(@VAR@)": "@CVAR_M(@VAR@)@",
+        "NNCV(@VAR@)": "@NNCV(@VAR@)@",
+        "NVAR": "@NVAR@",
+        "NIVAR": "@NIVAR@"
+    }
+}

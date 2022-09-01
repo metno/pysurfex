@@ -1,0 +1,12 @@
+{
+    "NAM_PREP_SURF_ATM": {
+        "CFILE": "@CFILE@",
+        "CFILETYPE": "@CFILETYPE@",
+        "CFILEPGD": "@CFILEPGD@",
+        "CFILEPGDTYPE": "@CFILEPGDTYPE@",
+        "NYEAR": "@NYEAR@",
+        "NMONTH": "@NMONTH@",
+        "NDAY": "@NDAY@",
+        "XTIME": "@XTIME@"
+    }
+}

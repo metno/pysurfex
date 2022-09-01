@@ -680,7 +680,10 @@ def run_masterodb(**kwargs):
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
-    my_settings = surfex.BaseNamelist(mode, config, namelist_path, dtg=dtg, fcint=3).get_namelist()
+    my_settings = surfex.BaseNamelist(mode, config, namelist_path,
+                                      dtg=dtg, fcint=3).get_namelist()
+    # my_settings = surfex.NamelistBlocks(mode, config, namelist_path,
+    #                                    dtg=dtg, fcint=3).get_namelist()
     geo.update_namelist(my_settings)
 
     # Create input
@@ -849,9 +852,6 @@ def run_surfex_binary(mode, **kwargs):
         else:
             raise FileNotFoundError("File not found: " + config)
 
-    # if "config" in kwargs:
-    #    del(kwargs["config"])
-
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
         system_file_paths = surfex.SystemFilePathsFromFile(system_file_paths)
@@ -947,10 +947,6 @@ def run_surfex_binary(mode, **kwargs):
     if need_prep:
         prep_file_path = kwargs["prep"]
 
-    sfx_version = "base"
-    if "sfx_version" in kwargs:
-        sfx_version = kwargs["sfx_version"]
-
     pert = None
     if "pert" in kwargs:
         pert = kwargs["pert"]
@@ -973,16 +969,20 @@ def run_surfex_binary(mode, **kwargs):
             raise FileNotFoundError("File not found: " + archive)
 
     if not os.path.exists(output) or force:
-
-        logging.debug("TRYGVE0 %s", pgd_file_path)
-        my_settings = surfex.Namelist(sfx_version, mode, config, namelist_path, forc_zs=forc_zs,
-                                      prep_file=prep_input_file, prep_filetype=prep_input_filetype,
-                                      prep_pgdfile=prep_input_pgdfile,
-                                      prep_pgdfiletype=prep_input_pgdfiletype,
-                                      dtg=dtg, fcint=3).get_namelist()
+        my_settings = surfex.BaseNamelist(mode, config, namelist_path, forc_zs=forc_zs,
+                                          prep_file=prep_input_file,
+                                          prep_filetype=prep_input_filetype,
+                                          prep_pgdfile=prep_input_pgdfile,
+                                          prep_pgdfiletype=prep_input_pgdfiletype,
+                                          dtg=dtg, fcint=3).get_namelist()
+        # my_settings = surfex.NamelistBlocks(mode, config, namelist_path, forc_zs=forc_zs,
+        #                                    prep_file=prep_input_file,
+        #                                    prep_filetype=prep_input_filetype,
+        #                                    prep_pgdfile=prep_input_pgdfile,
+        #                                    prep_pgdfiletype=prep_input_pgdfiletype,
+        #                                    dtg=dtg, fcint=3).get_namelist()
         geo.update_namelist(my_settings)
 
-        logging.debug("TRYGVE1 %s", pgd_file_path)
         # Create input
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
         my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
@@ -995,7 +995,6 @@ def run_surfex_binary(mode, **kwargs):
         logging.debug("pgdfile=%s lfagmap=%s %s", my_pgdfile, lfagmap, pgd_file_path)
         if need_pgd:
             logging.debug("Need pgd")
-            logging.debug("TRYGVE2 %s", pgd_file_path)
             my_pgdfile = surfex.file.PGDFile(my_format, my_pgdfile, input_file=pgd_file_path,
                                              lfagmap=lfagmap,
                                              masterodb=masterodb)
@@ -1038,6 +1037,151 @@ def run_surfex_binary(mode, **kwargs):
 
     else:
         logging.info("%s already exists!", output)
+
+
+def parse_args_create_namelist(argv):
+    """Parse the command line input arguments for creating a namelist.
+
+    Args:
+        argv (list): List with arguments.
+
+    Returns:
+        dict: Parsed arguments.
+
+    """
+    parser = ArgumentParser(description="Create namelist")
+    parser.add_argument('--version', action='version', version=surfex.__version__)
+    parser.add_argument('--debug', action="store_true", help="Debug", required=False, default=False)
+    parser.add_argument('--wrapper', '-w', type=str, default="", help="Execution wrapper command")
+    parser.add_argument('mode', type=str, help="Type of namelist")
+    parser.add_argument('--method', required=False, default="blocks", nargs='?')
+    parser.add_argument('--prep_file', required=False, default=None, nargs='?')
+    parser.add_argument('--prep_filetype', required=False, default=None, nargs='?')
+    parser.add_argument('--prep_pgdfile', required=False, default=None, nargs='?')
+    parser.add_argument('--prep_pgdfiletype', required=False, default=None, nargs='?')
+    parser.add_argument('--forc_zs', action="store_true", default=False,
+                        help="Set model ZS to forcing ZS")
+    parser.add_argument('--forcing_dir', required=False, default=None, nargs='?')
+    parser.add_argument('--harmonie', action="store_true", default=False,
+                        help="Surfex configuration created from Harmonie environment")
+    parser.add_argument('--system_file_paths', '-s', required=True, nargs='?',
+                        help="Input file paths on your system")
+    parser.add_argument('--config', '-c', required=False, nargs='?')
+    parser.add_argument('--namelist_path', '-n', required=True, nargs='?')
+    parser.add_argument('--domain', type=str, required=False, help="JSON file with domain")
+    parser.add_argument('--output', '-o', type=str, required=False)
+    parser.add_argument('--dtg', type=str, required=False, default=None)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def run_create_namelist(**kwargs):
+    """Create a namelist."""
+    logging.debug("ARGS: %s", kwargs)
+    mode = kwargs.get('mode')
+    if "harmonie" in kwargs and kwargs["harmonie"]:
+        config_exp = None
+        if "config" in kwargs:
+            if kwargs["config"] is not None:
+                config_exp = kwargs["config"]
+        if config_exp is None:
+            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
+        logging.info("Using default config from: %s", config_exp)
+        input_data = toml.load(open(config_exp, mode="r", encoding="utf-8"))
+        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        geo = config.geo
+    else:
+        if "domain" not in kwargs:
+            raise Exception("Missing domain definition")
+        if "config" not in kwargs:
+            raise Exception("Missing config")
+
+        domain = kwargs["domain"]
+        if os.path.exists(domain):
+            with open(domain, mode="r", encoding="utf-8") as file_handler:
+                domain_json = json.load(file_handler)
+            geo = surfex.geo.get_geo_object(domain_json)
+        else:
+            raise FileNotFoundError("File not found: " + domain)
+
+        config = kwargs["config"]
+        if os.path.exists(config):
+            with open(config, mode="r", encoding="utf-8") as file_handler:
+                logging.debug(config)
+                input_data = toml.load(file_handler)
+            config = surfex.Configuration(input_data)
+        else:
+            raise FileNotFoundError("File not found: " + config)
+
+    system_file_paths = kwargs["system_file_paths"]
+    if os.path.exists(system_file_paths):
+        system_file_paths = surfex.SystemFilePathsFromFile(system_file_paths)
+    else:
+        raise FileNotFoundError("File not found: " + system_file_paths)
+
+    if "forcing_dir" in kwargs:
+        system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
+
+    prep_input_file = None
+    if "prep_file" in kwargs:
+        prep_input_file = kwargs["prep_file"]
+    prep_input_pgdfile = None
+    if "prep_pgdfile" in kwargs:
+        prep_input_pgdfile = kwargs["prep_pgdfile"]
+    prep_input_filetype = None
+    if "prep_filetype" in kwargs:
+        prep_input_filetype = kwargs["prep_filetype"]
+    prep_input_pgdfiletype = None
+    if "prep_pgdfiletype" in kwargs:
+        prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
+
+    # TODO
+    perturbed_file_pattern = None
+    if perturbed_file_pattern in kwargs:
+        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
+
+    output = kwargs.get("output")
+    if output is None:
+        output = "OPTIONS.nam"
+    dtg = None
+    if "dtg" in kwargs:
+        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
+            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            kwargs.update({"dtg": dtg})
+
+    logging.debug("kwargs: %s", str(kwargs))
+
+    namelist_path = kwargs["namelist_path"]
+    forc_zs = False
+    if "forc_zs" in kwargs:
+        forc_zs = kwargs["forc_zs"]
+
+    if kwargs.get("method") == "blocks":
+        my_settings = surfex.NamelistBlocks(mode, config, namelist_path, forc_zs=forc_zs,
+                                            prep_file=prep_input_file, geo=geo,
+                                            prep_filetype=prep_input_filetype,
+                                            prep_pgdfile=prep_input_pgdfile,
+                                            prep_pgdfiletype=prep_input_pgdfiletype,
+                                            dtg=dtg, fcint=3).get_namelist()
+    else:
+        my_settings = surfex.BaseNamelist(mode, config, namelist_path, forc_zs=forc_zs,
+                                          prep_file=prep_input_file,
+                                          prep_filetype=prep_input_filetype,
+                                          prep_pgdfile=prep_input_pgdfile,
+                                          prep_pgdfiletype=prep_input_pgdfiletype, geo=geo,
+                                          dtg=dtg, fcint=3).get_namelist()
+    geo.update_namelist(my_settings)
+    if os.path.exists(output):
+        os.remove(output)
+    my_settings.write(output)
 
 
 def parse_args_gridpp(argv):

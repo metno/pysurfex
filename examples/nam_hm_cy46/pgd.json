@@ -1,0 +1,11 @@
+{
+    "NAM_PGD_SCHEMES": {
+        "CSEA": "@CSEA@",
+        "CWATER": "@CWATER@",
+        "CNATURE": "@CNATURE@",
+        "CTOWN": "@CTOWN@"
+    },
+    "NAM_FRAC": {
+        "LECOSG": "@LECOSG@"
+    }
+}
