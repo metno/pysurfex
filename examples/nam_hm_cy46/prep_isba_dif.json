@@ -1,2 +1,13 @@
 {
+  "nam_isba":{
+    "xunif_runoffb": 0.2,
+    "cpedo_function": "CO84",
+    "cphoto":  "NON"
+  },
+  "nam_sgh_isban": {
+    "crunoff":  "DT92",
+    "crain":    "SGH",
+    "chort":    "DEF",
+    "lsoc":     true
+  }
 }

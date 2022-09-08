@@ -1,7 +1,7 @@
 {
     "NAM_SEAICE_SICE": {
         "LICE_MASS_BALANCE": true,
-        "LICE_HAS_SNOW": false,
+        "LICE_HAS_SNOW": true,
         "XOCEAN_HEAT_FLUX": 2.0
     }
 }

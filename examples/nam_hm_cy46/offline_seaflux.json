@@ -1,5 +1,9 @@
 {
-   "NAM_SEAFLUXn": {
-       "LPERTFLUX": "@LPERTFLUX@"
+  "NAM_SEAFLUXn": {
+   "LPERTFLUX": "@LPERTFLUX@",
+   "CSEA_FLUX": "ECUME6",
+   "LPWG": false,
+   "LPRECIP": false,
+   "LPWEBB": false
    }
 }

@@ -1,0 +1,18 @@
+{
+  "nam_isba":{
+    "xunif_runoffb": 0.2,
+    "cpedo_function": "CO84",
+    "cphoto":  "NON"
+  },
+  "NAM_SGH_ISBAn": {
+    "CRUNOFF":  "DT92",
+    "CRAIN":  "SGH",
+    "CHORT": "DEF",
+    "LSOC":  true
+  },
+  "NAM_MEB_ISBA":{
+    "LMEB_PATCH(1)":  false,
+    "LMEB_PATCH(2)":  true,
+    "LMEB_LITTER": true
+  }
+}

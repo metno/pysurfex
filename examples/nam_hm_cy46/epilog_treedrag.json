@@ -1,6 +1,13 @@
 {
   "NAM_TREEDRAG": {
-     "XZ0_LIMIT": 1.6,
-     "LFAKETREE": "@LFAKETREE@"
+     "LFAKETREE": "@LFAKETREE@",
+     "xz0_min_limit": 0.0,
+     "xz0_max_limit": 1.6,
+     "xallen_term": 2.5,
+     "xgrass_h_dnm": 3.0,
+     "xforlat1": 1.0,
+     "xforlat2": 0.0,
+     "xforfrac1": 1.0,
+     "xforfrac2": 0.0
   }
 }

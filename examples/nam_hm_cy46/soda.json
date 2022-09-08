@@ -1,7 +1,7 @@
 {
   "NAM_ASSIM": {
     "LASSIM": "@LASSIM@",
-    "NPRINTLEV": 1,
+    "NPRINTLEV": 0,
     "LRELCLIMSNOW": false,
     "LEXTRAP_NATURE": false,
     "LEXTRAP_SNOW": false,
@@ -17,5 +17,8 @@
     "CASSIM_ISBA": "@CASSIM_ISBA@",
     "LAESNM": "@LAESNM@",
     "CASSIM_TEB": "@CASSIM_TEB@"
+  },
+  "NAM_DIAG_ISBAn":{
+    "lsurf_misc_budget": true
   }
 }

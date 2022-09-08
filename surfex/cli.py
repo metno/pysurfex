@@ -607,7 +607,7 @@ def run_masterodb(**kwargs):
         config = kwargs["config"]
         if os.path.exists(config):
             with open(config, mode="r", encoding="utf-8") as file_handler:
-                logging.debug("TRYGVE %s", config)
+                logging.debug("config %s", config)
                 input_data = toml.load(file_handler)
             config = surfex.Configuration(input_data)
         else:
@@ -680,10 +680,13 @@ def run_masterodb(**kwargs):
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
-    my_settings = surfex.BaseNamelist(mode, config, namelist_path,
+    blocks = False
+    if blocks:
+        my_settings = surfex.Namelist(mode, config, namelist_path,
                                       dtg=dtg, fcint=3).get_namelist()
-    # my_settings = surfex.NamelistBlocks(mode, config, namelist_path,
-    #                                    dtg=dtg, fcint=3).get_namelist()
+    else:
+        my_settings = surfex.BaseNamelist(mode, config, namelist_path,
+                                          dtg=dtg, fcint=3).get_namelist()
     geo.update_namelist(my_settings)
 
     # Create input
@@ -969,18 +972,21 @@ def run_surfex_binary(mode, **kwargs):
             raise FileNotFoundError("File not found: " + archive)
 
     if not os.path.exists(output) or force:
-        my_settings = surfex.BaseNamelist(mode, config, namelist_path, forc_zs=forc_zs,
+        blocks = False
+        if blocks:
+            my_settings = surfex.Namelist(mode, config, namelist_path, forc_zs=forc_zs,
                                           prep_file=prep_input_file,
                                           prep_filetype=prep_input_filetype,
                                           prep_pgdfile=prep_input_pgdfile,
                                           prep_pgdfiletype=prep_input_pgdfiletype,
                                           dtg=dtg, fcint=3).get_namelist()
-        # my_settings = surfex.NamelistBlocks(mode, config, namelist_path, forc_zs=forc_zs,
-        #                                    prep_file=prep_input_file,
-        #                                    prep_filetype=prep_input_filetype,
-        #                                    prep_pgdfile=prep_input_pgdfile,
-        #                                    prep_pgdfiletype=prep_input_pgdfiletype,
-        #                                    dtg=dtg, fcint=3).get_namelist()
+        else:
+            my_settings = surfex.BaseNamelist(mode, config, namelist_path, forc_zs=forc_zs,
+                                              prep_file=prep_input_file,
+                                              prep_filetype=prep_input_filetype,
+                                              prep_pgdfile=prep_input_pgdfile,
+                                              prep_pgdfiletype=prep_input_pgdfiletype,
+                                              dtg=dtg, fcint=3).get_namelist()
         geo.update_namelist(my_settings)
 
         # Create input
@@ -1165,12 +1171,12 @@ def run_create_namelist(**kwargs):
         forc_zs = kwargs["forc_zs"]
 
     if kwargs.get("method") == "blocks":
-        my_settings = surfex.NamelistBlocks(mode, config, namelist_path, forc_zs=forc_zs,
-                                            prep_file=prep_input_file, geo=geo,
-                                            prep_filetype=prep_input_filetype,
-                                            prep_pgdfile=prep_input_pgdfile,
-                                            prep_pgdfiletype=prep_input_pgdfiletype,
-                                            dtg=dtg, fcint=3).get_namelist()
+        my_settings = surfex.Namelist(mode, config, namelist_path, forc_zs=forc_zs,
+                                      prep_file=prep_input_file, geo=geo,
+                                      prep_filetype=prep_input_filetype,
+                                      prep_pgdfile=prep_input_pgdfile,
+                                      prep_pgdfiletype=prep_input_pgdfiletype,
+                                      dtg=dtg, fcint=3).get_namelist()
     else:
         my_settings = surfex.BaseNamelist(mode, config, namelist_path, forc_zs=forc_zs,
                                           prep_file=prep_input_file,

@@ -1318,7 +1318,7 @@ class Namelist(object):
 
         for block in merged_dict:
             for key, value in merged_dict[block].items():
-                if isinstance(value, str) and "@" in value:
+                if isinstance(value, str) and "@" in value[0] and "@" in value[-1]:
                     logging.error("Merged dictionary contains a @ in value %s for key %s",
                                   value, key)
                     raise Exception()
@@ -1482,7 +1482,12 @@ class Namelist(object):
             fname, filetype = self.get_filetype_from_suffix(fname)
             merged_dict = self.sub(merged_dict, "NAM_ISBA", ftype, fname)
             key = ftype + "FILETYPE"
-            merged_dict = self.sub(merged_dict, "NAM_ISBA", key, filetype)
+            if ftype in ["YSOC_TOP", "YSOC_SUB"]:
+                if ftype in ["YSOC_TOP"]:
+                    key = "YSOCFILETYPE"
+                    merged_dict = self.sub(merged_dict, "NAM_ISBA", key, filetype)
+            else:
+                merged_dict = self.sub(merged_dict, "NAM_ISBA", key, filetype)
 
         # Set ISBA properties
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
@@ -1742,12 +1747,12 @@ class Namelist(object):
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
                 merged_dict = self.sub(merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var],
-                                       var=var)
+                                       var=var + 1)
                 merged_dict = self.sub(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var],
-                                       var=var)
+                                       var=var + 1)
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1770,8 +1775,8 @@ class Namelist(object):
             # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var, cvar_val in enumerate(cvar_m):
                 # print(merged_dict)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1930,12 +1935,12 @@ class Namelist(object):
             if len(nncv) != len(cvar_m) or len(nncv) != len(xsigma_m) or len(nncv) != len(xtprt_m):
                 raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
                 merged_dict = self.sub(merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var],
-                                       var=var)
+                                       var=var + 1)
                 merged_dict = self.sub(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var],
-                                       var=var)
+                                       var=var + 1)
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1962,8 +1967,8 @@ class Namelist(object):
             if len(nncv) != len(cvar_m):
                 raise Exception("Mismatch in nncv/cvar_m")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
+                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
 
                 if nncv[var] == 1:
                     nvar += 1

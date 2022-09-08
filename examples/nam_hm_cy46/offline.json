@@ -13,7 +13,8 @@
   "NAM_DIAG_ISBAn": {
     "LPATCH_BUDGET": true,
     "LPGD": true,
-    "LSURF_MISC_BUDGET": true
+    "LSURF_MISC_BUDGET": true,
+    "LSURF_MISC_DIF": true
   },
   "NAM_SSOn": {
     "XFRACZ0": 15.0,
@@ -31,5 +32,8 @@
     "XCDRAG": 0.01
   },
   "NAM_SURF_ATM": {
+    "XCD_COEFF1": 10.0,
+    "XCD_COEFF2": 5.0,
+    "XCH_COEFF1": 15.0
  }
 }
