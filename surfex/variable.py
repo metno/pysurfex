@@ -417,7 +417,7 @@ class Variable(object):
                  second=0, microsecond=0)).total_seconds())
         if seconds_since_midnight == 86400:
             seconds_since_midnight = 0
-        basetime_inc = int(seconds_since_midnight / int(timedelta(seconds=self.fcint).seconds))
+        basetime_inc = int(seconds_since_midnight / int(timedelta(seconds=self.fcint).total_seconds()))
 
         prefer_forecast = timedelta(seconds=0)
         if seconds_since_midnight == basetime_inc * int(timedelta(seconds=self.fcint).seconds):
