@@ -898,6 +898,9 @@ class BaseNamelist(object):
             "CASSIM_ISBA": self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
 
         # Snow
+        self.input_list.append({"json": {"NAM_ASSIM": {
+            "LPATCH1":self.config.get_setting("SURFEX#ASSIM#ISBA#LPATCH1")}}})
+
         laesnm = False
         snow_cycles = self.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
         if len(snow_cycles) > 0:
