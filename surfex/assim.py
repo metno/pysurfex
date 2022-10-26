@@ -78,7 +78,7 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
         lats2 = []
         elevs2 = []
         values2 = []
-        for point in enumerate(lons):
+        for point in range(0, len(lons)):
             if np.isnan(pbackground[point]):
                 logging.info("Undefined background in lon=%s lat=%s value=%s",
                              lons[point], lats[point], values[point])
