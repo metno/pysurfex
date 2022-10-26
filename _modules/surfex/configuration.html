@@ -485,8 +485,8 @@
 
         <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX</span>
         <span class="c1"># (must be .FALSE. for NPATCH&gt;1)</span>
-        <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
+        <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
             <span class="n">canopy</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">canopy</span> <span class="o">=</span> <span class="kc">False</span>
@@ -534,6 +534,9 @@
         <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;SOILGRID&quot;</span><span class="p">:</span>
             <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;SAND_SOILGRID&quot;</span>
             <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;CLAY_SOILGRID&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;SOILGRID_v2&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;sand_0-200cm_mean_int&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;clay_0-200cm_mean_int&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#YSAND&quot;</span><span class="p">,</span> <span class="n">ysand</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
@@ -552,8 +555,7 @@
         <span class="c1"># XSCALE_H_TREE  Scale the tree height with this factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#XSCALE_H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSCALE_H_TREE&quot;</span><span class="p">])</span>
         <span class="k">if</span> <span class="s2">&quot;LFAKETREE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span> <span class="ow">or</span> \
-                    <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.t.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                 <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">False</span>
@@ -579,7 +581,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">,</span> <span class="n">ana_sea</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;LECSST&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                 <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">False</span>
@@ -701,7 +703,7 @@
 
         <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="s2">&quot;LSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSINI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSINI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                 <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
@@ -712,7 +714,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSINI&quot;</span><span class="p">,</span> <span class="n">xswepsini</span><span class="p">)</span>
         <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="s2">&quot;LSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSMIN&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSMIN&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                 <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
@@ -721,6 +723,14 @@
         <span class="k">if</span> <span class="s2">&quot;XSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
             <span class="n">xswepsmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSWEPSMIN&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSMIN&quot;</span><span class="p">,</span> <span class="n">xswepsmin</span><span class="p">)</span>
+
+        <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LPATCH1&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPATCH1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LPATCH1&quot;</span><span class="p">,</span> <span class="n">lpatch1</span><span class="p">)</span>
 
         <span class="c1"># Perturbations</span>
         <span class="c1"># PERTSURF ECMA    : perturb also the surface observation before Canari (recommended</span>
@@ -731,13 +741,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PERTSURF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;LPERTSURF&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPERTSURF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPERTSURF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Volatile sea ice (climate mode)</span>
         <span class="k">if</span> <span class="s2">&quot;LVOLATILE_SIC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LVOLATILE_SIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.true.&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LVOLATILE_SIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div></div>
