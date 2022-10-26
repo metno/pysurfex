@@ -155,6 +155,7 @@ LSWEPSINI = false
 XSWEPSINI = 1000.0
 LSWEPSMIN = false
 XSWEPSMIN = 500.0
+LPATCH1 = false
 
 
 # OI settings

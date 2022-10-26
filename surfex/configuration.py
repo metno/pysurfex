@@ -446,8 +446,8 @@ class ConfigurationFromHarmonie(Configuration):
 
         # LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX
         # (must be .FALSE. for NPATCH>1)
-        canopy = env["LISBA_CANOPY"]
-        if canopy.strip().lower() == ".true." or canopy.strip().lower() == ".t.":
+        canopy = env["LISBA_CANOPY"].replace('.','')
+        if canopy.strip().lower()[0] == "t":
             canopy = True
         else:
             canopy = False
@@ -495,6 +495,9 @@ class ConfigurationFromHarmonie(Configuration):
         elif soil_texture == "SOILGRID":
             ysand = "SAND_SOILGRID"
             yclay = "CLAY_SOILGRID"
+        elif soil_texture == "SOILGRID_v2":
+            ysand = "sand_0-200cm_mean_int"
+            yclay = "clay_0-200cm_mean_int"
         else:
             raise NotImplementedError
         self.update_setting("SURFEX#ISBA#YSAND", ysand + ".dir")
@@ -513,8 +516,7 @@ class ConfigurationFromHarmonie(Configuration):
         # XSCALE_H_TREE  Scale the tree height with this factor
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
         if "LFAKETREE" in env:
-            if env["LFAKETREE"].strip().lower() == ".true." or \
-                    env["LFAKETREE"].strip().lower() == ".t.":
+            if env["LFAKETREE"].replace('.','').strip().lower()[0] == "t":
                 lfaketree = True
             else:
                 lfaketree = False
@@ -540,7 +542,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ASSIM#SCHEMES#SEA", ana_sea)
 
         if "LECSST" in env:
-            if env["LECSST"].lower().strip() == ".true.":
+            if env["LECSST"].replace('.','').strip().lower()[0] == "t":
                 lecsst = True
             else:
                 lecsst = False
@@ -662,7 +664,7 @@ class ConfigurationFromHarmonie(Configuration):
 
         lswepsini = False
         if "LSWEPSINI" in env:
-            if env["LSWEPSINI"].strip().lower() == ".true.":
+            if env["LSWEPSINI"].replace('.','').strip().lower()[0] == "t":
                 lswepsini = True
             else:
                 lswepsini = False
@@ -673,7 +675,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ASSIM#ISBA#XSWEPSINI", xswepsini)
         lswepsmin = False
         if "LSWEPSMIN" in env:
-            if env["LSWEPSMIN"].strip().lower() == ".true.":
+            if env["LSWEPSMIN"].replace('.','').strip().lower()[0] == "t":
                 lswepsmin = True
             else:
                 lswepsmin = False
@@ -682,6 +684,14 @@ class ConfigurationFromHarmonie(Configuration):
         if "XSWEPSMIN" in env:
             xswepsmin = float(env["XSWEPSMIN"])
         self.update_setting("SURFEX#ASSIM#ISBA#XSWEPSMIN", xswepsmin)
+
+        lpatch1 = False
+        if "LPATCH1" in env:
+            if env["LPATCH1"].replace('.','').strip().lower()[0] == "t":
+                lpatch1 = True
+            else:
+                lpatch1 = False
+        self.update_setting("SURFEX#ASSIM#ISBA#LPATCH1", lpatch1)
 
         # Perturbations
         # PERTSURF ECMA    : perturb also the surface observation before Canari (recommended
@@ -692,13 +702,13 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#SEA#PERTFLUX", False)
         if env["PERTSURF"] == "model":
             if "LPERTSURF" in env:
-                if env["LPERTSURF"].strip().lower() == ".true.":
+                if env["LPERTSURF"].replace('.','').strip().lower()[0] == "t":
                     self.update_setting("SURFEX#ISBA#PERTSURF", True)
                     self.update_setting("SURFEX#SEA#PERTFLUX", True)
 
         # Volatile sea ice (climate mode)
         if "LVOLATILE_SIC" in env:
-            if env["LVOLATILE_SIC"].strip().lower() == ".true.":
+            if env["LVOLATILE_SIC"].replace('.','').strip().lower()[0] == "t":
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", True)
             else:
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", False)
