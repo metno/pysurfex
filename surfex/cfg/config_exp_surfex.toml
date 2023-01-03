@@ -23,11 +23,11 @@ YCOVER = "ECOCLIMAP_2_5_p.dir"      # Version of ECOCLIMAP for surfex (1,2,SG)
                                     # please note that SG is not yet compatible with any availbale lake data base.
 SG = false                          # ECOCLIMAP second generation
 H_TREE = "new_ht_c.dir"                 # SG tree height
-ALBNIR_SOIL = 'AL_BH_NI_@MM@@CDD@_c.dir' # SG soil NIR albedo
-ALBNIR_VEG = 'AL_BH_NI_@MM@@CDD@_c.dir'  # SG vegetation NIR albedo
-ALBVIS_SOIL = 'AL_BH_VI_@MM@@CDD@_c.dir' # SG soil visible albedo
-ALBVIS_VEG = 'AL_BH_VI_@MM@@CDD@_c.dir'  # SG vgetation visible albedo
-LAI = 'LAI_@MM@@CDD@_c.dir'             # SG Leaf area index
+ALBNIR_SOIL = 'ALB_SAT_NI_@MM@@CDD@_c.dir' # SG soil NIR albedo
+ALBNIR_VEG = 'ALB_SAT_NI_@MM@@CDD@_c.dir'  # SG vegetation NIR albedo
+ALBVIS_SOIL = 'ALB_SAT_VI_@MM@@CDD@_c.dir' # SG soil visible albedo
+ALBVIS_VEG = 'ALB_SAT_VI_@MM@@CDD@_c.dir'  # SG vgetation visible albedo
+LAI = 'LAI_SAT_@MM@@CDD@_c.dir'             # SG Leaf area index
 
 [SURFEX.ZS]                         # Orography
 YZS = "gmted2010.dir"               # Database with orography: "gmted2010"|"gtopo30"
