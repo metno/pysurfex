@@ -52,14 +52,14 @@
 
 
 <div class="viewcode-block" id="SurfexIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Abstract Surfex IO class.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract Surfex IO class.</span>
 
 <span class="sd">    Used for internal surfex file format files.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SurfexIO.__init__"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a surfex IO object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a surfex IO object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): Name of file</span>
@@ -72,7 +72,7 @@
 
 <div class="viewcode-block" id="SurfexIO.field"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO.field">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method to read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -86,7 +86,7 @@
 
 <div class="viewcode-block" id="SurfexIO.points"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO.points">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method to read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -102,7 +102,7 @@
 
 <div class="viewcode-block" id="SurfexIO.interpolate_field"><a class="viewcode-back" href="../../index.html#surfex.SurfexIO.interpolate_field">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">interpolate_field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Interpolate a field to points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate a field to points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            field (np.darray): Field to interpolate</span>
@@ -120,7 +120,7 @@
 
 
 <div class="viewcode-block" id="SurfexSurfIO"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO">[docs]</a><span class="k">class</span> <span class="nc">SurfexSurfIO</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Surfex surf file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Surfex surf file.</span>
 
 <span class="sd">    Class for surfex restart files.</span>
 
@@ -128,7 +128,7 @@
 
 <div class="viewcode-block" id="SurfexSurfIO.__init__"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surfexfile</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the surfex surf file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the surfex surf file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            surfexfile (str): Internal file name of surfex file.</span>
@@ -152,7 +152,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">archive_file</span> <span class="o">=</span> <span class="n">archive_file</span></div>
 
 <div class="viewcode-block" id="SurfexSurfIO.symlink_input"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO.symlink_input">[docs]</a>    <span class="k">def</span> <span class="nf">symlink_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Symlink the input file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Symlink the input file.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">f_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;input_file: </span><span class="si">%s</span><span class="s2"> file_out: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">f_out</span><span class="p">)</span>
@@ -162,7 +162,7 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">f_out</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SurfexSurfIO.copy_input"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO.copy_input">[docs]</a>    <span class="k">def</span> <span class="nf">copy_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Copy the input file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Copy the input file.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">f_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
             <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">f_out</span><span class="p">)</span>
@@ -171,7 +171,7 @@
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">f_out</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SurfexSurfIO.archive_output_file"><a class="viewcode-back" href="../../index.html#surfex.SurfexSurfIO.archive_output_file">[docs]</a>    <span class="k">def</span> <span class="nf">archive_output_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Archive the output file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive the output file.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">archive_file</span><span class="p">))</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -190,11 +190,11 @@
 
 
 <div class="viewcode-block" id="PGDFile"><a class="viewcode-back" href="../../index.html#surfex.PGDFile">[docs]</a><span class="k">class</span> <span class="nc">PGDFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;PGD file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PGD file.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cpgdfile</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct PGD file object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PGD file object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            csurf_filetype (str): File type</span>
@@ -219,11 +219,11 @@
 
 
 <div class="viewcode-block" id="PREPFile"><a class="viewcode-back" href="../../index.html#surfex.PREPFile">[docs]</a><span class="k">class</span> <span class="nc">PREPFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;PREP file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PREP file.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">cprepfile</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symlink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct PREP file object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PREP file object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            csurf_filetype (str): File type</span>
@@ -246,11 +246,11 @@
 
 
 <div class="viewcode-block" id="SURFFile"><a class="viewcode-back" href="../../index.html#surfex.SURFFile">[docs]</a><span class="k">class</span> <span class="nc">SURFFile</span><span class="p">(</span><span class="n">SurfexSurfIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;SURFOUT file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SURFOUT file.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">csurffile</span><span class="p">,</span> <span class="n">archive_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct SURFOUT file object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct SURFOUT file object.</span>
 
 <span class="sd">        Result of a surfex binary.</span>
 
@@ -275,11 +275,11 @@
 
 
 <div class="viewcode-block" id="SurfexFileVariable"><a class="viewcode-back" href="../../index.html#surfex.SurfexFileVariable">[docs]</a><span class="k">class</span> <span class="nc">SurfexFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Surfex Variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Surfex Variable.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SurfexFileVariable.__init__"><a class="viewcode-back" href="../../index.html#surfex.SurfexFileVariable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a surfex file variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a surfex file variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            varname (str): Variable name.</span>
@@ -300,13 +300,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span> <span class="o">=</span> <span class="n">validtime</span></div>
 
 <div class="viewcode-block" id="SurfexFileVariable.print_var"><a class="viewcode-back" href="../../index.html#surfex.SurfexFileVariable.print_var">[docs]</a>    <span class="k">def</span> <span class="nf">print_var</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Print variable information.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print variable information.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">varname</span></div></div>
 
 
 <div class="viewcode-block" id="get_surfex_io_object"><a class="viewcode-back" href="../../index.html#surfex.get_surfex_io_object">[docs]</a><span class="k">def</span> <span class="nf">get_surfex_io_object</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;surf&quot;</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                          <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the surfexIO object.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the surfexIO object.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        fname (str): File name.</span>
@@ -375,7 +375,7 @@
 
 
 <div class="viewcode-block" id="guess_file_format"><a class="viewcode-back" href="../../index.html#surfex.guess_file_format">[docs]</a><span class="k">def</span> <span class="nf">guess_file_format</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Guess the file format.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Guess the file format.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        fname (str): Filename</span>
@@ -440,10 +440,10 @@
 
 
 <div class="viewcode-block" id="AsciiSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">AsciiSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Input from an ASCII surfex file (.txt).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input from an ASCII surfex file (.txt).&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AsciiSurfexFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the ASCII object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the ASCII object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): Filename</span>
@@ -461,7 +461,7 @@
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AsciiSurfexFile.get_geo"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile.get_geo">[docs]</a>    <span class="k">def</span> <span class="nf">get_geo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the geometry object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the geometry object.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            FileNotFoundError: _description_</span>
@@ -562,7 +562,7 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Grid &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; not implemented!&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AsciiSurfexFile.read"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_par</span><span class="p">,</span> <span class="n">read_tile</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read the file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            read_par (_type_): _description_</span>
@@ -647,7 +647,7 @@
         <span class="k">return</span> <span class="n">values</span></div>
 
 <div class="viewcode-block" id="AsciiSurfexFile.field"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read a field in file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a field in file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -668,7 +668,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="AsciiSurfexFile.points"><a class="viewcode-back" href="../../index.html#surfex.AsciiSurfexFile.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -688,10 +688,10 @@
 
 
 <div class="viewcode-block" id="NCSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NCSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;NetCDF surfex file (restart type).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NetCDF surfex file (restart type).&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NCSurfexFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct NC file object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct NC file object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): File name</span>
@@ -709,7 +709,7 @@
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NCSurfexFile.get_geo"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile.get_geo">[docs]</a>    <span class="k">def</span> <span class="nf">get_geo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get geometry in file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get geometry in file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            surfex.Geometry: Surfex geometry in file</span>
@@ -803,7 +803,7 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cgrid</span> <span class="o">+</span> <span class="s2">&quot; is not implemented&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NCSurfexFile.field"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -849,7 +849,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="NCSurfexFile.points"><a class="viewcode-back" href="../../index.html#surfex.NCSurfexFile.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -868,10 +868,10 @@
 
 
 <div class="viewcode-block" id="FaSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">FaSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;FA surfex file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;FA surfex file.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FaSurfexFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the surfex FA file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the surfex FA file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): File name.</span>
@@ -900,7 +900,7 @@
     <span class="c1">#    return None</span>
 
 <div class="viewcode-block" id="FaSurfexFile.field"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field from FA file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field from FA file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -926,7 +926,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="FaSurfexFile.points"><a class="viewcode-back" href="../../index.html#surfex.FaSurfexFile.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -946,10 +946,10 @@
 
 
 <div class="viewcode-block" id="SurfFileTypeExtension"><a class="viewcode-back" href="../../index.html#surfex.SurfFileTypeExtension">[docs]</a><span class="k">class</span> <span class="nc">SurfFileTypeExtension</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Extension of a surfex file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extension of a surfex file.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SurfFileTypeExtension.__init__"><a class="viewcode-back" href="../../index.html#surfex.SurfFileTypeExtension.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csurf_filetype</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct an extension object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an extension object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            csurf_filetype (str): Surfex file type.</span>
@@ -979,10 +979,10 @@
 
 
 <div class="viewcode-block" id="NetCDFSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">NetCDFSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reading surfex NetCDF time series output.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reading surfex NetCDF time series output.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NetCDFSurfexFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a NetCDF surfex time series file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a NetCDF surfex time series file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): Name of file.</span>
@@ -993,7 +993,7 @@
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetCDFSurfexFile.read"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read a field, return a 2D array.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a field, return a 2D array.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1151,7 +1151,7 @@
         <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span></div>
 
 <div class="viewcode-block" id="NetCDFSurfexFile.field"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1172,7 +1172,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="NetCDFSurfexFile.points"><a class="viewcode-back" href="../../index.html#surfex.NetCDFSurfexFile.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1192,10 +1192,10 @@
 
 
 <div class="viewcode-block" id="TexteSurfexFile"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile">[docs]</a><span class="k">class</span> <span class="nc">TexteSurfexFile</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reading surfex TEXTE output.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reading surfex TEXTE output.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TexteSurfexFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the Texte file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the Texte file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): Filename</span>
@@ -1206,7 +1206,7 @@
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;TXT&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TexteSurfexFile.read"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1280,7 +1280,7 @@
         <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span></div>
 
 <div class="viewcode-block" id="TexteSurfexFile.field"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1301,7 +1301,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="TexteSurfexFile.points"><a class="viewcode-back" href="../../index.html#surfex.TexteSurfexFile.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1320,10 +1320,10 @@
 
 
 <div class="viewcode-block" id="ForcingFileNetCDF"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF">[docs]</a><span class="k">class</span> <span class="nc">ForcingFileNetCDF</span><span class="p">(</span><span class="n">SurfexIO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Forcing netCDF file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forcing netCDF file.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ForcingFileNetCDF.__init__"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct forcing netcdf file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct forcing netcdf file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            fname (str): File name.</span>
@@ -1339,7 +1339,7 @@
         <span class="n">SurfexIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ForcingFileNetCDF.read_field"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF.read_field">[docs]</a>    <span class="k">def</span> <span class="nf">read_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            variable (_type_): _description_</span>
@@ -1410,7 +1410,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span></div>
 
 <div class="viewcode-block" id="ForcingFileNetCDF.field"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (_type_): _description_</span>
@@ -1436,7 +1436,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
 <div class="viewcode-block" id="ForcingFileNetCDF.points"><a class="viewcode-back" href="../../index.html#surfex.ForcingFileNetCDF.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (SurfexFileVariable): Variable in surfex file.</span>
@@ -1458,7 +1458,7 @@
 
 <span class="k">def</span> <span class="nf">read_surfex_field</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patches</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">layers</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read surfex field.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read surfex field.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        varname (_type_): _description_</span>
@@ -1507,7 +1507,7 @@
 <span class="k">def</span> <span class="nf">read_surfex_points</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patches</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                        <span class="n">layers</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read surfex points.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read surfex points.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        varname (str): Variable name.</span>
@@ -1556,7 +1556,7 @@
 
 
 <div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#surfex.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the file pattern.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the file pattern.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        file_pattern (str): File pattern.</span>
@@ -1579,10 +1579,10 @@
     <span class="n">hour</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H&#39;</span><span class="p">)</span>
     <span class="n">mins</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%M&#39;</span><span class="p">)</span>
     <span class="n">d_t</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">basetime</span>
-    <span class="n">ll_d</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_3</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_4</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">ll_d</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">ll_2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">ll_3</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">ll_4</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">seconds</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@YYYY@&#39;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@YY@&#39;</span><span class="p">,</span> <span class="n">year2</span><span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@MM@&#39;</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>

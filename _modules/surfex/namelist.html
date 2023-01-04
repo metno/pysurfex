@@ -48,13 +48,13 @@
 
 
 <div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Matches files and paths depending on possibly system specific settings.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Matches files and paths depending on possibly system specific settings.</span>
 
 <span class="sd">    User can provide a default system dir to nest dependencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SystemFilePaths.__init__"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct SystemFilePaths.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct SystemFilePaths.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            system_file_paths (_type_): _description_</span>
@@ -65,7 +65,7 @@
 <div class="viewcode-block" id="SystemFilePaths.get_system_path"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.get_system_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_system_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the system path for a given data type.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the system path for a given data type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
@@ -115,7 +115,7 @@
 <div class="viewcode-block" id="SystemFilePaths.find_matching_data_dir"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.find_matching_data_dir">[docs]</a>    <span class="k">def</span> <span class="nf">find_matching_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Find a matching path from the system path for a given data type.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a matching path from the system path for a given data type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
@@ -170,7 +170,7 @@
 <div class="viewcode-block" id="SystemFilePaths.get_system_file"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.get_system_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_system_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the system path for a given data type and add a file name to the path.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the system path for a given data type and add a file name to the path.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
@@ -225,7 +225,7 @@
 <div class="viewcode-block" id="SystemFilePaths.parse_setting"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.parse_setting">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">parse_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Parse setting with date/time/experiment specific values.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse setting with date/time/experiment specific values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting: The value of dictionary key which should be processes. Parser if type is str.</span>
@@ -309,7 +309,7 @@
 
 <div class="viewcode-block" id="SystemFilePaths.substitute_string"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.substitute_string">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">substitute_string</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Substitute setting if string with OS values of values from system_variables.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute setting if string with OS values of values from system_variables.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting: if setting is string it can be subst</span>
@@ -339,7 +339,7 @@
 <div class="viewcode-block" id="SystemFilePaths.add_system_file_path"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePaths.add_system_file_path">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                              <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                              <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add a system file path to be used.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a system file path to be used.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
@@ -369,10 +369,10 @@
 
 
 <div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePathsFromFile">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;System file paths.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;System file paths.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SystemFilePathsFromFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.SystemFilePathsFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;System file path from a file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;System file path from a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            system_file_paths (_type_): _description_</span>
@@ -383,14 +383,14 @@
 
 
 <div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#surfex.ExternalSurfexInputFile">[docs]</a><span class="k">class</span> <span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper around external input data to surfex.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper around external input data to surfex.</span>
 
 <span class="sd">    Can have special treatment for each format.</span>
 <span class="sd">    Uses internally the SystemFilePaths class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ExternalSurfexInputFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.ExternalSurfexInputFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct ExternalSurfexInputFile.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ExternalSurfexInputFile.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            system_file_paths (surfex.SystemFilePaths): Match system specific files.</span>
@@ -402,7 +402,7 @@
                                    <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                    <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                    <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linkbasename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set input data based on format.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input data based on format.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype (_type_): _description_</span>
@@ -454,12 +454,12 @@
 
 
 <div class="viewcode-block" id="BaseNamelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist">[docs]</a><span class="k">class</span> <span class="nc">BaseNamelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BaseNamelist.__init__"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">prep_filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                  <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
@@ -520,7 +520,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.prolog"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.prolog">[docs]</a>    <span class="k">def</span> <span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_parsing</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prolog.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prolog.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_parsing (_type_): _description_</span>
@@ -559,7 +559,7 @@
             <span class="s2">&quot;XRIMAX&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">)}}})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.set_pgd_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_pgd_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
         <span class="c1"># PGS schemes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
             <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -695,7 +695,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.set_prep_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_prep_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_prep_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set prep namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set prep namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prep_file (_type_, optional): _description_. Defaults to None.</span>
@@ -769,7 +769,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/snow_crocus.json&quot;</span><span class="p">})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.set_offline_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_offline_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set offline namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set offline namelist.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: _description_</span>
@@ -866,7 +866,7 @@
                                                               <span class="s2">&quot;XSIC_EFOLDING_TIME&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}}})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.set_soda_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_soda_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: _description_</span>
@@ -1035,7 +1035,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;NAM_ASSIM&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;CASSIM_TEB&quot;</span><span class="p">:</span> <span class="n">town_setting</span><span class="p">}}})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.epilog"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.epilog">[docs]</a>    <span class="k">def</span> <span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
         <span class="c1"># Always set these</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/sice.json&quot;</span><span class="p">})</span>
@@ -1049,7 +1049,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/flake.json&quot;</span><span class="p">})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.override"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.override">[docs]</a>    <span class="k">def</span> <span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
         <span class="c1"># Override posssibility</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/override.json&quot;</span><span class="p">):</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: Override settings with content from </span><span class="si">%s</span><span class="s2">/override.json&quot;</span><span class="p">,</span>
@@ -1058,7 +1058,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.set_direct_data_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_direct_data_namelist">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lnamelist_section (_type_): _description_</span>
@@ -1082,7 +1082,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.set_dirtyp_data_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.set_dirtyp_data_namelist">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lnamelist_section (_type_): _description_</span>
@@ -1114,7 +1114,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.capitalize_namelist_dict"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.capitalize_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dict_in (dict): _description_</span>
@@ -1133,7 +1133,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.lower_case_namelist_dict"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.lower_case_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dict_in (dict): Namelist dictionary to lower case</span>
@@ -1152,7 +1152,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.merge_namelist_dicts"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.merge_namelist_dicts">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            old_dict (dict): Old dictionary</span>
@@ -1182,7 +1182,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.ascii2nml"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.ascii2nml">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_data (dict): Namelist settings</span>
@@ -1195,7 +1195,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.ascii_file2nml"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.ascii_file2nml">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_fname (str): Filname</span>
@@ -1216,7 +1216,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.nml2ascii"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.nml2ascii">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_data (f90nml.Namelist): Namelist object.</span>
@@ -1235,7 +1235,7 @@
 
 <div class="viewcode-block" id="BaseNamelist.merge_json_namelist_file"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.merge_json_namelist_file">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            old_dict (dict): Exististing settings</span>
@@ -1255,7 +1255,7 @@
         <span class="k">return</span> <span class="n">Namelist</span><span class="o">.</span><span class="n">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.get_namelist"><a class="viewcode-back" href="../../index.html#surfex.BaseNamelist.get_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructing namelist:&quot;</span><span class="p">)</span>
         <span class="n">merged_json_settings</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="p">:</span>
@@ -1276,12 +1276,12 @@
 
 
 <div class="viewcode-block" id="Namelist"><a class="viewcode-back" href="../../index.html#surfex.Namelist">[docs]</a><span class="k">class</span> <span class="nc">Namelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Namelist.__init__"><a class="viewcode-back" href="../../index.html#surfex.Namelist.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="n">forc_zs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">prep_filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fcint</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                  <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
@@ -1368,7 +1368,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">namelist_dict</span> <span class="o">=</span> <span class="n">merged_dict</span></div>
 
     <span class="k">def</span> <span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prolog.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prolog.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_parsing (bool): Check if parsing is ok.</span>
@@ -1410,7 +1410,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/pgd.json&quot;</span><span class="p">)</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="s2">&quot;NAM_PGD_SCHEMES&quot;</span><span class="p">,</span> <span class="s2">&quot;CSEA&quot;</span><span class="p">,</span>
                                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">))</span>
@@ -1597,7 +1597,7 @@
 
     <span class="k">def</span> <span class="nf">set_prep_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set prep namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set prep namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            prep_file (_type_, optional): _description_. Defaults to None.</span>
@@ -1686,7 +1686,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set offline namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set offline namelist.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            Exception: _description_</span>
@@ -1761,7 +1761,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">prepare_offline_perturbation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prepare for offline pertubations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare for offline pertubations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            merged_dict (_type_): _description_</span>
@@ -1830,7 +1830,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">set_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set obs.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set obs.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            merged_dict (_type_): _description_</span>
@@ -1875,7 +1875,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            merged_dict (dict): Merged dict</span>
@@ -2025,7 +2025,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
         <span class="c1"># Always set these</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
             <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span>
@@ -2043,7 +2043,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span>
 
     <span class="k">def</span> <span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
         <span class="c1"># Override posssibility</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/override.json&quot;</span><span class="p">):</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: Override settings with content from </span><span class="si">%s</span><span class="s2">/override.json&quot;</span><span class="p">,</span>
@@ -2054,7 +2054,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Substitute key with value.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute key with value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            merged_dict (dict): Merged dict</span>
@@ -2111,7 +2111,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Delete key from namelist block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete key from namelist block.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            merged_dict (_type_): _description_</span>
@@ -2131,7 +2131,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the file type from suffix.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file type from suffix.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            fname (str): File name</span>
@@ -2150,7 +2150,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lnamelist_section (_type_): _description_</span>
@@ -2174,7 +2174,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lnamelist_section (_type_): _description_</span>
@@ -2206,7 +2206,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dict_in (_type_): _description_</span>
@@ -2225,7 +2225,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dict_in (dict): Namelist dictionary to lower case</span>
@@ -2244,7 +2244,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            old_dict (dict): Old dictionary</span>
@@ -2274,7 +2274,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_data (dict): Namelist settings</span>
@@ -2287,7 +2287,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_fname (str): Filname</span>
@@ -2308,7 +2308,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_data (f90nml.Namelist): Namelist object.</span>
@@ -2327,7 +2327,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            old_dict (dict): Exististing settings</span>
@@ -2348,17 +2348,17 @@
         <span class="k">return</span> <span class="n">Namelist</span><span class="o">.</span><span class="n">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructing namelist:&quot;</span><span class="p">)</span>
         <span class="n">merged_json_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist_dict</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ascii2nml</span><span class="p">(</span><span class="n">merged_json_settings</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#surfex.Ecoclimap">[docs]</a><span class="k">class</span> <span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Ecoclimap.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Ecoclimap.__init__"><a class="viewcode-back" href="../../index.html#surfex.Ecoclimap.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct ecoclimap data object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap data object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (surfex.Configuration): Surfex configuration.</span>
@@ -2376,7 +2376,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Ecoclimap.set_input"><a class="viewcode-back" href="../../index.html#surfex.Ecoclimap.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set input.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>
@@ -2396,7 +2396,7 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="Ecoclimap.set_bin_files"><a class="viewcode-back" href="../../index.html#surfex.Ecoclimap.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set bin files.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set bin files.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
@@ -2409,10 +2409,10 @@
 
 
 <div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG">[docs]</a><span class="k">class</span> <span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Ecoclimap SG.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap SG.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="EcoclimapSG.__init__"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">veg_types</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">decades</span><span class="o">=</span><span class="mi">36</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct ecoclimap SG.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap SG.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2429,10 +2429,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ALBNIR_SOIL&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBNIR_VEG&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBVIS_SOIL&quot;</span><span class="p">,</span> <span class="s2">&quot;ALBVIS_VEG&quot;</span><span class="p">,</span> <span class="s2">&quot;LAI&quot;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="EcoclimapSG.set_bin_files"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;set_bin_files not used for SG.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;set_bin_files not used for SG.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="EcoclimapSG.set_input"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set input data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input data.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): Check if files are existing. Defaults to True.</span>
@@ -2468,7 +2468,7 @@
 
 <div class="viewcode-block" id="EcoclimapSG.parse_fnames"><a class="viewcode-back" href="../../index.html#surfex.EcoclimapSG.parse_fnames">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">parse_fnames</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">decade</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Parse file names.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse file names.&quot;&quot;&quot;</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepattern</span>
         <span class="n">decade</span> <span class="o">=</span> <span class="n">decade</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="n">mmm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decade</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
@@ -2481,10 +2481,10 @@
 
 
 <div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#surfex.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;PGD input.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PGD input.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PgdInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.PgdInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct PD input.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PD input.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2552,11 +2552,11 @@
 
 
 <div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#surfex.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Input data for PREP.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for PREP.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PrepInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.PrepInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct input data for PREP.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for PREP.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2596,10 +2596,10 @@
 
 
 <div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#surfex.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Input data for offline.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for offline.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="OfflineInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.OfflineInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct input data for offline.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for offline.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2629,10 +2629,10 @@
 
 
 <div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#surfex.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Inline forecast input data.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inline forecast input data.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InlineForecastInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.InlineForecastInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct input data for inline forecast.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for inline forecast.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2650,11 +2650,11 @@
 
 
 <div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">JsonInputData</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Input data for SODA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for SODA.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SodaInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">perturbed_file_pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct input data for SODA.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for SODA.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (_type_): _description_</span>
@@ -2711,7 +2711,7 @@
             <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="SodaInputData.set_input_observations"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData.set_input_observations">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Input data for observations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for observations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>
@@ -2744,7 +2744,7 @@
         <span class="k">return</span> <span class="n">obssettings</span></div>
 
 <div class="viewcode-block" id="SodaInputData.set_input_sea_assimilation"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData.set_input_sea_assimilation">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_sea_assimilation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Input data for sea assimilation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for sea assimilation.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>
@@ -2771,7 +2771,7 @@
         <span class="k">return</span> <span class="n">sea_settings</span></div>
 
 <div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_oi"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData.set_input_vertical_soil_oi">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_vertical_soil_oi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Input data for OI in soil.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for OI in soil.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            _type_: _description_</span>
@@ -2844,7 +2844,7 @@
 
 <div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_ekf"><a class="viewcode-back" href="../../index.html#surfex.SodaInputData.set_input_vertical_soil_ekf">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_vertical_soil_ekf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                     <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Input data for EKF in soil.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for EKF in soil.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>
@@ -2961,7 +2961,7 @@
 
     <span class="k">def</span> <span class="nf">set_input_vertical_soil_enkf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                      <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Input data for ENKF in soil.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for ENKF in soil.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>

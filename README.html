@@ -55,30 +55,30 @@
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
 <h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex<span class="w"> </span>--use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
 </div>
 <p>User installation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install pysurfex --user --use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex<span class="w"> </span>--user<span class="w"> </span>--use-feature<span class="o">=</span><span class="m">2020</span>-resolver
 </pre></div>
 </div>
 </section>
 <section id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get update
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
 <span class="c1"># Python tools</span>
-sudo apt-get install python3-setuptools python3-numpy python3-nose
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-numpy<span class="w"> </span>python3-nose
 <span class="c1"># Cfunits</span>
-sudo apt-get install libudunits2-dev
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libudunits2-dev
 <span class="c1"># Projection</span>
-sudo apt-get install python3-pyproj
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3-pyproj
 <span class="c1"># Eccodes for bufr/grib1/grib2</span>
-sudo apt-get install libeccodes0 libeccodes-dev
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev
 <span class="c1"># Ecflow for user experiements</span>
-sudo apt-get install ecflow-server ecflow-client python3-ecflow
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>ecflow-server<span class="w"> </span>ecflow-client<span class="w"> </span>python3-ecflow
 <span class="c1"># Titanlib</span>
-sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libboost-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libarmadillo-dev<span class="w"> </span>libgsl-dev
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
@@ -96,8 +96,8 @@ netCDF4
 datetime
 f90nml
 requests
-json<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
-StringIO<span class="p">;</span> python_version &lt; <span class="s1">&#39;3&#39;</span>
+json<span class="p">;</span><span class="w"> </span>python_version<span class="w"> </span>&lt;<span class="w"> </span><span class="s1">&#39;3&#39;</span>
+StringIO<span class="p">;</span><span class="w"> </span>python_version<span class="w"> </span>&lt;<span class="w"> </span><span class="s1">&#39;3&#39;</span>
 eccodes
 db-sqlite3
 </pre></div>
@@ -131,7 +131,7 @@ cartopy
 <p>For testing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
 nose
-Testdata from https://docs.google.com/uc?export<span class="o">=</span>download<span class="p">&amp;</span><span class="nv">id</span><span class="o">=</span>1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
+Testdata<span class="w"> </span>from<span class="w"> </span>https://docs.google.com/uc?export<span class="o">=</span>download<span class="p">&amp;</span><span class="nv">id</span><span class="o">=</span>1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
 </pre></div>
 </div>
 <p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
@@ -139,23 +139,23 @@ folder:</p>
 </section>
 <section id="install-pysurfex">
 <h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e .
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo pip install -e . --user
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--user
 </pre></div>
 </div>
 </section>
 <section id="create-documentation">
 <h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
 <span class="c1"># Create html documentation</span>
-make html
+make<span class="w"> </span>html
 <span class="c1"># Create latex documentation</span>
-make latex
+make<span class="w"> </span>latex
 <span class="c1"># Create a pdf documentation</span>
-make latexpdf
+make<span class="w"> </span>latexpdf
 </pre></div>
 </div>
 </section>

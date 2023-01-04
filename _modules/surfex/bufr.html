@@ -59,11 +59,11 @@
 
 
 <div class="viewcode-block" id="BufrObservationSet"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet">[docs]</a><span class="k">class</span> <span class="nc">BufrObservationSet</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">ObservationSet</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create observation data set from bufr observations.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create observation data set from bufr observations.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BufrObservationSet.__init__"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bufrfile</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">label</span><span class="o">=</span><span class="s2">&quot;bufr&quot;</span><span class="p">,</span> <span class="n">use_first</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize a bufr observation set.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a bufr observation set.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            bufrfile (str): Full path of the bufr file to read</span>
@@ -386,7 +386,7 @@
 
 <div class="viewcode-block" id="BufrObservationSet.td2rh"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.td2rh">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">kelvin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert dew point to temperature.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dew point to temperature.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            td (int): _description_</span>
@@ -422,7 +422,7 @@
 
 <div class="viewcode-block" id="BufrObservationSet.inside_window"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.inside_window">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">inside_window</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if inside window.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if inside window.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            obs_dtg (_type_): _description_</span>

@@ -46,10 +46,10 @@
 
 
 <div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#surfex.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Configuration class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Configuration.__init__"><a class="viewcode-back" href="../../index.html#surfex.Configuration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the pysurfex configuration.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the pysurfex configuration.</span>
 
 <span class="sd">        Encapsulation of settings dictionary.</span>
 <span class="sd">        Settings for a deterministic run or an individual member.</span>
@@ -70,7 +70,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;LFAGMAP&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span></div>
 
     <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Dump configuration to json file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump configuration to json file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (_type_): _description_</span>
@@ -89,7 +89,7 @@
 <div class="viewcode-block" id="Configuration.setting_is"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if setting is value.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -120,7 +120,7 @@
 <div class="viewcode-block" id="Configuration.setting_is_not"><a class="viewcode-back" href="../../index.html#surfex.Configuration.setting_is_not">[docs]</a>    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if setting is not value.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is not value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -155,7 +155,7 @@
 <div class="viewcode-block" id="Configuration.value_is_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if value is one of the settings.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if value is one of the settings.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            settings (list):</span>
@@ -198,7 +198,7 @@
 <div class="viewcode-block" id="Configuration.value_is_not_one_of"><a class="viewcode-back" href="../../index.html#surfex.Configuration.value_is_not_one_of">[docs]</a>    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                             <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                             <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if value is not one of.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if value is not one of.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -232,7 +232,7 @@
                           <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if setting is one of values.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is one of values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -271,7 +271,7 @@
                               <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if setting is not one of values.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is not one of values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -304,7 +304,7 @@
 <div class="viewcode-block" id="Configuration.get_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.get_setting">[docs]</a>    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get configurations setting.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get configurations setting.</span>
 
 <span class="sd">        Settings are nested in blocks.</span>
 <span class="sd">        To get the full setting request setting joined by a separation character.</span>
@@ -375,7 +375,7 @@
         <span class="k">return</span> <span class="n">this_setting</span></div>
 
 <div class="viewcode-block" id="Configuration.update_setting"><a class="viewcode-back" href="../../index.html#surfex.Configuration.update_setting">[docs]</a>    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update the setting.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the setting.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            setting (_type_): _description_</span>
@@ -397,7 +397,7 @@
 
 
 <div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Set the configuration from Harmonie environment.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the configuration from Harmonie environment.</span>
 
 <span class="sd">    This class sets up a SURFEX configuration from an environment based Harmonie run with it&#39;s</span>
 <span class="sd">    corresponding configuration.</span>
@@ -407,7 +407,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ConfigurationFromHarmonie.__init__"><a class="viewcode-back" href="../../index.html#surfex.ConfigurationFromHarmonie.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Constuct the Configuration object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constuct the Configuration object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env (dict): System environment e.g. os.environ</span>
@@ -754,10 +754,10 @@
 
 
 <span class="k">class</span> <span class="nc">ConfigurationFromHarmonieAndConfigFile</span><span class="p">(</span><span class="n">ConfigurationFromHarmonie</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env (dict): System environment e.g. os.environ</span>
@@ -769,10 +769,10 @@
 
 
 <span class="k">class</span> <span class="nc">ConfigurationFromJsonFile</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Configuration from a json file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration from a json file.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct the configuration.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): File name</span>

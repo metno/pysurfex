@@ -65,11 +65,11 @@
 
 
 <span class="k">class</span> <span class="nc">YamlReaderError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Error.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Error.&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="data_merge"><a class="viewcode-back" href="../../index.html#surfex.data_merge">[docs]</a><span class="k">def</span> <span class="nf">data_merge</span><span class="p">(</span><span class="n">aaa</span><span class="p">,</span> <span class="n">bbb</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge bbb into aaa and return merged result.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge bbb into aaa and return merged result.</span>
 
 <span class="sd">    NOTE: tuples and arbitrary objects are not handled as it is</span>
 <span class="sd">    totally ambiguous what should happen</span>
@@ -110,13 +110,13 @@
 
 
 <div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
     <span class="c1"># print(mods)</span>
     <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#surfex.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
     <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">toml_file</span><span class="p">):</span>
@@ -132,7 +132,7 @@
 
 
 <div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#surfex.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Update a nested dictionary or similar mapping.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update a nested dictionary or similar mapping.</span>
 
 <span class="sd">    Modify ``source`` in place.</span>
 <span class="sd">    &quot;&quot;&quot;</span>

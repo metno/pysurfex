@@ -51,7 +51,7 @@
 
 
 <span class="k">def</span> <span class="nf">open_db</span><span class="p">(</span><span class="n">dbname</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Open database.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Open database.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dbname (str): File name.</span>
@@ -71,7 +71,7 @@
 
 
 <span class="k">def</span> <span class="nf">close_db</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Close data base connection.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Close data base connection.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        conn (sqlite3.connect): Data base connection.</span>
@@ -80,7 +80,7 @@
 
 
 <span class="k">def</span> <span class="nf">create_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create data base.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create data base.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        conn (sqlite3.connect): Data base connection.</span>
@@ -115,7 +115,7 @@
 
 
 <span class="k">def</span> <span class="nf">populate_usage_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">observations</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Populate usage.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Populate usage.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        conn (_type_): _description_</span>
@@ -181,7 +181,7 @@
 
 
 <span class="k">def</span> <span class="nf">rmse</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Root mean square error.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Root mean square error.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        predictions (_type_): _description_</span>
@@ -198,7 +198,7 @@
 
 
 <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Bias.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bias.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        predictions (_type_): _description_</span>
@@ -214,7 +214,7 @@
 
 
 <span class="k">def</span> <span class="nf">absbias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Absolute bias.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute bias.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        predictions (_type_): _description_</span>
@@ -230,7 +230,7 @@
 
 
 <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Mean.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mean.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        predictions (_type_): _description_</span>
@@ -246,7 +246,7 @@
 
 
 <span class="k">def</span> <span class="nf">calculate_statistics</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Statistics.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistics.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        observations (_type_): _description_</span>
@@ -325,7 +325,7 @@
 
 
 <span class="k">def</span> <span class="nf">populate_obsmon_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">statistics</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Populate obsmon.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Populate obsmon.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        conn (_type_): _description_</span>
@@ -385,7 +385,7 @@
 
 
 <div class="viewcode-block" id="write_obsmon_sqlite_file"><a class="viewcode-back" href="../../index.html#surfex.write_obsmon_sqlite_file">[docs]</a><span class="k">def</span> <span class="nf">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write obsmon sqlite file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write obsmon sqlite file.&quot;&quot;&quot;</span>
     <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;sea&quot;</span><span class="p">]</span>
     <span class="n">stat_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;nobs&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_abs_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_rms&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_dep&quot;</span><span class="p">,</span> <span class="s2">&quot;fg_uncorr&quot;</span><span class="p">,</span>
                  <span class="s2">&quot;bc&quot;</span><span class="p">,</span> <span class="s2">&quot;an_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;an_abs_bias&quot;</span><span class="p">,</span> <span class="s2">&quot;an_rms&quot;</span><span class="p">,</span> <span class="s2">&quot;an_dep&quot;</span><span class="p">]</span>

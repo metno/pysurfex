@@ -44,10 +44,10 @@
 
 
 <div class="viewcode-block" id="Interpolation"><a class="viewcode-back" href="../../index.html#surfex.Interpolation">[docs]</a><span class="k">class</span> <span class="nc">Interpolation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interpolation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolation.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Interpolation.__init__"><a class="viewcode-back" href="../../index.html#surfex.Interpolation.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct an intrpolation object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an intrpolation object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            operator (_type_): _description_</span>
@@ -89,7 +89,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Interpolation.interpolate"><a class="viewcode-back" href="../../index.html#surfex.Interpolation.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field2d</span><span class="p">,</span> <span class="n">undefined</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Do interpolation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do interpolation.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            field2d (_type_): _description_</span>
@@ -144,11 +144,11 @@
             <span class="k">return</span> <span class="n">interpolated_field</span></div>
 
 <div class="viewcode-block" id="Interpolation.rotate_wind_to_geographic"><a class="viewcode-back" href="../../index.html#surfex.Interpolation.rotate_wind_to_geographic">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_wind_to_geographic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Not implemented.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not implemented.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="Interpolation.distance"><a class="viewcode-back" href="../../index.html#surfex.Interpolation.distance">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compute distance.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute distance.</span>
 
 <span class="sd">        Computes the great circle distance between two points using the</span>
 <span class="sd">        haversine formula. Values can be vectors.</span>
@@ -166,7 +166,7 @@
         <span class="k">return</span> <span class="n">cval</span></div>
 
 <div class="viewcode-block" id="Interpolation.alpha_grid_rot"><a class="viewcode-back" href="../../index.html#surfex.Interpolation.alpha_grid_rot">[docs]</a>    <span class="k">def</span> <span class="nf">alpha_grid_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Calculate alpha.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate alpha.&quot;&quot;&quot;</span>
         <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span>
         <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span>
         <span class="n">n_x</span> <span class="o">=</span> <span class="n">lat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -194,7 +194,7 @@
 
 
 <span class="k">def</span> <span class="nf">fill_field</span><span class="p">(</span><span class="n">field_tmp</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Fill field.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fill field.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        field_tmp (_type_): _description_</span>
@@ -215,7 +215,7 @@
 
 
 <span class="k">def</span> <span class="nf">grid2points</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert a grid to points.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a grid to points.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        grid_lons (_type_): _description_</span>
@@ -236,7 +236,7 @@
 
 
 <span class="k">def</span> <span class="nf">get_num_neighbours</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">p_lon</span><span class="p">,</span> <span class="n">p_lat</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">2500.</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get number of neighbours.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get number of neighbours.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        grid_lons (_type_): _description_</span>

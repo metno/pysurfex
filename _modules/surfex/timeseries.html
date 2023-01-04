@@ -45,10 +45,10 @@
 
 
 <div class="viewcode-block" id="TimeSeries"><a class="viewcode-back" href="../../index.html#surfex.TimeSeries">[docs]</a><span class="k">class</span> <span class="nc">TimeSeries</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Time series.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Time series.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TimeSeries.__init__"><a class="viewcode-back" href="../../index.html#surfex.TimeSeries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">stids_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s2">&quot;NA&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct time series.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct time series.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            times (_type_): _description_</span>
@@ -77,7 +77,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">stids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_stids_from_file</span><span class="p">(</span><span class="n">stids_file</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TimeSeries.update_stids_from_file"><a class="viewcode-back" href="../../index.html#surfex.TimeSeries.update_stids_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">update_stids_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update stids from file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update stids from file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (_type_): _description_</span>
@@ -96,7 +96,7 @@
         <span class="k">return</span> <span class="n">stids</span></div>
 
 <div class="viewcode-block" id="TimeSeries.write_json"><a class="viewcode-back" href="../../index.html#surfex.TimeSeries.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Write json file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write json file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (_type_): _description_</span>
@@ -120,10 +120,10 @@
 
 
 <div class="viewcode-block" id="TimeSeriesFromJson"><a class="viewcode-back" href="../../index.html#surfex.TimeSeriesFromJson">[docs]</a><span class="k">class</span> <span class="nc">TimeSeriesFromJson</span><span class="p">(</span><span class="n">TimeSeries</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Time series from json.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Time series from json.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TimeSeriesFromJson.__init__"><a class="viewcode-back" href="../../index.html#surfex.TimeSeriesFromJson.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lons</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (_type_): _description_</span>
@@ -206,11 +206,11 @@
 
 
 <div class="viewcode-block" id="TimeSeriesFromConverter"><a class="viewcode-back" href="../../index.html#surfex.TimeSeriesFromConverter">[docs]</a><span class="k">class</span> <span class="nc">TimeSeriesFromConverter</span><span class="p">(</span><span class="n">TimeSeries</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Time-Series from a converter.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Time-Series from a converter.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">converter</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
                  <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stids_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (_type_): _description_</span>

@@ -55,17 +55,17 @@
 
 
 <div class="viewcode-block" id="LoadFromFile"><a class="viewcode-back" href="../../index.html#surfex.LoadFromFile">[docs]</a><span class="k">class</span> <span class="nc">LoadFromFile</span> <span class="p">(</span><span class="n">Action</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Load arguments from a file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load arguments from a file.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="LoadFromFile.__call__"><a class="viewcode-back" href="../../index.html#surfex.LoadFromFile.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Override __call__ method.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override __call__ method.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">values</span> <span class="k">as</span> <span class="n">f_h</span><span class="p">:</span>
             <span class="c1"># parse arguments in the file and store them in the target namespace</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">f_h</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">namespace</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="parse_args_create_forcing"><a class="viewcode-back" href="../../index.html#surfex.parse_args_create_forcing">[docs]</a><span class="k">def</span> <span class="nf">parse_args_create_forcing</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse arguments to create forcing.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments to create forcing.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -243,7 +243,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_modify_forcing</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse arguments to modify forcing.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments to modify forcing.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -273,7 +273,7 @@
 
 
 <div class="viewcode-block" id="parse_args_qc2obsmon"><a class="viewcode-back" href="../../index.html#surfex.parse_args_qc2obsmon">[docs]</a><span class="k">def</span> <span class="nf">parse_args_qc2obsmon</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse arguments for qc2obsmon.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments for qc2obsmon.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -312,7 +312,7 @@
 
 
 <div class="viewcode-block" id="parse_args_first_guess_for_oi"><a class="viewcode-back" href="../../index.html#surfex.parse_args_first_guess_for_oi">[docs]</a><span class="k">def</span> <span class="nf">parse_args_first_guess_for_oi</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse arguments for firstguess4oi.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments for firstguess4oi.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -408,7 +408,7 @@
 
 
 <div class="viewcode-block" id="first_guess_for_oi"><a class="viewcode-back" href="../../index.html#surfex.first_guess_for_oi">[docs]</a><span class="k">def</span> <span class="nf">first_guess_for_oi</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run first guess for oi.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run first guess for oi.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
         <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;config_exp&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -561,7 +561,7 @@
 
 
 <div class="viewcode-block" id="parse_args_masterodb"><a class="viewcode-back" href="../../index.html#surfex.parse_args_masterodb">[docs]</a><span class="k">def</span> <span class="nf">parse_args_masterodb</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for masterodb.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for masterodb.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -615,7 +615,7 @@
 
 
 <div class="viewcode-block" id="run_masterodb"><a class="viewcode-back" href="../../index.html#surfex.run_masterodb">[docs]</a><span class="k">def</span> <span class="nf">run_masterodb</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run masterodb.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run masterodb.&quot;&quot;&quot;</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
         <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -772,7 +772,7 @@
 
 
 <div class="viewcode-block" id="parse_args_surfex_binary"><a class="viewcode-back" href="../../index.html#surfex.parse_args_surfex_binary">[docs]</a><span class="k">def</span> <span class="nf">parse_args_surfex_binary</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for surfex binary.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for surfex binary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -858,7 +858,7 @@
 
 
 <div class="viewcode-block" id="run_surfex_binary"><a class="viewcode-back" href="../../index.html#surfex.run_surfex_binary">[docs]</a><span class="k">def</span> <span class="nf">run_surfex_binary</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run a surfex binary.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a surfex binary.&quot;&quot;&quot;</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
         <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1085,7 +1085,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_create_namelist</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for creating a namelist.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for creating a namelist.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1129,7 +1129,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_create_namelist</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create a namelist.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a namelist.&quot;&quot;&quot;</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="n">mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
@@ -1230,7 +1230,7 @@
 
 
 <div class="viewcode-block" id="parse_args_gridpp"><a class="viewcode-back" href="../../index.html#surfex.parse_args_gridpp">[docs]</a><span class="k">def</span> <span class="nf">parse_args_gridpp</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for gridpp.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for gridpp.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1276,7 +1276,7 @@
 
 
 <div class="viewcode-block" id="run_gridpp"><a class="viewcode-back" href="../../index.html#surfex.run_gridpp">[docs]</a><span class="k">def</span> <span class="nf">run_gridpp</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Gridpp.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gridpp.&quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
     <span class="n">input_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_file&quot;</span><span class="p">]</span>
     <span class="n">output_file</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1331,7 +1331,7 @@
 
 
 <div class="viewcode-block" id="parse_args_titan"><a class="viewcode-back" href="../../index.html#surfex.parse_args_titan">[docs]</a><span class="k">def</span> <span class="nf">parse_args_titan</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for titan.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for titan.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1374,7 +1374,7 @@
 
 
 <div class="viewcode-block" id="run_titan"><a class="viewcode-back" href="../../index.html#surfex.run_titan">[docs]</a><span class="k">def</span> <span class="nf">run_titan</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Titan.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Titan.&quot;&quot;&quot;</span>
     <span class="n">geo</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
         <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1447,7 +1447,7 @@
 
 
 <div class="viewcode-block" id="parse_args_oi2soda"><a class="viewcode-back" href="../../index.html#surfex.parse_args_oi2soda">[docs]</a><span class="k">def</span> <span class="nf">parse_args_oi2soda</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for oi2soda.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for oi2soda.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1492,7 +1492,7 @@
 
 
 <div class="viewcode-block" id="run_oi2soda"><a class="viewcode-back" href="../../index.html#surfex.run_oi2soda">[docs]</a><span class="k">def</span> <span class="nf">run_oi2soda</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Oi2soda.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Oi2soda.&quot;&quot;&quot;</span>
     <span class="n">t2m_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;t2m_file&quot;</span><span class="p">]</span>
     <span class="n">rh2m_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;rh2m_file&quot;</span><span class="p">]</span>
     <span class="n">sd_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sd_file&quot;</span><span class="p">]</span>
@@ -1517,7 +1517,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_lsm_file_assim</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for land-sea-mask for assimilation.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for land-sea-mask for assimilation.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1563,7 +1563,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_lsm_file_assim</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create LSM file for assimilation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create LSM file for assimilation.&quot;&quot;&quot;</span>
     <span class="n">validtime</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">]</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">(</span><span class="mi">3600</span><span class="p">)</span>
 
@@ -1604,7 +1604,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_hm2pysurfex</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for hm2pysurfex.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for hm2pysurfex.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1635,7 +1635,7 @@
 
 
 <div class="viewcode-block" id="hm2pysurfex"><a class="viewcode-back" href="../../index.html#surfex.hm2pysurfex">[docs]</a><span class="k">def</span> <span class="nf">hm2pysurfex</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Harmonie to pysurfex.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Harmonie to pysurfex.&quot;&quot;&quot;</span>
     <span class="n">pysurfex_config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pysurfex_config</span><span class="p">):</span>
         <span class="n">pysurfex_config</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">pysurfex_config</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
@@ -1661,7 +1661,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_bufr2json</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for bufr2json.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for bufr2json.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1698,7 +1698,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_bufr2json</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run bufr to a json file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run bufr to a json file.&quot;&quot;&quot;</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;vars&quot;</span><span class="p">]</span>
     <span class="n">bufrfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;bufr&quot;</span><span class="p">]</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span>
@@ -1723,7 +1723,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_plot_points</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for plotting points.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for plotting points.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -1796,7 +1796,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_plot_points</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Point plots.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Point plots.&quot;&quot;&quot;</span>
     <span class="n">geo_file</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">geo_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo&quot;</span><span class="p">]</span>
@@ -2010,7 +2010,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_plot_timeseries_args</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for plotting time series.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for plotting time series.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2049,7 +2049,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_plot_timeseries_from_json</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot time series from json.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot time series from json.&quot;&quot;&quot;</span>
     <span class="n">lon</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span>
     <span class="n">lat</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span>
     <span class="n">stid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stid&quot;</span><span class="p">]</span>
@@ -2097,7 +2097,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_set_geo_from_obs_set</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for setting geo from obs set.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for setting geo from obs set.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2134,7 +2134,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_set_geo_from_stationlist</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for setting geo from station list.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for setting geo from station list.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2166,7 +2166,7 @@
 
 
 <span class="k">def</span> <span class="nf">set_geo_from_stationlist</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Set geometry from station list.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set geometry from station list.&quot;&quot;&quot;</span>
     <span class="n">stationlist</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stationlist&quot;</span><span class="p">]</span>
     <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;lonrange&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -2212,7 +2212,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_merge_namelist_settings</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merging namelist settings.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merging namelist settings.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2242,7 +2242,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_merge_namelist_settings</span><span class="p">(</span><span class="n">my_files</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge namelist settings.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge namelist settings.&quot;&quot;&quot;</span>
     <span class="n">json_settings</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">my_files</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
@@ -2254,7 +2254,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_merge_toml_settings</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merging toml settings.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merging toml settings.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2281,7 +2281,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_merge_toml_settings</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge toml settings from files.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge toml settings from files.&quot;&quot;&quot;</span>
     <span class="n">my_files</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;toml&quot;</span><span class="p">]</span>
     <span class="n">my_output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span>
 
@@ -2292,7 +2292,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_merge_qc_data</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merge of qc data.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for merge of qc data.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2321,13 +2321,13 @@
 
 
 <span class="k">def</span> <span class="nf">merge_qc_data</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merge the qc data.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge the qc data.&quot;&quot;&quot;</span>
     <span class="n">qc_data</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">merge_json_qc_data_sets</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">)</span>
     <span class="n">qc_data</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">parse_timeseries2json</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for time series to json.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for time series to json.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2393,7 +2393,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_timeseries2json</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run timeseries to json.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run timeseries to json.&quot;&quot;&quot;</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">]</span>
     <span class="n">lats</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lats&quot;</span><span class="p">]</span>
     <span class="n">stations</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stations&quot;</span><span class="p">]</span>
@@ -2483,7 +2483,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_cryoclim_pseudoobs</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for cryoclim pseudo obs.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for cryoclim pseudo obs.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2522,7 +2522,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_sentinel_obs</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for sentinel observations.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for sentinel observations.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2560,7 +2560,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_cryoclim_pseuodoobs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create pseudo obs from cryoclim.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create pseudo obs from cryoclim.&quot;&quot;&quot;</span>
     <span class="n">fg_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;fg_file&quot;</span><span class="p">]</span>
     <span class="n">infiles</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;infiles&quot;</span><span class="p">]</span>
     <span class="n">step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;thinning&quot;</span><span class="p">]</span>
@@ -2577,7 +2577,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_sentinel_obs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create pseudo obs from cryoclim.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create pseudo obs from cryoclim.&quot;&quot;&quot;</span>
     <span class="n">fg_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;fg_file&quot;</span><span class="p">]</span>
     <span class="n">infiles</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;infiles&quot;</span><span class="p">]</span>
     <span class="n">step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;thinning&quot;</span><span class="p">]</span>
@@ -2594,7 +2594,7 @@
 
 
 <span class="k">def</span> <span class="nf">parse_args_shape2ign</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse the command line input arguments for shape fiel to ign.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the command line input arguments for shape fiel to ign.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        argv (list): List with arguments.</span>
@@ -2632,7 +2632,7 @@
 
 
 <span class="k">def</span> <span class="nf">run_shape2ign</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Shape2ign.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape2ign.&quot;&quot;&quot;</span>
     <span class="n">catchment</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;catchment&quot;</span><span class="p">)</span>
     <span class="n">infile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;infile&quot;</span><span class="p">)</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>

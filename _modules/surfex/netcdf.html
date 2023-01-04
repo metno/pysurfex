@@ -50,10 +50,10 @@
 
 
 <div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#surfex.Netcdf">[docs]</a><span class="k">class</span> <span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Netcdf input.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Netcdf input.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Netcdf.__init__"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct NetCDF.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct NetCDF.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (_type_): _description_</span>
@@ -64,14 +64,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Netcdf.num_height"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.num_height">[docs]</a>    <span class="k">def</span> <span class="nf">num_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;num_height.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;num_height.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="Netcdf.num_time"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.num_time">[docs]</a>    <span class="k">def</span> <span class="nf">num_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;num_time.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;num_time.&quot;&quot;&quot;</span></div>
 
     <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xcoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ycoords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">deaccumulate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">instantanious</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lev_from_ind</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Assembles a 5D field in order lon,lat,time,height,ensemble.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assembles a 5D field in order lon,lat,time,height,ensemble.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            var_name (str): Name of field to retrieve</span>
@@ -266,7 +266,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo</span>
 
 <div class="viewcode-block" id="Netcdf.field"><a class="viewcode-back" href="../../index.html#surfex.Netcdf.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var_name (_type_): _description_</span>
@@ -297,7 +297,7 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
     <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read a field and interpolate it to requested positions.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a field and interpolate it to requested positions.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (_type_): _description_</span>
@@ -325,7 +325,7 @@
 
 
 <span class="k">class</span> <span class="nc">Axis</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Axis.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Axis.&quot;&quot;&quot;</span>
 
     <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">GEOX</span> <span class="o">=</span> <span class="mi">1</span>
@@ -342,10 +342,10 @@
 
 
 <span class="k">class</span> <span class="nc">NetCDFReadVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;NetCDF read variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NetCDF read variable.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (_type_): _description_</span>
@@ -361,10 +361,10 @@
 
 
 <div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;NetDF file variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NetDF file variable.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NetCDFFileVariable.__init__"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            file_handler (_type_): _description_</span>
@@ -376,7 +376,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get axis_types.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get axis_types.&quot;&quot;&quot;</span>
         <span class="n">types</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">+</span> <span class="s2">&quot; is missing in file!&quot;</span><span class="p">)</span>
@@ -409,7 +409,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dim_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get dim_names.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dim_names.&quot;&quot;&quot;</span>
         <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
@@ -418,7 +418,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get units.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get units.&quot;&quot;&quot;</span>
         <span class="n">units</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
             <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">units</span>
@@ -426,7 +426,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">lats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get lats.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get lats.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           np.array: 2D array of latitudes</span>
@@ -450,7 +450,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get lons.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get lons.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">           np.array: 2D array of longitudes</span>
@@ -473,7 +473,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">datetimes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get datetimes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get datetimes.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list()</span>
@@ -499,7 +499,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get times.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get times.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.array: 1D array of times</span>
@@ -517,7 +517,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">members</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get members.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get members.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.array: 1D array of ensemble members</span>
@@ -535,7 +535,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get levels.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get levels.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.array: 1D array of levels</span>
@@ -553,7 +553,7 @@
 
 <div class="viewcode-block" id="NetCDFFileVariable.is_level"><a class="viewcode-back" href="../../index.html#surfex.NetCDFFileVariable.is_level">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">is_level</span><span class="p">(</span><span class="n">axis_type</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if is level.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if is level.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            axis_type (_type_): _description_</span>
@@ -570,7 +570,7 @@
 
 
 <div class="viewcode-block" id="create_netcdf_first_guess_template"><a class="viewcode-back" href="../../index.html#surfex.create_netcdf_first_guess_template">[docs]</a><span class="k">def</span> <span class="nf">create_netcdf_first_guess_template</span><span class="p">(</span><span class="n">my_variables</span><span class="p">,</span> <span class="n">my_nx</span><span class="p">,</span> <span class="n">my_ny</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;raw.nc&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create netCDF template file for first guess.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create netCDF template file for first guess.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        my_variables (_type_): _description_</span>
@@ -662,7 +662,7 @@
 
 
 <div class="viewcode-block" id="read_first_guess_netcdf_file"><a class="viewcode-back" href="../../index.html#surfex.read_first_guess_netcdf_file">[docs]</a><span class="k">def</span> <span class="nf">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read netCDF first guess file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read netCDF first guess file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input_file (_type_): _description_</span>
@@ -736,7 +736,7 @@
 
 <div class="viewcode-block" id="write_analysis_netcdf_file"><a class="viewcode-back" href="../../index.html#surfex.write_analysis_netcdf_file">[docs]</a><span class="k">def</span> <span class="nf">write_analysis_netcdf_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                <span class="n">geo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write analysis NetCDF file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write analysis NetCDF file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        filename (_type_): _description_</span>
@@ -781,7 +781,7 @@
 
 
 <div class="viewcode-block" id="oi2soda"><a class="viewcode-back" href="../../index.html#surfex.oi2soda">[docs]</a><span class="k">def</span> <span class="nf">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert analysis to ASCII obs file for SODA.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert analysis to ASCII obs file for SODA.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtg (_type_): _description_</span>
@@ -891,7 +891,7 @@
 
 
 <span class="k">def</span> <span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read crycoclim netCDF file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read crycoclim netCDF file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        infiles (list): Input files.</span>
@@ -925,7 +925,7 @@
 
 
 <span class="k">def</span> <span class="nf">read_sentinel_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read sentinel nc files.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read sentinel nc files.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        infiles (list): Input files.</span>

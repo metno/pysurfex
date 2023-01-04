@@ -46,10 +46,10 @@
 
 
 <div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#surfex.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;New combined variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;New combined variable.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Variable.__init__"><a class="viewcode-back" href="../../index.html#surfex.Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">initial_basetime</span><span class="p">,</span> <span class="n">prefer_forecast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var_type (_type_): _description_</span>
@@ -112,7 +112,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed </span><span class="si">%s</span><span class="s2"> for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the filename.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the filename.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            validtime (datetime.datetime): Valid time.</span>
@@ -129,7 +129,7 @@
         <span class="k">return</span> <span class="n">surfex</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parse_filepattern</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_filehandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the file handler.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file handler.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            validtime (datetime.datetime): Valid time.</span>
@@ -180,7 +180,7 @@
         <span class="k">return</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">filename</span>
 
     <span class="k">def</span> <span class="nf">read_var_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read points for a variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points for a variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (object): Variable object</span>
@@ -246,7 +246,7 @@
         <span class="k">return</span> <span class="n">field</span>
 
     <span class="k">def</span> <span class="nf">set_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            validtime (datetime.datetime, optional): Valid time. Defaults to None.</span>
@@ -335,7 +335,7 @@
         <span class="k">return</span> <span class="n">accumulated</span><span class="p">,</span> <span class="n">instant</span><span class="p">,</span> <span class="n">var</span>
 
 <div class="viewcode-block" id="Variable.read_variable"><a class="viewcode-back" href="../../index.html#surfex.Variable.read_variable">[docs]</a>    <span class="k">def</span> <span class="nf">read_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read the variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            geo (surfex.Geometry): Geometry to read</span>
@@ -373,11 +373,11 @@
         <span class="k">return</span> <span class="n">field</span></div>
 
 <div class="viewcode-block" id="Variable.print_variable_info"><a class="viewcode-back" href="../../index.html#surfex.Variable.print_variable_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Print variable.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print variable.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;:</span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Variable.deaccumulate"><a class="viewcode-back" href="../../index.html#surfex.Variable.deaccumulate">[docs]</a>    <span class="k">def</span> <span class="nf">deaccumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Deaccumulate variable.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deaccumulate variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            field (_type_): _description_</span>
@@ -414,7 +414,7 @@
             <span class="k">return</span> <span class="n">field</span></div>
 
     <span class="k">def</span> <span class="nf">get_basetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_different_basetime</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the basetime of the file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the basetime of the file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            validtime (datetime.datetime): Valid time</span>
@@ -487,7 +487,7 @@
         <span class="k">return</span> <span class="n">basetime</span>
 
 <div class="viewcode-block" id="Variable.rotate_geographic_wind"><a class="viewcode-back" href="../../index.html#surfex.Variable.rotate_geographic_wind">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_geographic_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Rotate wind.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate wind.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            field (_type_): _description_</span>
