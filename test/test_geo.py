@@ -80,6 +80,11 @@ class GeoTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             surfex.geo.ConfProj(new_domain)
 
+        self.assertAlmostEqual(my_geo.lons[0][0], 9.95323219)
+        self.assertAlmostEqual(my_geo.lats[0][0], 59.99198266)
+        self.assertAlmostEqual(my_geo.xxx[0], 561109.9103510105)
+        self.assertAlmostEqual(my_geo.yyy[0], 1154504.0851275164)
+
     def test_geo_lonlat_reg(self):
         """Test lonlat geometry."""
         domain = {

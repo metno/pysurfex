@@ -108,7 +108,7 @@ setup(
         "numpy",
         "netCDF4",
         "cfunits",
-        "pyproj == 2.2",
+        "pyproj",
         "pyyaml",
         "toml",
         "netCDF4",
