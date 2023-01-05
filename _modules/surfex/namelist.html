@@ -2922,13 +2922,13 @@
                 <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;perturbed_run_dir&quot;</span>
                 <span class="k">if</span> <span class="n">pert_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use default CSURFFILE for perturbed file names&quot;</span><span class="p">)</span>
-                    <span class="n">perturbed_file_pattern</span> <span class="o">=</span> \
+                    <span class="n">pert_fp</span> <span class="o">=</span> \
                         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span>
                                                 <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span>
 
                 <span class="c1"># TODO depending on when perturbations are run</span>
                 <span class="n">pert_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span>
-                                                                  <span class="n">perturbed_file_pattern</span><span class="p">,</span>
+                                                                  <span class="n">pert_fp</span><span class="p">,</span>
                                                                   <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
                                                                   <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
                                                                   <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
