@@ -2883,13 +2883,13 @@ class SodaInputData(surfex.JsonInputData):
                 data_dir = "perturbed_run_dir"
                 if pert_fp is None:
                     logging.info("Use default CSURFFILE for perturbed file names")
-                    perturbed_file_pattern = \
+                    pert_fp = \
                         self.config.get_setting("SURFEX#IO#CSURFFILE",
                                                 check_parsing=False) + "." + extension
 
                 # TODO depending on when perturbations are run
                 pert_run = self.system_file_paths.get_system_file(data_dir,
-                                                                  perturbed_file_pattern,
+                                                                  pert_fp,
                                                                   validtime=self.dtg,
                                                                   basedtg=fg_dtg,
                                                                   check_existence=check_existence,
