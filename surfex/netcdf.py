@@ -6,7 +6,12 @@ from datetime import datetime, date
 from enum import Enum
 import numpy as np
 import netCDF4
-import cfunits
+try:
+    import cfunits
+except ModuleNotFoundError:
+    cfunits = None
+except AssertionError:
+    cfunits = None
 import surfex
 
 
@@ -191,6 +196,8 @@ class Netcdf(object):
         logging.debug("self.file[var.var_name] %s", self.file[var.var_name])
         field = self.file[var.var_name][dims]
         if units is not None:
+            if cfunits is None:
+                raise Exception("cfunits not loaded!")
             field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
 
         # Deaccumulation
@@ -198,6 +205,8 @@ class Netcdf(object):
             original_field = field
             previous_field = self.file[var.var_name][prev_dims]
             if units is not None:
+                if cfunits is None:
+                    raise Exception("cfunits not loaded!")
                 previous_field = cfunits.Units.conform(previous_field, cfunits.Units(var.units),
                                                        cfunits.Units(units))
             field = np.subtract(original_field, previous_field)
@@ -446,6 +455,8 @@ class NetCDFFileVariable(object):
             if axis_type == Axis.TIME:
                 val = self.file.variables[self.dim_names[i]]
                 for tval in val:
+                    if cfunits is None:
+                        raise Exception("cfunits not loaded!")
                     epochtime = int(cfunits.Units.conform(
                         tval, cfunits.Units(val.units),
                         cfunits.Units("seconds since 1970-01-01 00:00:00")))
@@ -640,6 +651,8 @@ def read_first_guess_netcdf_file(input_file, var):
     lons = file_handler["longitude"][:]
     lats = file_handler["latitude"][:]
 
+    if cfunits is None:
+        raise Exception("cfunits not loaded!")
     validtime = int(cfunits.Units.conform(file_handler["time"][:],
                     cfunits.Units(file_handler["time"].units),
                     cfunits.Units("seconds since 1970-01-01 00:00:00")))

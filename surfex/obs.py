@@ -11,7 +11,8 @@ try:
     import cfunits
 except ModuleNotFoundError:
     cfunits = None
-
+except AssertionError:
+    cfunits = None
 
 class Observation(object):
     """Observation class."""
