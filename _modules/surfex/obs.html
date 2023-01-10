@@ -50,7 +50,8 @@
     <span class="kn">import</span> <span class="nn">cfunits</span>
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
     <span class="n">cfunits</span> <span class="o">=</span> <span class="kc">None</span>
-
+<span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+    <span class="n">cfunits</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="Observation"><a class="viewcode-back" href="../../index.html#surfex.Observation">[docs]</a><span class="k">class</span> <span class="nc">Observation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Observation class.&quot;&quot;&quot;</span>
