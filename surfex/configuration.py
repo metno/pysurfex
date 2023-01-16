@@ -326,6 +326,7 @@ class Configuration(object):
                             raise KeyError("Key not found " + key)
                         else:
                             this_setting = None
+                            break
         else:
             if abort:
                 raise KeyError("Key not found " + keys[0])
