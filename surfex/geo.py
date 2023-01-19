@@ -190,10 +190,15 @@ class ConfProj(SurfexGeo):
             raise KeyError("Missing key4")
 
         earth = 6.37122e+6
-        proj_string = f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} " \
-                      f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} " \
-                      f"+units=m +no_defs +R={str(earth)}"
+        if self.xlat0 == 90.0 or self.xlat0 == -90.0:
+            proj_string = f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "\
+                          f"+lat_ts={str(self.xlat0)}"
+        else:
+            proj_string = f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} " \
+                          f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} " \
+                          f"+units=m +no_defs +R={str(earth)}"
 
+        logging.debug("Proj string: %s", proj_string)
         proj = pyproj.CRS.from_string(proj_string)
         wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
