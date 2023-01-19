@@ -2681,7 +2681,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
 
         <span class="c1"># OBS</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_observations</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
+        <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">pobs</span> <span class="ow">in</span> <span class="n">nnco</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">need_obs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_observations</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
 
         <span class="c1"># SEA</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
