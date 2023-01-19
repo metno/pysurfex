@@ -50,23 +50,7 @@ class Grib(object):
         if eccodes is None:
             raise Exception("eccodes not found. Needed for reading grib files")
 
-        geography = ["bitmapPresent",
-                     "Nx",
-                     "Ny",
-                     "latitudeOfFirstGridPointInDegrees",
-                     "longitudeOfFirstGridPointInDegrees",
-                     "LoVInDegrees",
-                     "DxInMetres",
-                     "DyInMetres",
-                     "iScansNegatively",
-                     "jScansPositively",
-                     "jPointsAreConsecutive",
-                     "Latin1InDegrees",
-                     "LaDInDegrees",
-                     "Latin2InDegrees",
-                     "latitudeOfSouthernPoleInDegrees",
-                     "longitudeOfSouthernPoleInDegrees"
-                     ]
+        keys = ["bitmapPresent"]
 
         logging.debug("Look for %s", gribvar.generate_grib_id())
 
@@ -89,35 +73,161 @@ class Grib(object):
                     # print("Found key")
                     # gribvar.print_keys()
 
+                    values = self.read_field_in_message(gid, time)
+                    logging.debug("read values = %s", values)
+
                     grid_type = str(eccodes.codes_get(gid, "gridType"))
-                    if grid_type.lower() == "lambert":
-                        geo = {}
-                        for key in geography:
-                            try:
-                                geo.update({key: eccodes.codes_get(gid, key)})
-                            except eccodes.CodesInternalError as err:
-                                surfex.warning('Error with key="%s" : %s', key, err.msg)
+                    if grid_type.lower() == "rotated_ll":
+                        geo_keys = [
+                            'Ni',
+                            'Nj',
+                            'latitudeOfFirstGridPointInDegrees',
+                            'longitudeOfFirstGridPointInDegrees',
+                            'latitudeOfLastGridPointInDegrees',
+                            'longitudeOfLastGridPointInDegrees',
+                            'iDirectionIncrementInDegrees',
+                            'jDirectionIncrementInDegrees',
+                            "latitudeOfSouthernPoleInDegrees",
+                            "longitudeOfSouthernPoleInDegrees",
+                            'iScansNegatively',
+                            'jScansPositively'
+                        ]
+                        geo_info = self.read_geo_info(gid, geo_keys)
 
-                        logging.debug('There are %d values, average is %f, min is %f, max is %f',
-                                      eccodes.codes_get_size(gid, 'values'),
-                                      eccodes.codes_get(gid, 'average'),
-                                      eccodes.codes_get(gid, 'min'),
-                                      eccodes.codes_get(gid, 'max'))
+                        n_x = geo_info["Ni"]
+                        n_y = geo_info["Nj"]
 
-                        values = eccodes.codes_get_values(gid)
-                        logging.debug("Look for Values: %s", values)
-                        n_x = geo["Nx"]
-                        n_y = geo["Ny"]
+                        ll_lon = geo_info["longitudeOfFirstGridPointInDegrees"]
+                        ll_lat = geo_info["latitudeOfFirstGridPointInDegrees"]
+                        dlon = geo_info["iDirectionIncrementInDegrees"]
+                        dlat = geo_info["jDirectionIncrementInDegrees"]
+                        sp_lon = geo_info["longitudeOfSouthernPoleInDegrees"]
+                        iscan = geo_info["iScansNegatively"]
+                        jscan = geo_info["jScansPositively"]
+                        if sp_lon < -180.0:
+                            sp_lon = sp_lon + 360.
+                        elif sp_lon > 180.0:
+                            sp_lon = sp_lon - 360.
+                        sp_lat = -1 * geo_info["latitudeOfSouthernPoleInDegrees"]
+                        earth = 6.371229e+6
 
-                        lon0 = geo["LoVInDegrees"]
-                        lat0 = geo["LaDInDegrees"]
-                        ll_lon = geo["longitudeOfFirstGridPointInDegrees"]
-                        ll_lat = geo["latitudeOfFirstGridPointInDegrees"]
-                        d_x = geo["DxInMetres"]
-                        d_y = geo["DyInMetres"]
+                        proj_string = f"+proj=ob_tran +o_proj=longlat +o_lat_p={sp_lat}"\
+                                      f" +R={str(earth)} +no_defs"
+                        logging.info(proj_string)
+                        logging.info("ll_lon=%s ll_lat=%s", ll_lon, ll_lat)
+                        logging.info("polon=%s polat=%s", sp_lon, sp_lat)
+                        logging.info("dlon=%s dlat=%s", dlon, dlat)
+                        logging.info("iscan=%s jscan=%s", iscan, jscan)
+                        proj = pyproj.CRS.from_string(proj_string)
+                        wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
-                        # TODO Check time consistency
-                        logging.info("Grib record found is hopefullly valid for time %s", str(time))
+                        lons = []
+                        for i in range(0, n_x):
+                            if int(iscan) == 1:
+                                lon = ll_lon - (float(i) * dlon)
+                            else:
+                                lon = ll_lon + (float(i) * dlon)
+                            if lon < -180.0:
+                                lon = lon + 360.
+                            elif lon > 180.0:
+                                lon = lon - 360.
+                            lons.append(lon)
+                        lats = []
+                        for j in range(0, n_y):
+                            if int(jscan) == 1:
+                                lat = ll_lat + (float(j) * dlat)
+                            else:
+                                lat = ll_lat - (float(j) * dlat)
+                            if lat > 90.0:
+                                lat = lat - 90.0
+                            elif lat < -90.0:
+                                lat = lat + 90.
+                            lats.append(lat)
+
+                        lons = np.array(lons)
+                        lats = np.array(lats)
+                        longitudes, latitudes = np.meshgrid(lons, lats)
+                        lons, lats = \
+                            pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(longitudes, latitudes)
+                        lons = lons + sp_lon
+
+                        field = np.reshape(values, [n_x, n_y], order="C")
+                        if geo_out is None:
+                            geo_out = surfex.geo.Geo(n_x * n_y, n_x, n_y, lons, lats)
+
+                    elif grid_type.lower() == "regular_ll":
+                        geo_keys = [
+                            'Ni',
+                            'Nj',
+                            'latitudeOfFirstGridPointInDegrees',
+                            'longitudeOfFirstGridPointInDegrees',
+                            'latitudeOfLastGridPointInDegrees',
+                            'longitudeOfLastGridPointInDegrees',
+                            'iDirectionIncrementInDegrees',
+                            'jDirectionIncrementInDegrees'
+                        ]
+                        geo_info = self.read_geo_info(gid, geo_keys)
+                        n_x = geo_info["Ni"]
+                        n_y = geo_info["Nj"]
+                        lon0 = geo_info["longitudeOfFirstGridPointInDegrees"]
+                        lat0 = geo_info["latitudeOfFirstGridPointInDegrees"]
+                        d_x = geo_info["iDirectionIncrementInDegrees"]
+                        d_y = geo_info["jDirectionIncrementInDegrees"]
+                        lons = []
+                        lats = []
+                        for i in range(0, n_x):
+                            lons.append(lon0 + (float(i)*d_x))
+                        for j in range(0, n_y):
+                            lats.append(lat0 - (float(j)*d_y))
+                        lon1 = lons[-1]
+                        lat1 = lats[-1]
+                        lons = np.array(lons)
+                        lats = np.array(lats)
+                        lons, lats = np.meshgrid(lons, lats)
+                        field = np.reshape(values, [n_x, n_y], order="C")
+
+                        if geo_out is None:
+                            domain = {
+                                "nam_lonlat_reg": {
+                                    "xlonmin": lon0,
+                                    "xlonmax": lon1,
+                                    "xlatmin": lat0,
+                                    "xlatmax": lat1,
+                                    "nlon": n_x,
+                                    "nlat": n_y
+                                }
+                            }
+                            geo_out = surfex.geo.LonLatReg(domain)
+
+                    elif grid_type.lower() == "lambert":
+                        geo_keys = [
+                            "Nx",
+                            "Ny",
+                            "latitudeOfFirstGridPointInDegrees",
+                            "longitudeOfFirstGridPointInDegrees",
+                            "LoVInDegrees",
+                            "DxInMetres",
+                            "DyInMetres",
+                            "iScansNegatively",
+                            "jScansPositively",
+                            "jPointsAreConsecutive",
+                            "Latin1InDegrees",
+                            "LaDInDegrees",
+                            "Latin2InDegrees",
+                            "latitudeOfSouthernPoleInDegrees",
+                            "longitudeOfSouthernPoleInDegrees"
+                        ]
+                        geo_info = self.read_geo_info(gid, geo_keys)
+
+                        n_x = geo_info["Nx"]
+                        n_y = geo_info["Ny"]
+
+                        lon0 = geo_info["LoVInDegrees"]
+                        lat0 = geo_info["LaDInDegrees"]
+                        ll_lon = geo_info["longitudeOfFirstGridPointInDegrees"]
+                        ll_lat = geo_info["latitudeOfFirstGridPointInDegrees"]
+                        d_x = geo_info["DxInMetres"]
+                        d_y = geo_info["DyInMetres"]
 
                         earth = 6.37122e+6
                         proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} "\
@@ -132,11 +242,10 @@ class Grib(object):
                         y_c = y_0 + 0.5 * (n_y - 1) * d_y
                         lonc, latc = pyproj.Transformer.from_crs(
                             proj, wgs84, always_xy=True).transform(x_c, y_c)
-                        field = np.reshape(values, [n_x, n_y], order="F")
 
-                        if geo["bitmapPresent"] == 1:
-                            missing_value = eccodes.codes_get(gid, "missingValue")
-                            field[field == missing_value] = np.nan
+                        # TODO we should investigate scan angle and if done correctly
+                        # order should probaly be "C" and not "F"
+                        field = np.reshape(values, [n_x, n_y], order="F")
 
                         if geo_out is None:
                             domain = {
@@ -167,6 +276,69 @@ class Grib(object):
 
                     return field, geo_out
                 eccodes.codes_release(gid)
+
+    @staticmethod
+    def read_geo_info(gid, keys):
+        """Set geo keys in dict.
+
+        Args:
+            gid (int): grib id
+            keys (dict): Geometry keys
+
+        Returns:
+            dict: Geometry
+
+        """
+        geo_dict = {}
+        for key in keys:
+            try:
+                logging.debug('  %s: %s', key, eccodes.codes_get(gid, key))
+                geo_dict.update({key: eccodes.codes_get(gid, key)})
+            except eccodes.KeyValueNotFoundError as err:
+                logging.debug('  Key="%s" was not found: %s', key, err.msg)
+            except eccodes.CodesInternalError as err:
+                logging.error('Error with key="%s" : %s', key, err.msg)
+        return geo_dict
+
+    @staticmethod
+    def read_field_in_message(gid, time):
+        """Get field.
+
+        Args:
+            gid (int): grib id
+            time(str): time
+
+        Returns:
+            Field: Field object
+
+        """
+        try:
+            logging.debug('There are %d values, average is %f, min is %f, max is %f',
+                          eccodes.codes_get_size(gid, 'values'),
+                          eccodes.codes_get(gid, 'average'),
+                          eccodes.codes_get(gid, 'min'),
+                          eccodes.codes_get(gid, 'max'))
+            field = eccodes.codes_get_values(gid)
+
+            # TODO Check time consistency
+            logging.info("Grib record found is hopefullly valid for time %s", str(time))
+
+            has_bitmap = 0
+            try:
+                has_bitmap = int(eccodes.codes_get(gid, "bitmapPresent"))
+            except eccodes.KeyValueNotFoundError as err:
+                logging.debug('  Key="%s" was not found: %s', key, err.msg)
+            except eccodes.CodesInternalError as err:
+                logging.error('Error with key="%s" : %s', key, err.msg)
+            if has_bitmap == 1:
+                missing_value = eccodes.codes_get(gid, "missingValue")
+                field[field == missing_value] = np.nan
+            return field
+        except eccodes.KeyValueNotFoundError as err:
+            logging.debug('  Key="%s" was not found: %s', key, err.msg)
+        except eccodes.CodesInternalError as err:
+            logging.error('Error with key="%s" : %s', key, err.msg)
+        return None
 
     def points(self, gribvar, geo, validtime=None, interpolation="bilinear"):
         """Read a 2-D field and interpolates it to requested positions.
