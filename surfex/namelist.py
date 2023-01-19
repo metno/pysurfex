@@ -2642,7 +2642,13 @@ class SodaInputData(surfex.JsonInputData):
             self.add_data(ecoclimap.set_bin_files(check_existence=check_existence))
 
         # OBS
-        self.add_data(self.set_input_observations(check_existence=check_existence))
+        nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+        need_obs = False
+        for pobs in nnco:
+            if pobs == 1:
+                need_obs = True
+        if need_obs:
+            self.add_data(self.set_input_observations(check_existence=check_existence))
 
         # SEA
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
