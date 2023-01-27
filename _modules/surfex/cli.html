@@ -737,7 +737,7 @@
     <span class="k">if</span> <span class="s2">&quot;lfagmap&quot;</span> <span class="ow">in</span> <span class="n">my_settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">]:</span>
         <span class="n">lfagmap</span> <span class="o">=</span> <span class="n">my_settings</span><span class="p">[</span><span class="s2">&quot;nam_io_offline&quot;</span><span class="p">][</span><span class="s2">&quot;lfagmap&quot;</span><span class="p">]</span>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">my_pgdfile</span><span class="p">,</span> <span class="n">lfagmap</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">my_pgdfile</span><span class="p">,</span> <span class="n">lfagmap</span><span class="p">)</span>
     <span class="c1"># Not run binary</span>
     <span class="n">masterodb</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">only_archive</span><span class="p">:</span>
@@ -1748,6 +1748,7 @@
                         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output file&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--no-contour&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_contour&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--interpolator&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Interpolator&quot;</span><span class="p">)</span>
     <span class="n">grib</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;grib&#39;</span><span class="p">,</span> <span class="s1">&#39;Grib1/2 settings (-it grib1 or -it grib2)&#39;</span><span class="p">)</span>
@@ -1821,6 +1822,11 @@
         <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">get_geo_object</span><span class="p">(</span><span class="n">domain_json</span><span class="p">)</span>
 
     <span class="n">contour</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="s2">&quot;no_contour&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">no_contour</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;no_contour&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">no_contour</span><span class="p">:</span>
+            <span class="n">contour</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="n">var</span> <span class="o">=</span> <span class="s2">&quot;field_to_read&quot;</span>
     <span class="k">if</span> <span class="n">inputtype</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span><span class="p">:</span>
 
@@ -1987,6 +1993,8 @@
     <span class="k">if</span> <span class="n">field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No field read&quot;</span><span class="p">)</span>
 
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;npoints=</span><span class="si">%s</span><span class="s2"> nlons=</span><span class="si">%s</span><span class="s2"> nlats=</span><span class="si">%s</span><span class="s2"> contour=</span><span class="si">%s</span><span class="s2"> field.shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">,</span>
+                  <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="n">contour</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span> <span class="ow">and</span> <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span> <span class="o">!=</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">contour</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">])</span>
@@ -1995,6 +2003,8 @@
 
     <span class="k">if</span> <span class="n">plt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Matplotlib is needed to plot&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;lons.shape=</span><span class="si">%s</span><span class="s2"> lats.shape=</span><span class="si">%s</span><span class="s2"> field.shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                  <span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">contour</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>

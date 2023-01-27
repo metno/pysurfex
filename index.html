@@ -478,13 +478,13 @@ offline<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<
 
 <dl class="py class">
 <dt class="sig sig-object py" id="surfex.Geo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">Geo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Geo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Geo" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">Geo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Geo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Geo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Geometry.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="surfex.SurfexGeo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">SurfexGeo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#SurfexGeo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexGeo" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surfex.</span></span><span class="sig-name descname"><span class="pre">SurfexGeo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#SurfexGeo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexGeo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract surfex geometry class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2160,18 +2160,13 @@ Defaults to 5000.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="surfex.Geo.__init__">
-<span class="sig-prename descclassname"><span class="pre">Geo.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Geo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Geo.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Geo.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#Geo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.Geo.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct geometry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>npoints</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>nlons</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>nlats</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>lons</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>lats</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>from_json</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>proj</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>lons</strong> (<em>np.ndarray</em>) – Longitudes</p></li>
+<li><p><strong>lats</strong> (<em>np.ndarray</em>) – Latitudes</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -2205,18 +2200,14 @@ Defaults to 5000.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="surfex.SurfexGeo.__init__">
-<span class="sig-prename descclassname"><span class="pre">SurfexGeo.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#SurfexGeo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexGeo.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">SurfexGeo.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/surfex/geo.html#SurfexGeo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#surfex.SurfexGeo.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct a surfex geometry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>proj</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>npoints</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>nlons</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>nlats</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>lons</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>lats</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>from_json</strong> (<em>_type_</em>) – _description_</p></li>
+<li><p><strong>proj</strong> (<em>str</em>) – Proj string</p></li>
+<li><p><strong>lons</strong> (<em>np.ndarray</em>) – Lons</p></li>
+<li><p><strong>lats</strong> (<em>np.ndarray</em>) – Lats</p></li>
 </ul>
 </dd>
 </dl>
@@ -2459,8 +2450,8 @@ Defaults to 5000.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>field2d</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>undefined</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>field2d</strong> (<em>np.ndarray</em>) – Two dimensional field to interpolate</p></li>
+<li><p><strong>undefined</strong> (<em>float</em><em>, </em><em>optional</em>) – Undefined value if field2d is None. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
