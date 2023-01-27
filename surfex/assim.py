@@ -60,6 +60,8 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     background = np.transpose(background)
     gelevs = np.transpose(gelevs)
 
+    logging.debug("glats.shape=%s glons.shape=%s gelevs.shape=%s", glats.shape,
+                  glons.shape, gelevs.shape)
     bgrid = gridpp.Grid(glats, glons, gelevs)
     points = gridpp.Points(lats, lons, elevs)
     if interpol == "bilinear":

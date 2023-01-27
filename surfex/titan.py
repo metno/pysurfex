@@ -932,8 +932,8 @@ class DomainCheck(QualityControl):
         if domain_geo is None:
             raise Exception("Domain geo was not set!")
 
-        lons = np.asarray(domain_geo.lons)
-        lats = np.asarray(domain_geo.lats)
+        lons = np.transpose(np.asarray(domain_geo.lons))
+        lats = np.transpose(np.asarray(domain_geo.lats))
         self.grid = gridpp.Grid(lats, lons)
         self.max_distance = max_distance
         QualityControl.__init__(self, "domain")

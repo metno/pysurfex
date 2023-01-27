@@ -27,14 +27,18 @@ class Interpolation(object):
 
         # Input
         if self.geo_in is not None:
-            grid_lons = np.array(geo_in.lons)
-            grid_lats = np.array(geo_in.lats)
+            logging.debug("grid_lons.shape in %s", geo_in.lons.shape)
+            logging.debug("grid_lats.shape in %s", geo_in.lats.shape)
+            grid_lons = np.transpose(geo_in.lons)
+            grid_lats = np.transpose(geo_in.lats)
             self.var_lons = grid_lons
             self.var_lats = grid_lats
             self.identical = self.geo_out.is_identical(self.geo_in)
-            logging.debug("grid_lons.shape %s", grid_lons.shape)
-            logging.debug("grid_lats.shape %s", grid_lats.shape)
-            self.grid = gridpp.Grid(grid_lons, grid_lats)
+            logging.debug("grid_lons: %s", grid_lons)
+            logging.debug("grid_lats: %s", grid_lats)
+            logging.debug("grid_lons.shape for interpolation %s", grid_lons.shape)
+            logging.debug("grid_lats.shape for interpolation %s", grid_lats.shape)
+            self.grid = gridpp.Grid(grid_lats, grid_lons)
         else:
             self.var_lons = None
             self.var_lats = None
@@ -45,16 +49,14 @@ class Interpolation(object):
         lons = np.array(self.geo_out.lonlist)
         lats = np.array(self.geo_out.latlist)
         self.npoints = self.geo_out.npoints
-        logging.debug("Output lons shape: %s", lons.shape)
-        logging.debug("Output lats shape: %s", lats.shape)
-        self.points = gridpp.Points(lons, lats)
+        self.points = gridpp.Points(lats, lons)
 
     def interpolate(self, field2d, undefined=None):
         """Do interpolation.
 
         Args:
-            field2d (_type_): _description_
-            undefined (_type_, optional): _description_. Defaults to None.
+            field2d (np.ndarray): Two dimensional field to interpolate
+            undefined (float, optional): Undefined value if field2d is None. Defaults to None.
 
         Raises:
             Exception: _description_
@@ -88,9 +90,13 @@ class Interpolation(object):
                     logging.info("Doing '%s' interpolation for %s points", self.operator,
                                  str(self.npoints))
                     if self.operator == "nearest":
+                        field2d = np.transpose(field2d)
                         interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
+                        field2d = np.transpose(field2d)
                     elif self.operator == "bilinear":
+                        field2d = np.transpose(field2d)
                         interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
+                        field2d = np.transpose(field2d)
                     elif self.operator == "none":
                         interpolated_field = field2d.reshape(self.npoints)
                     else:
