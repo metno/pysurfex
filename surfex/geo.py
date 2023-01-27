@@ -163,6 +163,7 @@ class ConfProj(SurfexGeo):
 
         """
         self.cgrid = "CONF PROJ"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         logging.debug("from_json: %s", from_json)
@@ -348,6 +349,7 @@ class LonLatVal(SurfexGeo):
 
         """
         self.cgrid = "LONLATVAL"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
@@ -410,6 +412,7 @@ class Cartesian(SurfexGeo):
 
         """
         self.cgrid = "CARTESIAN"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
@@ -485,6 +488,7 @@ class LonLatReg(SurfexGeo):
 
         """
         self.cgrid = "LONLAT REG"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
@@ -571,6 +575,7 @@ class IGN(SurfexGeo):
 
         """
         self.cgrid = "IGN"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
