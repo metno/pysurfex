@@ -202,6 +202,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CONF PROJ&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;from_json: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">from_json</span><span class="p">)</span>
@@ -387,6 +388,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLATVAL&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlatval&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
@@ -449,6 +451,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CARTESIAN&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_cartesian&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
@@ -524,6 +527,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLAT REG&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlat_reg&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
@@ -610,6 +614,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;IGN&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_ign&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
