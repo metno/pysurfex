@@ -172,6 +172,22 @@ make<span class="w"> </span>latexpdf
 <section id="id1">
 <h1>Examples<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
 <p>First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path</p>
+<p>Create forcing from MET-Nordic analysis</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>create_forcing<span class="w"> </span>-p<span class="w"> </span>/lustre/storeB/project/metproduction/products/yr_short/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span><span class="m">2023013010</span><span class="w"> </span><span class="m">2023013011</span><span class="w"> </span>-d<span class="w"> </span>domain.json<span class="w"> </span>-a<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--rain_converter<span class="w"> </span>calcrain<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--snow_converter<span class="w"> </span>calcsnow<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--zref<span class="w"> </span>screen<span class="w"> </span>--uref<span class="w"> </span>screen<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--qa_converter<span class="w"> </span>rh2q_mslp<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--co2<span class="w"> </span>constant<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--dir_sw_converter<span class="w"> </span>analysis<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--sca_sw<span class="w"> </span>constant<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--lw_converter<span class="w"> </span>analysis<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--wind_converter<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--wind_dir_converter<span class="w"> </span>none<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>--ps_converter<span class="w"> </span>mslp2ps
+</pre></div>
+</div>
 <p>Example on a Lambert conf proj domain</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;nam_pgd_grid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
