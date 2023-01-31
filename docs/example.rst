@@ -4,6 +4,25 @@ Examples
 
 First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path
 
+Create forcing from MET-Nordic analysis
+
+.. code-block:: bash
+
+  create_forcing -p /lustre/storeB/project/metproduction/products/yr_short/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc \
+   2023013010 2023013011 -d domain.json -a \
+   --rain_converter calcrain \
+   --snow_converter calcsnow \
+   --zref screen --uref screen \
+   --qa_converter rh2q_mslp \
+   --co2 constant \
+   --dir_sw_converter analysis \
+   --sca_sw constant \
+   --lw_converter analysis \
+   --wind_converter none \
+   --wind_dir_converter none \
+   --ps_converter mslp2ps
+
+
 Example on a Lambert conf proj domain
 
 .. code-block:: json

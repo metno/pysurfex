@@ -198,12 +198,21 @@ class Converter(object):
             logging.debug("conf: %s", conf)
             raise KeyError(self.name + " is missing in converter definition")
 
-        if self.name == "none":
+        if self.name == "none" or self.name == "analysis":
             self.var = self.create_variable(fileformat, defs, conf[self.name])
         elif name == "rh2q":
             self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
+        elif name == "mslp2ps":
+            self.altitude = self.create_variable(fileformat, defs, conf[self.name]["altitude"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
+        elif name == "rh2q_mslp":
+            self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.altitude = self.create_variable(fileformat, defs, conf[self.name]["altitude"])
+            self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -281,6 +290,26 @@ class Converter(object):
         logging.debug(var.print_variable_info())
         return var
 
+    @staticmethod
+    def mslp2ps(mslp, altitude, temp):
+        """Calcaulate ps from mslp.
+
+        Args:
+            mslp (np.ndarray): Mean sea level pressure
+            altitude (np.ndarray): Altitude
+            temp (np.ndarray): Temperature
+
+        Returns:
+            np.ndarray: Surface pressure
+
+        """
+        gravity = 9.81
+        dry_air = 287.0
+
+        pres = np.multiply(mslp, np.exp(np.divide(np.multiply(-altitude, gravity), np.multiply(dry_air, temp))))
+
+        return pres
+
     def read_time_step(self, geo, validtime, cache):
         """Read time step.
 
@@ -301,7 +330,7 @@ class Converter(object):
         field = None
         # field = np.empty(geo.npoints)
         # Specific reading for each converter
-        if self.name == "none":
+        if self.name == "none" or self.name == "analysis":
             field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x_wind.read_variable(geo, validtime, cache)
@@ -314,10 +343,13 @@ class Converter(object):
                 # TODO chek formulation
                 field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180, 360)
 
-        elif self.name == "rh2q":
+        elif self.name == "rh2q" or self.name == "rh2q_mslp":
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
             field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
+            if self.name == "rh2q_mslp":
+                field_altitude = self.altitude.read_variable(geo, validtime, cache)  # In m
+                field_pres = self.mslp2ps(field_pres, field_altitude, field_temp)
 
             field_p_mb = np.divide(field_pres, 100.)
             field_t_c = np.subtract(field_temp, 273.15)
@@ -330,6 +362,12 @@ class Converter(object):
             # ZE = ZRH * ZES
             # ZRATIO = 0.622 * ZE / (ZPRES / 100.)
             # RH2Q = 1. / (1. / ZRATIO + 1.)
+
+        elif self.name == "mslp2ps":
+            field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
+            field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
+            field_altitude = self.altitude.read_variable(geo, validtime, cache)  # In m
+            field = self.mslp2ps(field_pres, field_altitude, field_temp)
         elif self.name == "totalprec":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_snow = self.snow.read_variable(geo, validtime, cache)
