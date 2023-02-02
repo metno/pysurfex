@@ -277,6 +277,21 @@ class Cache:
         return f"{varname}{filename.split('/')[-1]}{validtime.strftime('%Y%m%d%H')}"
 
     @staticmethod
+    def generate_fa_id(varname, filename, validtime):
+        """Generate fa id.
+
+        Args:
+            varname (_type_): _description_
+            filename (_type_): _description_
+            validtime (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
+        return f"{varname}{filename.split('/')[-1]}{validtime.strftime('%Y%m%d%H')}"
+
+    @staticmethod
     def generate_id(id_type, var, filename, validtime):
         """Generate id.
 
@@ -297,6 +312,8 @@ class Cache:
             return Cache.generate_netcdf_id(var, filename, validtime)
         elif id_type == "grib1" or id_type == "grib2":
             return Cache.generate_grib_id(var, filename, validtime)
+        elif id_type == "fa":
+            return Cache.generate_fa_id(var, filename, validtime)
         elif id_type == "surfex":
             varname = var.varname
             patches = var.patches

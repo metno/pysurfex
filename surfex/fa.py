@@ -1,4 +1,5 @@
 """FA support."""
+import numpy as np
 import logging
 import pyproj
 import surfex
@@ -90,10 +91,11 @@ class Fa(object):
                     }
                 }
                 geo_out = surfex.geo.ConfProj(domain)
+                data = field.data.T
             else:
                 raise NotImplementedError(field.geometry.name + " not implemented yet!")
 
-            return field.data, geo_out
+            return data, geo_out
 
     def points(self, varname, geo, validtime=None, interpolation="nearest"):
         """Read a 2-D field and interpolates it to requested positions.
