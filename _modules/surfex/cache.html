@@ -316,6 +316,21 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">varname</span><span class="si">}{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
     <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_fa_id</span><span class="p">(</span><span class="n">varname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate fa id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            varname (_type_): _description_</span>
+<span class="sd">            filename (_type_): _description_</span>
+<span class="sd">            validtime (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">varname</span><span class="si">}{</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}{</span><span class="n">validtime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_id</span><span class="p">(</span><span class="n">id_type</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate id.</span>
 
@@ -336,6 +351,8 @@
             <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_netcdf_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span> <span class="ow">or</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_grib_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Cache</span><span class="o">.</span><span class="n">generate_fa_id</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
             <span class="n">varname</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">varname</span>
             <span class="n">patches</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">patches</span>
