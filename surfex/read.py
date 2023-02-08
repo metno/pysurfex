@@ -340,8 +340,7 @@ class Converter(object):
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
                 np.where(field < 0.005, field, 0)
             elif self.name == "winddir":
-                # TODO chek formulation
-                field = np.mod(np.rad2deg(np.arctan2(field_x, field_y)) + 180, 360)
+                field = np.mod(90 - np.rad2deg(np.arctan2(field_y, field_x)), 360)
 
         elif self.name == "rh2q" or self.name == "rh2q_mslp":
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
