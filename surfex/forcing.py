@@ -594,6 +594,8 @@ def set_forcing_config(**kwargs):
     co2 = "default"
     co2_converter = "none"
 
+    analysis = False
+    interpolation = None
     try:
         dtg_start = kwargs["dtg_start"]
         dtg_stop = kwargs["dtg_stop"]
@@ -603,6 +605,10 @@ def set_forcing_config(**kwargs):
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
+        if "interpolation" in kwargs:
+            interpolation = kwargs["interpolation"]
+        if "analysis" in kwargs:
+            analysis = kwargs["analysis"]
         if "fb" in kwargs:
             file_base = kwargs["fb"]
         if "geo_out" in kwargs:
@@ -693,6 +699,15 @@ def set_forcing_config(**kwargs):
     fileformat = input_format
     if pattern is not None:
         merged_conf[fileformat]["filepattern"] = pattern
+
+    # Interpolation
+    merged_conf[fileformat]["interpolation"] = interpolation
+
+    # Prefer forecast or analysis
+    if analysis:
+        merged_conf[fileformat]["prefer_forecast"] = False
+        merged_conf[fileformat]["fcint"] = 3600.0
+        merged_conf[fileformat]["offset"] = 0
 
     if "geo_input" in kwargs:
         geo_input = kwargs["geo_input"]
