@@ -16,17 +16,12 @@ except Exception:
 class Geo(object):
     """Geometry."""
 
-    def __init__(self, npoints, nlons, nlats, lons, lats, from_json=None, proj=None):
+    def __init__(self, lons, lats):
         """Construct geometry.
 
         Args:
-            npoints (_type_): _description_
-            nlons (_type_): _description_
-            nlats (_type_): _description_
-            lons (_type_): _description_
-            lats (_type_): _description_
-            from_json (_type_, optional): _description_. Defaults to None.
-            proj (_type_, optional): _description_. Defaults to None.
+            lons (np.ndarray): Longitudes
+            lats (np.ndarray): Latitudes
 
         Raises:
             Exception: _description_
@@ -35,37 +30,52 @@ class Geo(object):
         can_interpolate = False
         if not isinstance(lons, np.ndarray) or not isinstance(lats, np.ndarray):
             raise Exception("Longitudes and latitudes must be numpy nd arrays")
-        self.proj = proj
+
+        ndims = len(lons.shape)
+        self.ndims = ndims
+        if len(lons.shape) != len(lats.shape):
+            raise Exception("Mismatch in lat and lon")
+        if len(lons.shape) > 1 and len(lats.shape) > 1:
+            can_interpolate = True
+
+        logging.debug("ndims=%s, can_interpolate=%s", ndims, can_interpolate)
+        nlons = lons.shape[0]
+        nlats = lats.shape[0]
+        if ndims > 1:
+            nlats = lats.shape[1]
+
+        if ndims > 1:
+            npoints = nlons * nlats
+        else:
+            npoints = nlats
         self.npoints = npoints
         self.nlons = nlons
         self.nlats = nlats
+        self.lonrange = [np.min(lons), np.max(lons)]
+        self.latrange = [np.min(lats), np.max(lats)]
+        self.lons = lons
         self.lonlist = lons.flatten()
+        self.lats = lats
         self.latlist = lats.flatten()
-        self.lonrange = None
-        self.latrange = None
-        if lons.shape[0] > 0 and lats.shape[0] > 0:
-            if self.npoints != self.nlons and self.npoints != self.nlats:
-                # Make 2D array
-                can_interpolate = True
-                self.lons = np.reshape(self.lonlist, [self.nlons, self.nlats])
-                self.lats = np.reshape(self.latlist, [self.nlons, self.nlats])
-            self.lonrange = [np.min(lons), np.max(lons)]
-            self.latrange = [np.min(lats), np.max(lats)]
+        logging.debug("lonlist=%s", self.lonlist)
+        logging.debug("latlist=%s", self.latlist)
+        logging.debug("nlons=%s nlats=%s", nlons, nlats)
+        logging.debug("lons=%s shape=%s", lons, lons.shape)
+        logging.debug("lats=%s shape=%s", lats, lats.shape)
         self.can_interpolate = can_interpolate
-        self.json = from_json
 
     def identifier(self):
         """Create identifier."""
         f_lon = ""
         l_lon = ""
-        if self.lonlist is not None:
-            f_lon = str(round(float(self.lonlist[0]), 2))
-            l_lon = str(round(float(self.lonlist[-1]), 2))
+        if self.lonrange is not None:
+            f_lon = str(round(float(self.lonrange[0]), 2))
+            l_lon = str(round(float(self.lonrange[-1]), 2))
         f_lat = ""
         l_lat = ""
-        if self.latlist is not None:
-            f_lat = str(round(float(self.latlist[0]), 2))
-            l_lat = str(round(float(self.latlist[-1]), 2))
+        if self.latrange is not None:
+            f_lat = str(round(float(self.latrange[0]), 2))
+            l_lat = str(round(float(self.latrange[-1]), 2))
 
         tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" \
               + f_lon + ":" + l_lon + ":" + f_lat + ":" + l_lat + ":"
@@ -106,22 +116,18 @@ class SurfexGeo(ABC, Geo):
         Geo (_type_): _description_
     """
 
-    def __init__(self, proj, npoints, nlons, nlats, lons, lats, from_json):
+    def __init__(self, proj, lons, lats):
         """Construct a surfex geometry.
 
         Args:
-            proj (_type_): _description_
-            npoints (_type_): _description_
-            nlons (_type_): _description_
-            nlats (_type_): _description_
-            lons (_type_): _description_
-            lats (_type_): _description_
-            from_json (_type_): _description_
+            proj (str): Proj string
+            lons (np.ndarray): Lons
+            lats (np.ndarray): Lats
 
         """
         self.mask = None
         self.proj = proj
-        Geo.__init__(self, npoints, nlons, nlats, lons, lats, from_json=from_json, proj=proj)
+        Geo.__init__(self, lons, lats)
 
     @abstractmethod
     def update_namelist(self, nml):
@@ -157,6 +163,7 @@ class ConfProj(SurfexGeo):
 
         """
         self.cgrid = "CONF PROJ"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         logging.debug("from_json: %s", from_json)
@@ -218,13 +225,18 @@ class ConfProj(SurfexGeo):
             yyy[j] = y_0 + (float(j) * self.xdy)
         self.xxx = xxx
         self.yyy = yyy
-        x_v, y_v = np.meshgrid(xxx, yyy)
+        y_v, x_v = np.meshgrid(yyy, xxx)
+        logging.debug("x_v.shape=%s y_v.shape=%s", x_v.shape, y_v.shape)
         lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(x_v, y_v)
 
-        npoints = self.nimax * self.njmax
-        SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax,
-                           np.reshape(lons, [npoints], order="F"),
-                           np.reshape(lats, [npoints], order="F"), from_json)
+        logging.debug("lons.shape=%s lats.shape=%s", lons.shape, lats.shape)
+        logging.debug("lons.shape=%s", lons)
+        logging.debug("lats.shape=%s", lats)
+        SurfexGeo.__init__(self, proj, lons, lats)
+        # raise
+        # SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax,
+        #                   np.reshape(lons, [npoints], order="F"),
+        #                   np.reshape(lats, [npoints], order="F"), from_json)
 
     def update_namelist(self, nml):
         """Update namelist.
@@ -337,6 +349,7 @@ class LonLatVal(SurfexGeo):
 
         """
         self.cgrid = "LONLATVAL"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
@@ -347,8 +360,7 @@ class LonLatVal(SurfexGeo):
                 self.xdy = domain_dict["nam_lonlatval"]["xdy"]
                 proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
                 proj = pyproj.CRS.from_string(proj4)
-                SurfexGeo.__init__(self, proj, len(self.x_x), len(self.x_x), len(self.x_y),
-                                   np.asarray(self.x_x), np.asarray(self.x_y), from_json)
+                SurfexGeo.__init__(self, proj, np.asarray(self.x_x), np.asarray(self.x_y))
                 self.can_interpolate = False
             else:
                 raise KeyError("Missing keys")
@@ -400,6 +412,7 @@ class Cartesian(SurfexGeo):
 
         """
         self.cgrid = "CARTESIAN"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
@@ -412,10 +425,14 @@ class Cartesian(SurfexGeo):
                 self.xdx = domain_dict["nam_cartesian"]["xdx"]
                 self.xdy = domain_dict["nam_cartesian"]["xdy"]
                 proj = None
-                # proj, npoints, nlons, nlats, lons, lats
-                SurfexGeo.__init__(self, proj, self.nimax * self.njmax, self.nimax, self.njmax,
-                                   np.asarray([]), np.asarray([]), from_json)
-                self.can_interpolate = False
+                lons = []
+                lats = []
+                for i in range(0, self.nimax):
+                    lons.append(self.xlon0 + i * self.xdx)
+                for j in range(0, self.njmax):
+                    lats.append(self.xlat0 + j * self.xdy)
+
+                SurfexGeo.__init__(self, proj, np.asarray(lons), np.asarray(lats))
             else:
                 print("Missing keys")
                 raise KeyError
@@ -471,6 +488,7 @@ class LonLatReg(SurfexGeo):
 
         """
         self.cgrid = "LONLAT REG"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
@@ -498,15 +516,16 @@ class LonLatReg(SurfexGeo):
 
         dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
         dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
-        logging.debug("%s %s", dlon, dlat)
+        logging.debug("nlon=%s nlat=%s dlon=%s dlat=%s", self.nlon, self.nlat, dlon, dlat)
+        for i in range(0, self.nlon):
+            lons.append(self.xlonmin + i * dlon)
         for j in range(0, self.nlat):
-            for i in range(0, self.nlon):
-                lons.append(self.xlonmin + i * dlon)
-                lats.append(self.xlatmin + j * dlat)
+            lats.append(self.xlatmin + j * dlat)
 
         # proj, npoints, nlons, nlats, lons, lats
-        SurfexGeo.__init__(self, proj, self.nlon * self.nlat, self.nlon, self.nlat,
-                           np.asarray(lons), np.asarray(lats), from_json)
+        latitudes, longitudes = np.meshgrid(lats, lons)
+        logging.debug("longitudes=%s latitudes=%s", longitudes.shape, latitudes.shape)
+        SurfexGeo.__init__(self, proj, longitudes, latitudes)
 
     def update_namelist(self, nml):
         """Update namelist.
@@ -556,6 +575,7 @@ class IGN(SurfexGeo):
 
         """
         self.cgrid = "IGN"
+        self.json = from_json
         domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
@@ -608,9 +628,7 @@ class IGN(SurfexGeo):
             lons.append(lon)
             lats.append(lat)
 
-        SurfexGeo.__init__(self, proj, npoints, npoints, npoints, np.asarray(lons),
-                           np.asarray(lats), from_json)
-        self.can_interpolate = False
+        SurfexGeo.__init__(self, proj, np.asarray(lons), np.asarray(lats))
 
     @staticmethod
     def get_coord(pin, pdin, coord, recreate=False):

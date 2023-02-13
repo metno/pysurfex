@@ -231,6 +231,22 @@ QA:
           p:
             name: surface_air_pressure
             units: "Pa"
+        rh2q_mslp:
+          rh:
+            name: relative_humidity_2m
+            level: 2
+            units: "%"
+          t:
+            name: air_temperature_2m
+            level: 2
+            units: "K"
+          altitude:
+            name: altitude
+            units: "m"
+          mslp:
+            name: air_pressure_at_sea_level
+            units: "Pa"
+
     grib1:
       converter:
         none:
@@ -675,8 +691,8 @@ RAIN:
           instant: 3600.
       calcrain:
         totalprec:
-          name: precipitation_amount_acc
-          accumulated: true
+          name: precipitation_amount
+          accumulated: false
           instant: 3600.
         t:
           name: air_temperature_2m
@@ -748,7 +764,8 @@ SNOW:
         instant: 3600.
       calcsnow: 
         totalprec:
-          name: precipitation_amount_acc
+          name: precipitation_amount
+          accumulated: false
           instant: 3600.
         rh:
           name: relative_humidity_2m
@@ -797,6 +814,18 @@ PS:
     converter:
       none:
         name: surface_air_pressure
+      mslp2ps:
+        t:
+          name: air_temperature_2m
+          level: 2
+          units: "K"
+        altitude:
+          name: altitude
+          units: "m"
+        mslp:
+          name: air_pressure_at_sea_level
+          units: "Pa"
+
   grib1:
     converter:
       none:
@@ -828,6 +857,10 @@ DIR_SW:
       none:
         name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
         accumulated: True
+        instant: 3600.
+      analysis:
+        name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
+        accumulated: False
         instant: 3600.
   grib1:
     converter:
@@ -884,6 +917,10 @@ LW:
       none:
         name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
         accumulated: True
+        instant: 3600.
+      analysis:
+        name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
+        accumulated: False
         instant: 3600.
   grib1:
     converter:

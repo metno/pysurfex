@@ -65,6 +65,9 @@ def parse_args_create_forcing(argv):
                         default=None, required=False)
     parser.add_argument('-o', '--output_format', type=str, help="Output file format", default="nc4",
                         choices=["netcdf", "nc4", "ascii"], nargs="?")
+    parser.add_argument('-a', dest="analysis", action="store_true", default=False)
+    parser.add_argument('--interpolation', dest="interpolation", required=False, default="bilinear",
+                        choices=["nearest", "bilinear"])
     parser.add_argument('-of', type=str, help="Output file name", default=None, nargs="?")
     parser.add_argument('-p', '--pattern', type=str, help="Filepattern", default=None, nargs="?")
     parser.add_argument('--zref', type=str, help="Temperature/humidity reference height",
@@ -86,7 +89,7 @@ def parse_args_create_forcing(argv):
                           choices=["default", "netcdf", "grib1", "grib2", "surfex"])
     group_qa.add_argument("--qa_converter", type=str,
                           help="Converter function to specific humidity",
-                          default="none", choices=["none", "rh2q"])
+                          default="none", choices=["none", "rh2q", "rh2q_mslp"])
 
     group_ps = parser.add_argument_group('PS', description="Surface air pressure [Pa]")
     group_ps.add_argument('--ps', type=str, help="Surface air pressure input format",
@@ -94,7 +97,7 @@ def parse_args_create_forcing(argv):
                           choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"])
     group_ps.add_argument("--ps_converter", type=str,
                           help="Converter function to surface air pressure",
-                          default="none", choices=["none"])
+                          default="none", choices=["none", "mslp2ps"])
 
     group_dir_sw = parser.add_argument_group('DIR_SW', description="Direct shortwave radiation")
     group_dir_sw.add_argument('--dir_sw', type=str, help="Direct short wave radiation input format",
@@ -102,7 +105,7 @@ def parse_args_create_forcing(argv):
                               choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"])
     group_dir_sw.add_argument("--dir_sw_converter", type=str,
                               help="Converter function to direct short wave radiation",
-                              default="none", choices=["none"])
+                              default="none", choices=["none", "analysis"])
 
     group_sca_sw = parser.add_argument_group('SCA_SW',
                                              description="Scattered short wave radiation flux")
@@ -120,7 +123,7 @@ def parse_args_create_forcing(argv):
                           choices=["netcdf", "grib1", "grib2", "surfex", "constant"])
     group_lw.add_argument("--lw_converter", type=str,
                           help="Converter function to long wave radiation flux",
-                          default="none", choices=["none"])
+                          default="none", choices=["none", "analysis"])
 
     group_rain = parser.add_argument_group('RAIN', description="Rainfall rate")
     group_rain.add_argument("--rain", type=str, help="Input format", default="default",
@@ -698,7 +701,7 @@ def run_masterodb(**kwargs):
     if "lfagmap" in my_settings["nam_io_offline"]:
         lfagmap = my_settings["nam_io_offline"]["lfagmap"]
 
-    logging.debug(my_pgdfile, lfagmap)
+    logging.debug("%s %s", my_pgdfile, lfagmap)
     # Not run binary
     masterodb = None
     if not only_archive:
@@ -1709,6 +1712,7 @@ def parse_args_plot_points(argv):
                         default=None, required=False)
     parser.add_argument('-o', '--output', dest="output", type=str, help="Output file", default=None,
                         required=False)
+    parser.add_argument("--no-contour", dest="no_contour", action="store_true")
     parser.add_argument("--interpolator", type=str, default="nearest", required=False,
                         help="Interpolator")
     grib = parser.add_argument_group('grib', 'Grib1/2 settings (-it grib1 or -it grib2)')
@@ -1782,6 +1786,11 @@ def run_plot_points(**kwargs):
         geo = surfex.geo.get_geo_object(domain_json)
 
     contour = True
+    if "no_contour" in kwargs:
+        no_contour = kwargs["no_contour"]
+        if no_contour:
+            contour = False
+
     var = "field_to_read"
     if inputtype == "grib1":
 
@@ -1948,6 +1957,8 @@ def run_plot_points(**kwargs):
     if field is None:
         raise Exception("No field read")
 
+    logging.debug("npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s", geo.npoints,
+                  geo.nlons, geo.nlats, contour, field.shape)
     if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
         if contour:
             field = np.reshape(field, [geo.nlons, geo.nlats])
@@ -1956,6 +1967,8 @@ def run_plot_points(**kwargs):
 
     if plt is None:
         raise Exception("Matplotlib is needed to plot")
+    logging.debug("lons.shape=%s lats.shape=%s field.shape=%s", geo.lons.shape,
+                  geo.lats.shape, field.shape)
     if contour:
         plt.contourf(geo.lons, geo.lats, field)
     else:

@@ -77,6 +77,7 @@ class Grib(object):
                     logging.debug("read values = %s", values)
 
                     grid_type = str(eccodes.codes_get(gid, "gridType"))
+                    logging.debug("grid_type=%s", grid_type)
                     if grid_type.lower() == "rotated_ll":
                         geo_keys = [
                             'Ni',
@@ -151,7 +152,7 @@ class Grib(object):
                             pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(longitudes, latitudes)
                         lons = lons + sp_lon
 
-                        field = np.reshape(values, [n_x, n_y], order="C")
+                        field = np.reshape(values, [n_x, n_y], order="F")
                         if geo_out is None:
                             geo_out = surfex.geo.Geo(n_x * n_y, n_x, n_y, lons, lats)
 
@@ -184,7 +185,7 @@ class Grib(object):
                         lons = np.array(lons)
                         lats = np.array(lats)
                         lons, lats = np.meshgrid(lons, lats)
-                        field = np.reshape(values, [n_x, n_y], order="C")
+                        field = np.reshape(values, [n_x, n_y], order="F")
 
                         if geo_out is None:
                             domain = {

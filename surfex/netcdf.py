@@ -147,7 +147,8 @@ class Netcdf(object):
         dim_x = lons.shape[0]
         dim_y = lats.shape[1]
 
-        geo = surfex.geo.Geo(dim_x * dim_y, dim_x, dim_y, lons, lats)
+        logging.debug("lons.shape=%s lats.shape=%s", lons.shape, lats.shape)
+        geo = surfex.geo.Geo(lons, lats)
 
         dim_t = max(len(times_to_read), 1)
         dim_levels = max(len(levels_to_read), 1)
@@ -661,9 +662,6 @@ def read_first_guess_netcdf_file(input_file, var):
     n_x = lons.shape[1]
     n_y = lons.shape[0]
 
-    lons = np.array(np.reshape(lons, [n_x * n_y], order="F"))
-    lats = np.array(np.reshape(lats, [n_x * n_y], order="f"))
-
     attrs = file_handler.ncattrs()
     if "gridtype" in attrs:
         if file_handler.getncattr("gridtype") == "lambert":
@@ -685,7 +683,9 @@ def read_first_guess_netcdf_file(input_file, var):
         else:
             raise NotImplementedError
     else:
-        geo = surfex.Geo(n_x * n_y, n_x, n_y, lons, lats)
+        lons = np.array(np.reshape(lons, [n_x, n_y], order="F"))
+        lats = np.array(np.reshape(lats, [n_x, n_y], order="F"))
+        geo = surfex.Geo(lons, lats)
 
     background = file_handler[var][:]
     background = np.array(np.reshape(background, [n_x * n_y]))
