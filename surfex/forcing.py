@@ -595,6 +595,7 @@ def set_forcing_config(**kwargs):
     co2_converter = "none"
 
     analysis = False
+    interpolation = None
     try:
         dtg_start = kwargs["dtg_start"]
         dtg_stop = kwargs["dtg_stop"]
@@ -604,8 +605,10 @@ def set_forcing_config(**kwargs):
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
-        interpolation = kwargs["interpolation"]
-        analysis = kwargs["analysis"]
+        if "interpolation" in kwargs:
+            interpolation = kwargs["interpolation"]
+        if "analysis" in kwargs:
+            analysis = kwargs["analysis"]
         if "fb" in kwargs:
             file_base = kwargs["fb"]
         if "geo_out" in kwargs:

@@ -109,6 +109,8 @@ class Variable(object):
                 file_handler = surfex.netcdf.Netcdf(filename)
             elif self.var_type == "grib1" or self.var_type == "grib2":
                 file_handler = surfex.grib.Grib(filename)
+            elif self.var_type == "fa":
+                file_handler = surfex.fa.Fa(filename)
             elif self.var_type == "surfex":
                 fileformat = None
                 if "fileformat" in self.var_dict:
