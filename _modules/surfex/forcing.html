@@ -634,6 +634,7 @@
     <span class="n">co2_converter</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
 
     <span class="n">analysis</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">interpolation</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">dtg_start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg_start&quot;</span><span class="p">]</span>
         <span class="n">dtg_stop</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg_stop&quot;</span><span class="p">]</span>
@@ -643,8 +644,10 @@
         <span class="n">zref</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;zref&quot;</span><span class="p">]</span>
         <span class="n">uref</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;uref&quot;</span><span class="p">]</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
-        <span class="n">interpolation</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;interpolation&quot;</span><span class="p">]</span>
-        <span class="n">analysis</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;interpolation&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">interpolation</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;interpolation&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;analysis&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">analysis</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">&quot;fb&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">file_base</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;fb&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">&quot;geo_out&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
