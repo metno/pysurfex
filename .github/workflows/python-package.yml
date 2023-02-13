@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-    permissions: write-all
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -108,7 +107,7 @@ jobs:
         # The above command will fail if no changes were present, so we ignore
         # the return code.
     - name: Push changes
-      if: ${{ matrix.python-version == 3.6 }} && github.ref == 'refs/heads/master'
+      if: ${{ matrix.python-version == 3.6 }} && github.repository == 'metno/pysurfex'
       uses: ad-m/github-push-action@master
       with:
         branch: gh-pages
