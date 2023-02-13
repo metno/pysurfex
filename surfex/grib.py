@@ -147,14 +147,14 @@ class Grib(object):
 
                         lons = np.array(lons)
                         lats = np.array(lats)
-                        longitudes, latitudes = np.meshgrid(lons, lats)
+                        longitudes, latitudes = np.meshgrid(lons, lats, indexing='ij')
                         lons, lats = \
                             pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(longitudes, latitudes)
                         lons = lons + sp_lon
 
                         field = np.reshape(values, [n_x, n_y], order="F")
                         if geo_out is None:
-                            geo_out = surfex.geo.Geo(n_x * n_y, n_x, n_y, lons, lats)
+                            geo_out = surfex.geo.Geo(lons, lats)
 
                     elif grid_type.lower() == "regular_ll":
                         geo_keys = [
