@@ -73,7 +73,7 @@ jobs:
     #   flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install package
       run: |
-        pip install -e .[test]
+        pip install -e .[test,plot]
     - name: Test and create coverage
       run: |
         wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9" -O testdata.zip && rm -rf /tmp/cookies.txt
