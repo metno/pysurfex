@@ -119,7 +119,6 @@ setup(
         "json; python_version < '3'",
         "StringIO; python_version < '3'",
         "eccodes",
-        "python-csv",
         "db-sqlite3",
         "titanlib >= 0.3.0.dev3",
         "gridpp >= 0.6.0.dev16"
