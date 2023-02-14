@@ -13,6 +13,9 @@ except ModuleNotFoundError:
     cfunits = None
 except AssertionError:
     cfunits = None
+except:  # noqa
+    cfunits = None
+
 
 class Observation(object):
     """Observation class."""

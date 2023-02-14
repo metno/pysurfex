@@ -12,6 +12,8 @@ except ModuleNotFoundError:
     cfunits = None
 except AssertionError:
     cfunits = None
+except:  # noqa
+    cfunits = None
 import surfex
 
 
