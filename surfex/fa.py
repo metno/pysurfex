@@ -47,11 +47,15 @@ class Fa(object):
         else:
             resource = epygram.formats.resource(self.fname, openmode='r')
             field = resource.readfield(varname)
-
+            # TODO this might not work with forcing...
+            zone = "CI"
+            crnrs = field.geometry.gimme_corners_ij(subzone=zone)
+            range_x = slice(crnrs['ll'][0], crnrs['lr'][0] + 1)
+            range_y = slice(crnrs['lr'][1], crnrs['ur'][1] + 1)                
             # TODO: check time
             logging.info("Not checking validtime for FA variable at the moment: %s", str(validtime))
 
-            if field.geometry.name == "lambert":
+            if field.geometry.name == "lambert" or field.geometry.name == "polar_stereographic":
                 n_y = field.geometry.dimensions["Y_CIzone"]
                 n_x = field.geometry.dimensions["X_CIzone"]
                 ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
@@ -62,7 +66,11 @@ class Fa(object):
 
                 # TODO: Can I get centre point directly?
                 earth = 6.37122e+6
-                proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)}"\
+                if field.geometry.name == "polar_stereographic":
+                    proj_string = f"+proj=stere +lat_0={str(lat0)} +lon_0={str(lon0)} "\
+                                                  f"+lat_ts={str(lat0)}"
+                else:                               
+                    proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)}"\
                               f" +lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
 
                 proj = pyproj.CRS.from_string(proj_string)
@@ -91,7 +99,10 @@ class Fa(object):
                     }
                 }
                 geo_out = surfex.geo.ConfProj(domain)
-                data = field.data.T
+                if field.geometry.name == "polar_stereographic":
+                    data = field.data[range_y, range_x].T
+                else:
+                    data = field.data.T
             else:
                 raise NotImplementedError(field.geometry.name + " not implemented yet!")
 
