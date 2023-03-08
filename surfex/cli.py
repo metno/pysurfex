@@ -59,7 +59,7 @@ def parse_args_create_forcing(argv):
                         default=3600, nargs="?")
     parser.add_argument('-i', '--input_format', type=str, help="Default input file format",
                         default="netcdf",
-                        choices=["netcdf", "grib1", "grib2", "surfex"])
+                        choices=["netcdf", "grib1", "grib2", "surfex", "fa"])
     parser.add_argument('-ig', '--input_geo', dest="geo_input", type=str,
                         help="Default input geometry if needed",
                         default=None, required=False)
@@ -137,7 +137,7 @@ def parse_args_create_forcing(argv):
                             choices=["default", "netcdf", "grib1", "grib2", "surfex"])
     group_snow.add_argument("--snow_converter", type=str,
                             help="Converter function to snowfall rate", default="none",
-                            choices=["none", "calcsnow"])
+                            choices=["none", "calcsnow", "snowplusgraupel"])
 
     group_wind = parser.add_argument_group('WIND', description="Wind speed")
     group_wind.add_argument("--wind", type=str, help="Input format", default="default",
