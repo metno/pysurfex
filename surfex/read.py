@@ -225,6 +225,9 @@ class Converter(object):
         elif name == "calcrain":
             self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+        elif name == "snowplusgraupel":
+            self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"])
+            self.graupel = self.create_variable(fileformat, defs, conf[self.name]["graupel"])
         elif name == "phi2m":
             self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"])
         elif self.name == "swe2sd":
@@ -396,6 +399,9 @@ class Converter(object):
             # wetbulbTemperatureK  = wetbulbTemperature + 273.15;
             field = field_totalprec
             field[field_t > 274.16] = 0
+        elif self.name == "snowplusgraupel":
+            field = self.snow.read_variable(geo, validtime, cache)
+            field += self.graupel.read_variable(geo, validtime, cache)
         elif self.name == "phi2m":
             field = self.phi.read_variable(geo, validtime, cache)
             field = np.divide(field, gravity)
