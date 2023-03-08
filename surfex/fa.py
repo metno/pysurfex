@@ -50,6 +50,7 @@ class Fa(object):
             # TODO this might not work with forcing...
             zone = "CI"
             crnrs = field.geometry.gimme_corners_ij(subzone=zone)
+            
             range_x = slice(crnrs['ll'][0], crnrs['lr'][0] + 1)
             range_y = slice(crnrs['lr'][1], crnrs['ur'][1] + 1)                
             # TODO: check time
@@ -61,26 +62,13 @@ class Fa(object):
                 ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
                 lon0 = field.geometry.projection['reference_lon'].get('degrees')
                 lat0 = field.geometry.projection['reference_lat'].get('degrees')
+                c0, c1 = field.geometry.getcenter()
+                lonc = c0.get("degrees")
+                latc = c1.get("degrees")
                 d_x = field.geometry.grid["X_resolution"]
                 d_y = field.geometry.grid["Y_resolution"]
-
-                # TODO: Can I get centre point directly?
-                earth = 6.37122e+6
-                if field.geometry.name == "polar_stereographic":
-                    proj_string = f"+proj=stere +lat_0={str(lat0)} +lon_0={str(lon0)} "\
-                                                  f"+lat_ts={str(lat0)}"
-                else:                               
-                    proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)}"\
-                              f" +lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
-
-                proj = pyproj.CRS.from_string(proj_string)
-                wgs84 = pyproj.CRS.from_string("EPSG:4326")
-                x_0, y_0 = pyproj.Transformer.from_crs(wgs84, proj,
-                                                       always_xy=True).transform(ll_lon, ll_lat)
-                x_c = x_0 + 0.5 * (n_x - 1) * d_x
-                y_c = y_0 + 0.5 * (n_y - 1) * d_y
-                lonc, latc = pyproj.Transformer.from_crs(proj, wgs84,
-                                                         always_xy=True).transform(x_c, y_c)
+                ilone = field.geometry.dimensions["X"] - n_x
+                ilate = field.geometry.dimensions["Y"] - n_y
 
                 domain = {
                     "nam_conf_proj": {
@@ -94,8 +82,8 @@ class Fa(object):
                         "njmax": n_y,
                         "xdx": d_x,
                         "xdy": d_y,
-                        "ilone": 0,
-                        "ilate": 0
+                        "ilone": ilone,
+                        "ilate": ilate
                     }
                 }
                 geo_out = surfex.geo.ConfProj(domain)
@@ -105,7 +93,6 @@ class Fa(object):
                     data = field.data.T
             else:
                 raise NotImplementedError(field.geometry.name + " not implemented yet!")
-
             return data, geo_out
 
     def points(self, varname, geo, validtime=None, interpolation="nearest"):
