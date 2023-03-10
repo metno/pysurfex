@@ -15,7 +15,7 @@ from .run import BatchJob, InputDataToSurfexBinaries, JsonInputData, JsonInputDa
 from .assim import horizontal_oi
 from .obs import Observation, ObservationSet, ObservationFromTitanJsonFile, JsonObservationSet, \
     MetFrostObservations, NetatmoObservationSet, sm_obs_sentinel, snow_pseudo_obs_cryoclim, \
-    get_datasources, set_geo_from_obs_set
+    get_datasources, set_geo_from_obs_set, ObservationDataSetFromObsoul, ObservationDataSetFromObsoulFile
 from .forcing import SurfexForcing, SurfexOutputForcing, AsciiOutput, NetCDFOutput, \
     SurfexNetCDFForcing, modify_forcing, write_formatted_array, set_forcing_config, \
     set_input_object, run_time_loop
