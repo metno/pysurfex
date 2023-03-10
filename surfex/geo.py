@@ -169,6 +169,7 @@ class ConfProj(SurfexGeo):
         logging.debug("from_json: %s", from_json)
         self.ilone = None
         self.ilate = None
+        self.xtrunc = None
         if "nam_conf_proj_grid" in domain_dict:
             if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" \
                     in domain_dict["nam_conf_proj_grid"]:
