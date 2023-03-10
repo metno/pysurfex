@@ -289,7 +289,7 @@ class ConfProj(SurfexGeo):
                     "njmax": self.njmax,
                     "xdx": self.xdx,
                     "xdy": self.xdy,
-                    "xtrunx":self.xtrunc
+                    "xtrunc":self.xtrunc
                 }
             })
         return nml

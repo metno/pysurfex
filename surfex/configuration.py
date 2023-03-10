@@ -391,7 +391,7 @@ class ConfigurationFromHarmonie(Configuration):
             gsize = float(env["LGSIZE"])
         trunc = 2 # linear
         if "TRUNC" in env:
-            trunc = env["TRUNC"]
+            trunc = int(env["TRUNC"])
         domain_dict = {
             "nam_pgd_grid": {
                 "cgrid": "CONF PROJ"
