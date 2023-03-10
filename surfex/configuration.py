@@ -389,6 +389,9 @@ class ConfigurationFromHarmonie(Configuration):
         gsize = float(env["GSIZE"])
         if "LGSIZE" in env:
             gsize = float(env["LGSIZE"])
+        trunc = 2 # linear
+        if "TRUNC" in env:
+            trunc = env["TRUNC"]
         domain_dict = {
             "nam_pgd_grid": {
                 "cgrid": "CONF PROJ"
@@ -406,6 +409,7 @@ class ConfigurationFromHarmonie(Configuration):
                 "njmax": ndguxg,
                 "xdx": gsize,
                 "xdy": gsize,
+                "xtrunc": trunc,
             }
         }
         geo = surfex.ConfProj(domain_dict)

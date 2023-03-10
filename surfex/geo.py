@@ -182,6 +182,8 @@ class ConfProj(SurfexGeo):
                     self.ilone = domain_dict["nam_conf_proj_grid"]["ilone"]
                 if "ilate" in domain_dict["nam_conf_proj_grid"]:
                     self.ilate = domain_dict["nam_conf_proj_grid"]["ilate"]
+                if "xtrunc" in domain_dict["nam_conf_proj_grid"]:
+                    self.xtrunc = domain_dict["nam_conf_proj_grid"]["xtrunc"]
             else:
                 raise KeyError("Missing keys1")
         else:
@@ -219,6 +221,7 @@ class ConfProj(SurfexGeo):
         self.y_0 = y_0
         xxx = np.empty([self.nimax])
         yyy = np.empty([self.njmax])
+        # TODO vectorize 
         for i in range(0, self.nimax):
             xxx[i] = x_0 + (float(i) * self.xdx)
         for j in range(0, self.njmax):
@@ -263,7 +266,8 @@ class ConfProj(SurfexGeo):
                     "nimax": self.nimax,
                     "njmax": self.njmax,
                     "xdx": self.xdx,
-                    "xdy": self.xdy
+                    "xdy": self.xdy,
+                    "xtrunc": self.xtrunc
                 }
             })
         else:
@@ -284,7 +288,8 @@ class ConfProj(SurfexGeo):
                     "nimax": self.nimax,
                     "njmax": self.njmax,
                     "xdx": self.xdx,
-                    "xdy": self.xdy
+                    "xdy": self.xdy,
+                    "xtrunx":self.xtrunc
                 }
             })
         return nml
