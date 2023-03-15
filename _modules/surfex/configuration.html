@@ -428,6 +428,9 @@
         <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">])</span>
         <span class="k">if</span> <span class="s2">&quot;LGSIZE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
             <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LGSIZE&quot;</span><span class="p">])</span>
+        <span class="n">trunc</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># linear</span>
+        <span class="k">if</span> <span class="s2">&quot;TRUNC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">trunc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;TRUNC&quot;</span><span class="p">])</span>
         <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;CONF PROJ&quot;</span>
@@ -445,6 +448,7 @@
                 <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ndguxg</span><span class="p">,</span>
                 <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
                 <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="n">trunc</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">}</span>
         <span class="n">geo</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ConfProj</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span>

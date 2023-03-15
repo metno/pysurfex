@@ -208,6 +208,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;from_json: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">from_json</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;nam_conf_proj_grid&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;nimax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;njmax&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xloncen&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xlatcen&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdy&quot;</span> \
                     <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]:</span>
@@ -221,6 +222,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">][</span><span class="s2">&quot;ilone&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="s2">&quot;ilate&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">][</span><span class="s2">&quot;ilate&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;xtrunc&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">][</span><span class="s2">&quot;xtrunc&quot;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing keys1&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -258,6 +261,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">y_0</span> <span class="o">=</span> <span class="n">y_0</span>
         <span class="n">xxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">])</span>
         <span class="n">yyy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">])</span>
+        <span class="c1"># TODO vectorize </span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
             <span class="n">xxx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
@@ -302,7 +306,8 @@
                     <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span>
                     <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span>
                     <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">,</span>
-                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span>
+                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">,</span>
+                    <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span>
                 <span class="p">}</span>
             <span class="p">})</span>
         <span class="k">else</span><span class="p">:</span>
@@ -323,7 +328,8 @@
                     <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span>
                     <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span>
                     <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">,</span>
-                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span>
+                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">,</span>
+                    <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span>
                 <span class="p">}</span>
             <span class="p">})</span>
         <span class="k">return</span> <span class="n">nml</span></div>
