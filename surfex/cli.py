@@ -59,7 +59,7 @@ def parse_args_create_forcing(argv):
                         default=3600, nargs="?")
     parser.add_argument('-i', '--input_format', type=str, help="Default input file format",
                         default="netcdf",
-                        choices=["netcdf", "grib1", "grib2", "surfex"])
+                        choices=["netcdf", "grib1", "grib2", "surfex", "fa"])
     parser.add_argument('-ig', '--input_geo', dest="geo_input", type=str,
                         help="Default input geometry if needed",
                         default=None, required=False)
@@ -137,7 +137,7 @@ def parse_args_create_forcing(argv):
                             choices=["default", "netcdf", "grib1", "grib2", "surfex"])
     group_snow.add_argument("--snow_converter", type=str,
                             help="Converter function to snowfall rate", default="none",
-                            choices=["none", "calcsnow"])
+                            choices=["none", "calcsnow", "snowplusgraupel"])
 
     group_wind = parser.add_argument_group('WIND', description="Wind speed")
     group_wind.add_argument("--wind", type=str, help="Input format", default="default",
@@ -300,14 +300,14 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('-t2m_file', type=str, default=None, help="File with T2M", nargs="?")
     parser.add_argument('-t2m_format', type=str, default=None,
                         help="File format for file with T2M", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('-t2m_converter', type=str, default="none",
                         help="Converter for T2M", nargs="?",
                         choices=["none", "tap"])
     parser.add_argument('-rh2m_file', type=str, default=None, help="File with RH2M", nargs="?")
     parser.add_argument('-rh2m_format', type=str, default=None,
                         help="File format for file with RH2M", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('-rh2m_converter', type=str, default="none",
                         help="Converter for RH2M", nargs="?",
                         choices=["none", "rhp"])
@@ -315,21 +315,21 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument('-sd_file', type=str, default=None, help="Snow depth file", nargs="?")
     parser.add_argument('-sd_format', type=str, default=None,
                         help="Snow depth file format", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('--sd_converter', type=str, default="none", help="", nargs="?",
                         choices=["none", "sweclim", "swe2sd", "sdp"])
 
     parser.add_argument('-cb_file', type=str, default=None, help="Cloud base file", nargs="?")
     parser.add_argument('-cb_format', type=str, default=None,
                         help="Cloud base file format", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('--cb_converter', type=str, default="cloud_base", help="", nargs="?",
                         choices=["cloud_base"])
 
     parser.add_argument('-sm_file', type=str, default=None, help="Soil moisture file", nargs="?")
     parser.add_argument('-sm_format', type=str, default=None,
                         help="Soil moisture file format", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('--sm_converter', type=str, default="none", help="", nargs="?",
                         choices=["none", "smp"])
 
@@ -337,7 +337,7 @@ def parse_args_first_guess_for_oi(argv):
                         help="Land area fraction grib file", nargs="?")
     parser.add_argument('-laf_format', type=str, default=None,
                         help="Snow depth file format", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('--laf_converter', type=str, default="nature_town", help="", nargs="?",
                         choices=["none", "sea2land", "nature_town"])
 
@@ -345,7 +345,7 @@ def parse_args_first_guess_for_oi(argv):
                         help="SURFEX grib file", nargs="?")
     parser.add_argument('-altitude_format', type=str, default=None,
                         help="Snow depth file format", nargs="?",
-                        choices=["grib1", "grib2", "netcdf", "surfex"])
+                        choices=["grib1", "grib2", "netcdf", "surfex", "fa"])
     parser.add_argument('--altitude_converter', type=str, default="phi2m", help="", nargs="?",
                         choices=["none", "phi2m"])
 
