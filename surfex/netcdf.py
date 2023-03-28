@@ -685,8 +685,8 @@ def read_first_guess_netcdf_file(input_file, var):
         else:
             raise NotImplementedError
     else:
-        lons = np.array(np.reshape(lons, [n_x, n_y], order="F"))
-        lats = np.array(np.reshape(lats, [n_x, n_y], order="F"))
+        lons = np.array(np.transpose(np.reshape(lons, [n_y, n_x], order="F")))
+        lats = np.array(np.transpose(np.reshape(lats, [n_y, n_x], order="F")))
         geo = surfex.Geo(lons, lats)
 
     background = file_handler[var][:]
