@@ -11,11 +11,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.6]
-        # python-version: [3.6, 3.7]
+        python-version: [3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -84,18 +83,18 @@ jobs:
         export CLIENTID=${{secrets.CLIENTID}}
         coverage run --source=. -m unittest discover
     - name: Coveralls
-      if: ${{ matrix.python-version == 3.6 }}
+      if: ${{ matrix.python-version == 3.8 }}
       run: |
         export CLIENTID=${{ secrets.CLIENTID }}
         # coverage html -d coverage
         COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
     - name: Create documentation
-      if: ${{ matrix.python-version == 3.6 }}
+      if: ${{ matrix.python-version == 3.8 }}
       run: |
         cd docs
         make html
     - name: Commit documentation changes
-      if: ${{ matrix.python-version == 3.6 }}
+      if: ${{ matrix.python-version == 3.8 }}
       run: |
         git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
         cp -r docs/build/html/* gh-pages/
@@ -107,7 +106,7 @@ jobs:
         # The above command will fail if no changes were present, so we ignore
         # the return code.
     - name: Push changes
-      if: ${{ matrix.python-version == 3.6 }} && github.repository == 'metno/pysurfex'
+      if: ${{ matrix.python-version == 3.8 }} && github.repository == 'metno/pysurfex'
       uses: ad-m/github-push-action@master
       with:
         branch: gh-pages
