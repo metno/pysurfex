@@ -1,7 +1,9 @@
 """Test plotting."""
 import unittest
 import logging
-import surfex
+
+
+from surfex.cli import plot_points
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -28,8 +30,7 @@ class PlotTest(unittest.TestCase):
             "-o", "unittest_output_plot_grib1.png",
             "--debug"
         ]
-        kwargs = surfex.parse_args_plot_points(argv)
-        surfex.run_plot_points(**kwargs)
+        plot_points(argv=argv)
 
     def test_plot_grib2(self):
         """Test plotting from grib2."""
@@ -46,8 +47,7 @@ class PlotTest(unittest.TestCase):
             "-o", "unittest_output_plot_grib2.png",
             "--debug"
         ]
-        kwargs = surfex.parse_args_plot_points(argv)
-        surfex.run_plot_points(**kwargs)
+        plot_points(argv=argv)
 
     def test_plot_netcdf(self):
         """Test plotting from netcdf."""
@@ -60,8 +60,7 @@ class PlotTest(unittest.TestCase):
             "-o", "unittest_output_plot_nc.png",
             "--debug"
         ]
-        kwargs = surfex.parse_args_plot_points(argv)
-        surfex.run_plot_points(**kwargs)
+        plot_points(argv=argv)
 
     def test_plot_obs_frost_json(self):
         """Test plotting from frost json data."""
@@ -74,5 +73,4 @@ class PlotTest(unittest.TestCase):
             "-o", "unittest_output_plot_obs_frost_json.png",
             "--debug"
         ]
-        kwargs = surfex.parse_args_plot_points(argv)
-        surfex.run_plot_points(**kwargs)
+        plot_points(argv=argv)

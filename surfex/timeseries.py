@@ -2,7 +2,10 @@
 from datetime import datetime, timedelta
 import logging
 import json
-import surfex
+
+
+from .read import Converter
+from .obs import Observation
 
 
 class TimeSeries(object):
@@ -31,7 +34,7 @@ class TimeSeries(object):
 
         for i, lon in enumerate(self.lons):
             lat = self.lats[i]
-            pos = surfex.Observation.format_lon(lon) + ":" + surfex.Observation.format_lat(lat)
+            pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
             self.index_pos.update({pos: i})
 
         if stids_file is not None:
@@ -51,7 +54,7 @@ class TimeSeries(object):
         for stid in ids_from_file:
             lon = ids_from_file[stid]["lon"]
             lat = ids_from_file[stid]["lat"]
-            pos = surfex.Observation.format_lon(lon) + ":" + surfex.Observation.format_lat(lat)
+            pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
             if pos in self.index_pos:
                 stids[self.index_pos[pos]] = stid
         return stids
@@ -110,13 +113,13 @@ class TimeSeriesFromJson(TimeSeries):
         stids1 = []
         for i, ts_lon in enumerate(ts_lons):
             if lons is not None and lats is not None:
-                lon1 = surfex.Observation.format_lon(float(ts_lon))
-                lat1 = surfex.Observation.format_lat(float(ts_lats[i]))
+                lon1 = Observation.format_lon(float(ts_lon))
+                lat1 = Observation.format_lat(float(ts_lats[i]))
                 if len(lons) != len(lats):
                     raise Exception("Mismach in longitudes and latitudes")
                 for j, lon in enumerate(lons):
-                    lon = surfex.Observation.format_lon(float(lon))
-                    lat = surfex.Observation.format_lat(float(lats[j]))
+                    lon = Observation.format_lon(float(lon))
+                    lat = Observation.format_lat(float(lats[j]))
                     if lon == lon1 and lat == lat1:
                         mask.append(i)
                         lons1.append(ts_lon)
@@ -191,7 +194,7 @@ class TimeSeriesFromConverter(TimeSeries):
         basetime = start
         defs = {}
 
-        converter = surfex.Converter(
+        converter = Converter(
             converter, basetime, defs, conf[var][fileformat]["converter"], fileformat)
         times = []
         values = []
@@ -209,7 +212,7 @@ class TimeSeriesFromConverter(TimeSeries):
                 cache.clean_fields(this_time)
 
         if stids_file is not None:
-            stids = surfex.Observation.get_stid_from_stationlist(
+            stids = Observation.get_stid_from_stationlist(
                 stids_file, geo.lonlist, geo.latlist)
         else:
             stids = ["NA"] * geo.nlons

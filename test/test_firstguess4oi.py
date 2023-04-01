@@ -1,7 +1,9 @@
 """Test first guess for OI."""
 import unittest
 import logging
-import surfex
+
+
+from surfex.cli import first_guess_for_oi
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -30,8 +32,7 @@ class FirstGuess4OiTest(unittest.TestCase):
             "relative_humidity_2m",
             "surface_snow_thickness"
         ]
-        kwargs = surfex.parse_args_first_guess_for_oi(argv)
-        surfex.first_guess_for_oi(**kwargs)
+        first_guess_for_oi(argv=argv)
 
     def test_firstguess4oi_grib2(self):
         """Test first guess from grib2."""
@@ -48,5 +49,4 @@ class FirstGuess4OiTest(unittest.TestCase):
             "relative_humidity_2m",
             "surface_snow_thickness"
         ]
-        kwargs = surfex.parse_args_first_guess_for_oi(argv)
-        surfex.first_guess_for_oi(**kwargs)
+        first_guess_for_oi(argv=argv)

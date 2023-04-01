@@ -1,12 +1,13 @@
 """FA support."""
-import numpy as np
 import logging
-import pyproj
-import surfex
 try:
     import epygram  # type: ignore
 except ImportError:
     epygram = None
+
+
+from .geo import ConfProj
+from .interpolation import Interpolation
 
 
 class Fa(object):
@@ -86,7 +87,7 @@ class Fa(object):
                         "ilate": ilate
                     }
                 }
-                geo_out = surfex.geo.ConfProj(domain)
+                geo_out = ConfProj(domain)
                 if field.geometry.name == "polar_stereographic":
                     data = field.data[range_y, range_x].T
                 else:
@@ -108,7 +109,7 @@ class Fa(object):
 
         """
         field, geo_in = self.field(varname, validtime)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
+        interpolator = Interpolation(interpolation, geo_in, geo)
 
         field = interpolator.interpolate(field)
         return field, interpolator

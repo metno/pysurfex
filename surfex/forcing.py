@@ -10,7 +10,14 @@ import logging
 import netCDF4
 import numpy as np
 import toml
-import surfex
+
+
+from .cache import Cache
+from .configuration import ConfigurationFromHarmonie
+from .file import ForcingFileNetCDF
+from .geo import get_geo_object
+from .read import Converter, ConvertedInput, ConstantValue
+from .util import deep_update
 
 
 # TODO: should be abstract?
@@ -27,7 +34,7 @@ class SurfexNetCDFForcing(SurfexForcing):
     def __init__(self, filename, geo):
         """Construct netcdf forcing."""
         SurfexForcing.__init__(self)
-        self.io_object = surfex.ForcingFileNetCDF(filename, geo)
+        self.io_object = ForcingFileNetCDF(filename, geo)
 
 
 class SurfexOutputForcing(object):
@@ -389,7 +396,7 @@ def run_time_loop(options, var_objs, att_objs):
     tic = time.time()
     this_time = options['start']
 
-    cache = surfex.cache.Cache(options['cache_interval'])
+    cache = Cache(options['cache_interval'])
     time_step = options['timestep']
     single = False
     if "single" in options:
@@ -413,15 +420,15 @@ def run_time_loop(options, var_objs, att_objs):
             str.lower(options['output_format']) == "nc4":
         # Set att_time the same as start
         att_time = options['start']
-        output = surfex.forcing.NetCDFOutput(options['start'], options['geo_out'],
-                                             options['output_file'], ntimes,
-                                             var_objs, att_objs, att_time, cache, time_step,
-                                             fmt=str.lower(options['output_format']))
+        output = NetCDFOutput(options['start'], options['geo_out'],
+                              options['output_file'], ntimes,
+                              var_objs, att_objs, att_time, cache, time_step,
+                              fmt=str.lower(options['output_format']))
     elif str.lower(options['output_format']) == "ascii":
         att_time = options['start']
-        output = surfex.forcing.AsciiOutput(options['start'], options['geo_out'],
-                                            options['output_file'], ntimes,
-                                            var_objs, att_objs, att_time, cache, time_step)
+        output = AsciiOutput(options['start'], options['geo_out'],
+                             options['output_file'], ntimes,
+                             var_objs, att_objs, att_time, cache, time_step)
     else:
         raise NotImplementedError("Invalid output format " + options['output_format'])
 
@@ -529,15 +536,15 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
             else:
                 raise KeyError("No ref height \"" + ref_height + "\" defined for " + sfx_var)
 
-        obj = surfex.read.ConstantValue(geo, sfx_var, const_dict)
+        obj = ConstantValue(geo, sfx_var, const_dict)
     else:
 
         # Construct the converter
-        converter = surfex.read.Converter(selected_converter, first_base_time, defs, conf_dict,
-                                          forcingformat)
+        converter = Converter(selected_converter, first_base_time, defs,
+                              conf_dict, forcingformat)
 
         # Construct the input object
-        obj = surfex.read.ConvertedInput(geo, sfx_var, converter)
+        obj = ConvertedInput(geo, sfx_var, converter)
     return obj
 
 
@@ -550,13 +557,13 @@ def set_forcing_config(**kwargs):
             if kwargs["config_exp_surfex"] is not None:
                 config_exp = kwargs["config_exp_surfex"]
         if config_exp is None:
-            config_exp = surfex.__path__[0] + "/cfg/config_exp_surfex.toml"
+            config_exp = f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
         logging.info("Using default config from: %s", config_exp)
         input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
-        config = surfex.ConfigurationFromHarmonie(os.environ, input_data)
+        config = ConfigurationFromHarmonie(os.environ, input_data)
         geo_out = config.geo
     elif "domain" in kwargs and kwargs["domain"] is not None:
-        geo_out = surfex.get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
+        geo_out = get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
     else:
         raise Exception("No geometry is set")
 
@@ -693,7 +700,7 @@ def set_forcing_config(**kwargs):
         first_base_time = datetime.strptime(str.strip(str(file_base)), '%Y%m%d%H')
 
     # Merge all settings with user all settings
-    merged_conf = surfex.deep_update(config, user_config)
+    merged_conf = deep_update(config, user_config)
 
     # Replace global settings from
     fileformat = input_format
@@ -713,10 +720,10 @@ def set_forcing_config(**kwargs):
         geo_input = kwargs["geo_input"]
         if geo_input is not None:
             if os.path.exists(geo_input):
-                geo_input = surfex.get_geo_object(json.load(open(geo_input, "r", encoding="utf-8")))
+                geo_input = get_geo_object(json.load(open(geo_input, "r", encoding="utf-8")))
                 merged_conf[fileformat]["geo_input"] = geo_input
             else:
-                surfex.info("Input geometry " + geo_input + " does not exist")
+                logging.info("Input geometry " + geo_input + " does not exist")
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]

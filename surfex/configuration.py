@@ -3,7 +3,11 @@ import os
 import logging
 import json
 import toml
-import surfex
+
+
+from .namelist import SystemFilePaths
+from .geo import ConfProj
+from .util import merge_toml_env
 
 
 class Configuration(object):
@@ -314,9 +318,9 @@ class Configuration(object):
                     if key in this_setting:
                         this_setting = this_setting[key]
                         # Time information
-                        this_setting = surfex.SystemFilePaths.substitute_string(
+                        this_setting = SystemFilePaths.substitute_string(
                             this_setting, system_variables=system_variables)
-                        this_setting = surfex.SystemFilePaths.parse_setting(
+                        this_setting = SystemFilePaths.parse_setting(
                             this_setting, check_parsing=check_parsing, validtime=validtime,
                             basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
                     else:
@@ -355,7 +359,7 @@ class Configuration(object):
             for key in reversed(keys[0:-1]):
                 dsetting = {key: dsetting}
 
-        self.settings = surfex.merge_toml_env(self.settings, dsetting)
+        self.settings = merge_toml_env(self.settings, dsetting)
 
 
 class ConfigurationFromHarmonie(Configuration):
@@ -412,7 +416,7 @@ class ConfigurationFromHarmonie(Configuration):
                 "xtrunc": trunc,
             }
         }
-        geo = surfex.ConfProj(domain_dict)
+        geo = ConfProj(domain_dict)
         self.geo = geo
 
         logging.debug("GEO: %s", self.geo)

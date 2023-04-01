@@ -4,8 +4,11 @@ import logging
 from datetime import datetime
 import json
 import os
-import surfex
 
+
+from surfex.cache import Cache
+from surfex.geo import get_geo_object, set_domain
+from surfex.read import Converter, ConvertedInput
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
                     level=logging.DEBUG)
@@ -20,8 +23,8 @@ class GribTest(unittest.TestCase):
         self.rootdir = os.path.abspath(os.curdir)
         with open("test/settings/domains.json", mode="r", encoding="utf-8") as file_handler:
             domains = json.load(file_handler)
-        domain = surfex.geo.set_domain(domains, "CONF_PROJ_TEST")
-        self.geo = surfex.geo.get_geo_object(domain)
+        domain = set_domain(domains, "CONF_PROJ_TEST")
+        self.geo = get_geo_object(domain)
         self.converter = "none"
         self.config = {
             "grib1": {
@@ -74,11 +77,11 @@ class GribTest(unittest.TestCase):
         converter_conf = self.config[var][fileformat]["converter"]
 
         validtime = datetime(year=2020, month=3, day=30, hour=6)
-        cache = surfex.Cache(7200)
+        cache = Cache(7200)
         initial_basetime = validtime
-        converter = surfex.read.Converter(self.converter, initial_basetime, defs, converter_conf,
+        converter = Converter(self.converter, initial_basetime, defs, converter_conf,
                                           fileformat)
-        surfex.read.ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
+        ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
 
     def test_grib2_from_converter(self):
         """Test grib2 from converter."""
@@ -89,8 +92,8 @@ class GribTest(unittest.TestCase):
         converter_conf = self.config[var][fileformat]["converter"]
 
         validtime = datetime(year=2020, month=3, day=30, hour=6)
-        cache = surfex.Cache(7200)
+        cache = Cache(7200)
         initial_basetime = validtime
-        converter = surfex.read.Converter(self.converter, initial_basetime, defs, converter_conf,
-                                          fileformat)
-        surfex.read.ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)
+        converter = Converter(self.converter, initial_basetime, defs, converter_conf,
+                              fileformat)
+        ConvertedInput(self.geo, var, converter).read_time_step(validtime, cache)

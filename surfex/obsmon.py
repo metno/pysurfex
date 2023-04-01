@@ -2,7 +2,6 @@
 from datetime import datetime
 import logging
 import numpy as np
-import surfex
 
 try:
     import sqlite3
@@ -10,6 +9,10 @@ except ImportWarning:
     sqlite3 = None
     logging.warning("Could not import sqlite3 modules")
 
+
+from .netcdf import read_first_guess_netcdf_file
+from .obs import Observation
+from .titan import dataset_from_file, Departure
 
 def open_db(dbname):
     """Open database.
@@ -105,8 +108,8 @@ def populate_usage_db(conn, dtg, varname, observations):
     lons, lats, stids, __, values, flags, fg_deps, an_deps = vectors(observations)
 
     for i, lon_val in enumerate(lons):
-        lon = surfex.Observation.format_lon(lon_val)
-        lat = surfex.Observation.format_lat(lats[i])
+        lon = Observation.format_lon(lon_val)
+        lat = Observation.format_lat(lats[i])
         stid = str(stids[i])
         if stid == "NA":
             stid = "NULL"
@@ -363,7 +366,7 @@ def write_obsmon_sqlite_file(**kwargs):
         operator = kwargs["operator"]
 
     q_c = kwargs["qc"]
-    obs_titan = surfex.dataset_from_file(an_time, q_c, skip_flags=[150])
+    obs_titan = dataset_from_file(an_time, q_c, skip_flags=[150])
 
     conn = open_db(dbname)
     create_db(conn, modes, stat_cols)
@@ -373,14 +376,14 @@ def write_obsmon_sqlite_file(**kwargs):
     an_var = kwargs["file_var"]
 
     # Only first guess file implemented at the moment
-    geo_in, __, an_field, __, __ = surfex.read_first_guess_netcdf_file(an_file, an_var)
-    geo_in, __, fg_field, __, __ = surfex.read_first_guess_netcdf_file(fg_file, fg_var)
+    geo_in, __, an_field, __, __ = read_first_guess_netcdf_file(an_file, an_var)
+    geo_in, __, fg_field, __, __ = read_first_guess_netcdf_file(fg_file, fg_var)
 
-    fg_dep = surfex.Departure(operator, geo_in, obs_titan, fg_field, "first_guess").get_departure()
-    an_dep = surfex.Departure(operator, geo_in, obs_titan, an_field, "analysis").get_departure()
+    fg_dep = Departure(operator, geo_in, obs_titan, fg_field, "first_guess").get_departure()
+    an_dep = Departure(operator, geo_in, obs_titan, an_field, "analysis").get_departure()
 
-    obs_titan = surfex.dataset_from_file(an_time, q_c, skip_flags=[150, 199],
-                                         fg_dep=fg_dep, an_dep=an_dep)
+    obs_titan = dataset_from_file(an_time, q_c, skip_flags=[150, 199],
+                                  fg_dep=fg_dep, an_dep=an_dep)
 
     populate_usage_db(conn, dtg, varname, obs_titan)
     populate_obsmon_db(conn, dtg, calculate_statistics(obs_titan, modes, stat_cols),

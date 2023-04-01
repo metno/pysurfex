@@ -3,8 +3,15 @@ import logging
 import copy
 from datetime import timedelta
 import numpy as np
-import surfex
 
+
+from .file import get_surfex_io_object, SurfexFileVariable
+from .netcdf import Netcdf, NetCDFReadVariable
+from .grib import Grib, Grib1Variable, Grib2Variable
+from .fa import Fa
+from .input_methods import get_datasources
+from .geo import get_geo_object
+from .util import parse_filepattern
 
 class Variable(object):
     """New combined variable."""
@@ -87,7 +94,7 @@ class Variable(object):
         basetime = self.get_basetime(validtime, previoustime=previoustime)
         if previoustime is not None:
             validtime = previoustime
-        return surfex.file.parse_filepattern(self.filepattern, basetime, validtime)
+        return parse_filepattern(self.filepattern, basetime, validtime)
 
     def get_filehandler(self, validtime, cache=None, previoustime=None):
         """Get the file handler.
@@ -106,11 +113,11 @@ class Variable(object):
             file_handler = cache.get_file_handler(filename)
         else:
             if self.var_type == "netcdf":
-                file_handler = surfex.netcdf.Netcdf(filename)
+                file_handler = Netcdf(filename)
             elif self.var_type == "grib1" or self.var_type == "grib2":
-                file_handler = surfex.grib.Grib(filename)
+                file_handler = Grib(filename)
             elif self.var_type == "fa":
-                file_handler = surfex.fa.Fa(filename)
+                file_handler = Fa(filename)
             elif self.var_type == "surfex":
                 fileformat = None
                 if "fileformat" in self.var_dict:
@@ -123,15 +130,15 @@ class Variable(object):
                     geo_in = self.var_dict["geo_input"]
                 elif "geo_input_file" in self.var_dict:
                     geo_in_file = self.var_dict["geo_input_file"]
-                    geo_in = surfex.get_geo_object(open(geo_in_file, "r", encoding="utf-8"))
+                    geo_in = get_geo_object(open(geo_in_file, "r", encoding="utf-8"))
 
-                file_handler = surfex.file.get_surfex_io_object(filename, fileformat=fileformat,
-                                                                filetype=filetype, geo=geo_in)
+                file_handler = get_surfex_io_object(filename, fileformat=fileformat,
+                                                    filetype=filetype, geo=geo_in)
             elif self.var_type == "obs":
                 var_dict = self.var_dict
                 var_dict = {"set": var_dict}
                 basetime = self.get_basetime(validtime)
-                file_handler = surfex.get_datasources(basetime, var_dict)[0]
+                file_handler = get_datasources(basetime, var_dict)[0]
             else:
                 raise NotImplementedError
 
@@ -237,7 +244,7 @@ class Variable(object):
                 if member is not None:
                     if not isinstance(member, list):
                         member = [member]
-            var = surfex.NetCDFReadVariable(name, level=level, units=units, member=member)
+            var = NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
             typ = self.var_dict["type"]
@@ -245,7 +252,7 @@ class Variable(object):
             tri = self.var_dict["tri"]
             if tri == 4:
                 accumulated = True
-            var = surfex.grib.Grib1Variable(par, typ, level, tri)
+            var = Grib1Variable(par, typ, level, tri)
         elif self.var_type == "grib2":
             discipline = self.var_dict["discipline"]
             p_c = self.var_dict["parameterCategory"]
@@ -257,7 +264,7 @@ class Variable(object):
                 tsp = self.var_dict["typeOfStatisticalProcessing"]
             if tsp == 1:
                 accumulated = True
-            var = surfex.grib.Grib2Variable(discipline, p_c, p_n, l_t, lev, tsp=tsp)
+            var = Grib2Variable(discipline, p_c, p_n, l_t, lev, tsp=tsp)
         elif self.var_type == "surfex":
             varname = self.var_dict["varname"]
             layers = None
@@ -273,10 +280,10 @@ class Variable(object):
                 datatype = self.var_dict["datatype"]
 
             basetime = self.get_basetime(validtime)
-            var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches,
-                                                 layers=layers,
-                                                 basetime=basetime,
-                                                 interval=self.interval, datatype=datatype)
+            var = SurfexFileVariable(varname, validtime=validtime, patches=patches,
+                                     layers=layers,
+                                     basetime=basetime,
+                                     interval=self.interval, datatype=datatype)
         elif self.var_type == "fa":
             var = self.var_dict["name"]
         elif self.var_type == "obs":

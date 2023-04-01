@@ -3,7 +3,6 @@ from datetime import datetime
 from math import exp
 import sys
 import logging
-import surfex
 import numpy as np
 try:
     import eccodes  # type: ignore
@@ -19,7 +18,11 @@ except Exception as ex:
     eccodes = None
 
 
-class BufrObservationSet(surfex.obs.ObservationSet):
+from .obs import ObservationSet
+from .observation import Observation
+
+
+class BufrObservationSet(ObservationSet):
     """Create observation data set from bufr observations."""
 
     def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None,
@@ -309,10 +312,10 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                                                   value, elev, stid)
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
-                                    observations.append(surfex.obs.Observation(obs_dtg, lon, lat,
-                                                                               value,
-                                                                               elev=elev, stid=stid,
-                                                                               varname=var))
+                                    observations.append(Observation(obs_dtg, lon, lat,
+                                                                    value,
+                                                                    elev=elev, stid=stid,
+                                                                    varname=var))
                                     if use_first:
                                         registry[pos].update({var: True})
                                     nobs.update({var: nobs[var] + 1})
@@ -343,7 +346,7 @@ class BufrObservationSet(surfex.obs.ObservationSet):
         # close the file
         file_handler.close()
 
-        surfex.obs.ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label)
 
     @staticmethod
     def td2rh(t_d, temp, kelvin=True):

@@ -4,7 +4,11 @@ import logging
 import os
 import json
 import tomlkit
-import surfex
+
+
+from surfex.cli import run_surfex_binary, parse_args_surfex_binary, parse_args_masterodb, run_masterodb
+from surfex.binary_input import JsonOutputDataFromFile, JsonInputDataFromFile
+from surfex.util import merge_toml_env_from_files
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -130,7 +134,7 @@ class RunTestNC(unittest.TestCase):
 
         config_file = "config_run_test_nc.toml"
         rte = "rte_run_test_nc.json"
-        config = surfex.merge_toml_env_from_files([self.config_exp_surfex, this_config])
+        config = merge_toml_env_from_files([self.config_exp_surfex, this_config])
 
         # Prepare
         extra_files = [config_file, rte]
@@ -162,8 +166,8 @@ class RunTestNC(unittest.TestCase):
             "-o", output,
             binary
         ]
-        kwargs = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(task, **kwargs)
+        kwargs = parse_args_surfex_binary(argv, task)
+        run_surfex_binary(task, **kwargs)
 
         # PREP
         task = "prep"
@@ -197,8 +201,8 @@ class RunTestNC(unittest.TestCase):
             "-o", output,
             binary
         ]
-        kwargs = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(task, **kwargs)
+        kwargs = parse_args_surfex_binary(argv, task)
+        run_surfex_binary(task, **kwargs)
 
         # OFFLINE
         task = "offline"
@@ -231,9 +235,9 @@ class RunTestNC(unittest.TestCase):
             "--forcing_dir", "testdata",
             binary
         ]
-        kwargs = surfex.parse_args_surfex_binary(argv, task)
+        kwargs = parse_args_surfex_binary(argv, task)
         # kwargs.update({"check_existence": False})
-        surfex.run_surfex_binary(task, **kwargs)
+        run_surfex_binary(task, **kwargs)
 
         # SODA
         task = "soda"
@@ -265,8 +269,8 @@ class RunTestNC(unittest.TestCase):
             "-o", output,
             binary
         ]
-        kwargs = surfex.parse_args_surfex_binary(argv, task)
-        surfex.run_surfex_binary(task, **kwargs)
+        kwargs = parse_args_surfex_binary(argv, task)
+        run_surfex_binary(task, **kwargs)
 
         # Clean up
         self._clean_offline_test_nc(extra_files=extra_files)
@@ -278,7 +282,7 @@ class RunTestNC(unittest.TestCase):
 
         config_file = "config_run_test_masterodb.toml"
         rte = "rte_run_test_masterodb.json"
-        config = surfex.merge_toml_env_from_files([self.config_exp_surfex, this_config])
+        config = merge_toml_env_from_files([self.config_exp_surfex, this_config])
 
         # Prepare
         extra_files = [config_file, rte]
@@ -311,9 +315,9 @@ class RunTestNC(unittest.TestCase):
             "-o", output,
             "-b", binary
         ]
-        kwargs = surfex.parse_args_masterodb(argv)
+        kwargs = parse_args_masterodb(argv)
         # kwargs.update({"check_existence": False})
-        surfex.run_masterodb(**kwargs)
+        run_masterodb(**kwargs)
 
         # CANARI
         with open(rte, mode="w", encoding="utf-8") as file_handler:
@@ -340,8 +344,8 @@ class RunTestNC(unittest.TestCase):
             "-o", output,
             "-b", binary
         ]
-        kwargs = surfex.parse_args_masterodb(argv)
-        surfex.run_masterodb(**kwargs)
+        kwargs = parse_args_masterodb(argv)
+        run_masterodb(**kwargs)
 
         # Clean up
         self._clean_masterodb_test(extra_files=extra_files)
@@ -355,7 +359,7 @@ class RunTestNC(unittest.TestCase):
             file_handler.write("{\"testfile_in" + str(os.getpid()) + "\": {\"" + fname
                                + "\": \"ln -sf @INFILE@ @TARGET@\"}}")
 
-        my_input = surfex.JsonInputDataFromFile(fname)
+        my_input = JsonInputDataFromFile(fname)
         my_input.prepare_input()
         os.remove(fname)
         os.remove("testfile_in" + str(os.getpid()))
@@ -370,7 +374,7 @@ class RunTestNC(unittest.TestCase):
         with open(fname, mode="w", encoding="utf-8") as file_handler:
             file_handler.write("{\"" + file_to_archive + "\": {\"" + destination + "\": \"cp\"}}")
 
-        my_output = surfex.JsonOutputDataFromFile(fname)
+        my_output = JsonOutputDataFromFile(fname)
         my_output.archive_files()
         os.remove(fname)
         os.remove(file_to_archive)

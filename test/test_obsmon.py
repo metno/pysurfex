@@ -2,8 +2,9 @@
 import unittest
 import logging
 import sqlite3
-import surfex
 
+
+from surfex.cli import qc2obsmon
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
                     level=logging.DEBUG)
@@ -28,8 +29,4 @@ class ObsmonTest(unittest.TestCase):
                 "--file_var", "air_temperature_2m",
                 "-o", dbn
                 ]
-        kwargs = surfex.parse_args_qc2obsmon(argv)
-        print(kwargs)
-        surfex.write_obsmon_sqlite_file(**kwargs)
-
-        sqlite3.connect(dbn)
+        qc2obsmon(argv=argv)

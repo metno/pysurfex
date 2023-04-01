@@ -1,8 +1,9 @@
 """Test gridpp."""
 import unittest
 import logging
-import surfex
 
+
+from surfex.cli import gridpp
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
                     level=logging.DEBUG)
@@ -25,9 +26,7 @@ class GridppTest(unittest.TestCase):
                 "-v", "air_temperature_2m",
                 "--elevGradient", "-0.0065"
                 ]
-        kwargs = surfex.parse_args_gridpp(argv)
-        print(kwargs)
-        surfex.run_gridpp(**kwargs)
+        gridpp(argv=argv)
 
     def test_gridpp_rh2m(self):
         """Test gridpp for rh2m."""
@@ -39,9 +38,7 @@ class GridppTest(unittest.TestCase):
                 "-v", "relative_humidity_2m",
                 "--elevGradient", "0"
                 ]
-        kwargs = surfex.parse_args_gridpp(argv)
-        print(kwargs)
-        surfex.run_gridpp(**kwargs)
+        gridpp(argv=argv)
 
     def test_gridpp_sd(self):
         """Test gridpp for sd."""
@@ -53,6 +50,4 @@ class GridppTest(unittest.TestCase):
                 "-v", "surface_snow_thickness",
                 "--elevGradient", "0"
                 ]
-        kwargs = surfex.parse_args_gridpp(argv)
-        print(kwargs)
-        surfex.run_gridpp(**kwargs)
+        gridpp(argv=argv)

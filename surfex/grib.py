@@ -2,7 +2,6 @@
 import logging
 import numpy as np
 import pyproj
-import surfex
 try:
     import eccodes
     import gribapi
@@ -17,6 +16,9 @@ except:
     eccodes = None
     gribapi = None
 
+
+from .geo import Geo, ConfProj, LonLatReg
+from .interpolation import Interpolation
 
 class Grib(object):
     """Grib class."""
@@ -154,7 +156,7 @@ class Grib(object):
 
                         field = np.reshape(values, [n_x, n_y], order="F")
                         if geo_out is None:
-                            geo_out = surfex.geo.Geo(lons, lats)
+                            geo_out = Geo(lons, lats)
 
                     elif grid_type.lower() == "regular_ll":
                         geo_keys = [
@@ -198,7 +200,7 @@ class Grib(object):
                                     "nlat": n_y
                                 }
                             }
-                            geo_out = surfex.geo.LonLatReg(domain)
+                            geo_out = LonLatReg(domain)
 
                     elif grid_type.lower() == "lambert":
                         geo_keys = [
@@ -265,7 +267,7 @@ class Grib(object):
                                     "ilate": 0
                                 }
                             }
-                            geo_out = surfex.geo.ConfProj(domain)
+                            geo_out = ConfProj(domain)
                     else:
                         raise NotImplementedError(str(grid_type) + " not implemented yet!")
 
@@ -328,17 +330,17 @@ class Grib(object):
             try:
                 has_bitmap = int(eccodes.codes_get(gid, "bitmapPresent"))
             except eccodes.KeyValueNotFoundError as err:
-                logging.debug('  Key="%s" was not found: %s', key, err.msg)
+                logging.debug('  Key="bitmapPresent" was not found: %s', err.msg)
             except eccodes.CodesInternalError as err:
-                logging.error('Error with key="%s" : %s', key, err.msg)
+                logging.error('Error with key="bitmapPresent" : %s', err.msg)
             if has_bitmap == 1:
                 missing_value = eccodes.codes_get(gid, "missingValue")
                 field[field == missing_value] = np.nan
             return field
         except eccodes.KeyValueNotFoundError as err:
-            logging.debug('  Key="%s" was not found: %s', key, err.msg)
+            logging.debug('  Key="missingValue" was not found: %s', err.msg)
         except eccodes.CodesInternalError as err:
-            logging.error('Error with key="%s" : %s', key, err.msg)
+            logging.error('Error with key="missingValue" : %s', err.msg)
         return None
 
     def points(self, gribvar, geo, validtime=None, interpolation="bilinear"):
@@ -355,7 +357,7 @@ class Grib(object):
 
         """
         field, geo_in = self.field(gribvar, validtime)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
+        interpolator = Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 

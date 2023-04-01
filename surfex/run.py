@@ -3,10 +3,10 @@ import os
 import logging
 import sys
 import subprocess
-from abc import ABC, abstractmethod
-import json
 import shutil
-import surfex
+
+
+from .util import remove_existing_file
 
 
 class BatchJob(object):
@@ -102,7 +102,7 @@ class SURFEXBinary(object):
                 if self.pgdfile.input_file is not None and \
                         os.path.abspath(self.pgdfile.filename) \
                         != os.path.abspath(self.pgdfile.input_file):
-                    surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+                    remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
                     os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
                 if not os.path.exists(self.pgdfile.filename):
                     raise FileNotFoundError(f"PGD {self.pgdfile.filename} not found!")
@@ -114,8 +114,8 @@ class SURFEXBinary(object):
                     if self.iofile.input_file is not None and \
                             os.path.abspath(self.iofile.filename) \
                             != os.path.abspath(self.iofile.input_file):
-                        surfex.read.remove_existing_file(self.iofile.input_file,
-                                                         self.iofile.filename)
+                        remove_existing_file(self.iofile.input_file,
+                                             self.iofile.filename)
                         os.symlink(self.iofile.input_file, self.iofile.filename)
                     if not os.path.exists(self.iofile.filename):
                         raise FileNotFoundError(f"PREP {self.iofile.filename} not found!")
@@ -243,7 +243,7 @@ class Masterodb(object):
         if self.pgdfile.input_file is not None and \
                 os.path.abspath(self.pgdfile.filename) != os.path.abspath(self.pgdfile.input_file):
             logging.info("Input PGD file is: %s", self.pgdfile.input_file)
-            surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+            remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
             os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
 
         if not os.path.exists(self.pgdfile.filename):
@@ -256,7 +256,7 @@ class Masterodb(object):
                 != os.path.abspath(self.prepfile.input_file):
 
             logging.info("Input PREP file is: %s", self.prepfile.input_file)
-            surfex.read.remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
+            remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
             os.symlink(self.prepfile.input_file, self.prepfile.filename)
 
         if not os.path.exists(self.prepfile.filename):
@@ -274,149 +274,6 @@ class Masterodb(object):
         self.surfout.archive_output_file()
         if self.archive is not None:
             self.archive.archive_files()
-
-
-class InputDataToSurfexBinaries(ABC):
-    """Abstract input data."""
-
-    def __init__(self):
-        """Construct."""
-
-    @abstractmethod
-    def prepare_input(self):
-        """Prepare input."""
-        return NotImplementedError
-
-
-class OutputDataFromSurfexBinaries(ABC):
-    """Abstract output data."""
-
-    def __init__(self):
-        """Construct."""
-
-    @abstractmethod
-    def archive_files(self):
-        """Archive files."""
-        return NotImplementedError
-
-
-class JsonOutputData(OutputDataFromSurfexBinaries):
-    """Output data."""
-
-    def __init__(self, data):
-        """Output data from dict.
-
-        Args:
-            data (dict): Output data.
-
-        """
-        OutputDataFromSurfexBinaries.__init__(self)
-        self.data = data
-
-    def archive_files(self):
-        """Archive files."""
-        for output_file, target in self.data.items():
-
-            logging.info("%s -> %s", output_file, target)
-            command = "mv"
-            if isinstance(target, dict):
-                for key in target:
-                    logging.debug("%s %s %s", output_file, key, target[key])
-                    command = target[key]
-                    target = key
-
-            cmd = command + " " + output_file + " " + target
-            try:
-                logging.info(cmd)
-                subprocess.check_call(cmd, shell=True)
-            except IOError:
-                logging.error("%s failed", cmd)
-                raise Exception(cmd + " failed") from IOError
-
-
-class JsonOutputDataFromFile(JsonOutputData):
-    """JSON output data."""
-
-    def __init__(self, file):
-        """Construct from json file."""
-        with open(file, mode="r", encoding="utf-8") as file_handler:
-            data = json.load(file_handler)
-        JsonOutputData.__init__(self, data)
-
-    def archive_files(self):
-        """Archive files."""
-        JsonOutputData.archive_files(self)
-
-
-class JsonInputData(InputDataToSurfexBinaries):
-    """JSON input data."""
-
-    def __init__(self, data):
-        """Construct input data.
-
-        Args:
-            data (dict): Input data.
-        """
-        InputDataToSurfexBinaries.__init__(self)
-        self.data = data
-
-    def prepare_input(self):
-        """Prepare input."""
-        for target, input_file in self.data.items():
-
-            logging.info("%s -> %s", target, input_file)
-            logging.debug(os.path.realpath(target))
-            command = None
-            if isinstance(input_file, dict):
-                for key in input_file:
-                    logging.debug(key)
-                    logging.debug(input_file[key])
-                    command = str(input_file[key])
-                    input_file = str(key)
-                    command = command.replace("@INPUT@", input_file)
-                    command = command.replace("@TARGET@", target)
-
-            if os.path.realpath(target) == os.path.realpath(input_file):
-                logging.info("Target and input file is the same file")
-            else:
-                if command is None:
-                    cmd = "ln -sf " + input_file + " " + target
-                else:
-                    cmd = command
-                try:
-                    logging.info(cmd)
-                    subprocess.check_call(cmd, shell=True)
-                except IOError:
-                    raise(cmd + " failed") from IOError
-
-    def add_data(self, data):
-        """Add data.
-
-        Args:
-            data (_type_): _description_
-        """
-        for key in data:
-            value = data[key]
-            self.data.update({key: value})
-
-
-class JsonInputDataFromFile(JsonInputData):
-    """JSON input data."""
-
-    def __init__(self, file):
-        """Construct JSON input data.
-
-        Args:
-            file (_type_): _description_
-
-        """
-        with open(file, mode="r", encoding="utf-8") as file_handler:
-            data = json.load(file_handler)
-        JsonInputData.__init__(self, data)
-
-    def prepare_input(self):
-        """Prepare input."""
-        JsonInputData.prepare_input(self)
 
 
 # TODO is it used?

@@ -6,11 +6,13 @@ import json
 import logging
 import pyproj
 import numpy as np
-import surfex
 try:
     from osgeo import ogr  # type: ignore
 except Exception:
     ogr = None
+
+
+from .namelist import BaseNamelist
 
 
 class Geo(object):
@@ -164,7 +166,7 @@ class ConfProj(SurfexGeo):
         """
         self.cgrid = "CONF PROJ"
         self.json = from_json
-        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         logging.debug("from_json: %s", from_json)
         self.ilone = None
@@ -356,7 +358,7 @@ class LonLatVal(SurfexGeo):
         """
         self.cgrid = "LONLATVAL"
         self.json = from_json
-        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
             if "xx" and "xy" and "xdx" and "xdy" in domain_dict["nam_lonlatval"]:
@@ -419,7 +421,7 @@ class Cartesian(SurfexGeo):
         """
         self.cgrid = "CARTESIAN"
         self.json = from_json
-        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
             if "xlat0" and "xlon0" and "nimax" and "njmax" and "xdx" and "xdy" in \
@@ -495,7 +497,7 @@ class LonLatReg(SurfexGeo):
         """
         self.cgrid = "LONLAT REG"
         self.json = from_json
-        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
             if "xlonmin" and "xlonmax" and "xlatmin" and "xlatmax" and "nlon" and "nlat" \
@@ -582,7 +584,7 @@ class IGN(SurfexGeo):
         """
         self.cgrid = "IGN"
         self.json = from_json
-        domain_dict = surfex.BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
             if "clambert" and "npoints" and "xx" and "xy" and "xdx" and "xdy" and "xx_llcorner" \
@@ -906,7 +908,7 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
 
     """
     from_json = json.load(open(ref_proj, mode="r", encoding="utf-8"))
-    geo = surfex.get_geo_object(from_json)
+    geo = get_geo_object(from_json)
     earth = 6.37122e+6
     proj_string = f"+proj=lcc +lat_0={str(geo.xlat0)} +lon_0={str(geo.xlon0)} " \
                   f"+lat_1={str(geo.xlat0)} +lat_2={str(geo.xlat0)} " \

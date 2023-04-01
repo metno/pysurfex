@@ -6,7 +6,6 @@ import json
 import glob
 import requests
 import numpy as np
-import surfex
 try:
     import cfunits
 except ModuleNotFoundError:
@@ -17,6 +16,15 @@ except:  # noqa
     cfunits = None
 
 
+# from .bufr import BufrObservationSet
+# from .file import parse_filepattern
+# from .geo import LonLatVal
+from .observation import Observation
+from .interpolation import grid2points, get_num_neighbours
+from .titan import dataset_from_file, QCDataSet
+
+
+'''
 class Observation(object):
     """Observation class."""
 
@@ -152,8 +160,10 @@ class Observation(object):
             else:
                 stids.append("NA")
         return stids
+'''
 
 
+'''
 def get_datasources(obs_time, settings):
     """Get data sources.
 
@@ -183,7 +193,7 @@ def get_datasources(obs_time, settings):
 
             validtime = obs_time
             if filetype.lower() == "bufr":
-                filename = surfex.file.parse_filepattern(filepattern, obs_time, validtime)
+                filename = parse_filepattern(filepattern, obs_time, validtime)
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
                 else:
@@ -201,8 +211,8 @@ def get_datasources(obs_time, settings):
                 print("kwargs", kwargs)
                 valid_range = timedelta(seconds=deltat)
                 if os.path.exists(filename):
-                    datasources.append(surfex.bufr.BufrObservationSet(filename, [varname], obs_time,
-                                                                      valid_range, **kwargs))
+                    datasources.append(BufrObservationSet(filename, [varname], obs_time,
+                                                          valid_range, **kwargs))
                 else:
                     print("WARNING: filename " + filename + " not set. Not added.")
 
@@ -225,7 +235,7 @@ def get_datasources(obs_time, settings):
 
                         filenames = []
                         while dtg < end_dtg:
-                            fname = surfex.file.parse_filepattern(filepattern, dtg, dtg)
+                            fname = parse_filepattern(filepattern, dtg, dtg)
                             fname = glob.glob(fname)
                             # print(fname)
                             if len(fname) == 1:
@@ -272,7 +282,7 @@ def get_datasources(obs_time, settings):
                 kwargs.update({"validtime": obs_time})
                 datasources.append(MetFrostObservations(varname, **kwargs))
             elif filetype.lower() == "json":
-                filename = surfex.file.parse_filepattern(filepattern, obs_time, validtime)
+                filename = parse_filepattern(filepattern, obs_time, validtime)
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
@@ -287,7 +297,7 @@ def get_datasources(obs_time, settings):
         else:
             print("No file type provided")
     return datasources
-
+'''
 
 class ObservationSet(object):
     """Set of observations."""
@@ -332,8 +342,8 @@ class ObservationSet(object):
         Returns:
             int: Found position index.
         """
-        lon = surfex.Observation.format_lon(lon)
-        lat = surfex.Observation.format_lat(lat)
+        lon = Observation.format_lon(lon)
+        lat = Observation.format_lat(lat)
         pos = lon + ":" + lat
         if pos in self.index_pos:
             return self.index_pos[pos]
@@ -353,8 +363,8 @@ class ObservationSet(object):
             times, lons, lats, stids, elevs, values, varnames = obs2vectors(self.observations)
 
             for point, lon in enumerate(lons):
-                lon = surfex.Observation.format_lon(lon)
-                lat = surfex.Observation.format_lat(lats[point])
+                lon = Observation.format_lon(lon)
+                lat = Observation.format_lat(lats[point])
                 stid = str(stids[point])
 
                 pos = lon + ":" + lat
@@ -388,7 +398,7 @@ class ObservationSet(object):
             if my_obs.obstime == self.observations.obstimes[i]:
                 lon = self.observations.obstimes[i]
                 lat = self.observations.obstimes[i]
-                pos = surfex.Observation.format_lon(lon) + ":" + surfex.Observation.format_lat(lat)
+                pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
 
                 if pos in self.index_pos:
                     found = True
@@ -412,7 +422,7 @@ class ObservationSet(object):
         for i in range(0, geo.nlons):
             lon = geo.lonlist[i]
             lat = geo.latlist[i]
-            pos = surfex.Observation.format_lon(lon) + ":" + surfex.Observation.format_lat(lat)
+            pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
 
             lons.append(lon)
             lats.append(lat)
@@ -935,7 +945,7 @@ class ObservationFromTitanJsonFile(ObservationSet):
             label (str, optional): _description_. Defaults to "".
 
         """
-        qc_obs = surfex.dataset_from_file(an_time, filename)
+        qc_obs = dataset_from_file(an_time, filename)
         observations = []
         for i in range(0, len(qc_obs)):
             observations.append(
@@ -985,9 +995,9 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
             jjj = jjj + step
         iii = iii + step
 
-    p_fg_snow_depth = surfex.grid2points(fg_geo.lons, fg_geo.lats,
-                                         np.asarray(res_lons), np.asarray(res_lats),
-                                         grid_snow_fg)
+    p_fg_snow_depth = grid2points(fg_geo.lons, fg_geo.lats,
+                                  np.asarray(res_lons), np.asarray(res_lats),
+                                  grid_snow_fg)
 
     # Ordering of points must be the same.....
     obs = []
@@ -1001,9 +1011,9 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
         logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
             # Check if in grid
-            neighbours = surfex.get_num_neighbours(fg_geo.lons, fg_geo.lats,
-                                                   float(res_lons[i]), float(res_lats[i]),
-                                                   distance=2500.)
+            neighbours = get_num_neighbours(fg_geo.lons, fg_geo.lats,
+                                            float(res_lons[i]), float(res_lats[i]),
+                                            distance=2500.)
 
             if neighbours > 0:
                 obs_value = np.nan
@@ -1026,11 +1036,11 @@ def snow_pseudo_obs_cryoclim(validtime, grid_snow_class, grid_lons, grid_lats, s
                     cis.append(0)
                     lafs.append(0)
                     providers.append(0)
-                    obs.append(surfex.Observation(validtime, res_lons[i], res_lats[i], obs_value))
+                    obs.append(Observation(validtime, res_lons[i], res_lats[i], obs_value))
 
     logging.info("Possible pseudo-observations: %s", n_x * n_y)
     logging.info("Pseudo-observations created: %s", len(obs))
-    return surfex.QCDataSet(validtime, obs, flags, cis, lafs, providers)
+    return QCDataSet(validtime, obs, flags, cis, lafs, providers)
 
 
 def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg,
@@ -1073,9 +1083,9 @@ def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo
             jjj = jjj + step
         iii = iii + step
 
-    p_fg_sm = surfex.grid2points(fg_geo.lons, fg_geo.lats,
-                                 np.asarray(res_lons), np.asarray(res_lats),
-                                 grid_sm_fg)
+    p_fg_sm = grid2points(fg_geo.lons, fg_geo.lats,
+                          np.asarray(res_lons), np.asarray(res_lats),
+                          grid_sm_fg)
 
     # Ordering of points must be the same.....
     obs = []
@@ -1088,9 +1098,9 @@ def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo
         p_sm_fg = p_fg_sm[i]
         if not np.isnan(p_sm_fg):
             # Check if in grid
-            neighbours = surfex.get_num_neighbours(fg_geo.lons, fg_geo.lats,
-                                                   float(res_lons[i]), float(res_lats[i]),
-                                                   distance=2500.)
+            neighbours = get_num_neighbours(fg_geo.lons, fg_geo.lats,
+                                            float(res_lons[i]), float(res_lats[i]),
+                                            distance=2500.)
 
             if neighbours > 0:
                 obs_value = np.nan
@@ -1108,69 +1118,9 @@ def sm_obs_sentinel(validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo
                     cis.append(0)
                     lafs.append(0)
                     providers.append(0)
-                    obs.append(surfex.Observation(validtime, res_lons[i], res_lats[i], obs_value,
-                                                  varname="surface_soil_moisture"))
+                    obs.append(Observation(validtime, res_lons[i], res_lats[i], obs_value,
+                                           varname="surface_soil_moisture"))
 
     logging.info("Possible pseudo-observations: %s", n_x * n_y)
     logging.info("Pseudo-observations created: %s", len(obs))
-    return surfex.QCDataSet(validtime, obs, flags, cis, lafs, providers)
-
-
-def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, latrange=None):
-    """Set geometry from obs file.
-
-    Args:
-        obs_time (_type_): _description_
-        obs_type (_type_): _description_
-        varname (_type_): _description_
-        inputfile (_type_): _description_
-        lonrange (_type_, optional): _description_. Defaults to None.
-        latrange (_type_, optional): _description_. Defaults to None.
-
-    Returns:
-        _type_: _description_
-
-    """
-    settings = {
-        "obs": {
-            "varname": varname,
-            "filetype": obs_type,
-            "inputfile": inputfile,
-            "filepattern": inputfile
-        }
-    }
-    if lonrange is None:
-        lonrange = [-180, 180]
-    if latrange is None:
-        latrange = [-90, 90]
-
-    logging.debug("%s", settings)
-    logging.debug("Get data source")
-    __, lons, lats, __, __, __, __ = surfex.get_datasources(obs_time, settings)[0].get_obs()
-
-    selected_lons = []
-    selected_lats = []
-    for i, lon in enumerate(lons):
-        lat = lats[i]
-
-        if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
-            lon = round(lon, 5)
-            lat = round(lat, 5)
-            # print(i, lon, lat)
-            selected_lons.append(lon)
-            selected_lats.append(lat)
-
-    d_x = ["0.3"] * len(selected_lons)
-    geo_json = {
-        "nam_pgd_grid": {
-            "cgrid": "LONLATVAL"
-        },
-        "nam_lonlatval": {
-            "xx": selected_lons,
-            "xy": selected_lats,
-            "xdx": d_x,
-            "xdy": d_x
-        }
-    }
-    geo = surfex.LonLatVal(geo_json)
-    return geo
+    return QCDataSet(validtime, obs, flags, cis, lafs, providers)

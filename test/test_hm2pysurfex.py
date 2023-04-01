@@ -1,7 +1,9 @@
 """Harmonie environment to pysurfex."""
 import unittest
 import logging
-import surfex
+
+
+from surfex.cli import hm2pysurfex
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -19,5 +21,4 @@ class Hm2PysurfexTest(unittest.TestCase):
             "-o", "unittest_config_from_hm.toml",
             "-e", "test/settings/hm_env.json"
         ]
-        kwargs = surfex.parse_args_hm2pysurfex(argv)
-        surfex.hm2pysurfex(**kwargs)
+        hm2pysurfex(argv=argv)

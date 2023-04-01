@@ -3,7 +3,9 @@ import unittest
 import logging
 import json
 import os
-import surfex
+
+
+from surfex.cli import titan
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -230,8 +232,7 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)
 
     def test_titan_t2m_harmonie(self):
         """Test titan for t2m from harmonie."""
@@ -252,8 +253,7 @@ class TitanTest(unittest.TestCase):
         with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
             env = json.load(file_handler)
         os.environ.update(env)
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)
 
     def test_titan_rh2m(self):
         """Test titan for rh2m."""
@@ -271,8 +271,7 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)
 
     def test_titan_rh2m_harmonie(self):
         """Test titan for rh2m from harmonie."""
@@ -293,8 +292,7 @@ class TitanTest(unittest.TestCase):
         with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
             env = json.load(file_handler)
         os.environ.update(env)
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)
 
     def test_titan_sd(self):
         """Test titan for sd."""
@@ -312,8 +310,7 @@ class TitanTest(unittest.TestCase):
             "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
             "buddy", "climatology", "sct"
         ]
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)
 
     def test_titan_sd_harmonie(self):
         """Test titan for sd from harmonie."""
@@ -334,5 +331,4 @@ class TitanTest(unittest.TestCase):
         with open("test/settings/hm_env.json", mode="r", encoding="utf-8") as file_handler:
             env = json.load(file_handler)
         os.environ.update(env)
-        kwargs = surfex.parse_args_titan(argv)
-        surfex.run_titan(**kwargs)
+        titan(argv=argv)

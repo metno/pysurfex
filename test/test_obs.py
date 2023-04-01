@@ -2,11 +2,11 @@
 import unittest
 import logging
 from datetime import datetime
-import surfex
 from unittest.mock import patch
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
-                    level=logging.DEBUG)
+
+from surfex.cli import bufr2json
+from surfex.input_methods import get_datasources
 
 
 class ObsTest(unittest.TestCase):
@@ -97,7 +97,7 @@ class ObsTest(unittest.TestCase):
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["t2m"]
         logging.debug(settings)
-        datasources = surfex.get_datasources(an_time, settings)
+        datasources = get_datasources(an_time, settings)
         for das in datasources:
             fit = settings[das.label]["filetype"]
             das.write_json_file("unittest_" + fit + "_t2m.json", indent=2)
@@ -109,7 +109,7 @@ class ObsTest(unittest.TestCase):
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["rh2m"]
         logging.debug("RH2M settings %s", settings)
-        datasources = surfex.get_datasources(an_time, settings)
+        datasources = get_datasources(an_time, settings)
         for das in datasources:
             fit = settings[das.label]["filetype"]
             das.write_json_file("unittest_" + fit + "_rh2m.json", indent=2)
@@ -121,7 +121,7 @@ class ObsTest(unittest.TestCase):
         an_time = datetime(2020, 11, 13, 6)
         settings = self.settings["sd"]
         logging.debug(settings)
-        datasources = surfex.get_datasources(an_time, settings)
+        datasources = get_datasources(an_time, settings)
         for das in datasources:
             fit = settings[das.label]["filetype"]
             das.write_json_file("unittest_" + fit + "_sd.json", indent=2)
@@ -136,5 +136,4 @@ class ObsTest(unittest.TestCase):
             "-dtg", "2020111306",
             "-range", "1800"
         ]
-        kwargs = surfex.parse_args_bufr2json(argv)
-        surfex.run_bufr2json(**kwargs)
+        bufr2json(argv=argv)

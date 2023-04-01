@@ -14,7 +14,10 @@ except AssertionError:
     cfunits = None
 except:  # noqa
     cfunits = None
-import surfex
+
+
+from .geo import Geo, ConfProj
+from .interpolation import Interpolation
 
 
 class Netcdf(object):
@@ -150,7 +153,7 @@ class Netcdf(object):
         dim_y = lats.shape[1]
 
         logging.debug("lons.shape=%s lats.shape=%s", lons.shape, lats.shape)
-        geo = surfex.geo.Geo(lons, lats)
+        geo = Geo(lons, lats)
 
         dim_t = max(len(times_to_read), 1)
         dim_levels = max(len(levels_to_read), 1)
@@ -292,7 +295,7 @@ class Netcdf(object):
         logging.debug("level %s member %s validtime %s", level, member, validtime)
         field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime,
                                    units=units)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
+        interpolator = Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -623,7 +626,7 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
 
     # Global attributes
     if geo is not None:
-        if isinstance(geo, surfex.ConfProj):
+        if isinstance(geo, ConfProj):
             my_fg.setncattr("gridtype", "lambert")
             my_fg.setncattr("dlon", float(geo.xdx))
             my_fg.setncattr("dlat", float(geo.xdy))
@@ -681,13 +684,13 @@ def read_first_guess_netcdf_file(input_file, var):
                     "xlat0": file_handler.getncattr("projlat")
                 }
             }
-            geo = surfex.ConfProj(from_json)
+            geo = ConfProj(from_json)
         else:
             raise NotImplementedError
     else:
         lons = np.array(np.transpose(np.reshape(lons, [n_y, n_x], order="F")))
         lats = np.array(np.transpose(np.reshape(lats, [n_y, n_x], order="F")))
-        geo = surfex.Geo(lons, lats)
+        geo = Geo(lons, lats)
 
     background = file_handler[var][:]
     background = np.array(np.reshape(background, [n_x * n_y]))
@@ -881,7 +884,7 @@ def read_cryoclim_nc(infiles):
     grid_snow_class = None
     for filename in infiles:
         if os.path.exists(filename):
-            surfex.info("Reading: " + filename)
+            logging.info("Reading: " + filename)
             ncf = netCDF4.Dataset(filename, "r")
             grid_lons = ncf["lon"][:]
             grid_lats = ncf["lat"][:]
@@ -912,7 +915,7 @@ def read_sentinel_nc(infiles):
     grid_sm = None
     for filename in infiles:
         if os.path.exists(filename):
-            surfex.info("Reading: " + filename)
+            logging.info("Reading: " + filename)
             nch = netCDF4.Dataset(filename, "r")
             grid_lons = nch["LON"][:]
             grid_lats = nch["LAT"][:]

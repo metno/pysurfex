@@ -9,7 +9,12 @@ from datetime import timedelta, datetime
 import netCDF4
 import pyproj
 import numpy as np
-import surfex
+
+
+from .fa import Fa
+from .geo import ConfProj, LonLatReg, LonLatVal, IGN
+from .interpolation import Interpolation
+from .util import remove_existing_file
 
 
 class SurfexIO(object):
@@ -75,7 +80,7 @@ class SurfexIO(object):
             tuple: (np.array, surfex.Interpolator)
 
         """
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo_out)
+        interpolator = Interpolation(interpolation, geo_in, geo_out)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -117,7 +122,7 @@ class SurfexSurfIO(object):
         if self.input_file is not None:
             f_out = os.getcwd() + "/" + self.filename
             logging.debug("input_file: %s file_out: %s", self.input_file, f_out)
-            surfex.read.remove_existing_file(self.input_file, f_out)
+            remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
                 logging.info("Symlink " + self.input_file + " -> " + f_out)
                 os.symlink(self.input_file, f_out)
@@ -126,7 +131,7 @@ class SurfexSurfIO(object):
         """Copy the input file."""
         if self.input_file is not None:
             f_out = os.getcwd() + "/" + self.filename
-            surfex.read.remove_existing_file(self.input_file, f_out)
+            remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
                 logging.info("Copy " + self.input_file + " -> " + f_out)
                 shutil.copy2(self.input_file, f_out)
@@ -449,7 +454,7 @@ class AsciiSurfexFile(SurfexIO):
                     "xdy": self.read("XY", "&FULL", "float")
                 }
             }
-            return surfex.geo.IGN(domain)
+            return IGN(domain)
 
         elif grid[0] == "LONLATVAL":
             domain = {
@@ -460,7 +465,7 @@ class AsciiSurfexFile(SurfexIO):
                     "xdy": self.read("DY", "&FULL", "float")
                 }
             }
-            return surfex.geo.LonLatVal(domain)
+            return LonLatVal(domain)
 
         elif grid[0] == "LONLAT REG":
             domain = {
@@ -475,7 +480,7 @@ class AsciiSurfexFile(SurfexIO):
                     "reg_lat": self.read("REG_LAT", "&FULL", "float")[0]
                 }
             }
-            return surfex.geo.LonLatReg(domain)
+            return LonLatReg(domain)
 
         elif grid[0] == "CONF PROJ":
             lon0 = self.read("LON0", "&FULL", "float")[0]
@@ -518,7 +523,7 @@ class AsciiSurfexFile(SurfexIO):
                 }
             }
             # print(domain)
-            return surfex.geo.ConfProj(domain)
+            return ConfProj(domain)
         else:
             raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
 
@@ -722,7 +727,7 @@ class NCSurfexFile(SurfexIO):
                     "ilate": 0
                 }
             }
-            return surfex.geo.ConfProj(domain)
+            return ConfProj(domain)
         elif cgrid == "IGN":
             domain = {
                 "nam_ign": {
@@ -733,7 +738,7 @@ class NCSurfexFile(SurfexIO):
                     "xdy": f_h["DY"][:]
                 }
             }
-            return surfex.geo.IGN(domain)
+            return IGN(domain)
 
         elif cgrid == "LONLATVAL":
             domain = {
@@ -744,7 +749,7 @@ class NCSurfexFile(SurfexIO):
                     "xdy": f_h["DY"][:]
                 }
             }
-            return surfex.geo.LonLatVal(domain)
+            return LonLatVal(domain)
 
         elif cgrid == "LONLAT REG":
             domain = {
@@ -759,7 +764,7 @@ class NCSurfexFile(SurfexIO):
                     "reg_lat": f_h["REG_LAT"][0],
                 }
             }
-            return surfex.geo.LonLatReg(domain)
+            return LonLatReg(domain)
         else:
             raise NotImplementedError(cgrid + " is not implemented")
 
@@ -872,7 +877,7 @@ class FaSurfexFile(SurfexIO):
             np.darray: Field, surfex.Geo in read file
 
         """
-        file_handler = surfex.fa.Fa(self.filename)
+        file_handler = Fa(self.filename)
         if validtime is None:
             pass
         elif not isinstance(validtime, datetime):
@@ -1443,22 +1448,22 @@ def read_surfex_field(varname, filename, validtime=None, basetime=None, patches=
 
     """
     if fileformat is None:
-        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
+        fileformat, filetype = guess_file_format(filename, filetype)
 
     if filetype == "surf":
         if fileformat.lower() == "ascii":
-            geo = surfex.file.AsciiSurfexFile(filename).geo
+            geo = AsciiSurfexFile(filename).geo
         elif fileformat.lower() == "nc":
-            geo = surfex.file.NCSurfexFile(filename).geo
+            geo = NCSurfexFile(filename).geo
         else:
             if geo is None:
                 raise NotImplementedError("Not implemnted and geo is None")
     elif geo is None:
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
-    sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
+    sfx_io = get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
                                               geo=geo)
-    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches,
+    var = SurfexFileVariable(varname, validtime=validtime, patches=patches,
                                          layers=layers, basetime=basetime, interval=interval,
                                          datatype=datatype)
     field, __ = sfx_io.field(var, validtime=validtime)
@@ -1494,64 +1499,23 @@ def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None
 
     """
     if fileformat is None:
-        fileformat, filetype = surfex.file.guess_file_format(filename, filetype)
+        fileformat, filetype = guess_file_format(filename, filetype)
 
     if filetype == "surf":
         if fileformat.lower() == "ascii":
-            geo = surfex.file.AsciiSurfexFile(filename).geo
+            geo = AsciiSurfexFile(filename).geo
         elif fileformat.lower() == "nc":
-            geo = surfex.file.NCSurfexFile(filename).geo
+            geo = NCSurfexFile(filename).geo
         else:
             if geo is None:
                 raise NotImplementedError(f"{fileformat} is not implemented and geo is None")
     elif geo is None:
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
-    sfx_io = surfex.file.get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
-                                              geo=geo)
-    var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches,
-                                         layers=layers, basetime=basetime, interval=interval,
-                                         datatype=datatype)
+    sfx_io = get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
+                                  geo=geo)
+    var = SurfexFileVariable(varname, validtime=validtime, patches=patches,
+                             layers=layers, basetime=basetime, interval=interval,
+                             datatype=datatype)
     field, geo_out = sfx_io.points(var, geo_out, validtime=validtime, interpolation=interpolation)
     return field
-
-
-def parse_filepattern(file_pattern, basetime, validtime):
-    """Parse the file pattern.
-
-    Args:
-        file_pattern (str): File pattern.
-        basetime (datetime.datetime): Base time.
-        validtime (datetime.datetime): Valid time.
-
-    Returns:
-        str: File name
-
-    """
-    if basetime is None or validtime is None:
-        return file_pattern
-
-    logging.debug("file_pattern=%s basetime=%s validtime=%s", file_pattern, basetime, validtime)
-    file_name = str(file_pattern)
-    year = basetime.strftime('%Y')
-    year2 = basetime.strftime('%y')
-    month = basetime.strftime('%m')
-    day = basetime.strftime('%d')
-    hour = basetime.strftime('%H')
-    mins = basetime.strftime('%M')
-    d_t = validtime - basetime
-    ll_d = f"{int(d_t.seconds / 3600):d}"
-    ll_2 = f"{int(d_t.seconds / 3600):02d}"
-    ll_3 = f"{int(d_t.seconds / 3600):03d}"
-    ll_4 = f"{int(d_t.seconds / 3600):04d}"
-    file_name = file_name.replace('@YYYY@', year)
-    file_name = file_name.replace('@YY@', year2)
-    file_name = file_name.replace('@MM@', month)
-    file_name = file_name.replace('@DD@', day)
-    file_name = file_name.replace('@HH@', hour)
-    file_name = file_name.replace('@mm@', mins)
-    file_name = file_name.replace('@L@', ll_d)
-    file_name = file_name.replace('@LL@', ll_2)
-    file_name = file_name.replace('@LLL@', ll_3)
-    file_name = file_name.replace('@LLLL@', ll_4)
-    return file_name

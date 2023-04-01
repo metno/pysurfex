@@ -1,8 +1,10 @@
 """Test forcing."""
 import unittest
 import logging
-import surfex
 
+
+from surfex.cli import parse_args_create_forcing
+from surfex.forcing import set_forcing_config, run_time_loop
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
                     level=logging.DEBUG)
@@ -32,9 +34,9 @@ class ForcingTest(unittest.TestCase):
                 "-of", "unittest_FORCING_netcdf.nc",
                 "--debug"
                 ]
-        kwargs = surfex.parse_args_create_forcing(argv)
-        options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
-        surfex.forcing.run_time_loop(options, var_objs, att_objs)
+        kwargs = parse_args_create_forcing(argv)
+        options, var_objs, att_objs = set_forcing_config(**kwargs)
+        run_time_loop(options, var_objs, att_objs)
 
     def test_forcing_grib1(self):
         """Test forcing from netcdf grib1 files."""
@@ -53,9 +55,9 @@ class ForcingTest(unittest.TestCase):
                 "-of", "unittest_FORCING_grib1.nc",
                 "--debug"
                 ]
-        kwargs = surfex.parse_args_create_forcing(argv)
-        options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
-        surfex.forcing.run_time_loop(options, var_objs, att_objs)
+        kwargs = parse_args_create_forcing(argv)
+        options, var_objs, att_objs = set_forcing_config(**kwargs)
+        run_time_loop(options, var_objs, att_objs)
 
     def test_forcing_grib2(self):
         """Test forcing from grib2 files."""
@@ -74,6 +76,6 @@ class ForcingTest(unittest.TestCase):
                 "-of", "unittest_FORCING_grib2.nc",
                 "--debug"
                 ]
-        kwargs = surfex.parse_args_create_forcing(argv)
-        options, var_objs, att_objs = surfex.forcing.set_forcing_config(**kwargs)
-        surfex.forcing.run_time_loop(options, var_objs, att_objs)
+        kwargs = parse_args_create_forcing(argv)
+        options, var_objs, att_objs = set_forcing_config(**kwargs)
+        run_time_loop(options, var_objs, att_objs)

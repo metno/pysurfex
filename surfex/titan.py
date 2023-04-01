@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 import abc
 import numpy as np
-import surfex
 try:
     import titanlib as tit
 except ImportError:
@@ -14,6 +13,10 @@ try:
     import gridpp
 except ImportError:
     gridpp = None
+
+
+from .netcdf import read_first_guess_netcdf_file
+from .obs import Observation
 
 
 class QualityControl(object):
@@ -865,8 +868,8 @@ class Blacklist(QualityControl):
                 if len(blacklist["lons"]) != len(blacklist["lats"]):
                     raise Exception("Blacklist must have the same length for both lons and lats")
 
-                lon = surfex.Observation.format_lon(float(blacklist["lons"][i]))
-                lat = surfex.Observation.format_lat(float(blacklist["lats"][i]))
+                lon = Observation.format_lon(float(blacklist["lons"][i]))
+                lat = Observation.format_lat(float(blacklist["lats"][i]))
                 pos = str(lon) + ":" + str(lat)
                 blacklist_pos.update({pos: 1})
 
@@ -897,8 +900,8 @@ class Blacklist(QualityControl):
         for i, lon_val in enumerate(dataset.lons):
             if i in mask:
 
-                lon = surfex.Observation.format_lon(lon_val)
-                lat = surfex.Observation.format_lat(dataset.lats[i])
+                lon = Observation.format_lon(lon_val)
+                lat = Observation.format_lat(dataset.lats[i])
                 stid = dataset.stids[i]
                 pos = lon + ":" + lat
 
@@ -1048,7 +1051,7 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             if fg_geo is None and fg_field is None:
                 if fg_file is None or fg_var is None:
                     raise Exception("You must set the name of fg file and variable")
-                fg_geo, __, fg_field, __, __ = surfex.read_first_guess_netcdf_file(fg_file, fg_var)
+                fg_geo, __, fg_field, __, __ = read_first_guess_netcdf_file(fg_file, fg_var)
             else:
                 if fg_geo is None or fg_field is None:
                     raise Exception("You must set both fg_field and fg_geo")
@@ -1082,7 +1085,7 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
                     raise Exception("You must set the name of fraction file and variable")
 
                 fraction_geo, __, fraction_field, __, __ = \
-                    surfex.read_first_guess_netcdf_file(fraction_file, fraction_var)
+                    read_first_guess_netcdf_file(fraction_file, fraction_var)
             else:
                 if fraction_field is None or fraction_geo is None:
                     raise Exception("You must set both fraction_field and fraction_geo")
@@ -1416,9 +1419,9 @@ class TitanDataSet(QCDataSet):
 
         observations = []
         for i, lon_val in enumerate(lons):
-            observations.append(surfex.Observation(obstimes[i], lon_val, lats[i], values[i],
-                                                   elev=elevs[i], stid=stids[i],
-                                                   varname=varnames[i]))
+            observations.append(Observation(obstimes[i], lon_val, lats[i], values[i],
+                                            elev=elevs[i], stid=stids[i],
+                                            varname=varnames[i]))
         points = tit.Points(lats, lons, elevs)
         self.titan_dataset = tit.Dataset(points, values)
         if passed_tests is None:
@@ -1737,7 +1740,7 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
             stid = data[i]["stid"]
             elev = data[i]["elev"]
             value = data[i]["value"]
-            observations.append(surfex.Observation(obstime, lon, lat, value, stid=stid, elev=elev))
+            observations.append(Observation(obstime, lon, lat, value, stid=stid, elev=elev))
             if "provider" in data[i]:
                 providers.append(data[i]["provider"])
             else:
@@ -1793,8 +1796,7 @@ def merge_json_qc_data_sets(an_time, filenames, qc_flag=None, skip_flags=None):
             for dd1 in data1:
                 lon1 = data1[dd1]["lon"]
                 lat1 = data1[dd1]["lat"]
-                pos1 = surfex.Observation.format_lon(lon1) + ":" \
-                    + surfex.Observation.format_lat(lat1)
+                pos1 = f"{Observation.format_lon(lon1)}:{Observation.format_lat(lat1)}"
                 if pos1 not in index_pos:
                     index_pos.update({pos1: ind})
                     data.update({str(ind): data1[dd1]})

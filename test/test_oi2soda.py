@@ -1,7 +1,9 @@
 """Test oi2soda."""
 import unittest
 import logging
-import surfex
+
+
+from surfex.cli import cli_oi2soda
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s',
@@ -28,8 +30,7 @@ class Oi2SodaTest(unittest.TestCase):
             "-o", "unittest_OBSERVATIONS_200330H06.DAT",
             "2020033006"
         ]
-        kwargs = surfex.parse_args_oi2soda(argv)
-        surfex.run_oi2soda(**kwargs)
+        cli_oi2soda(argv=argv)
 
     def test_oi2soda_only_rh(self):
         """Test oi2soda only for rh2m."""
@@ -40,5 +41,4 @@ class Oi2SodaTest(unittest.TestCase):
             "-o", "unittest_OBSERVATIONS_200330H06.DAT",
             "2020033006"
         ]
-        kwargs = surfex.parse_args_oi2soda(argv)
-        surfex.run_oi2soda(**kwargs)
+        cli_oi2soda(argv=argv)

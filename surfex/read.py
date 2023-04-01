@@ -4,7 +4,11 @@ import os
 import copy
 from abc import abstractmethod, ABCMeta
 import numpy as np
-import surfex
+
+
+from .interpolation import fill_field
+from .util import data_merge
+from .variable import Variable
 
 
 class ReadData(object):
@@ -123,34 +127,6 @@ class ConstantValue(ReadData):
     def print_info(self):
         """Print info."""
         return self.var_name
-
-
-def remove_existing_file(f_in, f_out):
-    """Remove existing file.
-
-    Args:
-        f_in (_type_): _description_
-        f_out (_type_): _description_
-
-    Raises:
-        FileNotFoundError: _description_
-        IsADirectoryError: _description_
-
-    """
-    if f_in is None:
-        raise FileNotFoundError("Input file not set")
-    # If files are not the same file
-    if os.path.abspath(f_in) != os.path.abspath(f_out):
-        if os.path.isdir(f_out):
-            raise IsADirectoryError(f_out + " is a directory! Please remove it if desired")
-        if os.path.islink(f_out):
-            os.unlink(f_out)
-        if os.path.isfile(f_out):
-            os.remove(f_out)
-    # files have the same path. Remove if it is a symlink
-    else:
-        if os.path.islink(f_out):
-            os.unlink(f_out)
 
 
 #######################################################
@@ -286,9 +262,9 @@ class Converter(object):
         var_dict = copy.deepcopy(var_dict)
         if var_dict is None:
             raise Exception("Variable is not set")
-        merged_dict = surfex.data_merge(defs, var_dict)
+        merged_dict = data_merge(defs, var_dict)
 
-        var = surfex.variable.Variable(fileformat, merged_dict, self.initial_time)
+        var = Variable(fileformat, merged_dict, self.initial_time)
 
         logging.debug(var.print_variable_info())
         return var
@@ -453,7 +429,7 @@ class Converter(object):
             iteration = 0
             while np.any(np.isnan(field_2d)):
                 logging.debug("Filling cloud base")
-                field_2d, nans = surfex.fill_field(field_2d, geo, radius=3)
+                field_2d, nans = fill_field(field_2d, geo, radius=3)
                 iteration = iteration + 1
                 logging.debug("Iteration %s NaNs: %s", iteration, nans)
 
