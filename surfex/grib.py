@@ -1,7 +1,9 @@
 """Grib treatment."""
 import logging
+
 import numpy as np
 import pyproj
+
 try:
     import eccodes
     import gribapi
@@ -12,13 +14,14 @@ except RuntimeError:
     eccodes = None
     gribapi = None
 # Needed in Python 3.5
-except:
+except:  # noqa
     eccodes = None
     gribapi = None
 
 
-from .geo import Geo, ConfProj, LonLatReg
+from .geo import ConfProj, Geo, LonLatReg
 from .interpolation import Interpolation
+
 
 class Grib(object):
     """Grib class."""
@@ -48,11 +51,13 @@ class Grib(object):
         Returns:
             np.ndarray: Field
 
+        Raises:
+            NotImplementedError: NotImplementedError
+            RuntimeError: If eccodes not available
+
         """
         if eccodes is None:
-            raise Exception("eccodes not found. Needed for reading grib files")
-
-        keys = ["bitmapPresent"]
+            raise RuntimeError("eccodes not found. Needed for reading grib files")
 
         logging.debug("Look for %s", gribvar.generate_grib_id())
 
@@ -68,13 +73,7 @@ class Grib(object):
                 file_handler.close()
                 return field, geo_out
             else:
-                # print("\n Next key")
-                # print_grib_id(gid)
                 if gribvar.matches(gid):
-
-                    # print("Found key")
-                    # gribvar.print_keys()
-
                     values = self.read_field_in_message(gid, time)
                     logging.debug("read values = %s", values)
 
@@ -82,18 +81,18 @@ class Grib(object):
                     logging.debug("grid_type=%s", grid_type)
                     if grid_type.lower() == "rotated_ll":
                         geo_keys = [
-                            'Ni',
-                            'Nj',
-                            'latitudeOfFirstGridPointInDegrees',
-                            'longitudeOfFirstGridPointInDegrees',
-                            'latitudeOfLastGridPointInDegrees',
-                            'longitudeOfLastGridPointInDegrees',
-                            'iDirectionIncrementInDegrees',
-                            'jDirectionIncrementInDegrees',
+                            "Ni",
+                            "Nj",
+                            "latitudeOfFirstGridPointInDegrees",
+                            "longitudeOfFirstGridPointInDegrees",
+                            "latitudeOfLastGridPointInDegrees",
+                            "longitudeOfLastGridPointInDegrees",
+                            "iDirectionIncrementInDegrees",
+                            "jDirectionIncrementInDegrees",
                             "latitudeOfSouthernPoleInDegrees",
                             "longitudeOfSouthernPoleInDegrees",
-                            'iScansNegatively',
-                            'jScansPositively'
+                            "iScansNegatively",
+                            "jScansPositively",
                         ]
                         geo_info = self.read_geo_info(gid, geo_keys)
 
@@ -108,14 +107,16 @@ class Grib(object):
                         iscan = geo_info["iScansNegatively"]
                         jscan = geo_info["jScansPositively"]
                         if sp_lon < -180.0:
-                            sp_lon = sp_lon + 360.
+                            sp_lon = sp_lon + 360.0
                         elif sp_lon > 180.0:
-                            sp_lon = sp_lon - 360.
+                            sp_lon = sp_lon - 360.0
                         sp_lat = -1 * geo_info["latitudeOfSouthernPoleInDegrees"]
-                        earth = 6.371229e+6
+                        earth = 6.371229e6
 
-                        proj_string = f"+proj=ob_tran +o_proj=longlat +o_lat_p={sp_lat}"\
-                                      f" +R={str(earth)} +no_defs"
+                        proj_string = (
+                            f"+proj=ob_tran +o_proj=longlat +o_lat_p={sp_lat}"
+                            f" +R={str(earth)} +no_defs"
+                        )
                         logging.info(proj_string)
                         logging.info("ll_lon=%s ll_lat=%s", ll_lon, ll_lat)
                         logging.info("polon=%s polat=%s", sp_lon, sp_lat)
@@ -131,9 +132,9 @@ class Grib(object):
                             else:
                                 lon = ll_lon + (float(i) * dlon)
                             if lon < -180.0:
-                                lon = lon + 360.
+                                lon = lon + 360.0
                             elif lon > 180.0:
-                                lon = lon - 360.
+                                lon = lon - 360.0
                             lons.append(lon)
                         lats = []
                         for j in range(0, n_y):
@@ -144,14 +145,15 @@ class Grib(object):
                             if lat > 90.0:
                                 lat = lat - 90.0
                             elif lat < -90.0:
-                                lat = lat + 90.
+                                lat = lat + 90.0
                             lats.append(lat)
 
                         lons = np.array(lons)
                         lats = np.array(lats)
-                        longitudes, latitudes = np.meshgrid(lons, lats, indexing='ij')
-                        lons, lats = \
-                            pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(longitudes, latitudes)
+                        longitudes, latitudes = np.meshgrid(lons, lats, indexing="ij")
+                        lons, lats = pyproj.Transformer.from_crs(
+                            proj, wgs84, always_xy=True
+                        ).transform(longitudes, latitudes)
                         lons = lons + sp_lon
 
                         field = np.reshape(values, [n_x, n_y], order="F")
@@ -160,14 +162,14 @@ class Grib(object):
 
                     elif grid_type.lower() == "regular_ll":
                         geo_keys = [
-                            'Ni',
-                            'Nj',
-                            'latitudeOfFirstGridPointInDegrees',
-                            'longitudeOfFirstGridPointInDegrees',
-                            'latitudeOfLastGridPointInDegrees',
-                            'longitudeOfLastGridPointInDegrees',
-                            'iDirectionIncrementInDegrees',
-                            'jDirectionIncrementInDegrees'
+                            "Ni",
+                            "Nj",
+                            "latitudeOfFirstGridPointInDegrees",
+                            "longitudeOfFirstGridPointInDegrees",
+                            "latitudeOfLastGridPointInDegrees",
+                            "longitudeOfLastGridPointInDegrees",
+                            "iDirectionIncrementInDegrees",
+                            "jDirectionIncrementInDegrees",
                         ]
                         geo_info = self.read_geo_info(gid, geo_keys)
                         n_x = geo_info["Ni"]
@@ -179,9 +181,9 @@ class Grib(object):
                         lons = []
                         lats = []
                         for i in range(0, n_x):
-                            lons.append(lon0 + (float(i)*d_x))
+                            lons.append(lon0 + (float(i) * d_x))
                         for j in range(0, n_y):
-                            lats.append(lat0 - (float(j)*d_y))
+                            lats.append(lat0 - (float(j) * d_y))
                         lon1 = lons[-1]
                         lat1 = lats[-1]
                         lons = np.array(lons)
@@ -197,7 +199,7 @@ class Grib(object):
                                     "xlatmin": lat0,
                                     "xlatmax": lat1,
                                     "nlon": n_x,
-                                    "nlat": n_y
+                                    "nlat": n_y,
                                 }
                             }
                             geo_out = LonLatReg(domain)
@@ -218,7 +220,7 @@ class Grib(object):
                             "LaDInDegrees",
                             "Latin2InDegrees",
                             "latitudeOfSouthernPoleInDegrees",
-                            "longitudeOfSouthernPoleInDegrees"
+                            "longitudeOfSouthernPoleInDegrees",
                         ]
                         geo_info = self.read_geo_info(gid, geo_keys)
 
@@ -232,19 +234,23 @@ class Grib(object):
                         d_x = geo_info["DxInMetres"]
                         d_y = geo_info["DyInMetres"]
 
-                        earth = 6.37122e+6
-                        proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} "\
-                                      f"+lat_1={str(lat0)} +lat_2={str(lat0)} "\
-                                      f"+units=m +no_defs +R={str(earth)}"
+                        earth = 6.37122e6
+                        proj_string = (
+                            f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} "
+                            f"+lat_1={str(lat0)} +lat_2={str(lat0)} "
+                            f"+units=m +no_defs +R={str(earth)}"
+                        )
 
                         proj = pyproj.CRS.from_string(proj_string)
                         wgs84 = pyproj.CRS.from_string("EPSG:4326")
                         x_0, y_0 = pyproj.Transformer.from_crs(
-                            wgs84, proj, always_xy=True).transform(ll_lon, ll_lat)
+                            wgs84, proj, always_xy=True
+                        ).transform(ll_lon, ll_lat)
                         x_c = x_0 + 0.5 * (n_x - 1) * d_x
                         y_c = y_0 + 0.5 * (n_y - 1) * d_y
                         lonc, latc = pyproj.Transformer.from_crs(
-                            proj, wgs84, always_xy=True).transform(x_c, y_c)
+                            proj, wgs84, always_xy=True
+                        ).transform(x_c, y_c)
 
                         # TODO we should investigate scan angle and if done correctly
                         # order should probaly be "C" and not "F"
@@ -252,10 +258,7 @@ class Grib(object):
 
                         if geo_out is None:
                             domain = {
-                                "nam_conf_proj": {
-                                    "xlon0": lon0,
-                                    "xlat0": lat0
-                                },
+                                "nam_conf_proj": {"xlon0": lon0, "xlat0": lat0},
                                 "nam_conf_proj_grid": {
                                     "xloncen": lonc,
                                     "xlatcen": latc,
@@ -264,18 +267,20 @@ class Grib(object):
                                     "xdx": d_x,
                                     "xdy": d_y,
                                     "ilone": 0,
-                                    "ilate": 0
-                                }
+                                    "ilate": 0,
+                                },
                             }
                             geo_out = ConfProj(domain)
                     else:
-                        raise NotImplementedError(str(grid_type) + " not implemented yet!")
+                        raise NotImplementedError(
+                            str(grid_type) + " not implemented yet!"
+                        )
 
                     eccodes.codes_release(gid)
                     file_handler.close()
 
                     if geo_out is None:
-                        raise Exception("No geometry is found in file")
+                        raise RuntimeError("No geometry is found in file")
 
                     return field, geo_out
                 eccodes.codes_release(gid)
@@ -295,7 +300,7 @@ class Grib(object):
         geo_dict = {}
         for key in keys:
             try:
-                logging.debug('  %s: %s', key, eccodes.codes_get(gid, key))
+                logging.debug("  %s: %s", key, eccodes.codes_get(gid, key))
                 geo_dict.update({key: eccodes.codes_get(gid, key)})
             except eccodes.KeyValueNotFoundError as err:
                 logging.debug('  Key="%s" was not found: %s', key, err.msg)
@@ -316,11 +321,13 @@ class Grib(object):
 
         """
         try:
-            logging.debug('There are %d values, average is %f, min is %f, max is %f',
-                          eccodes.codes_get_size(gid, 'values'),
-                          eccodes.codes_get(gid, 'average'),
-                          eccodes.codes_get(gid, 'min'),
-                          eccodes.codes_get(gid, 'max'))
+            logging.debug(
+                "There are %d values, average is %f, min is %f, max is %f",
+                eccodes.codes_get_size(gid, "values"),
+                eccodes.codes_get(gid, "average"),
+                eccodes.codes_get(gid, "min"),
+                eccodes.codes_get(gid, "max"),
+            )
             field = eccodes.codes_get_values(gid)
 
             # TODO Check time consistency
@@ -362,7 +369,7 @@ class Grib(object):
         return field, interpolator
 
 
-class Grib1Variable():
+class Grib1Variable:
     """Grib1 variable."""
 
     def __init__(self, par, typ, level, tri):
@@ -397,9 +404,13 @@ class Grib1Variable():
 
         Returns:
             bool: True if found
+
+        Raises:
+            RuntimeError: If eccodes not found
+
         """
         if eccodes is None:
-            raise Exception("eccodes not found. Needed for reading grib files")
+            raise RuntimeError("eccodes not found. Needed for reading grib files")
 
         version = int(eccodes.codes_get(gid, "editionNumber"))
         if version == 1:
@@ -410,8 +421,15 @@ class Grib1Variable():
 
             logging.debug("Checking grib1 record: %s %s %s %s", par, typ, lev, tri)
             logging.debug(self.generate_grib_id())
-            if self.par == par and self.level == lev and self.typ == typ and self.tri == tri:
-                logging.debug("Found matching grib1 record: %s %s %s %s", par, lev, typ, tri)
+            if (
+                self.par == par
+                and self.level == lev
+                and self.typ == typ
+                and self.tri == tri
+            ):
+                logging.debug(
+                    "Found matching grib1 record: %s %s %s %s", par, lev, typ, tri
+                )
                 return True
             else:
                 return False
@@ -483,24 +501,38 @@ class Grib2Variable(object):
             level = int(eccodes.codes_get(gid, "level"))
             try:
                 type_of_statistical_processing = eccodes.codes_get(
-                    gid, "typeOfStatisticalProcessing")
+                    gid, "typeOfStatisticalProcessing"
+                )
                 type_of_statistical_processing = int(type_of_statistical_processing)
             except gribapi.errors.KeyValueNotFoundError:
                 type_of_statistical_processing = -1
 
-            logging.debug("Checking grib2 record: %s %s %s %s %s %s",
-                          discipline, parameter_category, parameter_number, level_type, level,
-                          type_of_statistical_processing)
+            logging.debug(
+                "Checking grib2 record: %s %s %s %s %s %s",
+                discipline,
+                parameter_category,
+                parameter_number,
+                level_type,
+                level,
+                type_of_statistical_processing,
+            )
             logging.debug("grib2 ID: %s", self.generate_grib_id())
-            if self.discipline == discipline and \
-                    self.parameter_category == parameter_category and \
-                    self.parameter_number == parameter_number and \
-                    self.level_type == level_type and \
-                    self.level == level and \
-                    self.type_of_statistical_processing == type_of_statistical_processing:
-                logging.debug("Found matching grib2 record: %s %s %s %s %s",
-                              discipline, parameter_category, parameter_number,
-                              level_type, level)
+            if (
+                self.discipline == discipline
+                and self.parameter_category == parameter_category
+                and self.parameter_number == parameter_number
+                and self.level_type == level_type
+                and self.level == level
+                and self.type_of_statistical_processing == type_of_statistical_processing
+            ):
+                logging.debug(
+                    "Found matching grib2 record: %s %s %s %s %s",
+                    discipline,
+                    parameter_category,
+                    parameter_number,
+                    level_type,
+                    level,
+                )
                 return True
             else:
                 return False

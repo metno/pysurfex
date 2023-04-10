@@ -1,6 +1,6 @@
 """Ecoclimap handling."""
-import os
 import logging
+import os
 
 
 class ExternalSurfexInputFile(object):
@@ -19,10 +19,22 @@ class ExternalSurfexInputFile(object):
         """
         self.system_file_paths = system_file_paths
 
-    def set_input_data_from_format(self, dtype, fname, default_dir=None, check_existence=False,
-                                   check_parsing=True, validtime=None, basedtg=None, mbr=None,
-                                   tstep=None, pert=None,
-                                   var=None, system_variables=None, linkbasename=None):
+    def set_input_data_from_format(
+        self,
+        dtype,
+        fname,
+        default_dir=None,
+        check_existence=False,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+        system_variables=None,
+        linkbasename=None,
+    ):
         """Set input data based on format.
 
         Args:
@@ -44,24 +56,36 @@ class ExternalSurfexInputFile(object):
             dict: File name mappings.
 
         """
-        fname_with_path = self.system_file_paths.get_system_file(dtype, fname,
-                                                                 default_dir=default_dir,
-                                                                 check_existence=check_existence,
-                                                                 check_parsing=check_parsing,
-                                                                 validtime=validtime,
-                                                                 basedtg=basedtg, mbr=mbr,
-                                                                 tstep=tstep, pert=pert, var=var,
-                                                                 system_variables=system_variables)
+        fname_with_path = self.system_file_paths.get_system_file(
+            dtype,
+            fname,
+            default_dir=default_dir,
+            check_existence=check_existence,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+            system_variables=system_variables,
+        )
 
         if fname.endswith(".dir"):
             basename = os.path.splitext(os.path.basename(fname))[0]
 
-            basedir = self.system_file_paths.get_system_path(dtype, default_dir=default_dir,
-                                                             check_existence=check_existence,
-                                                             check_parsing=check_parsing,
-                                                             validtime=validtime, basedtg=basedtg,
-                                                             mbr=mbr,
-                                                             tstep=tstep, pert=pert, var=var)
+            basedir = self.system_file_paths.get_system_path(
+                dtype,
+                default_dir=default_dir,
+                check_existence=check_existence,
+                check_parsing=check_parsing,
+                validtime=validtime,
+                basedtg=basedtg,
+                mbr=mbr,
+                tstep=tstep,
+                pert=pert,
+                var=var,
+            )
             logging.debug("%s %s %s", basename, basedir, fname_with_path)
             hdr_file = basedir + "/" + basename + ".hdr"
             dir_file = basedir + "/" + basename + ".dir"
@@ -91,8 +115,11 @@ class Ecoclimap(object):
         self.system_file_paths = system_file_paths
         self.cover_dir = "ecoclimap_cover_dir"
         self.bin_dir = "ecoclimap_bin_dir"
-        self.ecoclimap_files = ["ecoclimapI_covers_param.bin", "ecoclimapII_af_covers_param.bin",
-                                "ecoclimapII_eu_covers_param.bin"]
+        self.ecoclimap_files = [
+            "ecoclimapI_covers_param.bin",
+            "ecoclimapII_af_covers_param.bin",
+            "ecoclimapII_eu_covers_param.bin",
+        ]
         self.decadal_data_types = None
 
     def set_input(self, check_existence=True):
@@ -109,9 +136,12 @@ class Ecoclimap(object):
             raise Exception("System file path must be set for this method")
         data = {}
         for fname in self.ecoclimap_files:
-            fname_data = self.system_file_paths.get_system_file(self.bin_dir, fname,
-                                                                default_dir="climdir",
-                                                                check_existence=check_existence)
+            fname_data = self.system_file_paths.get_system_file(
+                self.bin_dir,
+                fname,
+                default_dir="climdir",
+                check_existence=check_existence,
+            )
             data.update({fname: fname_data})
         return data
 
@@ -146,7 +176,13 @@ class EcoclimapSG(Ecoclimap):
         self.decades = decades
         self.cover_file = self.config.get_setting("SURFEX#COVER#SG")
         self.cover_dir = "ecoclimap_sg_cover_dir"
-        self.decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+        self.decadal_data_types = [
+            "ALBNIR_SOIL",
+            "ALBNIR_VEG",
+            "ALBVIS_SOIL",
+            "ALBVIS_VEG",
+            "LAI",
+        ]
 
     def set_bin_files(self, check_existence=True):
         """set_bin_files not used for SG."""
@@ -169,20 +205,31 @@ class EcoclimapSG(Ecoclimap):
         fname = self.config.get_setting("SURFEX#COVER#H_TREE")
         if fname != "" and fname is not None:
             ext_data = ExternalSurfexInputFile(self.system_file_paths)
-            data.update(ext_data.set_input_data_from_format(tree_height_dir, fname,
-                                                            check_existence=check_existence))
+            data.update(
+                ext_data.set_input_data_from_format(
+                    tree_height_dir, fname, check_existence=check_existence
+                )
+            )
 
-        decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+        decadal_data_types = [
+            "ALBNIR_SOIL",
+            "ALBNIR_VEG",
+            "ALBVIS_SOIL",
+            "ALBVIS_VEG",
+            "LAI",
+        ]
         for decadal_data_type in decadal_data_types:
             for __ in range(1, self.veg_types + 1):
                 for decade in range(1, self.decades + 1):
-                    filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type,
-                                                          check_parsing=False)
+                    filepattern = self.config.get_setting(
+                        "SURFEX#COVER#" + decadal_data_type, check_parsing=False
+                    )
                     fname = self.parse_fnames(filepattern, decade)
                     dtype = decadal_data_type.lower() + "_dir"
                     ext_data = ExternalSurfexInputFile(self.system_file_paths)
-                    dat = ext_data.set_input_data_from_format(dtype, fname,
-                                                              check_existence=check_existence)
+                    dat = ext_data.set_input_data_from_format(
+                        dtype, fname, check_existence=check_existence
+                    )
                     data.update(dat)
         return data
 

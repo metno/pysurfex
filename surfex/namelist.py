@@ -1,11 +1,11 @@
 """Namelist."""
-import os
 import json
 import logging
+import os
 from datetime import datetime, timedelta
-import yaml
-import f90nml
 
+import f90nml
+import yaml
 
 from .ecoclimap import Ecoclimap, EcoclimapSG
 
@@ -25,9 +25,19 @@ class SystemFilePaths(object):
         self.system_file_paths = system_file_paths
         # self.system_variables = None
 
-    def get_system_path(self, dtype, default_dir=None, check_existence=False,
-                        check_parsing=False, validtime=None, basedtg=None, mbr=None, tstep=None,
-                        pert=None, var=None):
+    def get_system_path(
+        self,
+        dtype,
+        default_dir=None,
+        check_existence=False,
+        check_parsing=False,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Get the system path for a given data type.
 
         Args:
@@ -54,30 +64,54 @@ class SystemFilePaths(object):
         """
         logging.debug("Search for: %s Default: %s", dtype, str(default_dir))
 
-        data_dir = self.find_matching_data_dir(dtype, default_dir=default_dir,
-                                               check_existence=check_existence,
-                                               check_parsing=check_parsing, validtime=validtime,
-                                               basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert,
-                                               var=var)
+        data_dir = self.find_matching_data_dir(
+            dtype,
+            default_dir=default_dir,
+            check_existence=check_existence,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         if data_dir is None:
             if default_dir is None:
                 raise Exception("No system path found for " + dtype)
 
             logging.debug("Find default path")
-            data_dir = self.find_matching_data_dir(default_dir, default_dir=default_dir,
-                                                   check_existence=check_existence,
-                                                   check_parsing=check_parsing,
-                                                   validtime=validtime, basedtg=basedtg,
-                                                   mbr=mbr, tstep=tstep, pert=pert, var=var)
+            data_dir = self.find_matching_data_dir(
+                default_dir,
+                default_dir=default_dir,
+                check_existence=check_existence,
+                check_parsing=check_parsing,
+                validtime=validtime,
+                basedtg=basedtg,
+                mbr=mbr,
+                tstep=tstep,
+                pert=pert,
+                var=var,
+            )
             if data_dir is None:
                 logging.debug("No default path found for %s", default_dir)
 
         logging.debug("data_dir %s", data_dir)
         return data_dir
 
-    def find_matching_data_dir(self, dtype, default_dir=None, check_existence=False,
-                               check_parsing=False, validtime=None, basedtg=None, mbr=None,
-                               tstep=None, pert=None, var=None):
+    def find_matching_data_dir(
+        self,
+        dtype,
+        default_dir=None,
+        check_existence=False,
+        check_parsing=False,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Find a matching path from the system path for a given data type.
 
         Args:
@@ -116,10 +150,16 @@ class SystemFilePaths(object):
                 logging.debug("Data directory before parsing is: %s", data_dir)
                 if not isinstance(data_dir, str):
                     raise Exception("data dir is not a string!")
-                data_dir = self.parse_setting(self.substitute_string(data_dir),
-                                              check_parsing=check_parsing, validtime=validtime,
-                                              basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert,
-                                              var=var)
+                data_dir = self.parse_setting(
+                    self.substitute_string(data_dir),
+                    check_parsing=check_parsing,
+                    validtime=validtime,
+                    basedtg=basedtg,
+                    mbr=mbr,
+                    tstep=tstep,
+                    pert=pert,
+                    var=var,
+                )
                 # Add command to data_dir again
                 if command is not None:
                     data_dir = {data_dir: command}
@@ -130,9 +170,21 @@ class SystemFilePaths(object):
                 return data_dir
         return None
 
-    def get_system_file(self, dtype, fname, default_dir=None, check_existence=False,
-                        check_parsing=False, validtime=None, basedtg=None, mbr=None, tstep=None,
-                        pert=None, var=None, system_variables=None):
+    def get_system_file(
+        self,
+        dtype,
+        fname,
+        default_dir=None,
+        check_existence=False,
+        check_parsing=False,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+        system_variables=None,
+    ):
         """Get the system path for a given data type and add a file name to the path.
 
         Args:
@@ -162,17 +214,34 @@ class SystemFilePaths(object):
 
         """
         command = None
-        path = self.get_system_path(dtype, default_dir=default_dir, check_existence=check_existence,
-                                    check_parsing=check_parsing, validtime=validtime,
-                                    basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+        path = self.get_system_path(
+            dtype,
+            default_dir=default_dir,
+            check_existence=check_existence,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
 
         # If dict, also a command is attached
         if isinstance(path, dict):
             for key in path:
                 command = str(path[key])
                 path = str(key)
-        fname = self.parse_setting(fname, check_parsing=check_parsing, validtime=validtime,
-                                   basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+        fname = self.parse_setting(
+            fname,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         fname = self.substitute_string(fname, system_variables=system_variables)
         if path is None:
             logging.info("No path found for: %s", dtype)
@@ -186,8 +255,16 @@ class SystemFilePaths(object):
         return fname
 
     @staticmethod
-    def parse_setting(setting, check_parsing=False, validtime=None, basedtg=None, mbr=None,
-                      tstep=None, pert=None, var=None):
+    def parse_setting(
+        setting,
+        check_parsing=False,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Parse setting with date/time/experiment specific values.
 
         Args:
@@ -295,13 +372,25 @@ class SystemFilePaths(object):
                 logging.debug(system_variables)
                 for var in system_variables:
                     logging.debug(var, system_variables)
-                    setting = setting.replace("@" + str(var) + "@", str(system_variables[var]))
+                    setting = setting.replace(
+                        "@" + str(var) + "@", str(system_variables[var])
+                    )
 
         return setting
 
-    def add_system_file_path(self, name, path, system_variables=None, check_parsing=True,
-                             validtime=None, basedtg=None, mbr=None,
-                             tstep=None, pert=None, var=None):
+    def add_system_file_path(
+        self,
+        name,
+        path,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Add a system file path to be used.
 
         Args:
@@ -326,8 +415,16 @@ class SystemFilePaths(object):
 
         """
         path = self.substitute_string(path, system_variables=system_variables)
-        path = self.parse_setting(path, check_parsing=check_parsing, validtime=validtime,
-                                  basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+        path = self.parse_setting(
+            path,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         self.system_file_paths.update({name: path})
 
 
@@ -348,9 +445,20 @@ class SystemFilePathsFromFile(SystemFilePaths):
 class BaseNamelist(object):
     """Base namelist."""
 
-    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None,
-                 prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3,
-                 geo=None):
+    def __init__(
+        self,
+        program,
+        config,
+        input_path,
+        forc_zs=False,
+        prep_file=None,
+        prep_filetype=None,
+        prep_pgdfile=None,
+        prep_pgdfiletype=None,
+        dtg=None,
+        fcint=3,
+        geo=None,
+    ):
         """Construct a base namelists class to be implemented by namelist implementations.
 
         Args:
@@ -396,12 +504,16 @@ class BaseNamelist(object):
             self.set_pgd_namelist()
         elif program == "prep":
             if prep_file is None:
-                raise Exception("Prep need an input file either as a json namelist or a surfex "
-                                "supported format")
-            self.set_prep_namelist(prep_file=prep_file,
-                                   prep_filetype=prep_filetype,
-                                   prep_pgdfile=prep_pgdfile,
-                                   prep_pgdfiletype=prep_pgdfiletype)
+                raise Exception(
+                    "Prep need an input file either as a json namelist or a surfex "
+                    "supported format"
+                )
+            self.set_prep_namelist(
+                prep_file=prep_file,
+                prep_filetype=prep_filetype,
+                prep_pgdfile=prep_pgdfile,
+                prep_pgdfiletype=prep_pgdfiletype,
+            )
         elif program == "offline" or program == "perturbed":
             self.set_offline_namelist()
         elif program == "soda":
@@ -420,48 +532,131 @@ class BaseNamelist(object):
         """
         # IO
         self.input_list.append({"file": self.input_path + "/io.json"})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CSURF_FILETYPE": self.config.get_setting("SURFEX#IO#CSURF_FILETYPE")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CTIMESERIES_FILETYPE": self.config.get_setting("SURFEX#IO#CTIMESERIES_FILETYPE")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CFORCING_FILETYPE": self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CPGDFILE": self.config.get_setting("SURFEX#IO#CPGDFILE")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CPREPFILE": self.config.get_setting("SURFEX#IO#CPREPFILE")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "CSURFFILE": self.config.get_setting("SURFEX#IO#CSURFFILE",
-                                                 validtime=self.end_of_forecast,
-                                                 basedtg=self.dtg,
-                                                 check_parsing=check_parsing)}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "XTSTEP_SURF": self.config.get_setting("SURFEX#IO#XTSTEP")}}})
-        self.input_list.append({"json": {"NAM_IO_OFFLINE": {
-            "XTSTEP_OUTPUT": self.config.get_setting("SURFEX#IO#XTSTEP_OUTPUT")}}})
-        self.input_list.append({"json": {"NAM_WRITE_SURF_ATM": {
-            "LSPLIT_PATCH": self.config.get_setting("SURFEX#IO#LSPLIT_PATCH")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CSURF_FILETYPE": self.config.get_setting(
+                            "SURFEX#IO#CSURF_FILETYPE"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CTIMESERIES_FILETYPE": self.config.get_setting(
+                            "SURFEX#IO#CTIMESERIES_FILETYPE"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CFORCING_FILETYPE": self.config.get_setting(
+                            "SURFEX#IO#CFORCING_FILETYPE"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CPGDFILE": self.config.get_setting("SURFEX#IO#CPGDFILE")
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CPREPFILE": self.config.get_setting("SURFEX#IO#CPREPFILE")
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "CSURFFILE": self.config.get_setting(
+                            "SURFEX#IO#CSURFFILE",
+                            validtime=self.end_of_forecast,
+                            basedtg=self.dtg,
+                            check_parsing=check_parsing,
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "XTSTEP_SURF": self.config.get_setting("SURFEX#IO#XTSTEP")
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_IO_OFFLINE": {
+                        "XTSTEP_OUTPUT": self.config.get_setting(
+                            "SURFEX#IO#XTSTEP_OUTPUT"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_WRITE_SURF_ATM": {
+                        "LSPLIT_PATCH": self.config.get_setting("SURFEX#IO#LSPLIT_PATCH")
+                    }
+                }
+            }
+        )
 
         if self.forc_zs:
             self.input_list.append({"json": {"NAM_IO_OFFLINE": {"LSET_FORC_ZS": True}}})
 
         # Constants and parameters
         self.input_list.append({"file": self.input_path + "/constants.json"})
-        self.input_list.append({"json": {"NAM_SURF_ATM": {
-            "XRIMAX": self.config.get_setting("SURFEX#PARAMETERS#XRIMAX")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_SURF_ATM": {
+                        "XRIMAX": self.config.get_setting("SURFEX#PARAMETERS#XRIMAX")
+                    }
+                }
+            }
+        )
 
     def set_pgd_namelist(self):
         """Set pgd namelist."""
         # PGS schemes
-        self.input_list.append({
-            "json": {
-                "NAM_PGD_SCHEMES": {
-                    "CSEA": self.config.get_setting("SURFEX#TILES#SEA"),
-                    "CWATER": self.config.get_setting("SURFEX#TILES#INLAND_WATER"),
-                    "CNATURE": self.config.get_setting("SURFEX#TILES#NATURE"),
-                    "CTOWN": self.config.get_setting("SURFEX#TILES#TOWN")
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_PGD_SCHEMES": {
+                        "CSEA": self.config.get_setting("SURFEX#TILES#SEA"),
+                        "CWATER": self.config.get_setting("SURFEX#TILES#INLAND_WATER"),
+                        "CNATURE": self.config.get_setting("SURFEX#TILES#NATURE"),
+                        "CTOWN": self.config.get_setting("SURFEX#TILES#TOWN"),
+                    }
                 }
-            }})
+            }
+        )
 
         eco_sg = self.config.get_setting("SURFEX#COVER#SG")
         # Ecoclimap SG
@@ -469,25 +664,41 @@ class BaseNamelist(object):
         if self.config.get_setting("SURFEX#COVER#SG"):
             ecoclimap = EcoclimapSG(self.config)
 
-            self.input_list.append({"json": {"NAM_DATA_ISBA": {"NTIME": ecoclimap.decades}}})
+            self.input_list.append(
+                {"json": {"NAM_DATA_ISBA": {"NTIME": ecoclimap.decades}}}
+            )
 
             fname = self.config.get_setting("SURFEX#COVER#H_TREE")
             if fname != "" and fname is not None:
-                self.input_list.append(self.set_dirtyp_data_namelist("NAM_DATA_ISBA", "H_TREE",
-                                       fname, vtype=1))
+                self.input_list.append(
+                    self.set_dirtyp_data_namelist(
+                        "NAM_DATA_ISBA", "H_TREE", fname, vtype=1
+                    )
+                )
 
-            decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+            decadal_data_types = [
+                "ALBNIR_SOIL",
+                "ALBNIR_VEG",
+                "ALBVIS_SOIL",
+                "ALBVIS_VEG",
+                "LAI",
+            ]
             for decadal_data_type in decadal_data_types:
                 for vtt in range(1, ecoclimap.veg_types + 1):
                     for decade in range(1, ecoclimap.decades + 1):
-                        filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type,
-                                                              check_parsing=False)
+                        filepattern = self.config.get_setting(
+                            "SURFEX#COVER#" + decadal_data_type, check_parsing=False
+                        )
                         fname = ecoclimap.parse_fnames(filepattern, decade)
-                        self.input_list.append(self.set_dirtyp_data_namelist("NAM_DATA_ISBA",
-                                                                             decadal_data_type,
-                                                                             fname,
-                                                                             vtype=vtt,
-                                                                             decade=decade))
+                        self.input_list.append(
+                            self.set_dirtyp_data_namelist(
+                                "NAM_DATA_ISBA",
+                                decadal_data_type,
+                                fname,
+                                vtype=vtt,
+                                decade=decade,
+                            )
+                        )
 
         ecoclimap_dir = "ecoclimap_dir"
         if self.config.get_setting("SURFEX#COVER#SG"):
@@ -498,32 +709,38 @@ class BaseNamelist(object):
                 "YSAND": "sand_dir",
                 "YCLAY": "clay_dir",
                 "YSOC_TOP": "soc_top_dir",
-                "YSOC_SUB": "soc_sub_dir"
+                "YSOC_SUB": "soc_sub_dir",
             },
-            "COVER": {
-                "YCOVER": ecoclimap_dir
-            },
-            "ZS": {
-                "YZS": "oro_dir"
-            }
+            "COVER": {"YCOVER": ecoclimap_dir},
+            "ZS": {"YZS": "oro_dir"},
         }
         for namelist_section, ftypes in possible_direct_data.items():
             # for ftype in possible_direct_data[namelist_section]:
             for ftype in ftypes:
-                fname = str(self.config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                self.input_list.append(self.set_direct_data_namelist("NAM_" + namelist_section,
-                                                                     ftype, fname,
-                                                                     self.input_path))
+                fname = str(
+                    self.config.get_setting("SURFEX#" + namelist_section + "#" + ftype)
+                )
+                self.input_list.append(
+                    self.set_direct_data_namelist(
+                        "NAM_" + namelist_section, ftype, fname, self.input_path
+                    )
+                )
 
         # Set ISBA properties
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
-            self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}})
+            self.input_list.append(
+                {"json": {"NAM_ISBA": {"CISBA": "DIF", "NGROUND_LAYER": 14}}}
+            )
             if os.path.exists(self.input_path + "/isba_dif.json"):
                 self.input_list.append({"file": self.input_path + "/isba_dif.json"})
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
-            self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "3-L", "NGROUND_LAYER": 3}}})
+            self.input_list.append(
+                {"json": {"NAM_ISBA": {"CISBA": "3-L", "NGROUND_LAYER": 3}}}
+            )
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "2-L":
-            self.input_list.append({"json": {"NAM_ISBA": {"CISBA": "2-L", "NGROUND_LAYER": 2}}})
+            self.input_list.append(
+                {"json": {"NAM_ISBA": {"CISBA": "2-L", "NGROUND_LAYER": 2}}}
+            )
 
         # Set patches
         npatch = self.config.get_setting("SURFEX#ISBA#NPATCH")
@@ -552,41 +769,51 @@ class BaseNamelist(object):
         # Treedrag
         if self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             treeheight = self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
-            self.input_list.append({
-                "json": {
-                    "NAM_DATA_ISBA": {
-                        "CFNAM_H_TREE(4)": treeheight,
-                        "CFTYP_H_TREE(4)": "ASCLLV",
-                        "CFNAM_H_TREE(5)": treeheight,
-                        "CFTYP_H_TREE(5)": "ASCLLV",
-                        "CFNAM_H_TREE(6)": treeheight,
-                        "CFTYP_H_TREE(6)": "ASCLLV"}
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_DATA_ISBA": {
+                            "CFNAM_H_TREE(4)": treeheight,
+                            "CFTYP_H_TREE(4)": "ASCLLV",
+                            "CFNAM_H_TREE(5)": treeheight,
+                            "CFTYP_H_TREE(5)": "ASCLLV",
+                            "CFNAM_H_TREE(6)": treeheight,
+                            "CFTYP_H_TREE(6)": "ASCLLV",
+                        }
+                    }
                 }
-            })
+            )
 
         if self.config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
             if self.config.get_setting("SURFEX#TILES#TOWN") != "NONE":
-                logging.warning("WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "
-                                "Setting it to NONE!")
-            self.input_list.append({"json": {"NAM_PGD_ARRANGE_COVER": {"LTOWN_TO_ROCK": True}}})
+                logging.warning(
+                    "WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "
+                    "Setting it to NONE!"
+                )
+            self.input_list.append(
+                {"json": {"NAM_PGD_ARRANGE_COVER": {"LTOWN_TO_ROCK": True}}}
+            )
             self.input_list.append({"json": {"NAM_PGD_SCHEMES": {"TOWN": "NONE"}}})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            self.input_list.append({
-                "json": {
-                    "NAM_DATA_FLAKE": {
-                        "YWATER_DEPTH": "GlobalLakeDepth",
-                        "YWATER_DEPTHFILETYPE": "DIRECT",
-                        "YWATER_DEPTH_STATUS": "GlobalLakeStatus"
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_DATA_FLAKE": {
+                            "YWATER_DEPTH": "GlobalLakeDepth",
+                            "YWATER_DEPTHFILETYPE": "DIRECT",
+                            "YWATER_DEPTH_STATUS": "GlobalLakeStatus",
+                        }
                     }
                 }
-            })
+            )
 
         # Sea
         self.input_list.append({"file": self.input_path + "/sea.json"})
 
-    def set_prep_namelist(self, prep_file=None, prep_filetype=None, prep_pgdfile=None,
-                          prep_pgdfiletype=None):
+    def set_prep_namelist(
+        self, prep_file=None, prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None
+    ):
         """Set prep namelist.
 
         Args:
@@ -613,34 +840,55 @@ class BaseNamelist(object):
             else:
                 fname = os.path.basename(prep_file)
                 self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {"CFILE": fname}}})
-                self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                    "CFILETYPE": prep_filetype}}})
+                self.input_list.append(
+                    {"json": {"NAM_PREP_SURF_ATM": {"CFILETYPE": prep_filetype}}}
+                )
                 if prep_pgdfile is not None:
                     fname = os.path.basename(prep_pgdfile)
-                    self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                        "CFILEPGD": fname}}})
-                    self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                        "CFILEPGDTYPE": prep_pgdfiletype}}})
+                    self.input_list.append(
+                        {"json": {"NAM_PREP_SURF_ATM": {"CFILEPGD": fname}}}
+                    )
+                    self.input_list.append(
+                        {
+                            "json": {
+                                "NAM_PREP_SURF_ATM": {"CFILEPGDTYPE": prep_pgdfiletype}
+                            }
+                        }
+                    )
         if self.dtg is not None:
             # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
             prep_time = self.dtg
-            self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                "NYEAR": int(prep_time.strftime("%Y"))}}})
-            self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                "NMONTH": int(prep_time.strftime("%m"))}}})
-            self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                "NDAY": int(prep_time.strftime("%d"))}}})
-            self.input_list.append({"json": {"NAM_PREP_SURF_ATM": {
-                "XTIME": float(prep_time.strftime("%H")) * 3600.}}})
+            self.input_list.append(
+                {"json": {"NAM_PREP_SURF_ATM": {"NYEAR": int(prep_time.strftime("%Y"))}}}
+            )
+            self.input_list.append(
+                {"json": {"NAM_PREP_SURF_ATM": {"NMONTH": int(prep_time.strftime("%m"))}}}
+            )
+            self.input_list.append(
+                {"json": {"NAM_PREP_SURF_ATM": {"NDAY": int(prep_time.strftime("%d"))}}}
+            )
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_PREP_SURF_ATM": {
+                            "XTIME": float(prep_time.strftime("%H")) * 3600.0
+                        }
+                    }
+                }
+            )
         else:
             raise Exception("You must provide a DTG for prep")
         if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
-            self.input_list.append({"json": {"NAM_PREP_SEAFLUX": {"CSEAICE_SCHEME": "SICE"}}})
+            self.input_list.append(
+                {"json": {"NAM_PREP_SEAFLUX": {"CSEAICE_SCHEME": "SICE"}}}
+            )
             self.input_list.append({"file": self.input_path + "/prep_sice.json"})
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             lclim_lake = self.config.get_setting("SURFEX#FLAKE#LCLIM")
-            self.input_list.append({"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE": lclim_lake}}})
+            self.input_list.append(
+                {"json": {"NAM_PREP_FLAKE": {"LCLIM_LAKE": lclim_lake}}}
+            )
 
         # Set extra ISBA-DIF properties (Not needed in prep?)
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
@@ -649,7 +897,9 @@ class BaseNamelist(object):
 
         # ISBA CANOPY
         lisba_canopy = self.config.get_setting("SURFEX#ISBA#CANOPY")
-        self.input_list.append({"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY": lisba_canopy}}})
+        self.input_list.append(
+            {"json": {"NAM_PREP_ISBA": {"LISBA_CANOPY": lisba_canopy}}}
+        )
 
         # Snow
         self.input_list.append({"file": self.input_path + "/prep_snow.json"})
@@ -707,30 +957,49 @@ class BaseNamelist(object):
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             for var, cvar_val in enumerate(cvar_m):
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "CVAR_M(" + str(var + 1) + ")": cvar_val}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "NNCV(" + str(var + 1) + ")": nncv[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}}
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}}
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}}
+                )
+                self.input_list.append(
+                    {
+                        "json": {
+                            "NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}
+                        }
+                    }
+                )
                 if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
-            self.input_list.append({"json": {"NAM_ASSIM": {
-                "CASSIM_ISBA": self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_ASSIM": {
+                            "CASSIM_ISBA": self.config.get_setting(
+                                "SURFEX#ASSIM#SCHEMES#ISBA"
+                            )
+                        }
+                    }
+                }
+            )
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
             # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var, cvar_val in enumerate(cvar_m):
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "CVAR_M(" + str(var + 1) + ")": cvar_val}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}}
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}}
+                )
                 if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
@@ -743,18 +1012,25 @@ class BaseNamelist(object):
         if len(nnco) != len(cobs_m):
             raise Exception("Mismatch in nnco/cobs_m")
         for obs, obs_val in enumerate(nnco):
-            self.input_list.append({"json": {"NAM_OBS": {
-                "NNCO(" + str(obs + 1) + ")": obs_val}}})
-            self.input_list.append({"json": {"NAM_OBS": {
-                "COBS_M(" + str(obs + 1) + ")": cobs_m[obs]}}})
+            self.input_list.append(
+                {"json": {"NAM_OBS": {"NNCO(" + str(obs + 1) + ")": obs_val}}}
+            )
+            self.input_list.append(
+                {"json": {"NAM_OBS": {"COBS_M(" + str(obs + 1) + ")": cobs_m[obs]}}}
+            )
             if nnco[obs] == 1:
                 nobstype += 1
         self.input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
 
         # Climate setting
         if self.config.get_setting("SURFEX#SEA#LVOLATILE_SIC"):
-            self.input_list.append({"json": {"NAM_SEAICEn ": {"LVOLATILE_SIC": True,
-                                                              "XSIC_EFOLDING_TIME": 1.0}}})
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_SEAICEn ": {"LVOLATILE_SIC": True, "XSIC_EFOLDING_TIME": 1.0}
+                    }
+                }
+            )
 
     def set_soda_namelist(self):
         """Set SODA namelist.
@@ -775,7 +1051,9 @@ class BaseNamelist(object):
         lobsnat = self.config.get_setting("SURFEX#ASSIM#OBS#LOBSNAT")
         self.input_list.append({"json": {"NAM_OBS": {"LOBSNAT": lobsnat}}})
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
-        self.input_list.append({"json": {"NAM_OBS": {"CFILE_FORMAT_OBS": cfile_format_obs}}})
+        self.input_list.append(
+            {"json": {"NAM_OBS": {"CFILE_FORMAT_OBS": cfile_format_obs}}}
+        )
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
@@ -786,50 +1064,150 @@ class BaseNamelist(object):
             raise Exception("Mismatch in nnco/cobs_m/xerrobs_m")
 
         for obs, obs_val in enumerate(nnco):
-            self.input_list.append({"json": {"NAM_OBS": {
-                "NNCO(" + str(obs + 1) + ")": obs_val}}})
-            self.input_list.append({"json": {"NAM_OBS": {
-                "COBS_M(" + str(obs + 1) + ")": cobs_m[obs]}}})
-            self.input_list.append({"json": {"NAM_OBS": {
-                "XERROBS_M(" + str(obs + 1) + ")": xerrobs_m[obs]}}})
+            self.input_list.append(
+                {"json": {"NAM_OBS": {"NNCO(" + str(obs + 1) + ")": obs_val}}}
+            )
+            self.input_list.append(
+                {"json": {"NAM_OBS": {"COBS_M(" + str(obs + 1) + ")": cobs_m[obs]}}}
+            )
+            self.input_list.append(
+                {"json": {"NAM_OBS": {"XERROBS_M(" + str(obs + 1) + ")": xerrobs_m[obs]}}}
+            )
             if nnco[obs] == 1:
                 nobstype += 1
         self.input_list.append({"json": {"NAM_OBS": {"NOBSTYPE": nobstype}}})
-        self.input_list.append({"json": {"NAM_OBS": {
-            "LSWE": self.config.get_setting("SURFEX#ASSIM#OBS#LSWE")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_OBS": {"LSWE": self.config.get_setting("SURFEX#ASSIM#OBS#LSWE")}
+                }
+            }
+        )
 
         # LSM
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "CFILE_FORMAT_LSM": self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "CFILE_FORMAT_LSM": self.config.get_setting(
+                            "SURFEX#ASSIM#CFILE_FORMAT_LSM"
+                        )
+                    }
+                }
+            }
+        )
 
         # Sea
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "CASSIM_SEA": self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "CFILE_FORMAT_SST": self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LREAD_SST_FROM_FILE":
-            self.config.get_setting("SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LEXTRAP_SEA": self.config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LECSST": self.config.get_setting("SURFEX#ASSIM#SEA#LECSST")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "CASSIM_SEA": self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA")
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "CFILE_FORMAT_SST": self.config.get_setting(
+                            "SURFEX#ASSIM#SEA#CFILE_FORMAT_SST"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LREAD_SST_FROM_FILE": self.config.get_setting(
+                            "SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LEXTRAP_SEA": self.config.get_setting(
+                            "SURFEX#ASSIM#SEA#LEXTRAP_SEA"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LECSST": self.config.get_setting("SURFEX#ASSIM#SEA#LECSST")
+                    }
+                }
+            }
+        )
 
         # Water
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "CASSIM_WATER": self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LWATERTG2": self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LWATERTG2")}}})
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LEXTRAP_WATER": self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "CASSIM_WATER": self.config.get_setting(
+                            "SURFEX#ASSIM#SCHEMES#INLAND_WATER"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LWATERTG2": self.config.get_setting(
+                            "SURFEX#ASSIM#INLAND_WATER#LWATERTG2"
+                        )
+                    }
+                }
+            }
+        )
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LEXTRAP_WATER": self.config.get_setting(
+                            "SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"
+                        )
+                    }
+                }
+            }
+        )
 
         # Nature
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "CASSIM_ISBA": self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "CASSIM_ISBA": self.config.get_setting(
+                            "SURFEX#ASSIM#SCHEMES#ISBA"
+                        )
+                    }
+                }
+            }
+        )
 
         # Snow
-        self.input_list.append({"json": {"NAM_ASSIM": {
-            "LPATCH1":self.config.get_setting("SURFEX#ASSIM#ISBA#LPATCH1")}}})
+        self.input_list.append(
+            {
+                "json": {
+                    "NAM_ASSIM": {
+                        "LPATCH1": self.config.get_setting("SURFEX#ASSIM#ISBA#LPATCH1")
+                    }
+                }
+            }
+        )
 
         laesnm = False
         snow_cycles = self.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES")
@@ -842,8 +1220,10 @@ class BaseNamelist(object):
                         logging.debug("true")
                         laesnm = True
             else:
-                raise Exception("You must provide a DTG when using a list for snow  "
-                                "assimilation cycles")
+                raise Exception(
+                    "You must provide a DTG when using a list for snow  "
+                    "assimilation cycles"
+                )
         self.input_list.append({"json": {"NAM_ASSIM": {"LAESNM": laesnm}}})
 
         # Set OI settings
@@ -857,10 +1237,28 @@ class BaseNamelist(object):
             elif ua_physics == "alaro":
                 self.input_list.append({"json": {"NAM_ASSIM": {"LAROME": False}}})
 
-            self.input_list.append({"json": {"NAM_NACVEG": {"XSIGT2MO":
-                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO")}}})
-            self.input_list.append({"json": {"NAM_NACVEG": {"XSIGH2MO":
-                                    self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGH2MO")}}})
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_NACVEG": {
+                            "XSIGT2MO": self.config.get_setting(
+                                "SURFEX#ASSIM#ISBA#OI#XSIGT2MO"
+                            )
+                        }
+                    }
+                }
+            )
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_NACVEG": {
+                            "XSIGH2MO": self.config.get_setting(
+                                "SURFEX#ASSIM#ISBA#OI#XSIGH2MO"
+                            )
+                        }
+                    }
+                }
+            )
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLIMCA": 0.0}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"XRCLISST": 0.05}}})
             self.input_list.append({"json": {"NAM_NACVEG": {"NECHGU": self.fcint}}})
@@ -881,28 +1279,50 @@ class BaseNamelist(object):
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-            if len(nncv) != len(cvar_m) or len(nncv) != len(xsigma_m) or len(nncv) != len(xtprt_m):
+            if (
+                len(nncv) != len(cvar_m)
+                or len(nncv) != len(xsigma_m)
+                or len(nncv) != len(xtprt_m)
+            ):
                 raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
             for var, cvar_val in enumerate(cvar_m):
                 self.input_list.append(
-                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}}
+                )
+                self.input_list.append(
+                    {
+                        "json": {
+                            "NAM_VAR": {"XSIGMA_M(" + str(var + 1) + ")": xsigma_m[var]}
+                        }
+                    }
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"XTPRT_M(" + str(var + 1) + ")": xtprt_m[var]}}}
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}}
+                )
                 if nncv[var] == 1:
                     nvar += 1
             self.input_list.append({"json": {"NAM_VAR": {"NIVAR": 0}}})
             self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
             xscale_q = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSCALE_Q")
             self.input_list.append({"json": {"NAM_VAR": {"XSCALE_Q": xscale_q}}})
-            self.input_list.append({"json": {"NAM_IO_VARASSIM": {
-                "LPRT": False,
-                "LBEV": self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
-                "LBFIXED": not self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B")
-            }}})
+            self.input_list.append(
+                {
+                    "json": {
+                        "NAM_IO_VARASSIM": {
+                            "LPRT": False,
+                            "LBEV": self.config.get_setting(
+                                "SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"
+                            ),
+                            "LBFIXED": not self.config.get_setting(
+                                "SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"
+                            ),
+                        }
+                    }
+                }
+            )
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
             nvar = 0
@@ -912,9 +1332,11 @@ class BaseNamelist(object):
                 raise Exception("Mismatch in nncv/cvar_m")
             for var, cvar_val in enumerate(cvar_m):
                 self.input_list.append(
-                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}})
-                self.input_list.append({"json": {"NAM_VAR": {
-                    "NNCV(" + str(var + 1) + ")": nncv[var]}}})
+                    {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}}
+                )
+                self.input_list.append(
+                    {"json": {"NAM_VAR": {"NNCV(" + str(var + 1) + ")": nncv[var]}}}
+                )
 
                 if nncv[var] == 1:
                     nvar += 1
@@ -943,8 +1365,10 @@ class BaseNamelist(object):
         """Overide."""
         # Override posssibility
         if os.path.exists(self.input_path + "/override.json"):
-            logging.warning("WARNING: Override settings with content from %s/override.json",
-                            self.input_path)
+            logging.warning(
+                "WARNING: Override settings with content from %s/override.json",
+                self.input_path,
+            )
             self.input_list.append({"file": self.input_path + "/override.json"})
 
     @staticmethod
@@ -966,13 +1390,27 @@ class BaseNamelist(object):
             filetype_name = ldtype
             if ldtype == "YSOC_TOP" or ldtype == "YSOC_SUB":
                 filetype_name = "YSOC"
-            return {"json": json.loads('{"' + lnamelist_section + '": { "' + ldtype + '": "'
-                    + basename + '", ' + '"' + filetype_name + 'FILETYPE": "DIRECT"}}')}
+            return {
+                "json": json.loads(
+                    '{"'
+                    + lnamelist_section
+                    + '": { "'
+                    + ldtype
+                    + '": "'
+                    + basename
+                    + '", '
+                    + '"'
+                    + filetype_name
+                    + 'FILETYPE": "DIRECT"}}'
+                )
+            }
         if ldname.endswith(".json"):
             return {"file": linput_path + "/" + ldname}
 
     @staticmethod
-    def set_dirtyp_data_namelist(lnamelist_section, ldtype, ldname, vtype=None, decade=None):
+    def set_dirtyp_data_namelist(
+        lnamelist_section, ldtype, ldname, vtype=None, decade=None
+    ):
         """Set dirtyp data namelist.
 
         Args:
@@ -999,8 +1437,17 @@ class BaseNamelist(object):
         if vtype is not None or decade is not None:
             filetype_name = filetype_name + ")"
         return {
-            "json": json.loads('{"' + lnamelist_section + '": { "CFNAM_' + filetype_name + '": "'
-                               + basename + '", "CFTYP_' + filetype_name + '": "DIRTYPE"}}')
+            "json": json.loads(
+                '{"'
+                + lnamelist_section
+                + '": { "CFNAM_'
+                + filetype_name
+                + '": "'
+                + basename
+                + '", "CFTYP_'
+                + filetype_name
+                + '": "DIRTYPE"}}'
+            )
         }
 
     @staticmethod
@@ -1096,10 +1543,10 @@ class BaseNamelist(object):
             f90nml.Namelist: Namelist object.
 
         """
-        if input_fmt == 'json':
+        if input_fmt == "json":
             with open(input_fname, mode="r", encoding="utf-8") as input_file:
                 output_data = json.load(input_file)
-        elif input_fmt == 'yaml':
+        elif input_fmt == "yaml":
             with open(input_fname, mode="r", encoding="utf-8") as input_file:
                 output_data = yaml.safe_load(input_file)
         output_data = f90nml.Namelist(output_data)
@@ -1116,11 +1563,15 @@ class BaseNamelist(object):
             indent (int, optional): Indentation. Defaults to 2.
 
         """
-        if output_fmt == 'json':
+        if output_fmt == "json":
             input_data = input_data.todict(complex_tuple=True)
-            json.dump(input_data, open(output_file, "w", encoding="utf-8"), indent=indent,
-                      separators=(',', ': '))
-        elif output_fmt == 'yaml':
+            json.dump(
+                input_data,
+                open(output_file, "w", encoding="utf-8"),
+                indent=indent,
+                separators=(",", ": "),
+            )
+        elif output_fmt == "yaml":
             input_data = input_data.todict(complex_tuple=True)
             yaml.dump(input_data, output_file, default_flow_style=False)
 
@@ -1153,12 +1604,17 @@ class BaseNamelist(object):
             if "file" in inp:
                 json_file = str(inp["file"])
                 if not os.path.exists(json_file):
-                    raise FileNotFoundError("Needed namelist input does not exist: " + json_file)
+                    raise FileNotFoundError(
+                        "Needed namelist input does not exist: " + json_file
+                    )
                 else:
-                    merged_json_settings = self.merge_json_namelist_file(merged_json_settings,
-                                                                         json_file)
+                    merged_json_settings = self.merge_json_namelist_file(
+                        merged_json_settings, json_file
+                    )
             elif "json" in inp:
-                merged_json_settings = self.merge_namelist_dicts(merged_json_settings, inp["json"])
+                merged_json_settings = self.merge_namelist_dicts(
+                    merged_json_settings, inp["json"]
+                )
             else:
                 logging.error("Can not handle input type %s", str(inp))
                 raise Exception
@@ -1169,9 +1625,20 @@ class BaseNamelist(object):
 class Namelist(object):
     """Base namelist."""
 
-    def __init__(self, program, config, input_path, forc_zs=False, prep_file=None,
-                 prep_filetype=None, prep_pgdfile=None, prep_pgdfiletype=None, dtg=None, fcint=3,
-                 geo=None):
+    def __init__(
+        self,
+        program,
+        config,
+        input_path,
+        forc_zs=False,
+        prep_file=None,
+        prep_filetype=None,
+        prep_pgdfile=None,
+        prep_pgdfiletype=None,
+        dtg=None,
+        fcint=3,
+        geo=None,
+    ):
         """Construct a base namelists class to be implemented by namelist implementations.
 
         Args:
@@ -1218,13 +1685,17 @@ class Namelist(object):
             merged_dict = self.set_pgd_namelist(merged_dict)
         elif program == "prep":
             if prep_file is None:
-                raise Exception("Prep need an input file either as a json namelist or a surfex "
-                                "supported format")
-            merged_dict = self.set_prep_namelist(merged_dict,
-                                                 prep_file=prep_file,
-                                                 prep_filetype=prep_filetype,
-                                                 prep_pgdfile=prep_pgdfile,
-                                                 prep_pgdfiletype=prep_pgdfiletype)
+                raise Exception(
+                    "Prep need an input file either as a json namelist or a surfex "
+                    "supported format"
+                )
+            merged_dict = self.set_prep_namelist(
+                merged_dict,
+                prep_file=prep_file,
+                prep_filetype=prep_filetype,
+                prep_pgdfile=prep_pgdfile,
+                prep_pgdfiletype=prep_pgdfiletype,
+            )
         elif program == "offline" or program == "perturbed":
             merged_dict = self.set_offline_namelist(merged_dict)
         elif program == "soda":
@@ -1240,7 +1711,9 @@ class Namelist(object):
             keys = []
             for key, value in merged_dict[block].items():
                 if isinstance(value, str) and value[0] == "@" and value[-1] == "@":
-                    logging.info("Delete non-substituted placeholder %s for key %s", value, key)
+                    logging.info(
+                        "Delete non-substituted placeholder %s for key %s", value, key
+                    )
                     keys.append(key)
             if len(keys) > 0:
                 non_parsed.update({block: keys})
@@ -1252,8 +1725,11 @@ class Namelist(object):
         for block in merged_dict:
             for key, value in merged_dict[block].items():
                 if isinstance(value, str) and "@" in value[0] and "@" in value[-1]:
-                    logging.error("Merged dictionary contains a @ in value %s for key %s",
-                                  value, key)
+                    logging.error(
+                        "Merged dictionary contains a @ in value %s for key %s",
+                        value,
+                        key,
+                    )
                     raise Exception()
 
         self.namelist_dict = merged_dict
@@ -1265,65 +1741,138 @@ class Namelist(object):
             check_parsing (bool): Check if parsing is ok.
 
         """
-        merged_dict = self.merge_json_namelist_file(merged_dict, self.input_path + "/prolog.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/prolog.json"
+        )
         # IO
-        merged_dict = self.merge_json_namelist_file(merged_dict, self.input_path + "/io.json")
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/constants.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/io.json"
+        )
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/constants.json"
+        )
 
         # IO manipulation
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CSURF_FILETYPE",
-                               self.config.get_setting("SURFEX#IO#CSURF_FILETYPE"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CTIMESERIES_FILETYPE",
-                               self.config.get_setting("SURFEX#IO#CTIMESERIES_FILETYPE"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CFORCING_FILETYPE",
-                               self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CPGDFILE",
-                               self.config.get_setting("SURFEX#IO#CPGDFILE"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CPREPFILE",
-                               self.config.get_setting("SURFEX#IO#CPREPFILE"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "CSURFFILE",
-                               self.config.get_setting("SURFEX#IO#CSURFFILE",
-                                                       validtime=self.end_of_forecast,
-                                                       basedtg=self.dtg,
-                                                       check_parsing=check_parsing))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "XTSTEP_SURF",
-                               self.config.get_setting("SURFEX#IO#XTSTEP"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "XTSTEP_OUTPUT",
-                               self.config.get_setting("SURFEX#IO#XTSTEP_OUTPUT"))
-        merged_dict = self.sub(merged_dict, "NAM_WRITE_SURF_ATM", "LSPLIT_PATCH",
-                               self.config.get_setting("SURFEX#IO#LSPLIT_PATCH"))
-        merged_dict = self.sub(merged_dict, "NAM_IO_OFFLINE", "LSET_FORC_ZS", self.forc_zs)
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CSURF_FILETYPE",
+            self.config.get_setting("SURFEX#IO#CSURF_FILETYPE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CTIMESERIES_FILETYPE",
+            self.config.get_setting("SURFEX#IO#CTIMESERIES_FILETYPE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CFORCING_FILETYPE",
+            self.config.get_setting("SURFEX#IO#CFORCING_FILETYPE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CPGDFILE",
+            self.config.get_setting("SURFEX#IO#CPGDFILE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CPREPFILE",
+            self.config.get_setting("SURFEX#IO#CPREPFILE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "CSURFFILE",
+            self.config.get_setting(
+                "SURFEX#IO#CSURFFILE",
+                validtime=self.end_of_forecast,
+                basedtg=self.dtg,
+                check_parsing=check_parsing,
+            ),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "XTSTEP_SURF",
+            self.config.get_setting("SURFEX#IO#XTSTEP"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_IO_OFFLINE",
+            "XTSTEP_OUTPUT",
+            self.config.get_setting("SURFEX#IO#XTSTEP_OUTPUT"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_WRITE_SURF_ATM",
+            "LSPLIT_PATCH",
+            self.config.get_setting("SURFEX#IO#LSPLIT_PATCH"),
+        )
+        merged_dict = self.sub(
+            merged_dict, "NAM_IO_OFFLINE", "LSET_FORC_ZS", self.forc_zs
+        )
 
         # Constants and parameters
-        merged_dict = self.sub(merged_dict, "NAM_SURF_ATM", "XRIMAX",
-                               self.config.get_setting("SURFEX#PARAMETERS#XRIMAX"))
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_SURF_ATM",
+            "XRIMAX",
+            self.config.get_setting("SURFEX#PARAMETERS#XRIMAX"),
+        )
         return merged_dict
 
     def set_pgd_namelist(self, merged_dict):
         """Set pgd namelist."""
-        merged_dict = self.merge_json_namelist_file(merged_dict, self.input_path + "/pgd.json")
-        merged_dict = self.sub(merged_dict, "NAM_PGD_SCHEMES", "CSEA",
-                               self.config.get_setting("SURFEX#TILES#SEA"))
-        merged_dict = self.sub(merged_dict, "NAM_PGD_SCHEMES", "CWATER",
-                               self.config.get_setting("SURFEX#TILES#INLAND_WATER"))
-        merged_dict = self.sub(merged_dict, "NAM_PGD_SCHEMES", "CNATURE",
-                               self.config.get_setting("SURFEX#TILES#NATURE"))
-        merged_dict = self.sub(merged_dict, "NAM_PGD_SCHEMES", "CTOWN",
-                               self.config.get_setting("SURFEX#TILES#TOWN"))
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/pgd.json"
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_PGD_SCHEMES",
+            "CSEA",
+            self.config.get_setting("SURFEX#TILES#SEA"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_PGD_SCHEMES",
+            "CWATER",
+            self.config.get_setting("SURFEX#TILES#INLAND_WATER"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_PGD_SCHEMES",
+            "CNATURE",
+            self.config.get_setting("SURFEX#TILES#NATURE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_PGD_SCHEMES",
+            "CTOWN",
+            self.config.get_setting("SURFEX#TILES#TOWN"),
+        )
         if self.config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
 
             if self.config.get_setting("SURFEX#TILES#TOWN") != "NONE":
-                logging.warning("WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "
-                                "Setting it to NONE!")
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_arrange_cover.json")
-            merged_dict = self.sub(merged_dict, "NAM_PGD_ARRANGE_COVER", "LTOWN_TO_ROCK", True)
+                logging.warning(
+                    "WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "
+                    "Setting it to NONE!"
+                )
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_arrange_cover.json"
+            )
+            merged_dict = self.sub(
+                merged_dict, "NAM_PGD_ARRANGE_COVER", "LTOWN_TO_ROCK", True
+            )
             merged_dict = self.sub(merged_dict, "NAM_PGD_SCHEMES", "CTOWN", "NONE")
 
         # Cover
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/pgd_cover.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/pgd_cover.json"
+        )
 
         # COVER
         # ecoclimap_dir = "ecoclimap_dir"
@@ -1332,8 +1881,9 @@ class Namelist(object):
         # Ecoclimap SG
         if eco_sg:
             # ecoclimap_dir = "ecoclimap_sg_cover_dir"
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_eco_sg.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_eco_sg.json"
+            )
             ecoclimap = EcoclimapSG(self.config)
         else:
             ecoclimap = Ecoclimap(self.config)
@@ -1345,8 +1895,9 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_COVER", "YCOVERFILETYPE", filetype)
 
         # ZS
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/pgd_zs.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/pgd_zs.json"
+        )
         fname = str(self.config.get_setting("SURFEX#ZS#YZS"))
         fname, filetype = self.get_filetype_from_suffix(fname)
         merged_dict = self.sub(merged_dict, "NAM_ZS", "YZS", fname)
@@ -1354,54 +1905,89 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_ZS", "YZSFILETYPE", filetype)
 
         # Sea
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/pgd_sea.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/pgd_sea.json"
+        )
 
         # Inland water
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/pgd_inland_water.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/pgd_inland_water.json"
+        )
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_flake.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_flake.json"
+            )
 
         # PGD ISBA
         if self.config.get_setting("SURFEX#TILES#NATURE") == "ISBA":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_isba.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_isba.json"
+            )
 
         if eco_sg:
-            merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", "NTIME", ecoclimap.decades)
+            merged_dict = self.sub(
+                merged_dict, "NAM_DATA_ISBA", "NTIME", ecoclimap.decades
+            )
             fname = self.config.get_setting("SURFEX#COVER#H_TREE")
             if fname != "" and fname is not None:
                 if fname.endswith(".dir"):
                     fname = fname.replace(".dir", "")
                 for vtt in range(1, ecoclimap.veg_types + 1):
-                    merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", "CFNAM_H_TREE(@VEGTYPE@)",
-                                           fname, vtype=vtt)
-                    merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", "CFTYP_H_TREE(@VEGTYPE@)",
-                                           "DIRTYPE", vtype=vtt)
+                    merged_dict = self.sub(
+                        merged_dict,
+                        "NAM_DATA_ISBA",
+                        "CFNAM_H_TREE(@VEGTYPE@)",
+                        fname,
+                        vtype=vtt,
+                    )
+                    merged_dict = self.sub(
+                        merged_dict,
+                        "NAM_DATA_ISBA",
+                        "CFTYP_H_TREE(@VEGTYPE@)",
+                        "DIRTYPE",
+                        vtype=vtt,
+                    )
 
                 key = "CFNAM_H_TREE(@VEGTYPE@)"
                 merged_dict = self.delete(merged_dict, "NAM_DATA_ISBA", key)
                 key = "CFTYP_H_TREE(@VEGTYPE@)"
                 merged_dict = self.delete(merged_dict, "NAM_DATA_ISBA", key)
 
-            decadal_data_types = ["ALBNIR_SOIL", "ALBNIR_VEG", "ALBVIS_SOIL", "ALBVIS_VEG", "LAI"]
+            decadal_data_types = [
+                "ALBNIR_SOIL",
+                "ALBNIR_VEG",
+                "ALBVIS_SOIL",
+                "ALBVIS_VEG",
+                "LAI",
+            ]
             for decadal_data_type in decadal_data_types:
                 for vtt in range(1, ecoclimap.veg_types + 1):
                     for decade in range(1, ecoclimap.decades + 1):
-                        filepattern = self.config.get_setting("SURFEX#COVER#" + decadal_data_type,
-                                                              check_parsing=False)
+                        filepattern = self.config.get_setting(
+                            "SURFEX#COVER#" + decadal_data_type, check_parsing=False
+                        )
                         fname = ecoclimap.parse_fnames(filepattern, decade)
                         if fname.endswith(".dir"):
                             fname = fname.replace(".dir", "")
                         key = f"CFNAM_{decadal_data_type}(@VEGTYPE@,@DECADE@)"
-                        merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", key, fname, vtype=vtt,
-                                               decade=decade)
+                        merged_dict = self.sub(
+                            merged_dict,
+                            "NAM_DATA_ISBA",
+                            key,
+                            fname,
+                            vtype=vtt,
+                            decade=decade,
+                        )
                         key = f"CFTYP_{decadal_data_type}(@VEGTYPE@,@DECADE@)"
-                        merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", key, "DIRTYPE",
-                                               vtype=vtt, decade=decade)
+                        merged_dict = self.sub(
+                            merged_dict,
+                            "NAM_DATA_ISBA",
+                            key,
+                            "DIRTYPE",
+                            vtype=vtt,
+                            decade=decade,
+                        )
 
                 # Delete generic placehoder
                 key = f"CFNAM_{decadal_data_type}(@VEGTYPE@,@DECADE@)"
@@ -1424,18 +2010,21 @@ class Namelist(object):
 
         # Set ISBA properties
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_isba_dif.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_isba_dif.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "CISBA", "DIF")
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "NGROUND_LAYER", 14)
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_isba_3-L.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_isba_3-L.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "CISBA", "3-L")
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "NGROUND_LAYER", 3)
         elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "2-L":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_isba_2-L.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_isba_2-L.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "CISBA", "2-L")
             merged_dict = self.sub(merged_dict, "NAM_ISBA", "NGROUND_LAYER", 2)
 
@@ -1447,37 +2036,54 @@ class Namelist(object):
         lmeb = self.config.get_setting("SURFEX#ISBA#MEB")
         merged_dict = self.sub(merged_dict, "NAM_ISBA", "LMEB", lmeb)
         if lmeb:
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/meb_settings.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/meb_settings.json"
+            )
 
         # RSMIN
         if self.config.get_setting("SURFEX#COVER#SG"):
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_rsmin_sg.json")
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_rsmin_sg_mod.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_rsmin_sg.json"
+            )
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_rsmin_sg_mod.json"
+            )
         else:
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_rsmin.json")
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_rsmin_mod.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_rsmin.json"
+            )
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_rsmin_mod.json"
+            )
 
         # CV
         if self.config.get_setting("SURFEX#COVER#SG"):
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_cv_sg.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_cv_sg.json"
+            )
         else:
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/pgd_cv.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/pgd_cv.json"
+            )
 
         # Treedrag (from ASCLLV files)
         if self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             treeheight = self.config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
             for vtt in [4, 5, 6]:
-                merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", "CFNAM_H_TREE(@VEGTYPE@)",
-                                       treeheight, vtype=vtt)
-                merged_dict = self.sub(merged_dict, "NAM_DATA_ISBA", "CFNAM_H_TREE(@VEGTYPE@)",
-                                       "ASCLLV", vtype=vtt)
+                merged_dict = self.sub(
+                    merged_dict,
+                    "NAM_DATA_ISBA",
+                    "CFNAM_H_TREE(@VEGTYPE@)",
+                    treeheight,
+                    vtype=vtt,
+                )
+                merged_dict = self.sub(
+                    merged_dict,
+                    "NAM_DATA_ISBA",
+                    "CFNAM_H_TREE(@VEGTYPE@)",
+                    "ASCLLV",
+                    vtype=vtt,
+                )
 
             key = "CFNAM_H_TREE(@VEGTYPE@)"
             merged_dict = self.delete(merged_dict, "NAM_DATA_ISBA", key)
@@ -1486,8 +2092,14 @@ class Namelist(object):
 
         return merged_dict
 
-    def set_prep_namelist(self, merged_dict, prep_file=None, prep_filetype=None, prep_pgdfile=None,
-                          prep_pgdfiletype=None):
+    def set_prep_namelist(
+        self,
+        merged_dict,
+        prep_file=None,
+        prep_filetype=None,
+        prep_pgdfile=None,
+        prep_pgdfiletype=None,
+    ):
         """Set prep namelist.
 
         Args:
@@ -1502,77 +2114,107 @@ class Namelist(object):
         if prep_pgdfile is not None and prep_pgdfiletype is None:
             raise Exception("Filetype for PGD input to PREP is not set!")
 
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/prep.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/prep.json"
+        )
         if prep_file is not None:
             if prep_file.endswith(".json"):
                 if not os.path.exists(prep_file):
                     raise FileNotFoundError(f"{prep_file} does not exist!")
-                merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                            prep_file)
+                merged_dict = self.merge_json_namelist_file(merged_dict, prep_file)
             else:
                 fname = os.path.basename(prep_file)
                 merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "CFILE", fname)
-                merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "CFILETYPE", prep_filetype)
+                merged_dict = self.sub(
+                    merged_dict, "NAM_PREP_SURF_ATM", "CFILETYPE", prep_filetype
+                )
                 if prep_pgdfile is not None:
                     fname = os.path.basename(prep_pgdfile)
-                    merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGD", fname)
-                    merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGDTYPE",
-                                           prep_pgdfiletype)
+                    merged_dict = self.sub(
+                        merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGD", fname
+                    )
+                    merged_dict = self.sub(
+                        merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGDTYPE", prep_pgdfiletype
+                    )
                 else:
-                    merged_dict = self.delete(merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGD")
-                    merged_dict = self.delete(merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGDTYPE")
+                    merged_dict = self.delete(
+                        merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGD"
+                    )
+                    merged_dict = self.delete(
+                        merged_dict, "NAM_PREP_SURF_ATM", "CFILEPGDTYPE"
+                    )
 
         if self.dtg is not None:
             # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
             prep_time = self.dtg
-            merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "NYEAR",
-                                   int(prep_time.strftime("%Y")))
-            merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "NMONTH",
-                                   int(prep_time.strftime("%m")))
-            merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "NDAY",
-                                   int(prep_time.strftime("%d")))
-            merged_dict = self.sub(merged_dict, "NAM_PREP_SURF_ATM", "XTIME",
-                                   float(prep_time.strftime("%H")) * 3600.)
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_SURF_ATM", "NYEAR", int(prep_time.strftime("%Y"))
+            )
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_SURF_ATM", "NMONTH", int(prep_time.strftime("%m"))
+            )
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_SURF_ATM", "NDAY", int(prep_time.strftime("%d"))
+            )
+            merged_dict = self.sub(
+                merged_dict,
+                "NAM_PREP_SURF_ATM",
+                "XTIME",
+                float(prep_time.strftime("%H")) * 3600.0,
+            )
         else:
             raise Exception("You must provide a DTG for prep")
 
         if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/prep_seaflux.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/prep_seaflux.json"
+            )
             sea_ice = self.config.get_setting("SURFEX#SEA#ICE")
-            merged_dict = self.sub(merged_dict, "NAM_PREP_SEAFLUX", "CSEAICE_SCHEME", sea_ice)
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_SEAFLUX", "CSEAICE_SCHEME", sea_ice
+            )
             if sea_ice == "SICE":
-                merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                            self.input_path + "/prep_sice.json")
+                merged_dict = self.merge_json_namelist_file(
+                    merged_dict, self.input_path + "/prep_sice.json"
+                )
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/prep_flake.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/prep_flake.json"
+            )
             lclim_lake = self.config.get_setting("SURFEX#FLAKE#LCLIM")
-            merged_dict = self.sub(merged_dict, "NAM_PREP_FLAKE", "LCLIM_LAKE", lclim_lake)
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_FLAKE", "LCLIM_LAKE", lclim_lake
+            )
 
         if self.config.get_setting("SURFEX#TILES#NATURE") == "ISBA":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/prep_isba.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/prep_isba.json"
+            )
             # Set extra ISBA-DIF properties (Not needed in prep?)
             if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
-                merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                            self.input_path + "/prep_isba_dif.json")
+                merged_dict = self.merge_json_namelist_file(
+                    merged_dict, self.input_path + "/prep_isba_dif.json"
+                )
 
             # ISBA CANOPY
             lisba_canopy = self.config.get_setting("SURFEX#ISBA#CANOPY")
-            merged_dict = self.sub(merged_dict, "NAM_PREP_ISBA", "LISBA_CANOPY", lisba_canopy)
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_ISBA", "LISBA_CANOPY", lisba_canopy
+            )
 
             # Snow
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/prep_isba_snow.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/prep_isba_snow.json"
+            )
             snow_scheme = self.config.get_setting("SURFEX#ISBA#SNOW")
-            merged_dict = self.sub(merged_dict, "NAM_PREP_ISBA_SNOW", "CSNOW", snow_scheme)
+            merged_dict = self.sub(
+                merged_dict, "NAM_PREP_ISBA_SNOW", "CSNOW", snow_scheme
+            )
             if self.config.get_setting("SURFEX#ISBA#SNOW") == "CRO":
-                merged_dict = \
-                    self.merge_json_namelist_file(merged_dict,
-                                                  self.input_path + "/prep_isba_snow_crocus.json")
+                merged_dict = self.merge_json_namelist_file(
+                    merged_dict, self.input_path + "/prep_isba_snow_crocus.json"
+                )
 
         return merged_dict
 
@@ -1583,33 +2225,39 @@ class Namelist(object):
             Exception: _description_
 
         """
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/offline.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/offline.json"
+        )
 
         if self.config.get_setting("SURFEX#IO#LSELECT"):
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/selected_output.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/selected_output.json"
+            )
 
         # SEAFLX settings
         if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_seaflux.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_seaflux.json"
+            )
             # Surface perturbations
             pertflux = self.config.get_setting("SURFEX#SEA#PERTFLUX")
             merged_dict = self.sub(merged_dict, "NAM_SEAFLUXn", "LPERTFLUX", pertflux)
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "WATFLX":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_watflux.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_watflux.json"
+            )
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_flake.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_flake.json"
+            )
 
         # ISBA settings
         if self.config.get_setting("SURFEX#TILES#NATURE") == "ISBA":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_isba.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_isba.json"
+            )
             pertsurf = self.config.get_setting("SURFEX#ISBA#PERTSURF")
             merged_dict = self.sub(merged_dict, "NAM_ISBAn", "LPERTSURF", pertsurf)
             xcgmax = self.config.get_setting("SURFEX#ISBA#XCGMAX", abort=False)
@@ -1621,18 +2269,20 @@ class Namelist(object):
 
         # SSO
         sso = self.config.get_setting("SURFEX#SSO#SCHEME")
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/offline_sso.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/offline_sso.json"
+        )
         merged_dict = self.sub(merged_dict, "NAM_SSON", "CROUGH", sso)
         if sso == "OROTUR":
-            merged_dict = \
-                self.merge_json_namelist_file(merged_dict,
-                                              self.input_path + "/offline_sso_orotur.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_sso_orotur.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_ISBAn", "XSOROT", self.geo.xdx)
 
         if self.config.get_setting("SURFEX#TILES#TOWN") == "TEB":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_teb.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_teb.json"
+            )
 
         # Perturbed offline settings (are overridden when running binary)
         # Make sure variables are existing and consistent
@@ -1643,8 +2293,9 @@ class Namelist(object):
 
         # Climate setting
         if self.config.get_setting("SURFEX#SEA#LVOLATILE_SIC"):
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/offline_seaice.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_seaice.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_SEAICEn", "LVOLATILE_SIC", True)
             merged_dict = self.sub(merged_dict, "NAM_SEAICEn", "XSIC_EFOLDING_TIME", 1.0)
 
@@ -1668,9 +2319,9 @@ class Namelist(object):
         merged_dict["NAM_IO_VARASSIM"].update({"LPRT": False})
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
 
-            merged_dict = \
-                self.merge_json_namelist_file(merged_dict,
-                                              self.input_path + "/offline_assim_pert.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_assim_pert.json"
+            )
 
             merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CASSIM_ISBA", "EKF")
             nvar = 0
@@ -1679,12 +2330,18 @@ class Namelist(object):
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var],
-                                       var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var],
-                                       var=var + 1)
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var], var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var], var=var + 1
+                )
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1696,9 +2353,9 @@ class Namelist(object):
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
 
-            merged_dict = \
-                self.merge_json_namelist_file(merged_dict,
-                                              self.input_path + "/offline_assim_pert.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/offline_assim_pert.json"
+            )
             merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CASSIM_ISBA", "ENKF")
 
             nvar = 0
@@ -1707,8 +2364,12 @@ class Namelist(object):
             # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var, cvar_val in enumerate(cvar_m):
                 # print(merged_dict)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1
+                )
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1732,14 +2393,17 @@ class Namelist(object):
             _type_: _description_
 
         """
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/soda_obs.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/soda_obs.json"
+        )
         lobsheader = self.config.get_setting("SURFEX#ASSIM#OBS#LOBSHEADER")
         merged_dict = self.sub(merged_dict, "NAM_OBS", "LOBSHEADER", lobsheader)
         lobsnat = self.config.get_setting("SURFEX#ASSIM#OBS#LOBSNAT")
         merged_dict = self.sub(merged_dict, "NAM_OBS", "LOBSNAT", lobsnat)
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
-        merged_dict = self.sub(merged_dict, "NAM_OBS", "CFILE_FORMAT_OBS", cfile_format_obs)
+        merged_dict = self.sub(
+            merged_dict, "NAM_OBS", "CFILE_FORMAT_OBS", cfile_format_obs
+        )
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
@@ -1749,11 +2413,15 @@ class Namelist(object):
             raise Exception("Mismatch in nnco/cobs_m/xerrobs_m")
 
         for obs, obs_val in enumerate(nnco):
-            merged_dict = self.sub(merged_dict, "NAM_OBS", "COBS_M(@VAR@)", cobs_m[obs],
-                                   var=obs + 1)
-            merged_dict = self.sub(merged_dict, "NAM_OBS", "NNCO(@VAR@)", obs_val, var=obs + 1)
-            merged_dict = self.sub(merged_dict, "NAM_OBS", "XERROBS_M(@VAR@)", xerrobs_m[obs],
-                                   var=obs + 1)
+            merged_dict = self.sub(
+                merged_dict, "NAM_OBS", "COBS_M(@VAR@)", cobs_m[obs], var=obs + 1
+            )
+            merged_dict = self.sub(
+                merged_dict, "NAM_OBS", "NNCO(@VAR@)", obs_val, var=obs + 1
+            )
+            merged_dict = self.sub(
+                merged_dict, "NAM_OBS", "XERROBS_M(@VAR@)", xerrobs_m[obs], var=obs + 1
+            )
             if nnco[obs] == 1:
                 nobstype += 1
         merged_dict = self.delete(merged_dict, "NAM_OBS", "COBS_M(@VAR@)")
@@ -1773,8 +2441,9 @@ class Namelist(object):
         Returns:
             dict: Merged dict.
         """
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/soda.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/soda.json"
+        )
 
         merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LASSIM", True)
 
@@ -1782,32 +2451,72 @@ class Namelist(object):
         merged_dict = self.set_obs(merged_dict)
 
         # LSM
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CFILE_FORMAT_LSM",
-                               self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM"))
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "CFILE_FORMAT_LSM",
+            self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM"),
+        )
 
         # Sea
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CASSIM_SEA",
-                               self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CFILE_FORMAT_SST",
-                               self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LREAD_SST_FROM_FILE",
-                               self.config.get_setting("SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LEXTRAP_SEA",
-                               self.config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LECSST",
-                               self.config.get_setting("SURFEX#ASSIM#SEA#LECSST"))
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "CASSIM_SEA",
+            self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "CFILE_FORMAT_SST",
+            self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "LREAD_SST_FROM_FILE",
+            self.config.get_setting("SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "LEXTRAP_SEA",
+            self.config.get_setting("SURFEX#ASSIM#SEA#LEXTRAP_SEA"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "LECSST",
+            self.config.get_setting("SURFEX#ASSIM#SEA#LECSST"),
+        )
 
         # Water
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CASSIM_WATER",
-                               self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LWATERTG2",
-                               self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LWATERTG2"))
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LEXTRAP_WATER",
-                               self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"))
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "CASSIM_WATER",
+            self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "LWATERTG2",
+            self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LWATERTG2"),
+        )
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "LEXTRAP_WATER",
+            self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"),
+        )
 
         # Nature
-        merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CASSIM_ISBA",
-                               self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA"))
+        merged_dict = self.sub(
+            merged_dict,
+            "NAM_ASSIM",
+            "CASSIM_ISBA",
+            self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA"),
+        )
 
         # Snow
         laesnm = False
@@ -1821,14 +2530,17 @@ class Namelist(object):
                         logging.debug("true")
                         laesnm = True
             else:
-                raise Exception("You must provide a DTG when using a list for snow  "
-                                "assimilation cycles")
+                raise Exception(
+                    "You must provide a DTG when using a list for snow  "
+                    "assimilation cycles"
+                )
         merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LAESNM", laesnm)
 
         # Set OI settings
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "OI":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/soda_isba_oi.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/soda_isba_oi.json"
+            )
             ua_physics = self.config.get_setting("FORECAST#PHYSICS", abort=False)
             if ua_physics is None:
                 logging.warning("FORECAST#PHYSICS not set. Assume arome physics")
@@ -1838,10 +2550,18 @@ class Namelist(object):
             elif ua_physics == "alaro":
                 merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LAROME", False)
 
-            merged_dict = self.sub(merged_dict, "NAM_NACVEG", "XSIGT2MO",
-                                   self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO"))
-            merged_dict = self.sub(merged_dict, "NAM_NACVEG", "XSIGH2MO",
-                                   self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGH2MO"))
+            merged_dict = self.sub(
+                merged_dict,
+                "NAM_NACVEG",
+                "XSIGT2MO",
+                self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGT2MO"),
+            )
+            merged_dict = self.sub(
+                merged_dict,
+                "NAM_NACVEG",
+                "XSIGH2MO",
+                self.config.get_setting("SURFEX#ASSIM#ISBA#OI#XSIGH2MO"),
+            )
             merged_dict = self.sub(merged_dict, "NAM_NACVEG", "XRCLIMCA", 0.0)
             merged_dict = self.sub(merged_dict, "NAM_NACVEG", "XRCLISST", 0.05)
             merged_dict = self.sub(merged_dict, "NAM_NACVEG", "NECHGU", self.fcint)
@@ -1853,8 +2573,9 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_ASSIM", "CFILE_FORMAT_FG", f_fg)
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/soda_isba_ekf.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/soda_isba_ekf.json"
+            )
             nvar = 0
             llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")
             merged_dict = self.sub(merged_dict, "NAM_ASSIM", "LLINCHECK", llincheck)
@@ -1864,15 +2585,25 @@ class Namelist(object):
             xsigma_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSIGMA_M")
             xtprt_m = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XTPRT_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-            if len(nncv) != len(cvar_m) or len(nncv) != len(xsigma_m) or len(nncv) != len(xtprt_m):
+            if (
+                len(nncv) != len(cvar_m)
+                or len(nncv) != len(xsigma_m)
+                or len(nncv) != len(xtprt_m)
+            ):
                 raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var],
-                                       var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var],
-                                       var=var + 1)
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "XTPRT_M(@VAR@)", xtprt_m[var], var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)", xsigma_m[var], var=var + 1
+                )
                 if nncv[var] == 1:
                     nvar += 1
             merged_dict = self.delete(merged_dict, "NAM_VAR", "XSIGMA_M(@VAR@)")
@@ -1885,22 +2616,35 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_VAR", "XSCALE_Q", xscale_q)
             # self.input_list.append({"json": {"NAM_VAR": {"XSCALE_Q": xscale_q}}})
             merged_dict = self.sub(merged_dict, "NAM_IO_VARASSIM", "LPRT", False)
-            merged_dict = self.sub(merged_dict, "NAM_IO_VARASSIM", "LBEV",
-                                   self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"))
-            merged_dict = self.sub(merged_dict, "NAM_IO_VARASSIM", "LBFIXED",
-                                   not self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"))
+            merged_dict = self.sub(
+                merged_dict,
+                "NAM_IO_VARASSIM",
+                "LBEV",
+                self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
+            )
+            merged_dict = self.sub(
+                merged_dict,
+                "NAM_IO_VARASSIM",
+                "LBFIXED",
+                not self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#EVOLVE_B"),
+            )
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/soda_isba_enkf.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/soda_isba_enkf.json"
+            )
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
             if len(nncv) != len(cvar_m):
                 raise Exception("Mismatch in nncv/cvar_m")
             for var, cvar_val in enumerate(cvar_m):
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1)
-                merged_dict = self.sub(merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1)
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
+                )
+                merged_dict = self.sub(
+                    merged_dict, "NAM_VAR", "NNCV(@VAR@)", nncv[var], var=var + 1
+                )
 
                 if nncv[var] == 1:
                     nvar += 1
@@ -1918,28 +2662,34 @@ class Namelist(object):
         """Epilog."""
         # Always set these
         if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/epilog_sice.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/epilog_sice.json"
+            )
 
-        merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                    self.input_path + "/epilog_treedrag.json")
+        merged_dict = self.merge_json_namelist_file(
+            merged_dict, self.input_path + "/epilog_treedrag.json"
+        )
         lfaketrees = self.config.get_setting("SURFEX#TREEDRAG#FAKETREES", abort=False)
         if lfaketrees is not None:
             merged_dict = self.sub(merged_dict, "NAM_TREEDRAG", "LFAKETREE", lfaketrees)
 
         if self.config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/epilog_flake.json")
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/epilog_flake.json"
+            )
         return merged_dict
 
     def override(self, merged_dict):
         """Overide."""
         # Override posssibility
         if os.path.exists(self.input_path + "/override.json"):
-            logging.warning("WARNING: Override settings with content from %s/override.json",
-                            self.input_path)
-            merged_dict = self.merge_json_namelist_file(merged_dict,
-                                                        self.input_path + "/override.json")
+            logging.warning(
+                "WARNING: Override settings with content from %s/override.json",
+                self.input_path,
+            )
+            merged_dict = self.merge_json_namelist_file(
+                merged_dict, self.input_path + "/override.json"
+            )
         return merged_dict
 
     @staticmethod
@@ -1991,7 +2741,9 @@ class Namelist(object):
                     if "@" + key + "@" in setting:
                         setting = value
                     else:
-                        logging.warning("No string substitution. Using existing value: %s", setting)
+                        logging.warning(
+                            "No string substitution. Using existing value: %s", setting
+                        )
                 merged_dict[nam_block][key] = setting
             else:
                 logging.warning("No setting found in namelist for: %s", key)
@@ -2057,13 +2809,27 @@ class Namelist(object):
             filetype_name = ldtype
             if ldtype == "YSOC_TOP" or ldtype == "YSOC_SUB":
                 filetype_name = "YSOC"
-            return {"json": json.loads('{"' + lnamelist_section + '": { "' + ldtype + '": "'
-                    + basename + '", ' + '"' + filetype_name + 'FILETYPE": "DIRECT"}}')}
+            return {
+                "json": json.loads(
+                    '{"'
+                    + lnamelist_section
+                    + '": { "'
+                    + ldtype
+                    + '": "'
+                    + basename
+                    + '", '
+                    + '"'
+                    + filetype_name
+                    + 'FILETYPE": "DIRECT"}}'
+                )
+            }
         if ldname.endswith(".json"):
             return {"file": linput_path + "/" + ldname}
 
     @staticmethod
-    def set_dirtyp_data_namelist(lnamelist_section, ldtype, ldname, vtype=None, decade=None):
+    def set_dirtyp_data_namelist(
+        lnamelist_section, ldtype, ldname, vtype=None, decade=None
+    ):
         """Set dirtyp data namelist.
 
         Args:
@@ -2090,8 +2856,17 @@ class Namelist(object):
         if vtype is not None or decade is not None:
             filetype_name = filetype_name + ")"
         return {
-            "json": json.loads('{"' + lnamelist_section + '": { "CFNAM_' + filetype_name + '": "'
-                               + basename + '", "CFTYP_' + filetype_name + '": "DIRTYPE"}}')
+            "json": json.loads(
+                '{"'
+                + lnamelist_section
+                + '": { "CFNAM_'
+                + filetype_name
+                + '": "'
+                + basename
+                + '", "CFTYP_'
+                + filetype_name
+                + '": "DIRTYPE"}}'
+            )
         }
 
     @staticmethod
@@ -2187,10 +2962,10 @@ class Namelist(object):
             f90nml.Namelist: Namelist object.
 
         """
-        if input_fmt == 'json':
+        if input_fmt == "json":
             with open(input_fname, mode="r", encoding="utf-8") as input_file:
                 output_data = json.load(input_file)
-        elif input_fmt == 'yaml':
+        elif input_fmt == "yaml":
             with open(input_fname, mode="r", encoding="utf-8") as input_file:
                 output_data = yaml.safe_load(input_file)
         output_data = f90nml.Namelist(output_data)
@@ -2207,11 +2982,15 @@ class Namelist(object):
             indent (int, optional): Indentation. Defaults to 2.
 
         """
-        if output_fmt == 'json':
+        if output_fmt == "json":
             input_data = input_data.todict(complex_tuple=True)
-            json.dump(input_data, open(output_file, "w", encoding="utf-8"), indent=indent,
-                      separators=(',', ': '))
-        elif output_fmt == 'yaml':
+            json.dump(
+                input_data,
+                open(output_file, "w", encoding="utf-8"),
+                indent=indent,
+                separators=(",", ": "),
+            )
+        elif output_fmt == "yaml":
             input_data = input_data.todict(complex_tuple=True)
             yaml.dump(input_data, output_file, default_flow_style=False)
 

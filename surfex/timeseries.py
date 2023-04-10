@@ -1,11 +1,10 @@
 """Time series."""
-from datetime import datetime, timedelta
-import logging
 import json
+import logging
+from datetime import datetime, timedelta
 
-
-from .read import Converter
 from .obs import Observation
+from .read import Converter
 
 
 class TimeSeries(object):
@@ -68,17 +67,15 @@ class TimeSeries(object):
         """
         data = {}
         for i, time_val in enumerate(self.times):
-            data.update({
-                time_val.strftime("%Y%m%d%H%M%S"): {
-                    "values": self.values[i].tolist()
-                }
-            })
+            data.update(
+                {time_val.strftime("%Y%m%d%H%M%S"): {"values": self.values[i].tolist()}}
+            )
         data = {
             "lons": self.lons.tolist(),
             "lats": self.lats.tolist(),
             "stids": self.stids,
             "varname": self.varname,
-            "data": data
+            "data": data,
         }
         json.dump(data, open(filename, "w", encoding="utf-8"), indent=indent)
 
@@ -86,7 +83,9 @@ class TimeSeries(object):
 class TimeSeriesFromJson(TimeSeries):
     """Time series from json."""
 
-    def __init__(self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None):
+    def __init__(
+        self, filename, starttime=None, endtime=None, interval=None, lons=None, lats=None
+    ):
         """Construct.
 
         Args:
@@ -136,8 +135,11 @@ class TimeSeriesFromJson(TimeSeries):
             if len(mask) != len(lons):
                 print(ts_lons, ts_lats)
                 print(lons, lats)
-                raise Exception("You asked for " + str(len(lons) - len(mask))
-                                + " position(s) not in the file")
+                raise Exception(
+                    "You asked for "
+                    + str(len(lons) - len(mask))
+                    + " position(s) not in the file"
+                )
 
         varname = data["varname"]
         validtime = None
@@ -172,8 +174,20 @@ class TimeSeriesFromJson(TimeSeries):
 class TimeSeriesFromConverter(TimeSeries):
     """Time-Series from a converter."""
 
-    def __init__(self, var, fileformat, conf, geo, converter, start, end, interval=3600,
-                 cache=None, stids_file=None, geo_in=None):
+    def __init__(
+        self,
+        var,
+        fileformat,
+        conf,
+        geo,
+        converter,
+        start,
+        end,
+        interval=3600,
+        cache=None,
+        stids_file=None,
+        geo_in=None,
+    ):
         """Construct.
 
         Args:
@@ -195,15 +209,19 @@ class TimeSeriesFromConverter(TimeSeries):
         defs = {}
 
         converter = Converter(
-            converter, basetime, defs, conf[var][fileformat]["converter"], fileformat)
+            converter, basetime, defs, conf[var][fileformat]["converter"], fileformat
+        )
         times = []
         values = []
         # Loop output time steps
         this_time = start
         while this_time <= end:
             # Write for each time step
-            logging.info("Creating time series for: %s time_step: %s",
-                         this_time.strftime('%Y%m%d%H'), str(this_time))
+            logging.info(
+                "Creating time series for: %s time_step: %s",
+                this_time.strftime("%Y%m%d%H"),
+                str(this_time),
+            )
             values.append(converter.read_time_step(geo, this_time, cache))
             times.append(this_time)
 
@@ -213,9 +231,18 @@ class TimeSeriesFromConverter(TimeSeries):
 
         if stids_file is not None:
             stids = Observation.get_stid_from_stationlist(
-                stids_file, geo.lonlist, geo.latlist)
+                stids_file, geo.lonlist, geo.latlist
+            )
         else:
             stids = ["NA"] * geo.nlons
 
-        TimeSeries.__init__(self, times, values, geo.lonlist, geo.latlist, stids,
-                            stids_file=stids_file, varname=var)
+        TimeSeries.__init__(
+            self,
+            times,
+            values,
+            geo.lonlist,
+            geo.latlist,
+            stids,
+            stids_file=stids_file,
+            varname=var,
+        )

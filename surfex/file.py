@@ -1,18 +1,18 @@
 """Surfex file related stuff."""
-import os
-import shutil
-import logging
-import re
 import abc
-from datetime import timedelta, datetime
+import logging
+import os
+import re
+import shutil
+from datetime import datetime, timedelta
+
 # from netCDF4 import Dataset, num2date, chartostring
 import netCDF4
-import pyproj
 import numpy as np
-
+import pyproj
 
 from .fa import Fa
-from .geo import ConfProj, LonLatReg, LonLatVal, IGN
+from .geo import IGN, ConfProj, LonLatReg, LonLatVal
 from .interpolation import Interpolation
 from .util import remove_existing_file
 
@@ -92,8 +92,9 @@ class SurfexSurfIO(object):
 
     """
 
-    def __init__(self, surfexfile, csurf_filetype, input_file=None, symlink=True,
-                 archive_file=None):
+    def __init__(
+        self, surfexfile, csurf_filetype, input_file=None, symlink=True, archive_file=None
+    ):
         """Construct the surfex surf file.
 
         Args:
@@ -124,7 +125,7 @@ class SurfexSurfIO(object):
             logging.debug("input_file: %s file_out: %s", self.input_file, f_out)
             remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
-                logging.info("Symlink " + self.input_file + " -> " + f_out)
+                logging.info("Symlink %s -> %s", self.input_file, f_out)
                 os.symlink(self.input_file, f_out)
 
     def copy_input(self):
@@ -133,7 +134,7 @@ class SurfexSurfIO(object):
             f_out = os.getcwd() + "/" + self.filename
             remove_existing_file(self.input_file, f_out)
             if os.path.abspath(self.input_file) != f_out:
-                logging.info("Copy " + self.input_file + " -> " + f_out)
+                logging.info("Copy %s -> %s", self.input_file, f_out)
                 shutil.copy2(self.input_file, f_out)
 
     def archive_output_file(self):
@@ -158,8 +159,16 @@ class SurfexSurfIO(object):
 class PGDFile(SurfexSurfIO):
     """PGD file."""
 
-    def __init__(self, csurf_filetype, cpgdfile, input_file=None, symlink=True,
-                 archive_file=None, lfagmap=False, masterodb=False):
+    def __init__(
+        self,
+        csurf_filetype,
+        cpgdfile,
+        input_file=None,
+        symlink=True,
+        archive_file=None,
+        lfagmap=False,
+        masterodb=False,
+    ):
         """Construct PGD file object.
 
         Args:
@@ -175,20 +184,38 @@ class PGDFile(SurfexSurfIO):
         logging.debug("PGDFile")
         logging.debug("%s %s %s", cpgdfile, csurf_filetype, masterodb)
 
-        cpgdfile = get_surfex_io_object(cpgdfile, filetype="surf",
-                                        fileformat=csurf_filetype,
-                                        lfagmap=lfagmap, masterodb=masterodb)
+        cpgdfile = get_surfex_io_object(
+            cpgdfile,
+            filetype="surf",
+            fileformat=csurf_filetype,
+            lfagmap=lfagmap,
+            masterodb=masterodb,
+        )
 
-        SurfexSurfIO.__init__(self, cpgdfile, csurf_filetype, input_file=input_file,
-                              archive_file=archive_file, symlink=symlink)
+        SurfexSurfIO.__init__(
+            self,
+            cpgdfile,
+            csurf_filetype,
+            input_file=input_file,
+            archive_file=archive_file,
+            symlink=symlink,
+        )
         self.need_pgd = False
 
 
 class PREPFile(SurfexSurfIO):
     """PREP file."""
 
-    def __init__(self, csurf_filetype, cprepfile, input_file=None, symlink=True,
-                 archive_file=None, lfagmap=False, masterodb=False):
+    def __init__(
+        self,
+        csurf_filetype,
+        cprepfile,
+        input_file=None,
+        symlink=True,
+        archive_file=None,
+        lfagmap=False,
+        masterodb=False,
+    ):
         """Construct PREP file object.
 
         Args:
@@ -202,20 +229,37 @@ class PREPFile(SurfexSurfIO):
 
         """
         logging.debug("PREPFile %s", input_file)
-        cprepfile = get_surfex_io_object(cprepfile, filetype="surf",
-                                         fileformat=csurf_filetype,
-                                         lfagmap=lfagmap, masterodb=masterodb,)
+        cprepfile = get_surfex_io_object(
+            cprepfile,
+            filetype="surf",
+            fileformat=csurf_filetype,
+            lfagmap=lfagmap,
+            masterodb=masterodb,
+        )
 
-        SurfexSurfIO.__init__(self, cprepfile, csurf_filetype, input_file=input_file,
-                              archive_file=archive_file, symlink=symlink)
+        SurfexSurfIO.__init__(
+            self,
+            cprepfile,
+            csurf_filetype,
+            input_file=input_file,
+            archive_file=archive_file,
+            symlink=symlink,
+        )
         self.need_pgd = True
 
 
 class SURFFile(SurfexSurfIO):
     """SURFOUT file."""
 
-    def __init__(self, csurf_filetype, csurffile, archive_file=None, input_file=None,
-                 lfagmap=False, masterodb=False):
+    def __init__(
+        self,
+        csurf_filetype,
+        csurffile,
+        archive_file=None,
+        input_file=None,
+        lfagmap=False,
+        masterodb=False,
+    ):
         """Construct SURFOUT file object.
 
         Result of a surfex binary.
@@ -231,20 +275,37 @@ class SURFFile(SurfexSurfIO):
 
         """
         logging.debug("SURFFile")
-        csurffile = get_surfex_io_object(csurffile, filetype="surf",
-                                         fileformat=csurf_filetype,
-                                         lfagmap=lfagmap, masterodb=masterodb)
+        csurffile = get_surfex_io_object(
+            csurffile,
+            filetype="surf",
+            fileformat=csurf_filetype,
+            lfagmap=lfagmap,
+            masterodb=masterodb,
+        )
 
-        SurfexSurfIO.__init__(self, csurffile, csurf_filetype, input_file=input_file,
-                              archive_file=archive_file)
+        SurfexSurfIO.__init__(
+            self,
+            csurffile,
+            csurf_filetype,
+            input_file=input_file,
+            archive_file=archive_file,
+        )
         self.need_pgd = True
 
 
 class SurfexFileVariable(object):
     """Surfex Variable."""
 
-    def __init__(self, varname, validtime=None, patches=1, layers=1, basetime=None,
-                 interval=None, datatype="float"):
+    def __init__(
+        self,
+        varname,
+        validtime=None,
+        patches=1,
+        layers=1,
+        basetime=None,
+        interval=None,
+        datatype="float",
+    ):
         """Construct a surfex file variable.
 
         Args:
@@ -270,8 +331,9 @@ class SurfexFileVariable(object):
         return self.varname
 
 
-def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfagmap=False,
-                         masterodb=False):
+def get_surfex_io_object(
+    fname, filetype="surf", fileformat=None, geo=None, lfagmap=False, masterodb=False
+):
     """Get the surfexIO object.
 
     Args:
@@ -288,8 +350,11 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfag
     """
     logging.debug("get_surfex_io_object")
     if filetype is not None:
-        if filetype.lower() != "surf" and filetype.lower() != "ts" \
-                and filetype.lower() != "forcing":
+        if (
+            filetype.lower() != "surf"
+            and filetype.lower() != "ts"
+            and filetype.lower() != "forcing"
+        ):
             raise Exception("Invalid filetype: " + filetype + " Allowed: surf/ts/forcing")
 
     if fileformat is None:
@@ -315,7 +380,9 @@ def get_surfex_io_object(fname, filetype="surf", fileformat=None, geo=None, lfag
             obj = NetCDFSurfexFile(fname, geo)
         elif filetype.lower() == "forcing":
             if geo is None:
-                raise Exception("Format NetCDF needs a geometry for reading forcing files")
+                raise Exception(
+                    "Format NetCDF needs a geometry for reading forcing files"
+                )
             obj = ForcingFileNetCDF(fname, geo)
         else:
             raise NotImplementedError
@@ -379,8 +446,10 @@ def guess_file_format(fname, ftype=None):
                 ftype = "forcing"
 
         if re.search("SURFOUT.*", f_n) and ftype is None:
-            raise Exception("Can not-auto decide filetype for files called SURFOUT.*.txt. "
-                            + "Specify either surf or ts")
+            raise Exception(
+                "Can not-auto decide filetype for files called SURFOUT.*.txt. "
+                + "Specify either surf or ts"
+            )
 
     fileformat = None
     logging.info("Trying to guess the file format from extension: %s", ext)
@@ -399,7 +468,9 @@ def guess_file_format(fname, ftype=None):
         fileformat = "fa"
 
     if ftype is None or fileformat is None:
-        raise Exception("Filetype and/or format not set: " + str(ftype) + " & " + str(fileformat))
+        raise Exception(
+            "Filetype and/or format not set: " + str(ftype) + " & " + str(fileformat)
+        )
     logging.info("Filetype: %s format: %s", ftype, fileformat)
 
     return fileformat, ftype
@@ -451,7 +522,7 @@ class AsciiSurfexFile(SurfexIO):
                     "xx": self.read("XX", "&FULL", "float"),
                     "xy": self.read("XY", "&FULL", "float"),
                     "xdx": self.read("XDX", "&FULL", "float"),
-                    "xdy": self.read("XY", "&FULL", "float")
+                    "xdy": self.read("XY", "&FULL", "float"),
                 }
             }
             return IGN(domain)
@@ -462,7 +533,7 @@ class AsciiSurfexFile(SurfexIO):
                     "xx": self.read("XX", "&FULL", "float"),
                     "xy": self.read("XY", "&FULL", "float"),
                     "xdx": self.read("DX", "&FULL", "float"),
-                    "xdy": self.read("DY", "&FULL", "float")
+                    "xdy": self.read("DY", "&FULL", "float"),
                 }
             }
             return LonLatVal(domain)
@@ -477,7 +548,7 @@ class AsciiSurfexFile(SurfexIO):
                     "nlon": self.read("NLON", "&FULL", "integer")[0],
                     "nlat": self.read("NLAT", "&FULL", "integer")[0],
                     "reg_lon": self.read("REG_LON", "&FULL", "float")[0],
-                    "reg_lat": self.read("REG_LAT", "&FULL", "float")[0]
+                    "reg_lat": self.read("REG_LAT", "&FULL", "float")[0],
                 }
             }
             return LonLatReg(domain)
@@ -493,24 +564,25 @@ class AsciiSurfexFile(SurfexIO):
             ll_lon = self.read("LONORI", "&FULL", "float")[0]
             ll_lat = self.read("LATORI", "&FULL", "float")[0]
 
-            earth = 6.37122e+6
-            proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} " \
-                          f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+            earth = 6.37122e6
+            proj_string = (
+                f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} "
+                f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+            )
 
             proj = pyproj.CRS.from_string(proj_string)
             wgs84 = pyproj.CRS.from_string("EPSG:4326")
-            x_0, y_0 = pyproj.Transformer.from_crs(wgs84, proj,
-                                                   always_xy=True).transform(ll_lon, ll_lat)
+            x_0, y_0 = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(
+                ll_lon, ll_lat
+            )
             x_c = x_0 + 0.5 * (n_x - 1) * d_x
             y_c = y_0 + 0.5 * (n_y - 1) * d_y
-            lonc, latc = pyproj.Transformer.from_crs(proj, wgs84,
-                                                     always_xy=True).transform(x_c, y_c)
+            lonc, latc = pyproj.Transformer.from_crs(
+                proj, wgs84, always_xy=True
+            ).transform(x_c, y_c)
 
             domain = {
-                "nam_conf_proj": {
-                    "xlon0": lon0,
-                    "xlat0": lat0
-                },
+                "nam_conf_proj": {"xlon0": lon0, "xlat0": lat0},
                 "nam_conf_proj_grid": {
                     "xloncen": lonc,
                     "xlatcen": latc,
@@ -519,8 +591,8 @@ class AsciiSurfexFile(SurfexIO):
                     "xdx": d_x,
                     "xdy": d_x,
                     "ilone": 0,
-                    "ilate": 0
-                }
+                    "ilate": 0,
+                },
             }
             # print(domain)
             return ConfProj(domain)
@@ -544,8 +616,8 @@ class AsciiSurfexFile(SurfexIO):
 
         """
         # Add & if not given
-        if read_tile.find('&') < 0:
-            read_tile = '&' + read_tile
+        if read_tile.find("&") < 0:
+            read_tile = "&" + read_tile
         # print read_tile,read_par
         file = open(self.filename, mode="r", encoding="utf-8")
         read_desc = False
@@ -559,13 +631,13 @@ class AsciiSurfexFile(SurfexIO):
             if len(words) > 0:
                 # print "Line:",read_desc,read_value,":",line
                 if read_value and not read_desc:
-                    if words[0].find('&') < 0:
+                    if words[0].find("&") < 0:
                         # print "Value:", line
                         try:
                             if datatype.lower() == "float":
                                 for word in words:
                                     val = float(word.replace("D", "E"))
-                                    if val == 1e+20:
+                                    if val == 1e20:
                                         val = np.nan
                                     values.append(val)
                             elif datatype.lower() == "string":
@@ -573,28 +645,35 @@ class AsciiSurfexFile(SurfexIO):
                                 for word in words:
                                     str_words.append(word)
                                 values.append(" ".join(str_words))
-                            elif datatype.lower() == "integer" or datatype.lower() == "int":
+                            elif (
+                                datatype.lower() == "integer" or datatype.lower() == "int"
+                            ):
                                 for word in words:
                                     values.append(int(word))
                             else:
-                                raise NotImplementedError("Type not implemented " + str(datatype))
+                                raise NotImplementedError(
+                                    "Type not implemented " + str(datatype)
+                                )
                         except ValueError:
-                            raise Exception(f"Conversion from {str(words)} to {str(datatype)} "
-                                            "does not work! Try a different datatype!") \
-                                from ValueError
+                            raise Exception(
+                                f"Conversion from {str(words)} to {str(datatype)} "
+                                "does not work! Try a different datatype!"
+                            ) from ValueError
 
                 if read_desc:
                     # print "Description: ", words[0]
                     read_desc = False
                     read_value = True
 
-                if words[0].find('&') >= 0:
+                if words[0].find("&") >= 0:
                     tile = words[0]
                     par = words[1]
 
                     read_value = False
-                    if tile.strip().lower() == read_tile.lower() \
-                            and par.lower() == read_par.lower():
+                    if (
+                        tile.strip().lower() == read_tile.lower()
+                        and par.lower() == read_par.lower()
+                    ):
                         read_desc = True
                         read_value = False
                         logging.info("Found: %s %s", str(tile), str(par))
@@ -648,8 +727,9 @@ class AsciiSurfexFile(SurfexIO):
         """
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
         return points, interpolator
 
 
@@ -698,24 +778,25 @@ class NCSurfexFile(SurfexIO):
 
             ll_lon = f_h["LONORI"][:]
             ll_lat = f_h["LATORI"][:]
-            earth = 6.37122e+6
-            proj_string = f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} " \
-                          f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+            earth = 6.37122e6
+            proj_string = (
+                f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} "
+                f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+            )
 
             proj = pyproj.CRS.from_string(proj_string)
             wgs84 = pyproj.CRS.from_string("EPSG:4326")
-            x_0, y_0 = pyproj.Transformer.from_crs(wgs84, proj,
-                                                   always_xy=True).transform(ll_lon, ll_lat)
+            x_0, y_0 = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(
+                ll_lon, ll_lat
+            )
             x_c = x_0 + 0.5 * (n_x + 1) * d_x
             y_c = y_0 + 0.5 * (n_y + 1) * d_y
-            lonc, latc = pyproj.Transformer.from_crs(proj, wgs84,
-                                                     always_xy=True).transform(x_c, y_c)
+            lonc, latc = pyproj.Transformer.from_crs(
+                proj, wgs84, always_xy=True
+            ).transform(x_c, y_c)
 
             domain = {
-                "nam_conf_proj": {
-                    "xlon0": lon0,
-                    "xlat0": lat0
-                },
+                "nam_conf_proj": {"xlon0": lon0, "xlat0": lat0},
                 "nam_conf_proj_grid": {
                     "xloncen": lonc,
                     "xlatcen": latc,
@@ -724,8 +805,8 @@ class NCSurfexFile(SurfexIO):
                     "xdx": d_x,
                     "xdy": d_y,
                     "ilone": 0,
-                    "ilate": 0
-                }
+                    "ilate": 0,
+                },
             }
             return ConfProj(domain)
         elif cgrid == "IGN":
@@ -735,7 +816,7 @@ class NCSurfexFile(SurfexIO):
                     "xx": f_h["XX"][:],
                     "xy": f_h["XY"][:],
                     "xdx": f_h["DX"][:],
-                    "xdy": f_h["DY"][:]
+                    "xdy": f_h["DY"][:],
                 }
             }
             return IGN(domain)
@@ -746,7 +827,7 @@ class NCSurfexFile(SurfexIO):
                     "xx": f_h["XX"][:],
                     "xy": f_h["XY"][:],
                     "xdx": f_h["DX"][:],
-                    "xdy": f_h["DY"][:]
+                    "xdy": f_h["DY"][:],
                 }
             }
             return LonLatVal(domain)
@@ -828,8 +909,9 @@ class NCSurfexFile(SurfexIO):
 
         """
         field, geo_in = self.field(var, validtime=validtime)
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
         return points, interpolator
 
 
@@ -906,8 +988,9 @@ class FaSurfexFile(SurfexIO):
         """
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
         return points, interpolator
 
 
@@ -995,16 +1078,17 @@ class NetCDFSurfexFile(SurfexIO):
 
                 if dim == "time":
                     mapping[0] = ndims
-                    times_for_var = self.file_handler.variables['time']
+                    times_for_var = self.file_handler.variables["time"]
                     units = times_for_var.units
                     try:
                         t_cal = times_for_var.calendar
                     except AttributeError:  # Attribute doesn't exist
-                        t_cal = u"gregorian"  # or standard
+                        t_cal = "gregorian"  # or standard
 
                     indices = list(range(0, dimlen))
-                    times_for_var = netCDF4.num2date(times_for_var[indices], units=units,
-                                                     calendar=t_cal)
+                    times_for_var = netCDF4.num2date(
+                        times_for_var[indices], units=units, calendar=t_cal
+                    )
                     if len(times) > 0:
                         for t_to_find, t_to_find_val in enumerate(times):
                             for tstep in range(0, len(indices)):
@@ -1079,7 +1163,7 @@ class NetCDFSurfexFile(SurfexIO):
                 field2d = np.empty(npoints)
                 i = 0
                 # print t,npatch,npoints,field.shape,field2d.shape
-                for patch, in range(0, npatch):
+                for (patch,) in range(0, npatch):
                     if self.geo.mask is not None:
                         iii = 0
                         j = 0
@@ -1087,8 +1171,9 @@ class NetCDFSurfexFile(SurfexIO):
                         # dimensions than the PGD dimension and mask needs x first.
                         for xxx in range(-1, field.shape[1] + 1):
                             for yyy in range(-1, field.shape[2] + 1):
-                                if xxx in range(0, field.shape[1]) and \
-                                        yyy in range(0, field.shape[2]):
+                                if xxx in range(0, field.shape[1]) and yyy in range(
+                                    0, field.shape[2]
+                                ):
                                     # print i, ii,j, t, x, y, p, self.geo.mask[j]
                                     if self.geo.mask[j] == iii:
                                         field2d[i] = np.nan
@@ -1152,8 +1237,9 @@ class NetCDFSurfexFile(SurfexIO):
         """
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
         return points, interpolator
 
 
@@ -1215,26 +1301,35 @@ class TexteSurfexFile(SurfexIO):
             if len(words) > 0:
                 for i, word in enumerate(words):
                     val = float(word.replace("D", "E"))
-                    if val == 1e+20:
+                    if val == 1e20:
                         val = np.nan
                     this_time[col] = val
 
                     col = col + 1
                     if col == end_of_line:
 
-                        if times is None or (base_time
-                                             + timedelta(seconds=(tstep * interval))) in times:
+                        if (
+                            times is None
+                            or (base_time + timedelta(seconds=(tstep * interval)))
+                            in times
+                        ):
                             values = np.append(values, this_time)
-                            times_read = np.append(times_read, base_time
-                                                   + timedelta(seconds=(tstep * interval)))
+                            times_read = np.append(
+                                times_read,
+                                base_time + timedelta(seconds=(tstep * interval)),
+                            )
                             # print i, col, base_time + timedelta(seconds=(t * interval)), this_time
 
                         tstep = tstep + 1
                         col = 0
                         this_time[:] = np.nan
                         if i != len(words) - 1:
-                            raise Exception("Dimension of domain does not match end of line! "
-                                            + str(i) + " != " + str(len(words) - 1))
+                            raise Exception(
+                                "Dimension of domain does not match end of line! "
+                                + str(i)
+                                + " != "
+                                + str(len(words) - 1)
+                            )
 
         if times_read.shape[0] > 0:
             values = np.reshape(values, [times_read.shape[0], this_time.shape[0]])
@@ -1280,8 +1375,9 @@ class TexteSurfexFile(SurfexIO):
 
         """
         field, geo_in = self.field(var, validtime=validtime)
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
         return points, interpolator
 
 
@@ -1338,21 +1434,19 @@ class ForcingFileNetCDF(SurfexIO):
                         dimlen = self.file_handler.variables[var].shape[ndims]
 
                         if dim == "time":
-                            times_for_var = self.file_handler.variables['time']
+                            times_for_var = self.file_handler.variables["time"]
                             units = times_for_var.units
                             try:
                                 t_cal = times_for_var.calendar
                             except AttributeError:  # Attribute doesn't exist
-                                t_cal = u"gregorian"  # or standard
+                                t_cal = "gregorian"  # or standard
 
                             indices = list(range(0, dimlen))
-                            times_for_var = netCDF4.num2date(times_for_var[indices], units=units,
-                                                             calendar=t_cal)
-                            # print(times_for_var)
+                            times_for_var = netCDF4.num2date(
+                                times_for_var[indices], units=units, calendar=t_cal
+                            )
                             for times_to_read_val in times:
-                                # print(times_to_read, times[times_to_read])
                                 for tstep, times_for_var_val in enumerate(times_for_var):
-                                    # print(t, times_for_var[t], times[times_to_read])
                                     test_time = times_for_var_val.strftime("%Y%m%d%H")
                                     test_time = datetime.strptime(test_time, "%Y%m%d%H")
                                     if test_time == times_to_read_val:
@@ -1370,7 +1464,7 @@ class ForcingFileNetCDF(SurfexIO):
                         logging.error("%s", times)
                         raise Exception("Valid time not found in file!")
 
-                    field = self.file_handler.variables[var][times_read, 0: npoints]
+                    field = self.file_handler.variables[var][times_read, 0:npoints]
         else:
             logging.warning("Variable %s not found!", var)
         return field, self.geo
@@ -1416,14 +1510,26 @@ class ForcingFileNetCDF(SurfexIO):
         """
         field, geo_in = self.field(var, validtime=validtime)
 
-        points, interpolator = SurfexIO.interpolate_field(field, geo_in, geo_out,
-                                                          interpolation=interpolation)
+        points, interpolator = SurfexIO.interpolate_field(
+            field, geo_in, geo_out, interpolation=interpolation
+        )
 
         return points, interpolator
 
 
-def read_surfex_field(varname, filename, validtime=None, basetime=None, patches=-1, layers=-1,
-                      fileformat=None, filetype=None, geo=None, datatype=None, interval=None):
+def read_surfex_field(
+    varname,
+    filename,
+    validtime=None,
+    basetime=None,
+    patches=-1,
+    layers=-1,
+    fileformat=None,
+    filetype=None,
+    geo=None,
+    datatype=None,
+    interval=None,
+):
     """Read surfex field.
 
     Args:
@@ -1461,18 +1567,37 @@ def read_surfex_field(varname, filename, validtime=None, basetime=None, patches=
     elif geo is None:
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
-    sfx_io = get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
-                                              geo=geo)
-    var = SurfexFileVariable(varname, validtime=validtime, patches=patches,
-                                         layers=layers, basetime=basetime, interval=interval,
-                                         datatype=datatype)
+    sfx_io = get_surfex_io_object(
+        filename, filetype=filetype, fileformat=fileformat, geo=geo
+    )
+    var = SurfexFileVariable(
+        varname,
+        validtime=validtime,
+        patches=patches,
+        layers=layers,
+        basetime=basetime,
+        interval=interval,
+        datatype=datatype,
+    )
     field, __ = sfx_io.field(var, validtime=validtime)
     return field
 
 
-def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None, patches=-1,
-                       layers=-1, fileformat=None, filetype=None, geo=None, datatype=None,
-                       interval=None, interpolation="nearest"):
+def read_surfex_points(
+    varname,
+    filename,
+    geo_out,
+    validtime=None,
+    basetime=None,
+    patches=-1,
+    layers=-1,
+    fileformat=None,
+    filetype=None,
+    geo=None,
+    datatype=None,
+    interval=None,
+    interpolation="nearest",
+):
     """Read surfex points.
 
     Args:
@@ -1508,14 +1633,25 @@ def read_surfex_points(varname, filename, geo_out, validtime=None, basetime=None
             geo = NCSurfexFile(filename).geo
         else:
             if geo is None:
-                raise NotImplementedError(f"{fileformat} is not implemented and geo is None")
+                raise NotImplementedError(
+                    f"{fileformat} is not implemented and geo is None"
+                )
     elif geo is None:
         raise Exception("You need to provide a geo object. Filetype is: " + str(filetype))
 
-    sfx_io = get_surfex_io_object(filename, filetype=filetype, fileformat=fileformat,
-                                  geo=geo)
-    var = SurfexFileVariable(varname, validtime=validtime, patches=patches,
-                             layers=layers, basetime=basetime, interval=interval,
-                             datatype=datatype)
-    field, geo_out = sfx_io.points(var, geo_out, validtime=validtime, interpolation=interpolation)
+    sfx_io = get_surfex_io_object(
+        filename, filetype=filetype, fileformat=fileformat, geo=geo
+    )
+    var = SurfexFileVariable(
+        varname,
+        validtime=validtime,
+        patches=patches,
+        layers=layers,
+        basetime=basetime,
+        interval=interval,
+        datatype=datatype,
+    )
+    field, geo_out = sfx_io.points(
+        var, geo_out, validtime=validtime, interpolation=interpolation
+    )
     return field

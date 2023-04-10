@@ -1,16 +1,31 @@
 """gridpp."""
 import logging
+
 import numpy as np
+
 try:
     import gridpp
 except ImportError:
     gridpp = None
 
 
-def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
-                  vlength=10000., wlength=0.5, elev_gradient=0, structure_function="Barnes",
-                  max_locations=50, epsilon=0.5, minvalue=None, maxvalue=None,
-                  interpol="bilinear", only_diff=False):
+def horizontal_oi(
+    geo,
+    background,
+    observations,
+    gelevs,
+    hlength=10000.0,
+    vlength=10000.0,
+    wlength=0.5,
+    elev_gradient=0,
+    structure_function="Barnes",
+    max_locations=50,
+    epsilon=0.5,
+    minvalue=None,
+    maxvalue=None,
+    interpol="bilinear",
+    only_diff=False,
+):
     """Do horizontal OI.
 
     Args:
@@ -49,8 +64,15 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     glons = geo.lons
 
     def obs2vectors(my_obs):
-        return my_obs.lons, my_obs.lats, my_obs.stids, my_obs.elevs, \
-            my_obs.values, my_obs.cis, my_obs.lafs
+        return (
+            my_obs.lons,
+            my_obs.lats,
+            my_obs.stids,
+            my_obs.elevs,
+            my_obs.values,
+            my_obs.cis,
+            my_obs.lafs,
+        )
 
     vectors = np.vectorize(obs2vectors)
     lons, lats, __, elevs, values, __, __ = vectors(observations)
@@ -60,16 +82,22 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     background = np.transpose(background)
     gelevs = np.transpose(gelevs)
 
-    logging.debug("glats.shape=%s glons.shape=%s gelevs.shape=%s", glats.shape,
-                  glons.shape, gelevs.shape)
+    logging.debug(
+        "glats.shape=%s glons.shape=%s gelevs.shape=%s",
+        glats.shape,
+        glons.shape,
+        gelevs.shape,
+    )
     bgrid = gridpp.Grid(glats, glons, gelevs)
     points = gridpp.Points(lats, lons, elevs)
     if interpol == "bilinear":
-        pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient,
-                                             gridpp.Bilinear)
+        pbackground = gridpp.simple_gradient(
+            bgrid, points, background, elev_gradient, gridpp.Bilinear
+        )
     elif interpol == "nearest":
-        pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient,
-                                             gridpp.Nearest)
+        pbackground = gridpp.simple_gradient(
+            bgrid, points, background, elev_gradient, gridpp.Nearest
+        )
     else:
         raise NotImplementedError(f"Interpolation method {interpol} not implemented")
 
@@ -82,8 +110,12 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
         values2 = []
         for point in range(0, len(lons)):
             if np.isnan(pbackground[point]):
-                logging.info("Undefined background in lon=%s lat=%s value=%s",
-                             lons[point], lats[point], values[point])
+                logging.info(
+                    "Undefined background in lon=%s lat=%s value=%s",
+                    lons[point],
+                    lats[point],
+                    values[point],
+                )
             else:
                 lons2.append(lons[point])
                 lats2.append(lats[point])
@@ -99,8 +131,9 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
 
         elif interpol == "nearest":
             # pbackground = gridpp.nearest(bgrid, points, background)
-            pbackground = gridpp.simple_gradient(bgrid, points, background, elev_gradient,
-                                                 gridpp.Nearest)
+            pbackground = gridpp.simple_gradient(
+                bgrid, points, background, elev_gradient, gridpp.Nearest
+            )
         else:
             raise NotImplementedError
 
@@ -111,9 +144,16 @@ def horizontal_oi(geo, background, observations, gelevs, hlength=10000.,
     else:
         raise NotImplementedError
 
-    field = gridpp.optimal_interpolation(bgrid, background, points, values, variance_ratios,
-                                         pbackground, structure,
-                                         max_locations)
+    field = gridpp.optimal_interpolation(
+        bgrid,
+        background,
+        points,
+        values,
+        variance_ratios,
+        pbackground,
+        structure,
+        max_locations,
+    )
     field = np.asarray(field)
     if minvalue is not None:
         field[field < minvalue] = minvalue

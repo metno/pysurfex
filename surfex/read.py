@@ -1,10 +1,10 @@
 """Converter and read data."""
+import copy
 import logging
 import os
-import copy
-from abc import abstractmethod, ABCMeta
-import numpy as np
+from abc import ABCMeta, abstractmethod
 
+import numpy as np
 
 from .interpolation import fill_field
 from .util import data_merge
@@ -25,12 +25,16 @@ class ReadData(object):
     @abstractmethod
     def read_time_step(self, validtime, cache):
         """To be implemented."""
-        raise NotImplementedError('users must define read_time_step to use this base class')
+        raise NotImplementedError(
+            "users must define read_time_step to use this base class"
+        )
 
     @abstractmethod
     def print_info(self):
         """To be implemented."""
-        raise NotImplementedError('users must define read_time_step to use this base class')
+        raise NotImplementedError(
+            "users must define read_time_step to use this base class"
+        )
 
 
 # class Points(object):
@@ -181,29 +185,41 @@ class Converter(object):
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
         elif name == "mslp2ps":
-            self.altitude = self.create_variable(fileformat, defs, conf[self.name]["altitude"])
+            self.altitude = self.create_variable(
+                fileformat, defs, conf[self.name]["altitude"]
+            )
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
         elif name == "rh2q_mslp":
             self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
-            self.altitude = self.create_variable(fileformat, defs, conf[self.name]["altitude"])
+            self.altitude = self.create_variable(
+                fileformat, defs, conf[self.name]["altitude"]
+            )
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
         elif name == "totalprec":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.totalprec = self.create_variable(
+                fileformat, defs, conf[self.name]["totalprec"]
+            )
             self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"])
         elif name == "calcsnow":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.totalprec = self.create_variable(
+                fileformat, defs, conf[self.name]["totalprec"]
+            )
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "calcrain":
-            self.totalprec = self.create_variable(fileformat, defs, conf[self.name]["totalprec"])
+            self.totalprec = self.create_variable(
+                fileformat, defs, conf[self.name]["totalprec"]
+            )
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "snowplusgraupel":
             self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"])
-            self.graupel = self.create_variable(fileformat, defs, conf[self.name]["graupel"])
+            self.graupel = self.create_variable(
+                fileformat, defs, conf[self.name]["graupel"]
+            )
         elif name == "phi2m":
             self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"])
         elif self.name == "swe2sd":
@@ -225,13 +241,16 @@ class Converter(object):
             self.smp1 = self.create_variable(fileformat, defs, conf[self.name]["smp1"])
             self.smp2 = self.create_variable(fileformat, defs, conf[self.name]["smp2"])
         elif self.name == "nature_town":
-            self.nature_fraction = self.create_variable(fileformat, defs,
-                                                        conf[self.name]["nature_fraction"])
-            self.town_fraction = self.create_variable(fileformat, defs,
-                                                      conf[self.name]["town_fraction"])
+            self.nature_fraction = self.create_variable(
+                fileformat, defs, conf[self.name]["nature_fraction"]
+            )
+            self.town_fraction = self.create_variable(
+                fileformat, defs, conf[self.name]["town_fraction"]
+            )
         elif self.name == "cloud_base":
-            self.cloud_base = self.create_variable(fileformat, defs,
-                                                   conf[self.name]["cloud_base"])
+            self.cloud_base = self.create_variable(
+                fileformat, defs, conf[self.name]["cloud_base"]
+            )
         else:
             raise NotImplementedError("Converter " + self.name + " not implemented")
 
@@ -285,7 +304,12 @@ class Converter(object):
         gravity = 9.81
         dry_air = 287.0
 
-        pres = np.multiply(mslp, np.exp(np.divide(np.multiply(-altitude, gravity), np.multiply(dry_air, temp))))
+        pres = np.multiply(
+            mslp,
+            np.exp(
+                np.divide(np.multiply(-altitude, gravity), np.multiply(dry_air, temp))
+            ),
+        )
 
         return pres
 
@@ -326,15 +350,17 @@ class Converter(object):
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
             field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
             if self.name == "rh2q_mslp":
-                field_altitude = self.altitude.read_variable(geo, validtime, cache)  # In m
+                field_altitude = self.altitude.read_variable(
+                    geo, validtime, cache
+                )  # In m
                 field_pres = self.mslp2ps(field_pres, field_altitude, field_temp)
 
-            field_p_mb = np.divide(field_pres, 100.)
+            field_p_mb = np.divide(field_pres, 100.0)
             field_t_c = np.subtract(field_temp, 273.15)
 
             exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
             esat = np.multiply(6.112, np.exp(exp))
-            field = np.divide(np.multiply(0.622, field_r_h / 100.) * esat, field_p_mb)
+            field = np.divide(np.multiply(0.622, field_r_h / 100.0) * esat, field_p_mb)
 
             # ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
             # ZE = ZRH * ZES
@@ -350,9 +376,9 @@ class Converter(object):
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
             field_snow = self.snow.read_variable(geo, validtime, cache)
             field = np.subtract(field_totalprec, field_snow)
-            if any(field[field < 0.]):
+            if any(field[field < 0.0]):
                 print("Set negative rain values to zero")
-                field[field < 0.] = 0
+                field[field < 0.0] = 0
 
         elif self.name == "calcrain":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
@@ -381,21 +407,34 @@ class Converter(object):
         elif self.name == "phi2m":
             field = self.phi.read_variable(geo, validtime, cache)
             field = np.divide(field, gravity)
-            field[(field < 0)] = 0.
+            field[(field < 0)] = 0.0
         elif self.name == "swe2sd":
             field = self.swe.read_variable(geo, validtime, cache)
             rho = self.swe.read_variable(geo, validtime, cache)
             field = np.divide(field, rho)
         elif self.name == "sweclim":
             field = self.swe.read_variable(geo, validtime, cache)
-            rhoclim = {"01": 222., "02": 233., "03": 240., "04": 278., "05": 212., "06": 312.,
-                       "07": 312., "08": 143.,
-                       "09": 143., "10": 161., "11": 182., "12": 213.}
+            rhoclim = {
+                "01": 222.0,
+                "02": 233.0,
+                "03": 240.0,
+                "04": 278.0,
+                "05": 212.0,
+                "06": 312.0,
+                "07": 312.0,
+                "08": 143.0,
+                "09": 143.0,
+                "10": 161.0,
+                "11": 182.0,
+                "12": 213.0,
+            }
             month = validtime.strftime("%m")
             if month in rhoclim:
                 field = np.divide(field, rhoclim[month])
             else:
-                raise Exception("Could not found climatological mean for month " + str(month))
+                raise Exception(
+                    "Could not found climatological mean for month " + str(month)
+                )
         elif self.name == "sea2land":
             field = self.sea.read_variable(geo, validtime, cache)
             field = np.subtract(1, field)

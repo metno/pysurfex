@@ -1,6 +1,7 @@
 """Observation."""
-import numpy as np
 import json
+
+import numpy as np
 
 
 class Observation(object):
@@ -29,7 +30,15 @@ class Observation(object):
 
     def print_obs(self):
         """Print observation."""
-        print("observation: ", self.obstime, self.lon, self.lat, self.stid, self.value, self.elev)
+        print(
+            "observation: ",
+            self.obstime,
+            self.lon,
+            self.lat,
+            self.stid,
+            self.value,
+            self.elev,
+        )
 
     @staticmethod
     def vectors2obs(obstime, lon, lat, stid, elev, value, varname):
@@ -47,7 +56,9 @@ class Observation(object):
         Returns:
             Observation: Observation object.
         """
-        return Observation(obstime, lon, lat, value, elev=elev, varname=varname, stid=stid)
+        return Observation(
+            obstime, lon, lat, value, elev=elev, varname=varname, stid=stid
+        )
 
     @staticmethod
     def obs2vectors(my_obs):
@@ -60,8 +71,15 @@ class Observation(object):
             _type_: _description_
         """
         # print(my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value)
-        return my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value, \
-            my_obs.varname
+        return (
+            my_obs.obstime,
+            my_obs.lon,
+            my_obs.lat,
+            my_obs.stid,
+            my_obs.elev,
+            my_obs.value,
+            my_obs.varname,
+        )
 
     @staticmethod
     def format_lon(lon):
@@ -104,7 +122,9 @@ class Observation(object):
                     lons.append(lon)
                     lats.append(lat)
             if not found:
-                raise Exception("Could not find station id " + stid + " in file " + filename)
+                raise Exception(
+                    "Could not find station id " + stid + " in file " + filename
+                )
         return lons, lats
 
     @staticmethod

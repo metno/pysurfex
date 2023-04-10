@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
-import surfex
-import pyproj
 import json
-import numpy as np
 
-from_json = json.load(open("/home/trygveasp/revision_control/pysurfex/examples/domains/met_nordic.json", "r"))
+import numpy as np
+import pyproj
+
+import surfex
+
+from_json = json.load(
+    open(
+        "/home/trygveasp/revision_control/pysurfex/examples/domains/met_nordic.json", "r"
+    )
+)
 geo = surfex.get_geo_object(from_json)
 
 wanted_lon = 10.0
@@ -13,9 +19,19 @@ nx = 120
 wanted_lat = 60.0
 ny = 100
 
-earth = 6.37122e+6
-proj_string = "+proj=lcc +lat_0=" + str(geo.xlat0) + " +lon_0=" + str(geo.xlon0) + " +lat_1=" + \
-              str(geo.xlat0) + " +lat_2=" + str(geo.xlat0) + " +units=m +no_defs +R=" + str(earth)
+earth = 6.37122e6
+proj_string = (
+    "+proj=lcc +lat_0="
+    + str(geo.xlat0)
+    + " +lon_0="
+    + str(geo.xlon0)
+    + " +lat_1="
+    + str(geo.xlat0)
+    + " +lat_2="
+    + str(geo.xlat0)
+    + " +units=m +no_defs +R="
+    + str(earth)
+)
 
 proj = pyproj.CRS.from_string(proj_string)
 wgs84 = pyproj.CRS.from_string("EPSG:4326")
@@ -42,4 +58,12 @@ for i in range(0, geo.nimax):
     for j in range(0, geo.njmax):
         # print(i, j, lonc[j][i], wanted_lon, latc[j][i], wanted_lat)
         if abs(lonc[j][i] - wanted_lon) < 0.01 and abs(latc[j][i] - wanted_lat) < 0.01:
-            print("Possible subset centre points", i, j, xv[j, i], lonc[j][i], yv[j, i], latc[j][i])
+            print(
+                "Possible subset centre points",
+                i,
+                j,
+                xv[j, i],
+                lonc[j][i],
+                yv[j, i],
+                latc[j][i],
+            )

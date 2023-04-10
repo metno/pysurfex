@@ -1,7 +1,8 @@
 """Misc."""
-import os
-import logging
 import collections
+import logging
+import os
+
 import toml
 
 
@@ -20,7 +21,12 @@ def data_merge(aaa, bbb):
     # ## debug output
     # sys.stderr.write("DEBUG: %s to %s\n" %(b,a))
     try:
-        if aaa is None or isinstance(aaa, str) or isinstance(aaa, int) or isinstance(aaa, float):
+        if (
+            aaa is None
+            or isinstance(aaa, str)
+            or isinstance(aaa, int)
+            or isinstance(aaa, float)
+        ):
             # border case for first run or if a is a primitive
             aaa = bbb
         elif isinstance(aaa, list):
@@ -44,9 +50,9 @@ def data_merge(aaa, bbb):
         else:
             raise YamlReaderError(f'NOT IMPLEMENTED "{bbb}" into "{aaa}"')
     except TypeError as exc:
-        raise YamlReaderError(f'TypeError "{exc}" in key "{key}" when merging '
-                              f' "{bbb}" into "{aaa}"') \
-            from TypeError
+        raise YamlReaderError(
+            f'TypeError "{exc}" in key "{key}" when merging ' f' "{bbb}" into "{aaa}"'
+        ) from TypeError
     return aaa
 
 
@@ -108,7 +114,9 @@ def remove_existing_file(f_in, f_out):
     # If files are not the same file
     if os.path.abspath(f_in) != os.path.abspath(f_out):
         if os.path.isdir(f_out):
-            raise IsADirectoryError(f_out + " is a directory! Please remove it if desired")
+            raise IsADirectoryError(
+                f_out + " is a directory! Please remove it if desired"
+            )
         if os.path.islink(f_out):
             os.unlink(f_out)
         if os.path.isfile(f_out):
@@ -134,27 +142,29 @@ def parse_filepattern(file_pattern, basetime, validtime):
     if basetime is None or validtime is None:
         return file_pattern
 
-    logging.debug("file_pattern=%s basetime=%s validtime=%s", file_pattern, basetime, validtime)
+    logging.debug(
+        "file_pattern=%s basetime=%s validtime=%s", file_pattern, basetime, validtime
+    )
     file_name = str(file_pattern)
-    year = basetime.strftime('%Y')
-    year2 = basetime.strftime('%y')
-    month = basetime.strftime('%m')
-    day = basetime.strftime('%d')
-    hour = basetime.strftime('%H')
-    mins = basetime.strftime('%M')
+    year = basetime.strftime("%Y")
+    year2 = basetime.strftime("%y")
+    month = basetime.strftime("%m")
+    day = basetime.strftime("%d")
+    hour = basetime.strftime("%H")
+    mins = basetime.strftime("%M")
     d_t = validtime - basetime
     ll_d = f"{int(d_t.seconds / 3600):d}"
     ll_2 = f"{int(d_t.seconds / 3600):02d}"
     ll_3 = f"{int(d_t.seconds / 3600):03d}"
     ll_4 = f"{int(d_t.seconds / 3600):04d}"
-    file_name = file_name.replace('@YYYY@', year)
-    file_name = file_name.replace('@YY@', year2)
-    file_name = file_name.replace('@MM@', month)
-    file_name = file_name.replace('@DD@', day)
-    file_name = file_name.replace('@HH@', hour)
-    file_name = file_name.replace('@mm@', mins)
-    file_name = file_name.replace('@L@', ll_d)
-    file_name = file_name.replace('@LL@', ll_2)
-    file_name = file_name.replace('@LLL@', ll_3)
-    file_name = file_name.replace('@LLLL@', ll_4)
+    file_name = file_name.replace("@YYYY@", year)
+    file_name = file_name.replace("@YY@", year2)
+    file_name = file_name.replace("@MM@", month)
+    file_name = file_name.replace("@DD@", day)
+    file_name = file_name.replace("@HH@", hour)
+    file_name = file_name.replace("@mm@", mins)
+    file_name = file_name.replace("@L@", ll_d)
+    file_name = file_name.replace("@LL@", ll_2)
+    file_name = file_name.replace("@LLL@", ll_3)
+    file_name = file_name.replace("@LLLL@", ll_4)
     return file_name

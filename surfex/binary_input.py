@@ -1,14 +1,13 @@
 """Input data for surfex binaries."""
-import os
-import logging
-from datetime import datetime, timedelta
-from abc import ABC, abstractmethod
 import json
+import logging
+import os
 import subprocess
+from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 
-
-from .file import NCSurfexFile, FaSurfexFile, AsciiSurfexFile
 from .ecoclimap import Ecoclimap, EcoclimapSG, ExternalSurfexInputFile
+from .file import AsciiSurfexFile, FaSurfexFile, NCSurfexFile
 
 
 class InputDataToSurfexBinaries(ABC):
@@ -122,7 +121,7 @@ class JsonInputData(InputDataToSurfexBinaries):
                     logging.info(cmd)
                     subprocess.check_call(cmd, shell=True)
                 except IOError:
-                    raise(cmd + " failed") from IOError
+                    raise (cmd + " failed") from IOError
 
     def add_data(self, data):
         """Add data.
@@ -184,43 +183,64 @@ class PgdInputData(JsonInputData):
             datadir = "flake_dir"
             fname = "GlobalLakeDepth" + version + ".dir"
             linkbasename = "GlobalLakeDepth"
-            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
-                                                            linkbasename=linkbasename,
-                                                            check_existence=check_existence))
+            data.update(
+                ext_data.set_input_data_from_format(
+                    datadir,
+                    fname,
+                    default_dir="climdir",
+                    linkbasename=linkbasename,
+                    check_existence=check_existence,
+                )
+            )
             fname = "GlobalLakeStatus" + version + ".dir"
             linkbasename = "GlobalLakeStatus"
-            data.update(ext_data.set_input_data_from_format(datadir, fname, default_dir="climdir",
-                                                            linkbasename=linkbasename,
-                                                            check_existence=check_existence))
+            data.update(
+                ext_data.set_input_data_from_format(
+                    datadir,
+                    fname,
+                    default_dir="climdir",
+                    linkbasename=linkbasename,
+                    check_existence=check_existence,
+                )
+            )
 
         possible_direct_data = {
             "ISBA": {
                 "YSAND": "sand_dir",
                 "YCLAY": "clay_dir",
                 "YSOC_TOP": "soc_top_dir",
-                "YSOC_SUB": "soc_sub_dir"
+                "YSOC_SUB": "soc_sub_dir",
             },
-            "COVER": {
-                "YCOVER": ecoclimap.cover_dir
-            },
-            "ZS": {
-                "YZS": "oro_dir"
-            }
+            "COVER": {"YCOVER": ecoclimap.cover_dir},
+            "ZS": {"YZS": "oro_dir"},
         }
         for namelist_section, ftypes in possible_direct_data.items():
             for ftype, data_dir in ftypes.items():
                 # data_dir = possible_direct_data[namelist_section][ftype]
-                fname = str(config.get_setting("SURFEX#" + namelist_section + "#" + ftype))
-                data.update(ext_data.set_input_data_from_format(data_dir, fname,
-                                                                default_dir="climdir",
-                                                                check_existence=check_existence))
+                fname = str(
+                    config.get_setting("SURFEX#" + namelist_section + "#" + ftype)
+                )
+                data.update(
+                    ext_data.set_input_data_from_format(
+                        data_dir,
+                        fname,
+                        default_dir="climdir",
+                        check_existence=check_existence,
+                    )
+                )
 
         # Treedrag
         if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
             fname = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
             data_dir = "tree_height_dir"
-            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
-                                                            check_existence=check_existence))
+            data.update(
+                ext_data.set_input_data_from_format(
+                    data_dir,
+                    fname,
+                    default_dir="climdir",
+                    check_existence=check_existence,
+                )
+            )
 
         JsonInputData.__init__(self, data)
 
@@ -228,8 +248,14 @@ class PgdInputData(JsonInputData):
 class PrepInputData(JsonInputData):
     """Input data for PREP."""
 
-    def __init__(self, config, system_file_paths, check_existence=True, prep_file=None,
-                 prep_pgdfile=None):
+    def __init__(
+        self,
+        config,
+        system_file_paths,
+        check_existence=True,
+        prep_file=None,
+        prep_pgdfile=None,
+    ):
         """Construct input data for PREP.
 
         Args:
@@ -263,8 +289,14 @@ class PrepInputData(JsonInputData):
         if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
             data_dir = "flake_dir"
             fname = "LAKE_LTA_NEW.nc"
-            data.update(ext_data.set_input_data_from_format(data_dir, fname, default_dir="climdir",
-                                                            check_existence=check_existence))
+            data.update(
+                ext_data.set_input_data_from_format(
+                    data_dir,
+                    fname,
+                    default_dir="climdir",
+                    check_existence=check_existence,
+                )
+            )
 
         JsonInputData.__init__(self, data)
 
@@ -294,8 +326,13 @@ class OfflineInputData(JsonInputData):
         data_dir = "forcing_dir"
         if config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
             fname = "FORCING.nc"
-            data.update({fname: system_file_paths.get_system_file(data_dir, fname,
-                        default_dir=None)})
+            data.update(
+                {
+                    fname: system_file_paths.get_system_file(
+                        data_dir, fname, default_dir=None
+                    )
+                }
+            )
         else:
             raise NotImplementedError
 
@@ -326,8 +363,15 @@ class InlineForecastInputData(JsonInputData):
 class SodaInputData(JsonInputData):
     """Input data for SODA."""
 
-    def __init__(self, config, system_file_paths, check_existence=True, masterodb=True,
-                 perturbed_file_pattern=None, dtg=None):
+    def __init__(
+        self,
+        config,
+        system_file_paths,
+        check_existence=True,
+        masterodb=True,
+        perturbed_file_pattern=None,
+        dtg=None,
+    ):
         """Construct input data for SODA.
 
         Args:
@@ -366,7 +410,9 @@ class SodaInputData(JsonInputData):
         # SEA
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
             if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
-                self.add_data(self.set_input_sea_assimilation(check_existence=check_existence))
+                self.add_data(
+                    self.set_input_sea_assimilation(check_existence=check_existence)
+                )
 
         # WATER
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER") != "NONE":
@@ -375,16 +421,22 @@ class SodaInputData(JsonInputData):
         # NATURE
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
-                data = self.set_input_vertical_soil_ekf(check_existence=check_existence,
-                                                        masterodb=masterodb,
-                                                        pert_fp=perturbed_file_pattern)
+                data = self.set_input_vertical_soil_ekf(
+                    check_existence=check_existence,
+                    masterodb=masterodb,
+                    pert_fp=perturbed_file_pattern,
+                )
                 self.add_data(data)
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
                 self.add_data(self.set_input_vertical_soil_oi())
             if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF"):
-                self.add_data(self.set_input_vertical_soil_enkf(check_existence=check_existence,
-                                                                masterodb=masterodb,
-                                                                pert_fp=perturbed_file_pattern))
+                self.add_data(
+                    self.set_input_vertical_soil_enkf(
+                        check_existence=check_existence,
+                        masterodb=masterodb,
+                        pert_fp=perturbed_file_pattern,
+                    )
+                )
 
         # Town
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
@@ -415,12 +467,14 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError(cfile_format_obs)
 
         data_dir = "obs_dir"
-        obsfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
-                                                         check_existence=check_existence,
-                                                         basedtg=self.dtg)
-        obssettings = {
-            target: obsfile
-        }
+        obsfile = self.system_file_paths.get_system_file(
+            data_dir,
+            target,
+            default_dir="assim_dir",
+            check_existence=check_existence,
+            basedtg=self.dtg,
+        )
+        obssettings = {target: obsfile}
         return obssettings
 
     def set_input_sea_assimilation(self, check_existence=True):
@@ -442,12 +496,14 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError(cfile_format_sst)
 
         data_dir = "sst_file_dir"
-        sstfile = self.system_file_paths.get_system_file(data_dir, target, basedtg=self.dtg,
-                                                         check_existence=check_existence,
-                                                         default_dir="assim_dir")
-        sea_settings = {
-            target: sstfile
-        }
+        sstfile = self.system_file_paths.get_system_file(
+            data_dir,
+            target,
+            basedtg=self.dtg,
+            check_existence=check_existence,
+            default_dir="assim_dir",
+        )
+        sea_settings = {target: sstfile}
         return sea_settings
 
     def set_input_vertical_soil_oi(self):
@@ -459,7 +515,9 @@ class SodaInputData(JsonInputData):
         """
         oi_settings = {}
         # Climate
-        cfile_format_clim = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM")
+        cfile_format_clim = self.config.get_setting(
+            "SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM"
+        )
         if cfile_format_clim.upper() == "ASCII":
             target = "CLIMATE.DAT"
         elif cfile_format_clim.upper() == "FA":
@@ -468,8 +526,9 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError(cfile_format_clim)
 
         data_dir = "climdir"
-        climfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
-                                                          check_existence=True)
+        climfile = self.system_file_paths.get_system_file(
+            data_dir, target, default_dir="assim_dir", check_existence=True
+        )
         oi_settings.update({target: climfile})
 
         # First guess for SURFEX
@@ -488,23 +547,31 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError(cfile_format_fg)
 
         data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_file(data_dir, target,
-                                                             default_dir="assim_dir",
-                                                             basedtg=self.dtg, check_existence=True)
+        first_guess = self.system_file_paths.get_system_file(
+            data_dir,
+            target,
+            default_dir="assim_dir",
+            basedtg=self.dtg,
+            check_existence=True,
+        )
         oi_settings.update({target: first_guess})
 
         data_dir = "ascat_dir"
-        ascatfile = self.system_file_paths.get_system_file(data_dir, target,
-                                                           default_dir="assim_dir",
-                                                           basedtg=self.dtg, check_existence=True)
+        ascatfile = self.system_file_paths.get_system_file(
+            data_dir,
+            target,
+            default_dir="assim_dir",
+            basedtg=self.dtg,
+            check_existence=True,
+        )
         oi_settings.update({"ASCAT_SM.DAT": ascatfile})
 
         # OI coefficients
         data_dir = "oi_coeffs_dir"
         oi_coeffs = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS")
-        oi_coeffs = self.system_file_paths.get_system_file(data_dir, oi_coeffs,
-                                                           default_dir="assim_dir",
-                                                           check_existence=True)
+        oi_coeffs = self.system_file_paths.get_system_file(
+            data_dir, oi_coeffs, default_dir="assim_dir", check_existence=True
+        )
         oi_settings.update({"fort.61": oi_coeffs})
 
         # LSM
@@ -517,13 +584,19 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError(cfile_format_lsm)
 
         data_dir = "lsm_dir"
-        lsmfile = self.system_file_paths.get_system_file(data_dir, target, default_dir="assim_dir",
-                                                         basedtg=self.dtg, check_existence=True)
+        lsmfile = self.system_file_paths.get_system_file(
+            data_dir,
+            target,
+            default_dir="assim_dir",
+            basedtg=self.dtg,
+            check_existence=True,
+        )
         oi_settings.update({target: lsmfile})
         return oi_settings
 
-    def set_input_vertical_soil_ekf(self, check_existence=True, masterodb=True,
-                                    pert_fp=None, geo=None):
+    def set_input_vertical_soil_ekf(
+        self, check_existence=True, masterodb=True, pert_fp=None, geo=None
+    ):
         """Input data for EKF in soil.
 
         Args:
@@ -549,12 +622,18 @@ class SodaInputData(JsonInputData):
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
         data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_path(data_dir, default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=check_existence)
+        first_guess = self.system_file_paths.get_system_path(
+            data_dir,
+            default_dir="assim_dir",
+            validtime=self.dtg,
+            basedtg=fg_dtg,
+            check_existence=check_existence,
+        )
         # First guess for SURFEX
         csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
-        fgf = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
+        fgf = self.config.get_setting(
+            "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
+        )
         first_guess = first_guess + "/" + fgf
         if csurf_filetype == "ascii":
             fg_file = AsciiSurfexFile(first_guess, geo=geo)
@@ -577,7 +656,9 @@ class SodaInputData(JsonInputData):
             extension = "fa"
 
         ekf_settings.update({"PREP_INIT." + extension: fgf})
-        ekf_settings.update({"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: fgf})
+        ekf_settings.update(
+            {"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: fgf}
+        )
 
         nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
         llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")
@@ -602,21 +683,37 @@ class SodaInputData(JsonInputData):
                 data_dir = "perturbed_run_dir"
                 if pert_fp is None:
                     logging.info("Use default CSURFFILE for perturbed file names")
-                    pert_fp = \
-                        self.config.get_setting("SURFEX#IO#CSURFFILE",
-                                                check_parsing=False) + "." + extension
+                    pert_fp = (
+                        self.config.get_setting(
+                            "SURFEX#IO#CSURFFILE", check_parsing=False
+                        )
+                        + "."
+                        + extension
+                    )
 
                 # TODO depending on when perturbations are run
-                pert_run = self.system_file_paths.get_system_file(data_dir,
-                                                                  pert_fp,
-                                                                  validtime=self.dtg,
-                                                                  basedtg=fg_dtg,
-                                                                  check_existence=check_existence,
-                                                                  default_dir="assim_dir",
-                                                                  pert=pert_input)
+                pert_run = self.system_file_paths.get_system_file(
+                    data_dir,
+                    pert_fp,
+                    validtime=self.dtg,
+                    basedtg=fg_dtg,
+                    check_existence=check_existence,
+                    default_dir="assim_dir",
+                    pert=pert_input,
+                )
 
-                target = "PREP_" + cyy + cmm + cdd + "H" + chh + "_EKF_PERT" + str(pert_ekf) + "." \
-                         + extension
+                target = (
+                    "PREP_"
+                    + cyy
+                    + cmm
+                    + cdd
+                    + "H"
+                    + chh
+                    + "_EKF_PERT"
+                    + str(pert_ekf)
+                    + "."
+                    + extension
+                )
                 ekf_settings.update({target: pert_run})
                 pert_ekf = pert_ekf + 1
 
@@ -632,15 +729,20 @@ class SodaInputData(JsonInputData):
                 raise NotImplementedError(cfile_format_lsm)
 
             data_dir = "lsm_dir"
-            lsmfile = self.system_file_paths.get_system_file(data_dir, target,
-                                                             default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=check_existence)
+            lsmfile = self.system_file_paths.get_system_file(
+                data_dir,
+                target,
+                default_dir="assim_dir",
+                validtime=self.dtg,
+                basedtg=fg_dtg,
+                check_existence=check_existence,
+            )
             ekf_settings.update({target: lsmfile})
         return ekf_settings
 
-    def set_input_vertical_soil_enkf(self, check_existence=True, masterodb=True,
-                                     pert_fp=None, geo=None):
+    def set_input_vertical_soil_enkf(
+        self, check_existence=True, masterodb=True, pert_fp=None, geo=None
+    ):
         """Input data for ENKF in soil.
 
         Args:
@@ -668,7 +770,9 @@ class SodaInputData(JsonInputData):
         # TODO
         fcint = 3
         fg_dtg = self.dtg - timedelta(hours=fcint)
-        fgf = self.config.get_setting("SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg)
+        fgf = self.config.get_setting(
+            "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
+        )
         if csurf_filetype == "ascii":
             fg_file = AsciiSurfexFile(fgf, geo=geo)
             fgf = fg_file.filename
@@ -684,9 +788,14 @@ class SodaInputData(JsonInputData):
             raise NotImplementedError
 
         data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_file(data_dir, fgf, default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=check_existence)
+        first_guess = self.system_file_paths.get_system_file(
+            data_dir,
+            fgf,
+            default_dir="assim_dir",
+            validtime=self.dtg,
+            basedtg=fg_dtg,
+            check_existence=check_existence,
+        )
 
         # We newer run inline model for perturbations or in SODA
         extension = fg_file.extension
@@ -696,9 +805,23 @@ class SodaInputData(JsonInputData):
         nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
 
         enkf_settings.update({"PREP_INIT." + extension: first_guess})
-        enkf_settings.update({"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: first_guess})
-        enkf_settings.update({"PREP_" + cyy + cmm + cdd + "H" + chh + "_EKF_ENS" + str(nens_m) + "."
-                              + extension: first_guess})
+        enkf_settings.update(
+            {"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: first_guess}
+        )
+        enkf_settings.update(
+            {
+                "PREP_"
+                + cyy
+                + cmm
+                + cdd
+                + "H"
+                + chh
+                + "_EKF_ENS"
+                + str(nens_m)
+                + "."
+                + extension: first_guess
+            }
+        )
 
         # nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
         # pert_enkf = 0
@@ -707,20 +830,35 @@ class SodaInputData(JsonInputData):
             data_dir = "perturbed_run_dir"
             if pert_fp is None:
                 logging.info("Use default CSURFFILE for perturbed file names")
-                perturbed_file_pattern = \
-                    self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False) + "." \
+                perturbed_file_pattern = (
+                    self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False)
+                    + "."
                     + extension
+                )
 
             # TODO depending on when perturbations are run
-            perturbed_run = self.system_file_paths.get_system_file(data_dir,
-                                                                   perturbed_file_pattern,
-                                                                   validtime=self.dtg,
-                                                                   basedtg=fg_dtg,
-                                                                   check_existence=check_existence,
-                                                                   default_dir="assim_dir",
-                                                                   pert=ppp)
+            perturbed_run = self.system_file_paths.get_system_file(
+                data_dir,
+                perturbed_file_pattern,
+                validtime=self.dtg,
+                basedtg=fg_dtg,
+                check_existence=check_existence,
+                default_dir="assim_dir",
+                pert=ppp,
+            )
 
-            target = "PREP_" + cyy + cmm + cdd + "H" + chh + "_EKF_ENS" + str(ppp) + "." + extension
+            target = (
+                "PREP_"
+                + cyy
+                + cmm
+                + cdd
+                + "H"
+                + chh
+                + "_EKF_ENS"
+                + str(ppp)
+                + "."
+                + extension
+            )
             enkf_settings.update({target: perturbed_run})
 
         # LSM
@@ -735,9 +873,13 @@ class SodaInputData(JsonInputData):
                 raise NotImplementedError(cfile_format_lsm)
 
             data_dir = "lsm_dir"
-            lsmfile = self.system_file_paths.get_system_file(data_dir, target,
-                                                             default_dir="assim_dir",
-                                                             validtime=self.dtg, basedtg=fg_dtg,
-                                                             check_existence=check_existence)
+            lsmfile = self.system_file_paths.get_system_file(
+                data_dir,
+                target,
+                default_dir="assim_dir",
+                validtime=self.dtg,
+                basedtg=fg_dtg,
+                check_existence=check_existence,
+            )
             enkf_settings.update({target: lsmfile})
         return enkf_settings

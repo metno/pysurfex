@@ -39,7 +39,9 @@ for code_dir in code_dirs:
                                     class_methods.append(cl + "." + m)
                         else:
                             if "def " in line:
-                                if line.find("(") > 0 and line.find(":") == (len(line) - 1):
+                                if line.find("(") > 0 and line.find(":") == (
+                                    len(line) - 1
+                                ):
                                     # print(line)
                                     line = line.lstrip()
                                     m = line.split(" ")[1]

@@ -1,7 +1,8 @@
 """Interpolation."""
 import logging
-import numpy as np
+
 import gridpp
+import numpy as np
 
 
 class Interpolation(object):
@@ -23,7 +24,9 @@ class Interpolation(object):
         self.geo_in = geo_in
         self.geo_out = geo_out
         if self.geo_out is None:
-            raise Exception("You can not interpolate without specifying an output geometry")
+            raise Exception(
+                "You can not interpolate without specifying an output geometry"
+            )
 
         # Input
         if self.geo_in is not None:
@@ -77,25 +80,36 @@ class Interpolation(object):
             if self.identical or self.operator == "none":
                 if self.operator == "none":
                     if not self.identical:
-                        raise Exception("Input domain and ouput domain differ. "
-                                        "You must interpolate!")
+                        raise Exception(
+                            "Input domain and ouput domain differ. "
+                            "You must interpolate!"
+                        )
                     logging.info("No interpolation chosen")
                 else:
-                    logging.info("Input and output domain are identical. "
-                                 "No interpolation is needed")
+                    logging.info(
+                        "Input and output domain are identical. "
+                        "No interpolation is needed"
+                    )
                 interpolated_field = field2d.reshape(self.npoints)
             else:
                 sub_lons, sub_lats = self.geo_out.subset(self.geo_in)
                 if len(sub_lons) == 0 and len(sub_lats) == 0:
-                    logging.info("Doing '%s' interpolation for %s points", self.operator,
-                                 str(self.npoints))
+                    logging.info(
+                        "Doing '%s' interpolation for %s points",
+                        self.operator,
+                        str(self.npoints),
+                    )
                     if self.operator == "nearest":
                         field2d = np.transpose(field2d)
-                        interpolated_field = gridpp.nearest(self.grid, self.points, field2d)
+                        interpolated_field = gridpp.nearest(
+                            self.grid, self.points, field2d
+                        )
                         field2d = np.transpose(field2d)
                     elif self.operator == "bilinear":
                         field2d = np.transpose(field2d)
-                        interpolated_field = gridpp.bilinear(self.grid, self.points, field2d)
+                        interpolated_field = gridpp.bilinear(
+                            self.grid, self.points, field2d
+                        )
                         field2d = np.transpose(field2d)
                     elif self.operator == "none":
                         interpolated_field = field2d.reshape(self.npoints)
@@ -122,13 +136,16 @@ class Interpolation(object):
         """
         # Convert from degrees to radians
         pi_constant = 3.14159265
-        lon1 = lon1 * 2 * pi_constant / 360.
-        lat1 = lat1 * 2 * pi_constant / 360.
-        lon2 = lon2 * 2 * pi_constant / 360.
-        lat2 = lat2 * 2 * pi_constant / 360.
+        lon1 = lon1 * 2 * pi_constant / 360.0
+        lat1 = lat1 * 2 * pi_constant / 360.0
+        lon2 = lon2 * 2 * pi_constant / 360.0
+        lat2 = lat2 * 2 * pi_constant / 360.0
         dlon = lon2 - lon1
         dlat = lat2 - lat1
-        aval = np.sin(dlat / 2.) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.) ** 2
+        aval = (
+            np.sin(dlat / 2.0) ** 2
+            + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+        )
         cval = 2 * np.arcsin(np.sqrt(aval)) * 6.367e6
         return cval
 
@@ -142,19 +159,19 @@ class Interpolation(object):
         dlat = np.zeros(lat.shape)
         i_1 = np.arange(n_x - 1)
 
-        dlon[0:-1, :] = np.sign(lon[i_1 + 1, :] - lon[i_1, :]) * self.distance(lon[i_1, :],
-                                                                               lat[i_1, :],
-                                                                               lon[i_1 + 1, :],
-                                                                               lat[i_1, :])
-        dlat[0:-1, :] = -np.sign(lat[i_1 + 1, :] - lat[i_1, :]) * self.distance(lon[i_1, :],
-                                                                                lat[i_1, :],
-                                                                                lon[i_1, :],
-                                                                                lat[i_1 + 1, :])
+        dlon[0:-1, :] = np.sign(lon[i_1 + 1, :] - lon[i_1, :]) * self.distance(
+            lon[i_1, :], lat[i_1, :], lon[i_1 + 1, :], lat[i_1, :]
+        )
+        dlat[0:-1, :] = -np.sign(lat[i_1 + 1, :] - lat[i_1, :]) * self.distance(
+            lon[i_1, :], lat[i_1, :], lon[i_1, :], lat[i_1 + 1, :]
+        )
 
-        dlon[-1, :] = np.sign(lon[-1, :] - lon[-2, :]) * self.distance(lon[-2, :], lat[-2, :],
-                                                                       lon[-1, :], lat[-2, :])
-        dlat[-1, :] = -np.sign(lat[-1, :] - lat[-2, :]) * self.distance(lon[-2, :], lat[-2, :],
-                                                                        lon[-2, :], lat[-1, :])
+        dlon[-1, :] = np.sign(lon[-1, :] - lon[-2, :]) * self.distance(
+            lon[-2, :], lat[-2, :], lon[-1, :], lat[-2, :]
+        )
+        dlat[-1, :] = -np.sign(lat[-1, :] - lat[-2, :]) * self.distance(
+            lon[-2, :], lat[-2, :], lon[-2, :], lat[-1, :]
+        )
 
         alpha = np.rad2deg(np.arctan2(dlon, dlat))
         return alpha
@@ -202,7 +219,7 @@ def grid2points(grid_lons, grid_lats, p_lons, p_lats, grid_values, operator="bil
         return gridpp.nearest(fg_grid, points, grid_values)
 
 
-def get_num_neighbours(grid_lons, grid_lats, p_lon, p_lat, distance=2500.):
+def get_num_neighbours(grid_lons, grid_lats, p_lon, p_lat, distance=2500.0):
     """Get number of neighbours.
 
     Args:

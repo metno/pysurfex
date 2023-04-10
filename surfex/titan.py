@@ -1,10 +1,12 @@
 """Titan."""
-import os
-import logging
-import json
-from datetime import datetime
 import abc
+import json
+import logging
+import os
+from datetime import datetime
+
 import numpy as np
+
 try:
     import titanlib as tit
 except ImportError:
@@ -16,7 +18,7 @@ except ImportError:
 
 
 from .netcdf import read_first_guess_netcdf_file
-from .obs import Observation
+from .observation import Observation
 
 
 class QualityControl(object):
@@ -66,7 +68,8 @@ class QualityControl(object):
             list: Updated global flags.
         """
         imask = np.where(
-            (np.array(global_flags) == 0) & (np.array([flag for flag in flags]) == 1))[0]
+            (np.array(global_flags) == 0) & (np.array([flag for flag in flags]) == 1)
+        )[0]
         imask = np.intersect1d(imask, np.array(mask))
         if len(imask) > 0:
             global_flags[imask] = code
@@ -150,9 +153,15 @@ class Plausibility(QualityControl):
                 global_flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s value(m_i)=%s flag(i)=%s global_flag(m_i)=%s",
-                          self.name, i, mask_ind, dataset.values[mask_ind], flags[i],
-                          global_flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s value(m_i)=%s flag(i)=%s global_flag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.values[mask_ind],
+                flags[i],
+                global_flags[mask_ind],
+            )
 
         return global_flags
 
@@ -160,8 +169,15 @@ class Plausibility(QualityControl):
 class FirstGuess(QualityControl):
     """First guess check."""
 
-    def __init__(self, geo_in, fg_field, negdiff=None, posdiff=None, max_distance=5000,
-                 operator="bilinear"):
+    def __init__(
+        self,
+        geo_in,
+        fg_field,
+        negdiff=None,
+        posdiff=None,
+        max_distance=5000,
+        operator="bilinear",
+    ):
         """Construct first guess QC check.
 
         Args:
@@ -228,8 +244,13 @@ class FirstGuess(QualityControl):
         if tit is None:
             raise ModuleNotFoundError("titanlib was not loaded properly")
 
-        fg_operator = ObsOperator(self.operator, self.geo_in, dataset, self.fg_field,
-                                  max_distance=self.max_distance)
+        fg_operator = ObsOperator(
+            self.operator,
+            self.geo_in,
+            dataset,
+            self.fg_field,
+            max_distance=self.max_distance,
+        )
         fg_vals = fg_operator.get_obs_value()
         minvals = []
         maxvals = []
@@ -251,11 +272,21 @@ class FirstGuess(QualityControl):
             else:
                 global_flags[mask[i]] = 199
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s min_val(i)=%s value(i)=%s "
-                          "max_val(i)=%s flag(i)=%s global_flag(m_i)=%s fg_val(m_i)=%s",
-                          self.name, i, mask_ind, dataset.lons[mask_ind], dataset.lats[mask_ind],
-                          minvals[i], values[i], maxvals[i], flags[i], global_flags[mask_ind],
-                          fg_vals[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s min_val(i)=%s value(i)=%s "
+                "max_val(i)=%s flag(i)=%s global_flag(m_i)=%s fg_val(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.lons[mask_ind],
+                dataset.lats[mask_ind],
+                minvals[i],
+                values[i],
+                maxvals[i],
+                flags[i],
+                global_flags[mask_ind],
+                fg_vals[mask_ind],
+            )
 
         return global_flags
 
@@ -263,8 +294,15 @@ class FirstGuess(QualityControl):
 class Fraction(QualityControl):
     """Fraction test."""
 
-    def __init__(self, geo_in, fraction_field, minval=None, maxval=None, max_distance=5000,
-                 operator="bilinear"):
+    def __init__(
+        self,
+        geo_in,
+        fraction_field,
+        minval=None,
+        maxval=None,
+        max_distance=5000,
+        operator="bilinear",
+    ):
         """Construct fraction test.
 
         Args:
@@ -335,8 +373,13 @@ class Fraction(QualityControl):
             raise ModuleNotFoundError("titanlib was not loaded properly")
 
         logging.debug("Obs operator")
-        fraction = ObsOperator(self.operator, self.geo_in, dataset, self.fraction_field,
-                               max_distance=self.max_distance)
+        fraction = ObsOperator(
+            self.operator,
+            self.geo_in,
+            dataset,
+            self.fraction_field,
+            max_distance=self.max_distance,
+        )
 
         logging.debug("get_obs_value")
         fraction_vals = fraction.get_obs_value()
@@ -368,11 +411,21 @@ class Fraction(QualityControl):
                 global_flags[mask[i]] = 199
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s min_val(i)=%s value(i)=%s "
-                          "maxval(i)=%s flag(i)=%s global_flag(m_i)=%s fraction(m_i)=%s",
-                          self.name, i, mask_ind, dataset.lons[mask_ind], dataset.lats[mask_ind],
-                          minvals[i], values[i], maxvals[i], flags[i], global_flags[mask_ind],
-                          fraction_vals[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s min_val(i)=%s value(i)=%s "
+                "maxval(i)=%s flag(i)=%s global_flag(m_i)=%s fraction(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.lons[mask_ind],
+                dataset.lats[mask_ind],
+                minvals[i],
+                values[i],
+                maxvals[i],
+                flags[i],
+                global_flags[mask_ind],
+                fraction_vals[mask_ind],
+            )
 
         return global_flags
 
@@ -380,10 +433,24 @@ class Fraction(QualityControl):
 class Sct(QualityControl):
     """Spatial consistency check."""
 
-    def __init__(self, num_min=5, num_max=100, inner_radius=50000, outer_radius=150000,
-                 num_iterations=5, num_min_prof=20, min_elev_diff=200, min_horizonal_scale=10000,
-                 vertical_scale=200, pos=4, neg=8, eps2=0.5, cmin=0.9, cmax=1.1,
-                 missing_elev_to_zero=False):
+    def __init__(
+        self,
+        num_min=5,
+        num_max=100,
+        inner_radius=50000,
+        outer_radius=150000,
+        num_iterations=5,
+        num_min_prof=20,
+        min_elev_diff=200,
+        min_horizonal_scale=10000,
+        vertical_scale=200,
+        pos=4,
+        neg=8,
+        eps2=0.5,
+        cmin=0.9,
+        cmax=1.1,
+        missing_elev_to_zero=False,
+    ):
         """Construct SCT test.
 
         Args:
@@ -521,11 +588,18 @@ class Sct(QualityControl):
 
         if nmissing_elev > 0:
             if self.missing_elev_to_zero:
-                logging.info("Found %s / %s observations with undefined elevations which were "
-                             "set to zero", str(nmissing_elev), str(len(old_mask)))
+                logging.info(
+                    "Found %s / %s observations with undefined elevations which were "
+                    "set to zero",
+                    str(nmissing_elev),
+                    str(len(old_mask)),
+                )
             else:
-                logging.info("Removed %s / %s obsevations with undefined elevations",
-                             str(nmissing_elev), str(len(old_mask)))
+                logging.info(
+                    "Removed %s / %s obsevations with undefined elevations",
+                    str(nmissing_elev),
+                    str(len(old_mask)),
+                )
 
         logging.info("Running sct")
         if len(values) > 0:
@@ -534,10 +608,22 @@ class Sct(QualityControl):
             elevs = np.asarray(elevs)
             values = np.asarray(values)
             points = tit.Points(lats, lons, elevs)
-            answer = tit.sct(points, values, self.num_min, self.num_max, self.inner_radius,
-                             self.outer_radius, self.num_iterations, self.num_min_prof,
-                             self.min_elev_diff, self.min_horizonal_scale, self.vertical_scale,
-                             self.pos, self.neg, self.eps2)
+            answer = tit.sct(
+                points,
+                values,
+                self.num_min,
+                self.num_max,
+                self.inner_radius,
+                self.outer_radius,
+                self.num_iterations,
+                self.num_min_prof,
+                self.min_elev_diff,
+                self.min_horizonal_scale,
+                self.vertical_scale,
+                self.pos,
+                self.neg,
+                self.eps2,
+            )
 
             flags = answer[0]
             sct = answer[1]
@@ -549,10 +635,18 @@ class Sct(QualityControl):
             dataset.normalize_ci(mask, self.cmin, self.cmax)
 
             for i, mask_ind in enumerate(mask):
-                logging.debug("test=%s i=%s m_i=%s value(m_i)=%s sct(i)=%s rep(i)=%s flag(i)=%s "
-                              "global_flag(m_i)=%s", self.name, i, mask_ind,
-                              dataset.values[mask_ind], sct[i], rep[i], int(flags[i]),
-                              int(global_flags[mask_ind]))
+                logging.debug(
+                    "test=%s i=%s m_i=%s value(m_i)=%s sct(i)=%s rep(i)=%s flag(i)=%s "
+                    "global_flag(m_i)=%s",
+                    self.name,
+                    i,
+                    mask_ind,
+                    dataset.values[mask_ind],
+                    sct[i],
+                    rep[i],
+                    int(flags[i]),
+                    int(global_flags[mask_ind]),
+                )
         else:
             logging.info("No observations to run test on")
 
@@ -562,8 +656,16 @@ class Sct(QualityControl):
 class Buddy(QualityControl):
     """Buddy test."""
 
-    def __init__(self, diff_elev_max=200000., adjust_for_elev_diff=True,
-                 distance_lim=1000000., priorities=1, buddies_min=1, thresholds=1., obs_to_check=1):
+    def __init__(
+        self,
+        diff_elev_max=200000.0,
+        adjust_for_elev_diff=True,
+        distance_lim=1000000.0,
+        priorities=1,
+        buddies_min=1,
+        thresholds=1.0,
+        obs_to_check=1,
+    ):
         """Construct buddy test.
 
         Args:
@@ -590,8 +692,15 @@ class Buddy(QualityControl):
         self.def_obs_to_check = obs_to_check
         QualityControl.__init__(self, "buddy")
 
-    def set_input(self, size, distance_lim=None, priorities=None, buddies_min=None,
-                  thresholds=None, obs_to_check=None):
+    def set_input(
+        self,
+        size,
+        distance_lim=None,
+        priorities=None,
+        buddies_min=None,
+        thresholds=None,
+        obs_to_check=None,
+    ):
         """Set input.
 
         Args:
@@ -676,10 +785,17 @@ class Buddy(QualityControl):
             values.append(dataset.values[i])
 
         points = tit.Points(lats, lons, elevs)
-        status, flags = tit.buddy_check(points, values,
-                                        self.distance_lim, self.priorities,
-                                        self.buddies_min, self.thresholds, self.diff_elev_max,
-                                        self.adjust_for_elev_diff, self.obs_to_check)
+        status, flags = tit.buddy_check(
+            points,
+            values,
+            self.distance_lim,
+            self.priorities,
+            self.buddies_min,
+            self.thresholds,
+            self.diff_elev_max,
+            self.adjust_for_elev_diff,
+            self.obs_to_check,
+        )
         if not status:
             raise Exception("Buddy check failed!")
 
@@ -688,9 +804,15 @@ class Buddy(QualityControl):
                 global_flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s value=%s flag(i)=%s global_flag(m_i)=%s",
-                          self.name, i, mask_ind, dataset.values[i], dataset.flags[i],
-                          global_flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s value=%s flag(i)=%s global_flag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.values[i],
+                dataset.flags[i],
+                global_flags[mask_ind],
+            )
 
         return global_flags
 
@@ -773,8 +895,9 @@ class Climatology(QualityControl):
             values.append(val)
 
         points = tit.Points(lats, lons, elevs)
-        flags = tit.range_check_climatology(points, values, self.unixtime, self.maxvals,
-                                            self.minvals)
+        flags = tit.range_check_climatology(
+            points, values, self.unixtime, self.maxvals, self.minvals
+        )
 
         global_flags = dataset.flags
         for i, mask_ind in enumerate(mask):
@@ -782,11 +905,22 @@ class Climatology(QualityControl):
                 global_flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(i)=%s lat(i)=%s elev(i)=%s min_val(i)=%s "
-                          "value(i)=%s maxval(i)=%s value(m_i)=%s flag(i)=%s globalflag(m_i)=%s",
-                          self.name, i, mask_ind, lons[i], lats[i], elevs[i], self.minvals[i],
-                          values[i], self.maxvals[i], dataset.values[mask_ind], flags[i],
-                          global_flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(i)=%s lat(i)=%s elev(i)=%s min_val(i)=%s "
+                "value(i)=%s maxval(i)=%s value(m_i)=%s flag(i)=%s globalflag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                lons[i],
+                lats[i],
+                elevs[i],
+                self.minvals[i],
+                values[i],
+                self.maxvals[i],
+                dataset.values[mask_ind],
+                flags[i],
+                global_flags[mask_ind],
+            )
         return global_flags
 
 
@@ -825,12 +959,21 @@ class Redundancy(QualityControl):
 
                 if pos in data:
                     obstime = data[pos]["obstime"]
-                    logging.debug("Found a redundant observation %s %s %s %s",
-                                  i, pos, dataset.stids[i], obstime1)
+                    logging.debug(
+                        "Found a redundant observation %s %s %s %s",
+                        i,
+                        pos,
+                        dataset.stids[i],
+                        obstime1,
+                    )
                     # New best position in time. Flag the previous
                     if abs(self.an_time - obstime1) < abs(self.an_time - obstime):
-                        logging.debug("Found a better redundant observation %s %s %s",
-                                      pos, obstime1, obstime)
+                        logging.debug(
+                            "Found a better redundant observation %s %s %s",
+                            pos,
+                            obstime1,
+                            obstime,
+                        )
                         ind = data[pos]["index"]
                         flags[ind] = code
                         data.update({pos: {"obstime": obstime, "index": i}})
@@ -840,9 +983,15 @@ class Redundancy(QualityControl):
                     data.update({pos: {"obstime": obstime1, "index": i}})
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s time(m_i)=%s value(m_i)=%s flags(i)=%s ",
-                          self.name, i, mask_ind, dataset.obstimes[mask_ind],
-                          dataset.values[mask_ind], flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s time(m_i)=%s value(m_i)=%s flags(i)=%s ",
+                self.name,
+                i,
+                mask_ind,
+                dataset.obstimes[mask_ind],
+                dataset.values[mask_ind],
+                flags[mask_ind],
+            )
 
         return flags
 
@@ -866,7 +1015,9 @@ class Blacklist(QualityControl):
             for i in range(0, len(blacklist["lons"])):
 
                 if len(blacklist["lons"]) != len(blacklist["lats"]):
-                    raise Exception("Blacklist must have the same length for both lons and lats")
+                    raise Exception(
+                        "Blacklist must have the same length for both lons and lats"
+                    )
 
                 lon = Observation.format_lon(float(blacklist["lons"][i]))
                 lat = Observation.format_lat(float(blacklist["lats"][i]))
@@ -914,9 +1065,16 @@ class Blacklist(QualityControl):
                     flags[i] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
-                          self.name, i, mask_ind, dataset.lons[mask_ind],
-                          dataset.lats[mask_ind], dataset.stids[mask_ind], flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.lons[mask_ind],
+                dataset.lats[mask_ind],
+                dataset.stids[mask_ind],
+                flags[mask_ind],
+            )
 
         return flags
 
@@ -962,9 +1120,16 @@ class DomainCheck(QualityControl):
                 flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
-                          self.name, i, mask_ind, dataset.lons[mask_ind], dataset.lats[mask_ind],
-                          dataset.stids[mask_ind], flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.lons[mask_ind],
+                dataset.lats[mask_ind],
+                dataset.stids[mask_ind],
+                flags[mask_ind],
+            )
         return flags
 
 
@@ -993,9 +1158,16 @@ class NoMeta(QualityControl):
                 flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
-            logging.debug("test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
-                          self.name, i, mask_ind, dataset.lons[mask_ind], dataset.lats[mask_ind],
-                          dataset.stids[mask_ind], flags[mask_ind])
+            logging.debug(
+                "test=%s i=%s m_i=%s lon(m_i)=%s lat(m_i)=%s stid(m_i)=%s flag(m_i)=%s",
+                self.name,
+                i,
+                mask_ind,
+                dataset.lons[mask_ind],
+                dataset.lats[mask_ind],
+                dataset.stids[mask_ind],
+                flags[mask_ind],
+            )
 
         return flags
 
@@ -1051,17 +1223,16 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             if fg_geo is None and fg_field is None:
                 if fg_file is None or fg_var is None:
                     raise Exception("You must set the name of fg file and variable")
-                fg_geo, __, fg_field, __, __ = read_first_guess_netcdf_file(fg_file, fg_var)
+                fg_geo, __, fg_field, __, __ = read_first_guess_netcdf_file(
+                    fg_file, fg_var
+                )
             else:
                 if fg_geo is None or fg_field is None:
                     raise Exception("You must set both fg_field and fg_geo")
             tests.append(FirstGuess(fg_geo, fg_field, **kwargs))
 
         elif qct.lower() == "fraction":
-            kwargs.update({
-                "minval": 0.99,
-                "maxval": 1.01
-            })
+            kwargs.update({"minval": 0.99, "maxval": 1.01})
             fraction_var = None
             fraction_file = None
             fraction_field = None
@@ -1084,8 +1255,9 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
                 if fraction_var is None or fraction_file is None:
                     raise Exception("You must set the name of fraction file and variable")
 
-                fraction_geo, __, fraction_field, __, __ = \
-                    read_first_guess_netcdf_file(fraction_file, fraction_var)
+                fraction_geo, __, fraction_field, __, __ = read_first_guess_netcdf_file(
+                    fraction_file, fraction_var
+                )
             else:
                 if fraction_field is None or fraction_geo is None:
                     raise Exception("You must set both fraction_field and fraction_geo")
@@ -1093,8 +1265,15 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
 
         elif qct.lower() == "buddy":
             if test_options is not None:
-                opts = ["diff_elev_max", "adjust_for_elev_diff", "distance_lim", "priorities",
-                        "buddies_min", "thresholds", "obs_to_check"]
+                opts = [
+                    "diff_elev_max",
+                    "adjust_for_elev_diff",
+                    "distance_lim",
+                    "priorities",
+                    "buddies_min",
+                    "thresholds",
+                    "obs_to_check",
+                ]
                 for opt in opts:
                     if opt in test_options:
                         kwargs.update({opt: test_options[opt]})
@@ -1112,9 +1291,21 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
         elif qct.lower() == "sct":
 
             if test_options is not None:
-                opts = ["num_min", "num_max", "inner_radius", "outer_radius", "num_iterations",
-                        "num_min_prof", "min_elev_diff", "min_horizontal_scale", "pos", "neg",
-                        "eps2", "cmin", "cmax"]
+                opts = [
+                    "num_min",
+                    "num_max",
+                    "inner_radius",
+                    "outer_radius",
+                    "num_iterations",
+                    "num_min_prof",
+                    "min_elev_diff",
+                    "min_horizontal_scale",
+                    "pos",
+                    "neg",
+                    "eps2",
+                    "cmin",
+                    "cmax",
+                ]
                 for opt in opts:
                     if opt in test_options:
                         kwargs.update({opt: test_options[opt]})
@@ -1161,8 +1352,19 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
 class QCDataSet(object):
     """QC data set."""
 
-    def __init__(self, analysis_time, observations, flags, cis, lafs, providers, passed_tests=None,
-                 fg_dep=None, an_dep=None, remove_invalid_elevs=False):
+    def __init__(
+        self,
+        analysis_time,
+        observations,
+        flags,
+        cis,
+        lafs,
+        providers,
+        passed_tests=None,
+        fg_dep=None,
+        an_dep=None,
+        remove_invalid_elevs=False,
+    ):
         """Construct QC data set.
 
         Args:
@@ -1292,24 +1494,26 @@ class QCDataSet(object):
         """
         data = {}
         for i, lon_val in enumerate(self.lons):
-            data.update({
-                i: {
-                    "varname": self.varnames[i],
-                    "obstime": datetime.strftime(self.obstimes[i], "%Y%m%d%H%M%S"),
-                    "lon": lon_val,
-                    "lat": self.lats[i],
-                    "stid": self.stids[i],
-                    "elev": self.elevs[i],
-                    "value": self.values[i],
-                    "flag": self.flags[i],
-                    "ci": self.cis[i],
-                    "laf": self.lafs[i],
-                    "provider": self.providers[i],
-                    "fg_dep": self.fg_dep[i],
-                    "an_dep": self.an_dep[i],
-                    "passed_tests": self.passed_tests[i]
+            data.update(
+                {
+                    i: {
+                        "varname": self.varnames[i],
+                        "obstime": datetime.strftime(self.obstimes[i], "%Y%m%d%H%M%S"),
+                        "lon": lon_val,
+                        "lat": self.lats[i],
+                        "stid": self.stids[i],
+                        "elev": self.elevs[i],
+                        "value": self.values[i],
+                        "flag": self.flags[i],
+                        "ci": self.cis[i],
+                        "laf": self.lafs[i],
+                        "provider": self.providers[i],
+                        "fg_dep": self.fg_dep[i],
+                        "an_dep": self.an_dep[i],
+                        "passed_tests": self.passed_tests[i],
+                    }
                 }
-            })
+            )
         json.dump(data, open(filename, mode="w", encoding="utf-8"), indent=indent)
 
     def normalize_ci(self, mask, cmin, cmax):
@@ -1331,7 +1535,7 @@ class QCDataSet(object):
 
                 def _ecdf(vvv):
                     # side='right' because we want Pr(x <= v)
-                    return (np.searchsorted(xxx, vvv, side='right') + 1) / nnn
+                    return (np.searchsorted(xxx, vvv, side="right") + 1) / nnn
 
                 return _ecdf
 
@@ -1366,8 +1570,9 @@ class QCDataSet(object):
 class TitanDataSet(QCDataSet):
     """Titan QC data set."""
 
-    def __init__(self, var, settings, tests, datasources, an_time, corep=1,
-                 test_flags=None):
+    def __init__(
+        self, var, settings, tests, datasources, an_time, corep=1, test_flags=None
+    ):
         """Titan Data set.
 
         Args:
@@ -1400,7 +1605,15 @@ class TitanDataSet(QCDataSet):
 
         # Get global data
         for obs_set in self.datasources:
-            lobstimes, llons, llats, lstids, lelevs, lvalues, lvarnames = obs_set.get_obs()
+            (
+                lobstimes,
+                llons,
+                llats,
+                lstids,
+                lelevs,
+                lvalues,
+                lvarnames,
+            ) = obs_set.get_obs()
             obstimes = obstimes + lobstimes
             lons = lons + llons
             lats = lats + llats
@@ -1419,9 +1632,17 @@ class TitanDataSet(QCDataSet):
 
         observations = []
         for i, lon_val in enumerate(lons):
-            observations.append(Observation(obstimes[i], lon_val, lats[i], values[i],
-                                            elev=elevs[i], stid=stids[i],
-                                            varname=varnames[i]))
+            observations.append(
+                Observation(
+                    obstimes[i],
+                    lon_val,
+                    lats[i],
+                    values[i],
+                    elev=elevs[i],
+                    stid=stids[i],
+                    varname=varnames[i],
+                )
+            )
         points = tit.Points(lats, lons, elevs)
         self.titan_dataset = tit.Dataset(points, values)
         if passed_tests is None:
@@ -1432,8 +1653,17 @@ class TitanDataSet(QCDataSet):
         else:
             self.passed_tests = passed_tests
 
-        QCDataSet.__init__(self, an_time, observations, flags, cis, lafs, providers,
-                           passed_tests=None, remove_invalid_elevs=False)
+        QCDataSet.__init__(
+            self,
+            an_time,
+            observations,
+            flags,
+            cis,
+            lafs,
+            providers,
+            passed_tests=None,
+            remove_invalid_elevs=False,
+        )
 
     def perform_tests(self):
         """Perform the tests."""
@@ -1445,8 +1675,10 @@ class TitanDataSet(QCDataSet):
             for obs_set in self.datasources:
 
                 if obs_set.label == "":
-                    raise Exception("Observations set for quality control are "
-                                    "assumed to have a label")
+                    raise Exception(
+                        "Observations set for quality control are "
+                        "assumed to have a label"
+                    )
 
                 print("obs_set", obs_set.label)
                 size = obs_set.size
@@ -1464,26 +1696,36 @@ class TitanDataSet(QCDataSet):
                         if "tests" in self.settings["sets"][obs_set.label]:
                             if test.name in self.settings["sets"][obs_set.label]["tests"]:
                                 test_settings.update(
-                                    self.settings["sets"][obs_set.label]["tests"][test.name])
+                                    self.settings["sets"][obs_set.label]["tests"][
+                                        test.name
+                                    ]
+                                )
 
                 do_test = test_settings["do_test"]
                 if do_test:
                     del test_settings["do_test"]
                     logging.debug("findex %s size %s", findex, size)
-                    lmask = np.where(np.asarray(self.flags[findex:findex + size]) == 0)[0].tolist()
+                    lmask = np.where(np.asarray(self.flags[findex : findex + size]) == 0)[
+                        0
+                    ].tolist()
 
                     for lmask_ind in lmask:
                         lmask_ind = lmask_ind + findex
                     mask = mask + lmask
 
                     # Set input for this set
-                    logging.info("Test %s size=%s settings=%s", test.name, len(mask), test_settings)
+                    logging.info(
+                        "Test %s size=%s settings=%s", test.name, len(mask), test_settings
+                    )
                     # t.set_input(test_settings, len(mask))
                     test.set_input(len(lmask), **test_settings)
 
                 else:
-                    logging.info("Test %s is de-ativated for this data source %s",
-                                 test.name, obs_set.label)
+                    logging.info(
+                        "Test %s is de-ativated for this data source %s",
+                        test.name,
+                        obs_set.label,
+                    )
 
                 findex = findex + size
 
@@ -1508,8 +1750,16 @@ class TitanDataSet(QCDataSet):
                         if self.flags[mask_ind] == 199:
                             outside = outside + 1
 
-            summary.update({test.name: {
-                "tested": len(mask), "ok": ok_obs, "bad": bad, "outside": outside}})
+            summary.update(
+                {
+                    test.name: {
+                        "tested": len(mask),
+                        "ok": ok_obs,
+                        "bad": bad,
+                        "outside": outside,
+                    }
+                }
+            )
 
         kept = 0
         flagged = 0
@@ -1523,12 +1773,16 @@ class TitanDataSet(QCDataSet):
         logging.info("\n")
         logging.info("Total number of observations: %s", len(self.flags))
         logging.info("                        Kept: %s", kept)
-        logging.info("                     Flagged: %s (bad metadata: %s)", flagged, self.metadata)
+        logging.info(
+            "                     Flagged: %s (bad metadata: %s)", flagged, self.metadata
+        )
         logging.info("\n")
         for test in self.tests:
             outside = ""
             if summary[test.name]["outside"] > 0:
-                outside = " (" + str(summary[test.name]["outside"]) + " exceeding max distance)"
+                outside = (
+                    " (" + str(summary[test.name]["outside"]) + " exceeding max distance)"
+                )
             logging.info("Test: %s", test.name)
             logging.info("  tested: %s", summary[test.name]["tested"])
             logging.info("      ok: %s", summary[test.name]["ok"])
@@ -1561,8 +1815,9 @@ class ObsOperator(object):
         lats = dataset.lats
         points = gridpp.Points(lats, lons)
 
-        logging.info("Setting up \"%s\" observation operator for %s points",
-                     operator, str(len(lons)))
+        logging.info(
+            'Setting up "%s" observation operator for %s points', operator, str(len(lons))
+        )
         if operator == "nearest":
             obs_values = gridpp.nearest(grid, points, grid_values)
         elif operator == "bilinear":
@@ -1627,8 +1882,9 @@ class Departure(object):
                                           Defaults to 5000.
 
         """
-        self.obs_operator = ObsOperator(operator, geo, dataset, grid_values,
-                                        max_distance=max_distance)
+        self.obs_operator = ObsOperator(
+            operator, geo, dataset, grid_values, max_distance=max_distance
+        )
         obs_values = self.obs_operator.get_obs_value()
 
         values = []
@@ -1677,7 +1933,9 @@ class Departure(object):
         return self.obs_operator.get_obs_value(pos=pos)
 
 
-def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None):
+def dataset_from_file(
+    an_time, filename, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None
+):
     """Get a QCDataSet from a json file.
 
     Args:
@@ -1693,11 +1951,19 @@ def dataset_from_file(an_time, filename, qc_flag=None, skip_flags=None, fg_dep=N
 
     """
     data = json.load(open(filename, mode="r", encoding="utf-8"))
-    return dataset_from_json(an_time, data, qc_flag=qc_flag, skip_flags=skip_flags,
-                             fg_dep=fg_dep, an_dep=an_dep)
+    return dataset_from_json(
+        an_time,
+        data,
+        qc_flag=qc_flag,
+        skip_flags=skip_flags,
+        fg_dep=fg_dep,
+        an_dep=an_dep,
+    )
 
 
-def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None):
+def dataset_from_json(
+    an_time, data, qc_flag=None, skip_flags=None, fg_dep=None, an_dep=None
+):
     """Create a QCDataSet data set read from a json file.
 
     Args:
@@ -1740,7 +2006,9 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
             stid = data[i]["stid"]
             elev = data[i]["elev"]
             value = data[i]["value"]
-            observations.append(Observation(obstime, lon, lat, value, stid=stid, elev=elev))
+            observations.append(
+                Observation(obstime, lon, lat, value, stid=stid, elev=elev)
+            )
             if "provider" in data[i]:
                 providers.append(data[i]["provider"])
             else:
@@ -1769,8 +2037,17 @@ def dataset_from_json(an_time, data, qc_flag=None, skip_flags=None, fg_dep=None,
     if len(passed_tests) == 0:
         passed_tests = None
 
-    return QCDataSet(an_time, observations, flags, cis, lafs, providers, passed_tests=passed_tests,
-                     fg_dep=fg_deps, an_dep=an_deps)
+    return QCDataSet(
+        an_time,
+        observations,
+        flags,
+        cis,
+        lafs,
+        providers,
+        passed_tests=passed_tests,
+        fg_dep=fg_deps,
+        an_dep=an_deps,
+    )
 
 
 def merge_json_qc_data_sets(an_time, filenames, qc_flag=None, skip_flags=None):

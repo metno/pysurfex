@@ -1,10 +1,9 @@
 """Run time methods."""
-import os
 import logging
-import sys
-import subprocess
+import os
 import shutil
-
+import subprocess
+import sys
 
 from .util import remove_existing_file
 
@@ -39,13 +38,19 @@ class BatchJob(object):
             logging.info("BATCH: %s", self.rte["OMP_NUM_THREADS"])
         logging.info("Batch running %s", cmd)
 
-        process = subprocess.Popen(cmd, shell=True, env=self.rte, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT,
-                                   universal_newlines=True, bufsize=1)
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            env=self.rte,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            bufsize=1,
+        )
         # Poll process for new output until finished
         while True:
             nextline = process.stdout.readline()
-            if nextline == '' and process.poll() is not None:
+            if nextline == "" and process.poll() is not None:
                 break
             sys.stdout.write(nextline)
             sys.stdout.flush()
@@ -87,10 +92,10 @@ class SURFEXBinary(object):
         self.input_data = input_data
         self.input_data.prepare_input()
 
-        if os.path.exists('OPTIONS.nam'):
-            os.remove('OPTIONS.nam')
-        self.settings.write('OPTIONS.nam')
-        with open('OPTIONS.nam', mode="r", encoding="utf-8") as file_handler:
+        if os.path.exists("OPTIONS.nam"):
+            os.remove("OPTIONS.nam")
+        self.settings.write("OPTIONS.nam")
+        with open("OPTIONS.nam", mode="r", encoding="utf-8") as file_handler:
             content = file_handler.read()
         if self.print_namelist:
             logging.info(content)
@@ -99,9 +104,9 @@ class SURFEXBinary(object):
             logging.debug(self.pgdfile.filename)
             try:
                 logging.info("PGD is %s", self.pgdfile.filename)
-                if self.pgdfile.input_file is not None and \
-                        os.path.abspath(self.pgdfile.filename) \
-                        != os.path.abspath(self.pgdfile.input_file):
+                if self.pgdfile.input_file is not None and os.path.abspath(
+                    self.pgdfile.filename
+                ) != os.path.abspath(self.pgdfile.input_file):
                     remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
                     os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
                 if not os.path.exists(self.pgdfile.filename):
@@ -111,11 +116,10 @@ class SURFEXBinary(object):
             if self.surfout is not None:
                 try:
                     logging.info("PREP is %s", self.iofile.filename)
-                    if self.iofile.input_file is not None and \
-                            os.path.abspath(self.iofile.filename) \
-                            != os.path.abspath(self.iofile.input_file):
-                        remove_existing_file(self.iofile.input_file,
-                                             self.iofile.filename)
+                    if self.iofile.input_file is not None and os.path.abspath(
+                        self.iofile.filename
+                    ) != os.path.abspath(self.iofile.input_file):
+                        remove_existing_file(self.iofile.input_file, self.iofile.filename)
                         os.symlink(self.iofile.input_file, self.iofile.filename)
                     if not os.path.exists(self.iofile.filename):
                         raise FileNotFoundError(f"PREP {self.iofile.filename} not found!")
@@ -129,8 +133,12 @@ class SURFEXBinary(object):
         except Exception as exc:
             raise RuntimeError(repr(exc)) from Exception
 
-        listings = ["LISTING_PGD0.txt", "LISTING_PREP0.txt", "LISTING_OFFLINE0.txt",
-                    "LISTING_SODA0.txt"]
+        listings = [
+            "LISTING_PGD0.txt",
+            "LISTING_PREP0.txt",
+            "LISTING_OFFLINE0.txt",
+            "LISTING_SODA0.txt",
+        ]
         for listing in listings:
             if os.path.exists(listing):
                 with open(listing, mode="r", encoding="utf-8") as file_handler:
@@ -149,8 +157,20 @@ class SURFEXBinary(object):
 class PerturbedOffline(SURFEXBinary):
     """Pertubed offline."""
 
-    def __init__(self, binary, batch, io, pert_number, settings, input_data, surfout=None,
-                 archive_data=None, pgdfile=None, print_namelist=False, negpert=False):
+    def __init__(
+        self,
+        binary,
+        batch,
+        io,
+        pert_number,
+        settings,
+        input_data,
+        surfout=None,
+        archive_data=None,
+        pgdfile=None,
+        print_namelist=False,
+        negpert=False,
+    ):
         """Perturbed offline.
 
         Args:
@@ -168,16 +188,16 @@ class PerturbedOffline(SURFEXBinary):
 
         """
         self.pert_number = pert_number
-        settings['nam_io_varassim']['LPRT'] = True
-        settings['nam_var']['nivar'] = int(pert_number)
+        settings["nam_io_varassim"]["LPRT"] = True
+        settings["nam_var"]["nivar"] = int(pert_number)
         # Handle negative pertubations
         if negpert:
-            nvar = int(settings['nam_var']['nvar'])
+            nvar = int(settings["nam_var"]["nvar"])
             ipert = 0
             npert = 1
             for nvi in range(0, nvar):
-                key = 'nncv(' + str(nvi + 1) + ')'
-                val = int(settings['nam_var'][key])
+                key = "nncv(" + str(nvi + 1) + ")"
+                val = int(settings["nam_var"][key])
                 # Check if active
                 if val == 1:
                     npert = 1
@@ -185,19 +205,38 @@ class PerturbedOffline(SURFEXBinary):
                     npert = npert + 1
                 for __ in range(0, npert):
                     ipert = ipert + 1
-                    key = 'xtprt_m(' + str(ipert) + ')'
-                    val = settings['nam_var'][key]
-                    settings['nam_var'][key] = -val
-        SURFEXBinary.__init__(self, binary, batch, io, settings, input_data, surfout=surfout,
-                              archive_data=archive_data, pgdfile=pgdfile,
-                              print_namelist=print_namelist)
+                    key = "xtprt_m(" + str(ipert) + ")"
+                    val = settings["nam_var"][key]
+                    settings["nam_var"][key] = -val
+        SURFEXBinary.__init__(
+            self,
+            binary,
+            batch,
+            io,
+            settings,
+            input_data,
+            surfout=surfout,
+            archive_data=archive_data,
+            pgdfile=pgdfile,
+            print_namelist=print_namelist,
+        )
 
 
 class Masterodb(object):
     """Masterodb."""
 
-    def __init__(self, pgdfile, prepfile, surffile, settings, input_data, binary=None,
-                 archive_data=None, print_namelist=True, batch=None):
+    def __init__(
+        self,
+        pgdfile,
+        prepfile,
+        surffile,
+        settings,
+        input_data,
+        binary=None,
+        archive_data=None,
+        print_namelist=True,
+        batch=None,
+    ):
         """Masterodb.
 
         Args:
@@ -230,18 +269,19 @@ class Masterodb(object):
         self.input.prepare_input()
 
         # Prepare namelist
-        if os.path.exists('EXSEG1.nam'):
-            os.remove('EXSEG1.nam')
+        if os.path.exists("EXSEG1.nam"):
+            os.remove("EXSEG1.nam")
 
-        self.settings.write('EXSEG1.nam')
-        with open('EXSEG1.nam', mode="r", encoding="utf-8") as file_handler:
+        self.settings.write("EXSEG1.nam")
+        with open("EXSEG1.nam", mode="r", encoding="utf-8") as file_handler:
             content = file_handler.read()
         if self.print_namelist:
             logging.info(content)
 
         logging.info("PGD file for MASTERODB %s", self.pgdfile.filename)
-        if self.pgdfile.input_file is not None and \
-                os.path.abspath(self.pgdfile.filename) != os.path.abspath(self.pgdfile.input_file):
+        if self.pgdfile.input_file is not None and os.path.abspath(
+            self.pgdfile.filename
+        ) != os.path.abspath(self.pgdfile.input_file):
             logging.info("Input PGD file is: %s", self.pgdfile.input_file)
             remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
             os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
@@ -251,9 +291,9 @@ class Masterodb(object):
             raise FileNotFoundError(self.pgdfile.filename)
 
         logging.info("PREP file for MASTERODB %s", self.prepfile.filename)
-        if self.prepfile.input_file is not None and \
-                os.path.abspath(self.prepfile.filename) \
-                != os.path.abspath(self.prepfile.input_file):
+        if self.prepfile.input_file is not None and os.path.abspath(
+            self.prepfile.filename
+        ) != os.path.abspath(self.prepfile.input_file):
 
             logging.info("Input PREP file is: %s", self.prepfile.input_file)
             remove_existing_file(self.prepfile.input_file, self.prepfile.filename)

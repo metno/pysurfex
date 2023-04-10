@@ -1,0 +1,389 @@
+"""Test gridpp."""
+import numpy as np
+import json
+import pytest
+
+from surfex.cli import gridpp, first_guess_for_oi, titan, qc2obsmon, cli_oi2soda
+
+an_time = "2020111306"
+
+
+@pytest.fixture(scope="module")
+def domain_dict():
+    domain = {
+        "nam_pgd_grid": {
+            "cgrid": "CONF PROJ"
+        },
+        "nam_conf_proj": {
+            "xlat0": 59.5,
+            "xlon0": 9
+        },
+        "nam_conf_proj_grid": {
+            "ilone": 1,
+            "ilate": 1,
+            "xlatcen": 60,
+            "xloncen": 10,
+            "nimax": 9,
+            "njmax": 19,
+            "xdx": 10000.0,
+            "xdy": 10000.0
+        }
+    }
+    return domain
+
+
+def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_file):
+    qc_settings = {
+        "t2m": {
+            "do_test": True,
+            "plausibility": {
+                "minval": 200,
+                "maxval": 350
+            },
+            "firstguess": {
+                "fg_file": first_guess_file,
+                "fg_var": "air_temperature_2m",
+                "negdiff": 2,
+                "posdiff": 3,
+                "do_test": False
+            },
+            # Not working yet
+            "buddy": {
+                "do_test": False
+            },
+            "climatology": {
+                "do_test": False,
+                "minval": 270,
+                "maxval": 275
+            },
+            "sct": {
+            },
+            "redundancy": {
+            },
+            "blacklist": {
+            },
+            "domain": {
+            },
+            "nometa": {
+            },
+            "fraction": {
+                "fraction_file": first_guess_file,
+                "fraction_var": "land_area_fraction",
+            },
+            "sets": {
+                "label": {
+                    "filepattern": json_obs_file,
+                    "filetype": "json",
+                    "varname": "airTemperatureAt2M",
+                    "tests": {
+                        "firstguess": {
+                            "do_test": True
+                        }
+                    }
+                }
+            }
+        },
+        "rh2m": {
+            "do_test": True,
+            "plausibility": {
+                "minval": 0,
+                "maxval": 1
+            },
+            "firstguess": {
+                "fg_file": first_guess_file,
+                "fg_var": "relative_humidity_2m",
+                "negdiff": 0.2,
+                "posdiff": 0.2,
+                "do_test": False
+            },
+            # Not working yet
+            "buddy": {
+                "do_test": False
+            },
+            "climatology": {
+                "do_test": False,
+                "minval": 0,
+                "maxval": 1
+            },
+            "sct": {
+            },
+            "redundancy": {
+            },
+            "blacklist": {
+            },
+            "domain": {
+            },
+            "nometa": {
+            },
+            "fraction": {
+                "fraction_file": first_guess_file,
+                "fraction_var": "land_area_fraction",
+            },
+            "sets": {
+                "label": {
+                    "filepattern": json_obs_file,
+                    "filetype": "json",
+                    "varname": "relativeHumidityAt2M",
+                    "tests": {
+                        "firstguess": {
+                            "do_test": True
+                        }
+                    }
+                }
+            }
+        },
+        "sd": {
+            "do_test": True,
+            "plausibility": {
+                "minval": 0,
+                "maxval": 50
+            },
+            "firstguess": {
+                "fg_file": first_guess_file,
+                "fg_var": "surface_snow_thickness",
+                "negdiff": 0.4,
+                "posdiff": 0.4,
+                "do_test": True
+            },
+            # Not working yet
+            "buddy": {
+                "do_test": False
+            },
+            "climatology": {
+                "do_test": False,
+                "minval": 0,
+                "maxval": 1
+            },
+            "sct": {
+            },
+            "redundancy": {
+            },
+            "blacklist": {
+            },
+            "domain": {
+            },
+            "nometa": {
+            },
+            "fraction": {
+                "fraction_file": first_guess_file,
+                "fraction_var": "land_area_fraction",
+            },
+            "sets": {
+                "label": {
+                    "filepattern": json_obs_file,
+                    "filetype": "json",
+                    "varname": "totalSnowDepth",
+                    "tests": {
+                        "firstguess": {
+                            "do_test": True
+                        }
+                    }
+                }
+            }
+        }
+    }
+    with open(qc_fname, mode="w", encoding="utf-8") as file_handler:
+        json.dump(qc_settings, file_handler)
+    with open(blacklist_fname, mode="w", encoding="utf-8") as file_handler:
+        json.dump({}, file_handler)
+
+
+def run_titan(var, qc_settings, domain_file, blacklist_fname, qc_fname):
+
+    argv = [
+        "-i", qc_settings,
+        "-v", var,
+        "-dtg", an_time,
+        "--blacklist", blacklist_fname,
+        "--domain", domain_file,
+        "-o", qc_fname,
+        "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
+        "buddy", "climatology", "sct"
+    ]
+    titan(argv=argv)
+
+@pytest.fixture(scope="module")
+def domain_file(tmp_path_factory, domain_dict):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj.json"
+    json.dump(domain_dict, open(fname, mode="w", encoding="utf-8"))
+    return fname
+
+
+@pytest.fixture(scope="module")
+def first_guess_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
+    return fname
+
+@pytest.fixture(scope="module")
+def _mockers_read_grib(session_mocker, tmp_path_factory):
+    """Define mockers used in the tests for the tasks' `run` methods."""
+
+    def return_points(*args, **kwargs):
+        return np.zeros_like([np.arange(9*19)]), None
+    
+    # Do the actual mocking
+    session_mocker.patch(
+        "surfex.grib.Grib.points", new=return_points
+    )
+
+@pytest.fixture(scope="module")
+def create_firstguess(first_guess_file, domain_file,):
+    """Test first guess from grib1."""
+    argv = [
+        "-c", "surfex/cfg/first_guess.yml",
+        "-i", "grib1_fg_file",
+        "-if", "grib1",
+        "-dtg", an_time,
+        "-d", domain_file,
+        "--laf_converter", "none",
+        "--debug",
+        "-o", first_guess_file,
+        "air_temperature_2m",
+        "relative_humidity_2m",
+        "surface_snow_thickness"
+    ]
+    first_guess_for_oi(argv=argv)
+
+
+def create_obs_data(var, obs_fname):
+    if var == "t2m":
+        name = "airTemperatureAt2M"
+        val = 273
+    elif var == "rh2m":
+        name = "relativeHumidityAt2M"
+        val = 85
+    elif var == "sd":
+        name = "totalSnowDepth"
+        val = 0.25
+    else:
+        raise NotImplementedError
+    qc_data = {
+        "0": {
+            "varname": name,
+            "obstime": "20201113060000",
+            "lon": 6.9933000000000005,
+            "lat": 62.191,
+            "stid": "1111",
+            "elev": 900.0,
+            "value": val,
+            "flag": 0.0,
+            "ci": 1.0,
+            "laf": 1.0,
+            "provider": "bufr",
+            "fg_dep": np.nan,
+            "an_dep": np.nan,
+            "passed_tests": ["domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction", "sct"]
+        },
+        "1": {
+            "varname": name,
+            "obstime": "20201113060000",
+            "lon": 7.8173,
+            "lat": 59.767500000000005,
+            "stid": "NA",
+            "elev": 1340.0,
+            "value": val,
+            "flag": 199.0,
+            "ci": 1.0,
+            "laf": 1.0, 
+            "provider": "bufr",
+            "fg_dep": np.nan,
+            "an_dep": np.nan,
+            "passed_tests": []
+        }
+    }
+    
+    json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
+
+
+def oi2soda(tmp_path_factory, first_guess_file):
+    """Test oi2soda."""
+    output = f"{tmp_path_factory.getbasetemp().as_posix()}/OBSERVATIONS_200330H06.DAT"
+    argv = [
+        "--t2m_file", first_guess_file,
+        "--t2m_var", "air_temperature_2m",
+        "--rh2m_file", first_guess_file,
+        "--rh2m_var", "relative_humidity_2m",
+        "--sd_file", first_guess_file,
+        "--sd_var", "surface_snow_thickness",
+        "--debug",
+        "-o", output,
+        "2020033006"
+    ]
+    cli_oi2soda(argv=argv)
+
+
+@pytest.fixture(scope="module", params=["t2m", "rh2m", "sd"])
+def qc_gridpp_obsmon(tmp_path_factory, request, domain_file, first_guess_file):
+    var = request.param
+    translation = {
+        "t2m":  {
+            "elevGradient": "-0.0065",
+            "nc_name": "air_temperature_2m",
+            "hor": "30000.0",
+            "vert": "300.0",
+        },
+        "rh2m": {
+            "elevGradient": "0.0",
+            "nc_name": "relative_humidity_2m",
+            "hor": "40000.0",
+            "vert": "400.0",
+        },
+        "sd": {
+            "elevGradient": "0.0",
+            "nc_name": "surface_snow_thickness",
+            "hor": "60000.0",
+            "vert": "500.0",
+        }
+    }
+    
+    
+    # Create observations
+    obs_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs_{var}.json"
+    create_obs_data(var, obs_fname)
+    
+    # Titan
+    qc_settings_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc_settings_{var}.json"
+    qc_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc _{var}.json"
+    blacklist_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/blacklist_{var}.json"
+    create_titan_settings(qc_settings_fname, first_guess_file, blacklist_fname, obs_fname)
+    run_titan(var, qc_settings_fname, domain_file, blacklist_fname, qc_fname)
+ 
+    # gridpp
+    analysis_file = f"{tmp_path_factory.getbasetemp().as_posix()}/an_{var}.nc"
+    argv = ["-i", first_guess_file,
+        "-o", analysis_file,
+        "-obs", qc_fname,
+        "-hor", translation[var]["hor"],
+        "-vert", translation[var]["vert"],
+        "-v", translation[var]["nc_name"],
+        "--elevGradient", translation[var]["elevGradient"]
+    ]
+    print(argv)
+    gridpp(argv=argv)
+
+    # Obsmon
+    db_file = f"{tmp_path_factory.getbasetemp().as_posix()}/ecma.db"
+    obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file)
+
+def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
+
+    translation = {
+        "t2m":  "air_temperature_2m",
+        "rh2m": "relative_humidity_2m",
+        "sd": "surface_snow_thickness"
+    }
+    nc_name = translation[var]
+    argv = [an_time,
+        var, qc_fname,
+        "--fg_file", first_guess_file,
+        "--an_file", analysis_file,
+        "--file_var", nc_name,
+        "-o", db_file
+        ]
+    qc2obsmon(argv=argv)
+
+
+@pytest.mark.usefixtures("_mockers_read_grib")
+def test_qc_gridpp_obsmon(create_firstguess, qc_gridpp_obsmon):
+    create_firstguess
+    qc_gridpp_obsmon

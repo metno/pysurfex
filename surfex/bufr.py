@@ -1,9 +1,11 @@
 """bufr treatment."""
+import logging
+import sys
 from datetime import datetime
 from math import exp
-import sys
-import logging
+
 import numpy as np
+
 try:
     import eccodes  # type: ignore
 except ImportError:
@@ -25,8 +27,17 @@ from .observation import Observation
 class BufrObservationSet(ObservationSet):
     """Create observation data set from bufr observations."""
 
-    def __init__(self, bufrfile, variables, valid_dtg, valid_range, lonrange=None, latrange=None,
-                 label="bufr", use_first=False):
+    def __init__(
+        self,
+        bufrfile,
+        variables,
+        valid_dtg,
+        valid_range,
+        lonrange=None,
+        latrange=None,
+        label="bufr",
+        use_first=False,
+    ):
         """Initialize a bufr observation set.
 
         Args:
@@ -54,19 +65,19 @@ class BufrObservationSet(ObservationSet):
 
         # define the keys to be printed
         keys = [
-            'latitude',
-            'localLatitude',
-            'longitude',
-            'localLongitude',
-            'year',
-            'month',
-            'day',
-            'hour',
-            'minute',
-            'heightOfStationGroundAboveMeanSeaLevel',
-            'heightOfStation',
-            'stationNumber',
-            'blockNumber'
+            "latitude",
+            "localLatitude",
+            "longitude",
+            "localLongitude",
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "heightOfStationGroundAboveMeanSeaLevel",
+            "heightOfStation",
+            "stationNumber",
+            "blockNumber",
         ]
         nerror = {}
         ntime = {}
@@ -77,20 +88,32 @@ class BufrObservationSet(ObservationSet):
             if var == "relativeHumidityAt2M":
                 keys.append("airTemperatureAt2M")
                 keys.append("dewpointTemperatureAt2M")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/airTemperature")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/airTemperature")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/dewpointTemperature")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/dewpointTemperature")
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                    "/airTemperature"
+                )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                    "/airTemperature"
+                )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                    "/dewpointTemperature"
+                )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                    "/dewpointTemperature"
+                )
             elif var == "airTemperatureAt2M":
                 keys.append("airTemperatureAt2M")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/airTemperature")
-                keys.append("/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/airTemperature")
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                    "/airTemperature"
+                )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                    "/airTemperature"
+                )
             else:
                 keys.append(var)
             nerror.update({var: 0})
@@ -123,7 +146,7 @@ class BufrObservationSet(ObservationSet):
             # we need to instruct ecCodes to expand all the descriptors
             # i.e. unpack the data values
             try:
-                eccodes.codes_set(bufr, 'unpack', 1)
+                eccodes.codes_set(bufr, "unpack", 1)
                 decoded = True
             except eccodes.CodesInternalError as err:
                 not_decoded = not_decoded + 1
@@ -157,7 +180,10 @@ class BufrObservationSet(ObservationSet):
                         logging.debug("Decode: %s", key)
                         val = eccodes.codes_get(bufr, key)
                         logging.debug("Got: %s=%s", key, val)
-                        if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
+                        if (
+                            val == eccodes.CODES_MISSING_DOUBLE
+                            or val == eccodes.CODES_MISSING_LONG
+                        ):
                             val = np.nan
                         if key == "latitude":
                             lat = val
@@ -197,17 +223,25 @@ class BufrObservationSet(ObservationSet):
                             block_number = val
                         if key == "airTemperatureAt2M":
                             t2m = val
-                        if key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"\
-                                  "/airTemperature" or \
-                                key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"\
-                                       "/airTemperature":
+                        if (
+                            key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            "/airTemperature"
+                            or key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                            "/airTemperature"
+                        ):
                             temp = val
                         if key == "dewpointTemperatureAt2M":
                             td2m = val
-                        if key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"\
-                                  "/dewpointTemperature" or \
-                                key == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"\
-                                       "/dewpointTemperature":
+                        if (
+                            key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            "/dewpointTemperature"
+                            or key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                            "/dewpointTemperature"
+                        ):
                             t_d = val
                         if key == "totalSnowDepth":
                             s_d = val
@@ -250,7 +284,9 @@ class BufrObservationSet(ObservationSet):
                                         value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
                                     except Exception as conv_ex:
-                                        logging.debug("Got exception for %s:%s", var, str(conv_ex))
+                                        logging.debug(
+                                            "Got exception for %s:%s", var, str(conv_ex)
+                                        )
                                         value = np.nan
                                 else:
                                     if not np.isnan(temp) and not np.isnan(t_d):
@@ -258,8 +294,11 @@ class BufrObservationSet(ObservationSet):
                                             value = self.td2rh(t_d, temp)
                                             value = value * 0.01
                                         except Exception as conv_ex:
-                                            logging.debug("Got exception for %s:%s", var,
-                                                          str(conv_ex))
+                                            logging.debug(
+                                                "Got exception for %s:%s",
+                                                var,
+                                                str(conv_ex),
+                                            )
                                             value = np.nan
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
@@ -272,7 +311,9 @@ class BufrObservationSet(ObservationSet):
                             elif var == "heightOfBaseOfCloud":
                                 value = c_b
                             else:
-                                raise NotImplementedError(f"Var {var} is not coded! Please do it!")
+                                raise NotImplementedError(
+                                    f"Var {var} is not coded! Please do it!"
+                                )
                         else:
                             logging.debug("Pos already exists %s %s", pos, var)
 
@@ -298,24 +339,49 @@ class BufrObservationSet(ObservationSet):
                         if not all_found:
                             nerror.update({var: nerror[var] + 1})
 
-                        logging.debug("Check on position in space and time %s %s %s %s %s %s",
-                                      lon, lonrange[0], lonrange[1], lat,
-                                      latrange[0], latrange[1])
-                        if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
-                            obs_dtg = datetime(year=year, month=month, day=day, hour=hour,
-                                               minute=minute)
+                        logging.debug(
+                            "Check on position in space and time %s %s %s %s %s %s",
+                            lon,
+                            lonrange[0],
+                            lonrange[1],
+                            lat,
+                            latrange[0],
+                            latrange[1],
+                        )
+                        if (
+                            latrange[0] <= lat <= latrange[1]
+                            and lonrange[0] <= lon <= lonrange[1]
+                        ):
+                            obs_dtg = datetime(
+                                year=year, month=month, day=day, hour=hour, minute=minute
+                            )
                             # print(value)
                             if not np.isnan(value):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
-                                    logging.debug("Valid DTG for station %s %s %s %s %s %s %s %s",
-                                                  obs_dtg, valid_dtg, valid_range, lon, lat,
-                                                  value, elev, stid)
+                                    logging.debug(
+                                        "Valid DTG for station %s %s %s %s %s %s %s %s",
+                                        obs_dtg,
+                                        valid_dtg,
+                                        valid_range,
+                                        lon,
+                                        lat,
+                                        value,
+                                        elev,
+                                        stid,
+                                    )
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
-                                    observations.append(Observation(obs_dtg, lon, lat,
-                                                                    value,
-                                                                    elev=elev, stid=stid,
-                                                                    varname=var))
+                                    observations.append(
+                                        Observation(
+                                            obs_dtg,
+                                            lon,
+                                            lat,
+                                            value,
+                                            elev=elev,
+                                            stid=stid,
+                                            varname=var,
+                                        )
+                                    )
                                     if use_first:
                                         registry[pos].update({var: True})
                                     nobs.update({var: nobs[var] + 1})
@@ -329,7 +395,7 @@ class BufrObservationSet(ObservationSet):
                 cnt += 1
 
                 if (cnt % 1000) == 0:
-                    print('.', end='')
+                    print(".", end="")
                     sys.stdout.flush()
 
             # delete handle
@@ -340,7 +406,10 @@ class BufrObservationSet(ObservationSet):
         for var in variables:
             print("\nObservations for var=" + var + ": " + str(nobs[var]))
             print("Observations removed because of domain check: " + str(ndomain[var]))
-            print("Observations removed because of not being defined/found: " + str(nundef[var]))
+            print(
+                "Observations removed because of not being defined/found: "
+                + str(nundef[var])
+            )
             print("Observations removed because of time window: " + str(ntime[var]))
             print("Messages not containing information on all keys: " + str(nerror[var]))
         # close the file
@@ -373,14 +442,24 @@ class BufrObservationSet(ObservationSet):
             t_d = t_d - 273.15
             temp = temp - 273.15
 
-        r_h = 100 * (exp((17.625 * t_d) / (243.04 + t_d)) / exp((17.625 * temp) / (243.04 + temp)))
+        r_h = 100 * (
+            exp((17.625 * t_d) / (243.04 + t_d)) / exp((17.625 * temp) / (243.04 + temp))
+        )
         if r_h > 110 or r_h < 1:
-            logging.warning("\nWARNING: Calculated rh to %s from %s and %s. Set it to missing",
-                            str(r_h), str(t_d), str(temp))
+            logging.warning(
+                "\nWARNING: Calculated rh to %s from %s and %s. Set it to missing",
+                str(r_h),
+                str(t_d),
+                str(temp),
+            )
             r_h = np.nan
         elif r_h > 100:
-            logging.warning("\nWARNING: Calculated rh to %s from %s and %s.",
-                            str(r_h), str(t_d), str(temp) + " Truncate to 100%")
+            logging.warning(
+                "\nWARNING: Calculated rh to %s from %s and %s.",
+                str(r_h),
+                str(t_d),
+                str(temp) + " Truncate to 100%",
+            )
             r_h = 100
         return r_h
 

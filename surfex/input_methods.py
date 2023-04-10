@@ -1,15 +1,12 @@
 """Input methods"""
-import os
 import glob
 import logging
-
-
+import os
 from datetime import timedelta
 
-
 from .bufr import BufrObservationSet
-from .obs import (NetatmoObservationSet, MetFrostObservations, JsonObservationSet)
 from .geo import LonLatVal
+from .obs import JsonObservationSet, MetFrostObservations, NetatmoObservationSet
 from .util import parse_filepattern
 
 
@@ -60,8 +57,11 @@ def get_datasources(obs_time, settings):
                 print("kwargs", kwargs)
                 valid_range = timedelta(seconds=deltat)
                 if os.path.exists(filename):
-                    datasources.append(BufrObservationSet(filename, [varname], obs_time,
-                                                          valid_range, **kwargs))
+                    datasources.append(
+                        BufrObservationSet(
+                            filename, [varname], obs_time, valid_range, **kwargs
+                        )
+                    )
                 else:
                     print("WARNING: filename " + filename + " not set. Not added.")
 
@@ -109,8 +109,9 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"dt": 1800})
 
                 if filenames is not None:
-                    datasources.append(NetatmoObservationSet(filenames, variable, obs_time,
-                                                             **kwargs))
+                    datasources.append(
+                        NetatmoObservationSet(filenames, variable, obs_time, **kwargs)
+                    )
                 else:
                     print("WARNING: filenames not set. Not added.")
 
@@ -148,7 +149,9 @@ def get_datasources(obs_time, settings):
     return datasources
 
 
-def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, latrange=None):
+def set_geo_from_obs_set(
+    obs_time, obs_type, varname, inputfile, lonrange=None, latrange=None
+):
     """Set geometry from obs file.
 
     Args:
@@ -168,7 +171,7 @@ def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, 
             "varname": varname,
             "filetype": obs_type,
             "inputfile": inputfile,
-            "filepattern": inputfile
+            "filepattern": inputfile,
         }
     }
     if lonrange is None:
@@ -194,15 +197,13 @@ def set_geo_from_obs_set(obs_time, obs_type, varname, inputfile, lonrange=None, 
 
     d_x = ["0.3"] * len(selected_lons)
     geo_json = {
-        "nam_pgd_grid": {
-            "cgrid": "LONLATVAL"
-        },
+        "nam_pgd_grid": {"cgrid": "LONLATVAL"},
         "nam_lonlatval": {
             "xx": selected_lons,
             "xy": selected_lats,
             "xdx": d_x,
-            "xdy": d_x
-        }
+            "xdy": d_x,
+        },
     }
     geo = LonLatVal(geo_json)
     return geo

@@ -1,22 +1,22 @@
 """Forcing."""
 import abc
-import time
 import copy
-import shutil
-import os
 import json
-from datetime import datetime, timedelta
 import logging
+import os
+import shutil
+import time
+from datetime import datetime, timedelta
+
 import netCDF4
 import numpy as np
 import toml
-
 
 from .cache import Cache
 from .configuration import ConfigurationFromHarmonie
 from .file import ForcingFileNetCDF
 from .geo import get_geo_object
-from .read import Converter, ConvertedInput, ConstantValue
+from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
 
@@ -64,8 +64,10 @@ class SurfexOutputForcing(object):
 
     def _check_sanity(self):
         if len(self.var_objs) != self.nparameters:
-            raise Exception(f"Inconsistent number of parameter. {str(len(self.var_objs))} != "
-                            f"{str(self.nparameters)}")
+            raise Exception(
+                f"Inconsistent number of parameter. {str(len(self.var_objs))} != "
+                f"{str(self.nparameters)}"
+            )
 
         # Check if all parameters are present
         for var_obj in self.var_objs:
@@ -94,7 +96,7 @@ class SurfexOutputForcing(object):
     @abc.abstractmethod
     def write_forcing(self, var_objs, this_time, cache):
         """Write forcing."""
-        raise NotImplementedError('users must define writeForcing to use this base class')
+        raise NotImplementedError("users must define writeForcing to use this base class")
 
 
 class NetCDFOutput(SurfexOutputForcing):
@@ -116,8 +118,19 @@ class NetCDFOutput(SurfexOutputForcing):
         "CO2": "CO2air",
     }
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache,
-                 time_step, fmt="netcdf"):
+    def __init__(
+        self,
+        base_time,
+        geo,
+        fname,
+        ntimes,
+        var_objs,
+        att_objs,
+        att_time,
+        cache,
+        time_step,
+        fmt="netcdf",
+    ):
         """Construct netcdf forcing.
 
         Args:
@@ -131,6 +144,9 @@ class NetCDFOutput(SurfexOutputForcing):
             cache (_type_): _description_
             time_step (_type_): _description_
             fmt (str, optional): _description_. Defaults to "netcdf".
+
+        Raises:
+            NotImplementedError: NotImplementedError
 
         """
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, time_step)
@@ -146,7 +162,9 @@ class NetCDFOutput(SurfexOutputForcing):
             fname = "FORCING.nc"
         self.fname = fname
         self.tmp_fname = self.fname + ".tmp"
-        self.file_handler = netCDF4.Dataset(self.tmp_fname, 'w', format=self.output_format)
+        self.file_handler = netCDF4.Dataset(
+            self.tmp_fname, "w", format=self.output_format
+        )
         self._define_forcing(geo, att_objs, att_time, cache)
 
     def write_forcing(self, var_objs, this_time, cache):
@@ -169,7 +187,7 @@ class NetCDFOutput(SurfexOutputForcing):
             logging.info("Preparation took %s seconds", str(toc - tic))
             self.forcing_file[self.translation[this_var]][self.time_step, :] = field
 
-        self.forcing_file['TIME'][self.time_step] = self.time_step_value
+        self.forcing_file["TIME"][self.time_step] = self.time_step_value
 
     def _define_forcing(self, geo, att_objs, att_time, cache):
         logging.info("Define netcdf forcing")
@@ -182,7 +200,9 @@ class NetCDFOutput(SurfexOutputForcing):
             logging.info("Define: %s", this_obj.var_name)
             if this_var == "ZS":
                 zs_oro = this_obj.read_time_step(att_time, cache)
-                zs_oro = zs_oro.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
+                zs_oro = zs_oro.reshape(
+                    [self.geo.nlats, self.geo.nlons], order="F"
+                ).flatten()
             elif this_var == "ZREF":
                 zref = this_obj.read_time_step(att_time, cache)
                 zref = zref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
@@ -191,102 +211,187 @@ class NetCDFOutput(SurfexOutputForcing):
                 uref = uref.reshape([self.geo.nlats, self.geo.nlons], order="F").flatten()
 
         # DIMS
-        self.forcing_file['NPOINTS'] = self.file_handler.createDimension("Number_of_points",
-                                                                         geo.npoints)
-        self.forcing_file['NTIMES'] = self.file_handler.createDimension("time", self.ntimes)
+        self.forcing_file["NPOINTS"] = self.file_handler.createDimension(
+            "Number_of_points", geo.npoints
+        )
+        self.forcing_file["NTIMES"] = self.file_handler.createDimension(
+            "time", self.ntimes
+        )
 
         # DEFINE VARS
-        self.forcing_file['TIME'] = self.file_handler.createVariable("time", "f4", ("time",))
-        self.forcing_file['TIME'].units = "hours since " \
-                                          + f"{self.base_time.strftime('%Y-%m-%d %H')}:00:00 0:00"
-        self.forcing_file['TSTEP'] = self.file_handler.createVariable("FRC_TIME_STP", "f4")
-        self.forcing_file['TSTEP'].longname = "Forcing_Time_Step"
-        self.forcing_file['TSTEP'][:] = self.time_step_intervall
-        self.forcing_file['LON'] = self.file_handler.createVariable(
-            "LON", "f4", ("Number_of_points",))
-        self.forcing_file['LON'].longname = "Longitude"
-        self.forcing_file['LON'][:] = geo.lonlist
-        self.forcing_file['LAT'] = self.file_handler.createVariable(
-            "LAT", "f4", ("Number_of_points",))
-        self.forcing_file['LAT'].longname = "Latitude"
-        self.forcing_file['LAT'][:] = geo.latlist
-        self.forcing_file['ZS'] = self.file_handler.createVariable(
-            "ZS", "f4", ("Number_of_points",))
-        self.forcing_file['ZS'].longname = "Surface_Orography"
-        self.forcing_file['ZS'][:] = zs_oro
-        self.forcing_file['ZREF'] = self.file_handler.createVariable(
-            "ZREF", "f4", ("Number_of_points",))
-        self.forcing_file['ZREF'].longname = "Reference_Height"
-        self.forcing_file['ZREF'].units = "m"
-        self.forcing_file['ZREF'][:] = zref
-        self.forcing_file['UREF'] = self.file_handler.createVariable(
-            "UREF", "f4", ("Number_of_points",))
-        self.forcing_file['UREF'].longname = "Reference_Height_for_Wind"
-        self.forcing_file['UREF'].units = "m"
-        self.forcing_file['UREF'][:] = uref
+        self.forcing_file["TIME"] = self.file_handler.createVariable(
+            "time", "f4", ("time",)
+        )
+        self.forcing_file["TIME"].units = (
+            "hours since " + f"{self.base_time.strftime('%Y-%m-%d %H')}:00:00 0:00"
+        )
+        self.forcing_file["TSTEP"] = self.file_handler.createVariable(
+            "FRC_TIME_STP", "f4"
+        )
+        self.forcing_file["TSTEP"].longname = "Forcing_Time_Step"
+        self.forcing_file["TSTEP"][:] = self.time_step_intervall
+        self.forcing_file["LON"] = self.file_handler.createVariable(
+            "LON", "f4", ("Number_of_points",)
+        )
+        self.forcing_file["LON"].longname = "Longitude"
+        self.forcing_file["LON"][:] = geo.lonlist
+        self.forcing_file["LAT"] = self.file_handler.createVariable(
+            "LAT", "f4", ("Number_of_points",)
+        )
+        self.forcing_file["LAT"].longname = "Latitude"
+        self.forcing_file["LAT"][:] = geo.latlist
+        self.forcing_file["ZS"] = self.file_handler.createVariable(
+            "ZS", "f4", ("Number_of_points",)
+        )
+        self.forcing_file["ZS"].longname = "Surface_Orography"
+        self.forcing_file["ZS"][:] = zs_oro
+        self.forcing_file["ZREF"] = self.file_handler.createVariable(
+            "ZREF", "f4", ("Number_of_points",)
+        )
+        self.forcing_file["ZREF"].longname = "Reference_Height"
+        self.forcing_file["ZREF"].units = "m"
+        self.forcing_file["ZREF"][:] = zref
+        self.forcing_file["UREF"] = self.file_handler.createVariable(
+            "UREF", "f4", ("Number_of_points",)
+        )
+        self.forcing_file["UREF"].longname = "Reference_Height_for_Wind"
+        self.forcing_file["UREF"].units = "m"
+        self.forcing_file["UREF"][:] = uref
 
         # Define time dependent variables
         for this_obj in self.var_objs:
             this_var = this_obj.var_name
 
             if this_var == "TA":
-                self.forcing_file['Tair'] = self.file_handler.createVariable(
-                    "Tair", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Tair'].longname = "Near_Surface_Air_Temperature"
-                self.forcing_file['Tair'].units = "K"
+                self.forcing_file["Tair"] = self.file_handler.createVariable(
+                    "Tair",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Tair"].longname = "Near_Surface_Air_Temperature"
+                self.forcing_file["Tair"].units = "K"
             elif this_var == "QA":
-                self.forcing_file['Qair'] = self.file_handler.createVariable(
-                    "Qair", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Qair'].longname = "Near_Surface_Specific_Humidity"
-                self.forcing_file['Qair'].units = "kg/kg"
+                self.forcing_file["Qair"] = self.file_handler.createVariable(
+                    "Qair",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Qair"].longname = "Near_Surface_Specific_Humidity"
+                self.forcing_file["Qair"].units = "kg/kg"
             elif this_var == "PS":
-                self.forcing_file['PSurf'] = self.file_handler.createVariable(
-                    "PSurf", "f4", ("time", "Number_of_points",))
-                self.forcing_file['PSurf'].longname = "Surface_Pressure"
-                self.forcing_file['PSurf'].units = "Pa"
+                self.forcing_file["PSurf"] = self.file_handler.createVariable(
+                    "PSurf",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["PSurf"].longname = "Surface_Pressure"
+                self.forcing_file["PSurf"].units = "Pa"
             elif this_var == "DIR_SW":
-                self.forcing_file['DIR_SWdown'] = self.file_handler.createVariable(
-                    "DIR_SWdown", "f4", ("time", "Number_of_points",))
-                self.forcing_file['DIR_SWdown'].longname = \
-                    "Surface_Incident_Downwelling_Shortwave_Radiation"
-                self.forcing_file['DIR_SWdown'].units = "W/m2"
+                self.forcing_file["DIR_SWdown"] = self.file_handler.createVariable(
+                    "DIR_SWdown",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file[
+                    "DIR_SWdown"
+                ].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
+                self.forcing_file["DIR_SWdown"].units = "W/m2"
             elif this_var == "SCA_SW":
-                self.forcing_file['SCA_SWdown'] = self.file_handler.createVariable(
-                    "SCA_SWdown", "f4", ("time", "Number_of_points",))
-                self.forcing_file['SCA_SWdown'].longname = \
-                    "Surface_Incident_Diffuse_Shortwave_Radiation"
-                self.forcing_file['SCA_SWdown'].units = "W/m2"
+                self.forcing_file["SCA_SWdown"] = self.file_handler.createVariable(
+                    "SCA_SWdown",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file[
+                    "SCA_SWdown"
+                ].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
+                self.forcing_file["SCA_SWdown"].units = "W/m2"
             elif this_var == "LW":
-                self.forcing_file['LWdown'] = self.file_handler.createVariable(
-                    "LWdown", "f4", ("time", "Number_of_points",))
-                self.forcing_file['LWdown'].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
-                self.forcing_file['LWdown'].units = "W/m2"
+                self.forcing_file["LWdown"] = self.file_handler.createVariable(
+                    "LWdown",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file[
+                    "LWdown"
+                ].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
+                self.forcing_file["LWdown"].units = "W/m2"
             elif this_var == "RAIN":
-                self.forcing_file['Rainf'] = self.file_handler.createVariable(
-                    "Rainf", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Rainf'].longname = "Rainfall_Rate"
-                self.forcing_file['Rainf'].units = "kg/m2/s"
+                self.forcing_file["Rainf"] = self.file_handler.createVariable(
+                    "Rainf",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Rainf"].longname = "Rainfall_Rate"
+                self.forcing_file["Rainf"].units = "kg/m2/s"
             elif this_var == "SNOW":
-                self.forcing_file['Snowf'] = self.file_handler.createVariable(
-                    "Snowf", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Snowf'].longname = "Snowfall_Rate"
-                self.forcing_file['Snowf'].units = "kg/m2/s"
+                self.forcing_file["Snowf"] = self.file_handler.createVariable(
+                    "Snowf",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Snowf"].longname = "Snowfall_Rate"
+                self.forcing_file["Snowf"].units = "kg/m2/s"
             elif this_var == "WIND":
-                self.forcing_file['Wind'] = self.file_handler.createVariable(
-                    "Wind", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Wind'].longname = "Wind_Speed"
-                self.forcing_file['Wind'].units = "m/s"
+                self.forcing_file["Wind"] = self.file_handler.createVariable(
+                    "Wind",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Wind"].longname = "Wind_Speed"
+                self.forcing_file["Wind"].units = "m/s"
             elif this_var == "WIND_DIR":
-                self.forcing_file['Wind_DIR'] = self.file_handler.createVariable(
-                    "Wind_DIR", "f4", ("time", "Number_of_points",))
-                self.forcing_file['Wind_DIR'].longname = "Wind_Direction"
+                self.forcing_file["Wind_DIR"] = self.file_handler.createVariable(
+                    "Wind_DIR",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["Wind_DIR"].longname = "Wind_Direction"
             elif this_var == "CO2":
-                self.forcing_file['CO2air'] = self.file_handler.createVariable(
-                    "CO2air", "f4", ("time", "Number_of_points",))
-                self.forcing_file['CO2air'].longname = "Near_Surface_CO2_Concentration"
-                self.forcing_file['CO2air'].units = "kg/m3"
+                self.forcing_file["CO2air"] = self.file_handler.createVariable(
+                    "CO2air",
+                    "f4",
+                    (
+                        "time",
+                        "Number_of_points",
+                    ),
+                )
+                self.forcing_file["CO2air"].longname = "Near_Surface_CO2_Concentration"
+                self.forcing_file["CO2air"].units = "kg/m3"
             else:
-                raise NotImplementedError(f"This should never happen! {this_var} is not defined!")
+                raise NotImplementedError(
+                    f"This should never happen! {this_var} is not defined!"
+                )
 
     def finalize(self):
         """Finalize the forcing. Close the file."""
@@ -298,8 +403,18 @@ class NetCDFOutput(SurfexOutputForcing):
 class AsciiOutput(SurfexOutputForcing):
     """Forcing in ASCII format."""
 
-    def __init__(self, base_time, geo, fname, ntimes, var_objs, att_objs, att_time, cache,
-                 time_step):
+    def __init__(
+        self,
+        base_time,
+        geo,
+        fname,
+        ntimes,
+        var_objs,
+        att_objs,
+        att_time,
+        cache,
+        time_step,
+    ):
         """Construct ASCII forcing output."""
         SurfexOutputForcing.__init__(self, base_time, geo, ntimes, var_objs, time_step)
         self.output_format = "ascii"
@@ -341,20 +456,20 @@ class AsciiOutput(SurfexOutputForcing):
             elif this_var == "UREF":
                 uref = this_obj.read_time_step(att_time, cache)
 
-        second = (self.base_time - self.base_time.replace(hour=0,
-                                                          minute=0,
-                                                          second=0,
-                                                          microsecond=0)).total_seconds()
+        second = (
+            self.base_time
+            - self.base_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        ).total_seconds()
         fmt = "%15.8f"
         cols = 50
-        file_handler = open(self.fname, 'w', encoding="utf-8")
-        file_handler.write(str(geo.npoints) + '\n')
-        file_handler.write(str(self.ntimes) + '\n')
-        file_handler.write(str(self.time_step_intervall) + '\n')
-        file_handler.write(self.base_time.strftime("%Y") + '\n')
-        file_handler.write(self.base_time.strftime("%m") + '\n')
-        file_handler.write(self.base_time.strftime("%d") + '\n')
-        file_handler.write(str(second) + '\n')
+        file_handler = open(self.fname, "w", encoding="utf-8")
+        file_handler.write(str(geo.npoints) + "\n")
+        file_handler.write(str(self.ntimes) + "\n")
+        file_handler.write(str(self.time_step_intervall) + "\n")
+        file_handler.write(self.base_time.strftime("%Y") + "\n")
+        file_handler.write(self.base_time.strftime("%m") + "\n")
+        file_handler.write(self.base_time.strftime("%d") + "\n")
+        file_handler.write(str(second) + "\n")
         write_formatted_array(file_handler, geo.lons, cols, fmt)
         write_formatted_array(file_handler, geo.lats, cols, fmt)
         write_formatted_array(file_handler, zs_oro, cols, fmt)
@@ -366,8 +481,8 @@ class AsciiOutput(SurfexOutputForcing):
             nam = key
             if key == "WIND_DIR":
                 nam = "DIR"
-            self.forcing_file[key] = "Forc_" + nam + '.txt'
-            self.file_handler[key] = open(self.forcing_file[key], 'w', encoding="utf-8")
+            self.forcing_file[key] = "Forc_" + nam + ".txt"
+            self.file_handler[key] = open(self.forcing_file[key], "w", encoding="utf-8")
 
     def finalize(self):
         """Finalize forcing."""
@@ -379,34 +494,33 @@ class AsciiOutput(SurfexOutputForcing):
 def write_formatted_array(file, array, columns, fileformat):
     """Write a formatted array."""
     astr = np.empty(array.size - array.size % columns, dtype="float64")
-    astr = array[0:astr.size]
-    astr = astr.reshape((columns, astr.size / columns), order='F')
+    astr = array[0 : astr.size]
+    astr = astr.reshape((columns, astr.size / columns), order="F")
     mlw = (len(fileformat % 0)) * (columns + 1)
-    formatter = {'float_kind': lambda x: fileformat % x}
-    astr_end = np.array2string(array[astr.size:],
-                               separator='',
-                               max_line_width=mlw,
-                               formatter=formatter)[1:-1]
-    np.savetxt(file, astr.T, fmt=fileformat, newline='\n', delimiter='')
-    file.write(astr_end + '\n')
+    formatter = {"float_kind": lambda x: fileformat % x}
+    astr_end = np.array2string(
+        array[astr.size :], separator="", max_line_width=mlw, formatter=formatter
+    )[1:-1]
+    np.savetxt(file, astr.T, fmt=fileformat, newline="\n", delimiter="")
+    file.write(astr_end + "\n")
 
 
 def run_time_loop(options, var_objs, att_objs):
     """Run time loop."""
     tic = time.time()
-    this_time = options['start']
+    this_time = options["start"]
 
-    cache = Cache(options['cache_interval'])
-    time_step = options['timestep']
+    cache = Cache(options["cache_interval"])
+    time_step = options["timestep"]
     single = False
     if "single" in options:
         single = options["single"]
 
     # Find how many time steps we want to write
     ntimes = 0
-    while this_time <= options['stop']:
+    while this_time <= options["stop"]:
         ntimes = ntimes + 1
-        this_time = this_time + timedelta(seconds=options['timestep'])
+        this_time = this_time + timedelta(seconds=options["timestep"])
     if single:
         time_step = 1
         if ntimes == 1:
@@ -416,40 +530,61 @@ def run_time_loop(options, var_objs, att_objs):
             raise Exception("Option single should be used with one time step")
 
     # Create output object
-    if str.lower(options['output_format']) == "netcdf" or \
-            str.lower(options['output_format']) == "nc4":
+    if (
+        str.lower(options["output_format"]) == "netcdf"
+        or str.lower(options["output_format"]) == "nc4"
+    ):
         # Set att_time the same as start
-        att_time = options['start']
-        output = NetCDFOutput(options['start'], options['geo_out'],
-                              options['output_file'], ntimes,
-                              var_objs, att_objs, att_time, cache, time_step,
-                              fmt=str.lower(options['output_format']))
-    elif str.lower(options['output_format']) == "ascii":
-        att_time = options['start']
-        output = AsciiOutput(options['start'], options['geo_out'],
-                             options['output_file'], ntimes,
-                             var_objs, att_objs, att_time, cache, time_step)
+        att_time = options["start"]
+        output = NetCDFOutput(
+            options["start"],
+            options["geo_out"],
+            options["output_file"],
+            ntimes,
+            var_objs,
+            att_objs,
+            att_time,
+            cache,
+            time_step,
+            fmt=str.lower(options["output_format"]),
+        )
+    elif str.lower(options["output_format"]) == "ascii":
+        att_time = options["start"]
+        output = AsciiOutput(
+            options["start"],
+            options["geo_out"],
+            options["output_file"],
+            ntimes,
+            var_objs,
+            att_objs,
+            att_time,
+            cache,
+            time_step,
+        )
     else:
-        raise NotImplementedError("Invalid output format " + options['output_format'])
+        raise NotImplementedError("Invalid output format " + options["output_format"])
 
     # Loop output time steps
-    this_time = options['start']
-    while this_time <= options['stop']:
+    this_time = options["start"]
+    while this_time <= options["stop"]:
 
         # Write for each time step
-        logging.info("Creating forcing for: %s  time_step: %s",
-                     this_time.strftime('%Y%m%d%H'), str(output.time_step))
+        logging.info(
+            "Creating forcing for: %s  time_step: %s",
+            this_time.strftime("%Y%m%d%H"),
+            str(output.time_step),
+        )
         output.write_forcing(var_objs, this_time, cache)
         output.time_step = output.time_step + 1
         if not single:
             output.time_step_value = output.time_step
-            this_time = this_time + timedelta(seconds=options['timestep'])
+            this_time = this_time + timedelta(seconds=options["timestep"])
             if cache is not None:
                 cache.clean_fields(this_time)
         else:
             output.time_step_value = 0
             if output.time_step > 1:
-                this_time = this_time + timedelta(seconds=options['timestep'])
+                this_time = this_time + timedelta(seconds=options["timestep"])
 
     # Finalize forcing
     output.finalize()
@@ -457,8 +592,16 @@ def run_time_loop(options, var_objs, att_objs):
     logging.info("Forcing generation took %s seconds", str(toc - tic))
 
 
-def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converter, ref_height,
-                     first_base_time, timestep):
+def set_input_object(
+    sfx_var,
+    merged_conf,
+    geo,
+    forcingformat,
+    selected_converter,
+    ref_height,
+    first_base_time,
+    timestep,
+):
     """Set the input parameter for a specific SURFEX forcing variable based on input.
 
     Args:
@@ -473,6 +616,9 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
 
     Returns:
         _type_: _description_
+
+    Raises:
+        KeyError: KeyError
 
     """
     #########################################
@@ -505,17 +651,25 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
         else:
             if ref_height in conf[sfx_var]:
                 if forcingformat not in conf[sfx_var][ref_height]:
-                    msg = f"{str(conf[sfx_var])}: " \
-                          + f"Missing definitions for {sfx_var} and format: {forcingformat}"
+                    msg = (
+                        f"{str(conf[sfx_var])}: "
+                        + f"Missing definitions for {sfx_var} and format: {forcingformat}"
+                    )
                     raise KeyError(msg)
                 if conf[sfx_var][ref_height][forcingformat] is None:
-                    raise KeyError(f"{str(conf[sfx_var])}: Missing definitions for {sfx_var}")
+                    raise KeyError(
+                        f"{str(conf[sfx_var])}: Missing definitions for {sfx_var}"
+                    )
                 if "converter" in conf[sfx_var][ref_height][forcingformat]:
-                    conf_dict = copy.deepcopy(conf[sfx_var][ref_height][forcingformat]["converter"])
+                    conf_dict = copy.deepcopy(
+                        conf[sfx_var][ref_height][forcingformat]["converter"]
+                    )
                 else:
                     raise KeyError("No converter defined for " + sfx_var)
             else:
-                raise KeyError("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                raise KeyError(
+                    'No ref height "' + ref_height + '" defined for ' + sfx_var
+                )
 
     ##############################################################
     ##############################################################
@@ -534,14 +688,17 @@ def set_input_object(sfx_var, merged_conf, geo, forcingformat, selected_converte
                 else:
                     raise KeyError("No constant defined for " + sfx_var)
             else:
-                raise KeyError("No ref height \"" + ref_height + "\" defined for " + sfx_var)
+                raise KeyError(
+                    'No ref height "' + ref_height + '" defined for ' + sfx_var
+                )
 
         obj = ConstantValue(geo, sfx_var, const_dict)
     else:
 
         # Construct the converter
-        converter = Converter(selected_converter, first_base_time, defs,
-                              conf_dict, forcingformat)
+        converter = Converter(
+            selected_converter, first_base_time, defs, conf_dict, forcingformat
+        )
 
         # Construct the input object
         obj = ConvertedInput(geo, sfx_var, converter)
@@ -557,7 +714,9 @@ def set_forcing_config(**kwargs):
             if kwargs["config_exp_surfex"] is not None:
                 config_exp = kwargs["config_exp_surfex"]
         if config_exp is None:
-            config_exp = f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
+            config_exp = (
+                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
+            )
         logging.info("Using default config from: %s", config_exp)
         input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
         config = ConfigurationFromHarmonie(os.environ, input_data)
@@ -690,14 +849,16 @@ def set_forcing_config(**kwargs):
 
     # Time information
     if (int(dtg_start) or int(dtg_stop)) < 1000010100:
-        raise Exception("Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop))
+        raise Exception(
+            "Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop)
+        )
 
-    start = datetime.strptime(str.strip(str(dtg_start)), '%Y%m%d%H')
-    stop = datetime.strptime(str.strip(str(dtg_stop)), '%Y%m%d%H')
+    start = datetime.strptime(str.strip(str(dtg_start)), "%Y%m%d%H")
+    stop = datetime.strptime(str.strip(str(dtg_stop)), "%Y%m%d%H")
     if file_base is None:
         first_base_time = start
     else:
-        first_base_time = datetime.strptime(str.strip(str(file_base)), '%Y%m%d%H')
+        first_base_time = datetime.strptime(str.strip(str(file_base)), "%Y%m%d%H")
 
     # Merge all settings with user all settings
     merged_conf = deep_update(config, user_config)
@@ -720,17 +881,18 @@ def set_forcing_config(**kwargs):
         geo_input = kwargs["geo_input"]
         if geo_input is not None:
             if os.path.exists(geo_input):
-                geo_input = get_geo_object(json.load(open(geo_input, "r", encoding="utf-8")))
+                geo_input = get_geo_object(
+                    json.load(open(geo_input, "r", encoding="utf-8"))
+                )
                 merged_conf[fileformat]["geo_input"] = geo_input
             else:
-                logging.info("Input geometry " + geo_input + " does not exist")
+                logging.info("Input geometry %s does not exist", geo_input)
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
     att_objs = []
     for att_var in atts:
 
-        # att_var = atts[i]
         # Override with command line options for a given variable
         ref_height = None
         cformat = fileformat
@@ -755,12 +917,33 @@ def set_forcing_config(**kwargs):
         else:
             raise NotImplementedError
 
-        att_objs.append(set_input_object(att_var, merged_conf, geo_out, cformat, selected_converter,
-                                         ref_height, first_base_time, timestep))
+        att_objs.append(
+            set_input_object(
+                att_var,
+                merged_conf,
+                geo_out,
+                cformat,
+                selected_converter,
+                ref_height,
+                first_base_time,
+                timestep,
+            )
+        )
 
     # Set forcing variables (time dependent)
-    variables = ["TA", "QA", "PS", "DIR_SW", "SCA_SW", "LW", "RAIN", "SNOW", "WIND", "WIND_DIR",
-                 "CO2"]
+    variables = [
+        "TA",
+        "QA",
+        "PS",
+        "DIR_SW",
+        "SCA_SW",
+        "LW",
+        "RAIN",
+        "SNOW",
+        "WIND",
+        "WIND_DIR",
+        "CO2",
+    ]
     var_objs = []
     # Search in config file for parameters to override
     for sfx_var in variables:
@@ -817,21 +1000,31 @@ def set_forcing_config(**kwargs):
             selected_converter = co2_converter
         else:
             raise NotImplementedError
-        var_objs.append(set_input_object(sfx_var, merged_conf, geo_out, cformat, selected_converter,
-                                         ref_height, first_base_time, timestep))
+        var_objs.append(
+            set_input_object(
+                sfx_var,
+                merged_conf,
+                geo_out,
+                cformat,
+                selected_converter,
+                ref_height,
+                first_base_time,
+                timestep,
+            )
+        )
 
     # Save options
     options = dict()
-    options['output_format'] = output_format
-    options['output_file'] = outfile
-    options['start'] = start
-    options['stop'] = stop
-    options['timestep'] = timestep
-    options['geo_out'] = geo_out
-    options['single'] = False
+    options["output_format"] = output_format
+    options["output_file"] = outfile
+    options["start"] = start
+    options["stop"] = stop
+    options["timestep"] = timestep
+    options["geo_out"] = geo_out
+    options["single"] = False
     if "single" in kwargs:
-        options['single'] = kwargs["single"]
-    options['cache_interval'] = cache_interval
+        options["single"] = kwargs["single"]
+    options["cache_interval"] = cache_interval
 
     return options, var_objs, att_objs
 
@@ -843,12 +1036,14 @@ def modify_forcing(**kwargs):
     time_step = kwargs["time_step"]
     variables = kwargs["variables"]
 
-    ifile = netCDF4.Dataset(infile, 'r')
+    ifile = netCDF4.Dataset(infile, "r")
     ofile = netCDF4.Dataset(outfile, "r+")
 
     for var in variables:
         print("Modify variable " + var)
-        print("input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step)
+        print(
+            "input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step
+        )
         print("output", ofile[var][0, :], ofile[var][0, :].shape)
         ofile[var][0, :] = ifile[var][time_step, :]
         ofile.sync()

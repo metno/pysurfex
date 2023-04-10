@@ -1,11 +1,13 @@
 """Geometry."""
-from abc import ABC, abstractmethod
-import os
-import math
 import json
 import logging
-import pyproj
+import math
+import os
+from abc import ABC, abstractmethod
+
 import numpy as np
+import pyproj
+
 try:
     from osgeo import ogr  # type: ignore
 except Exception:
@@ -79,8 +81,23 @@ class Geo(object):
             f_lat = str(round(float(self.latrange[0]), 2))
             l_lat = str(round(float(self.latrange[-1]), 2))
 
-        tag = ":" + str(self.npoints) + ":" + str(self.nlons) + ":" + str(self.nlats) + ":" \
-              + f_lon + ":" + l_lon + ":" + f_lat + ":" + l_lat + ":"
+        tag = (
+            ":"
+            + str(self.npoints)
+            + ":"
+            + str(self.nlons)
+            + ":"
+            + str(self.nlats)
+            + ":"
+            + f_lon
+            + ":"
+            + l_lon
+            + ":"
+            + f_lat
+            + ":"
+            + l_lat
+            + ":"
+        )
         tag = tag.replace(" ", "")
         logging.debug("TAG: %s", tag)
         return tag
@@ -173,8 +190,14 @@ class ConfProj(SurfexGeo):
         self.ilate = None
         self.xtrunc = None
         if "nam_conf_proj_grid" in domain_dict:
-            if "nimax" and "njmax" and "xloncen" and "xlatcen" and "xdx" and "xdy" \
-                    in domain_dict["nam_conf_proj_grid"]:
+            if (
+                "nimax"
+                and "njmax"
+                and "xloncen"
+                and "xlatcen"
+                and "xdx"
+                and "xdy" in domain_dict["nam_conf_proj_grid"]
+            ):
                 self.nimax = domain_dict["nam_conf_proj_grid"]["nimax"]
                 self.njmax = domain_dict["nam_conf_proj_grid"]["njmax"]
                 self.xloncen = domain_dict["nam_conf_proj_grid"]["xloncen"]
@@ -201,22 +224,26 @@ class ConfProj(SurfexGeo):
         else:
             raise KeyError("Missing key4")
 
-        earth = 6.37122e+6
+        earth = 6.37122e6
         if self.xlat0 == 90.0 or self.xlat0 == -90.0:
-            proj_string = f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "\
-                          f"+lat_ts={str(self.xlat0)}"
+            proj_string = (
+                f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
+                f"+lat_ts={str(self.xlat0)}"
+            )
         else:
-            proj_string = f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} " \
-                          f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} " \
-                          f"+units=m +no_defs +R={str(earth)}"
+            proj_string = (
+                f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
+                f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} "
+                f"+units=m +no_defs +R={str(earth)}"
+            )
 
         logging.debug("Proj string: %s", proj_string)
         proj = pyproj.CRS.from_string(proj_string)
         wgs84 = pyproj.CRS.from_string("EPSG:4326")
 
-        xloncen, xlatcen = \
-            pyproj.Transformer.from_crs(wgs84, proj,
-                                        always_xy=True).transform(self.xloncen, self.xlatcen)
+        xloncen, xlatcen = pyproj.Transformer.from_crs(
+            wgs84, proj, always_xy=True
+        ).transform(self.xloncen, self.xlatcen)
 
         x_0 = float(xloncen) - (0.5 * ((float(self.nimax) - 1.0) * self.xdx))
         y_0 = float(xlatcen) - (0.5 * ((float(self.njmax) - 1.0) * self.xdy))
@@ -224,7 +251,7 @@ class ConfProj(SurfexGeo):
         self.y_0 = y_0
         xxx = np.empty([self.nimax])
         yyy = np.empty([self.njmax])
-        # TODO vectorize 
+        # TODO vectorize
         for i in range(0, self.nimax):
             xxx[i] = x_0 + (float(i) * self.xdx)
         for j in range(0, self.njmax):
@@ -233,7 +260,9 @@ class ConfProj(SurfexGeo):
         self.yyy = yyy
         y_v, x_v = np.meshgrid(yyy, xxx)
         logging.debug("x_v.shape=%s y_v.shape=%s", x_v.shape, y_v.shape)
-        lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(x_v, y_v)
+        lons, lats = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(
+            x_v, y_v
+        )
 
         logging.debug("lons.shape=%s lats.shape=%s", lons.shape, lats.shape)
         logging.debug("lons.shape=%s", lons)
@@ -254,47 +283,49 @@ class ConfProj(SurfexGeo):
             nml (f90nml.Namelist): Namelist object.
         """
         if self.ilate is None or self.ilate is None:
-            nml.update({
-                "nam_pgd_grid": {
-                    "cgrid": self.cgrid
-                },
-                "nam_conf_proj": {
-                    "xlon0": self.xlon0,
-                    "xlat0": self.xlat0,
-                    "xrpk": math.sin(math.radians(self.xlat0)),
-                    "xbeta": 0},
-                "nam_conf_proj_grid": {
-                    "xlatcen": self.xlatcen,
-                    "xloncen": self.xloncen,
-                    "nimax": self.nimax,
-                    "njmax": self.njmax,
-                    "xdx": self.xdx,
-                    "xdy": self.xdy,
-                    "xtrunc": self.xtrunc
+            nml.update(
+                {
+                    "nam_pgd_grid": {"cgrid": self.cgrid},
+                    "nam_conf_proj": {
+                        "xlon0": self.xlon0,
+                        "xlat0": self.xlat0,
+                        "xrpk": math.sin(math.radians(self.xlat0)),
+                        "xbeta": 0,
+                    },
+                    "nam_conf_proj_grid": {
+                        "xlatcen": self.xlatcen,
+                        "xloncen": self.xloncen,
+                        "nimax": self.nimax,
+                        "njmax": self.njmax,
+                        "xdx": self.xdx,
+                        "xdy": self.xdy,
+                        "xtrunc": self.xtrunc,
+                    },
                 }
-            })
+            )
         else:
-            nml.update({
-                "nam_pgd_grid": {
-                    "cgrid": self.cgrid
-                },
-                "nam_conf_proj": {
-                    "xlon0": self.xlon0,
-                    "xlat0": self.xlat0,
-                    "xrpk": math.sin(math.radians(self.xlat0)),
-                    "xbeta": 0},
-                "nam_conf_proj_grid": {
-                    "ilone": self.ilone,
-                    "ilate": self.ilate,
-                    "xlatcen": self.xlatcen,
-                    "xloncen": self.xloncen,
-                    "nimax": self.nimax,
-                    "njmax": self.njmax,
-                    "xdx": self.xdx,
-                    "xdy": self.xdy,
-                    "xtrunc":self.xtrunc
+            nml.update(
+                {
+                    "nam_pgd_grid": {"cgrid": self.cgrid},
+                    "nam_conf_proj": {
+                        "xlon0": self.xlon0,
+                        "xlat0": self.xlat0,
+                        "xrpk": math.sin(math.radians(self.xlat0)),
+                        "xbeta": 0,
+                    },
+                    "nam_conf_proj_grid": {
+                        "ilone": self.ilone,
+                        "ilate": self.ilate,
+                        "xlatcen": self.xlatcen,
+                        "xloncen": self.xloncen,
+                        "nimax": self.nimax,
+                        "njmax": self.njmax,
+                        "xdx": self.xdx,
+                        "xdy": self.xdy,
+                        "xtrunc": self.xtrunc,
+                    },
                 }
-            })
+            )
         return nml
 
     def subset(self, geo):
@@ -337,7 +368,9 @@ class ConfProj(SurfexGeo):
                         y_0 = j
                         break
                 if x_0 is not None and y_0 is not None:
-                    logging.info("Grid is a subset of input grid %s %s", str(x_0), str(y_0))
+                    logging.info(
+                        "Grid is a subset of input grid %s %s", str(x_0), str(y_0)
+                    )
                     lons = np.arange(x_0, x_0 + self.nimax, 1).tolist()
                     lats = np.arange(y_0, y_0 + self.njmax, 1).tolist()
 
@@ -384,17 +417,17 @@ class LonLatVal(SurfexGeo):
         Returns:
             nml (f90nml.Namelist): Namelist object.
         """
-        nml.update({
-            "nam_pgd_grid": {
-                "cgrid": self.cgrid
-            },
-            "nam_lonlatval": {
-                "xx": self.x_x,
-                "xy": self.x_y,
-                "xdx": self.xdx,
-                "xdy": self.xdy
+        nml.update(
+            {
+                "nam_pgd_grid": {"cgrid": self.cgrid},
+                "nam_lonlatval": {
+                    "xx": self.x_x,
+                    "xy": self.x_y,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy,
+                },
             }
-        })
+        )
         return nml
 
     def subset(self, geo):
@@ -424,8 +457,14 @@ class Cartesian(SurfexGeo):
         domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
-            if "xlat0" and "xlon0" and "nimax" and "njmax" and "xdx" and "xdy" in \
-                    domain_dict["nam_cartesian"]:
+            if (
+                "xlat0"
+                and "xlon0"
+                and "nimax"
+                and "njmax"
+                and "xdx"
+                and "xdy" in domain_dict["nam_cartesian"]
+            ):
                 self.xlat0 = domain_dict["nam_cartesian"]["xlat0"]
                 self.xlon0 = domain_dict["nam_cartesian"]["xlon0"]
                 self.nimax = domain_dict["nam_cartesian"]["nimax"]
@@ -458,19 +497,19 @@ class Cartesian(SurfexGeo):
             nml (f90nml.Namelist): Namelist object.
         """
         print(nml)
-        nml.update({
-            "nam_pgd_grid": {
-                "cgrid": self.cgrid
-            },
-            "nam_cartesian": {
-                "xlat0": self.xlat0,
-                "xlon0": self.xlon0,
-                "nimax": self.nimax,
-                "njmax": self.njmax,
-                "xdx": self.xdx,
-                "xdy": self.xdy
+        nml.update(
+            {
+                "nam_pgd_grid": {"cgrid": self.cgrid},
+                "nam_cartesian": {
+                    "xlat0": self.xlat0,
+                    "xlon0": self.xlon0,
+                    "nimax": self.nimax,
+                    "njmax": self.njmax,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy,
+                },
             }
-        })
+        )
         return nml
 
     def subset(self, geo):
@@ -500,8 +539,14 @@ class LonLatReg(SurfexGeo):
         domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
-            if "xlonmin" and "xlonmax" and "xlatmin" and "xlatmax" and "nlon" and "nlat" \
-                    in domain_dict["nam_lonlat_reg"]:
+            if (
+                "xlonmin"
+                and "xlonmax"
+                and "xlatmin"
+                and "xlatmax"
+                and "nlon"
+                and "nlat" in domain_dict["nam_lonlat_reg"]
+            ):
                 self.xlonmin = domain_dict["nam_lonlat_reg"]["xlonmin"]
                 self.xlonmax = domain_dict["nam_lonlat_reg"]["xlonmax"]
                 self.xlatmin = domain_dict["nam_lonlat_reg"]["xlatmin"]
@@ -544,19 +589,19 @@ class LonLatReg(SurfexGeo):
         Returns:
             nml (f90nml.Namelist): Namelist object.
         """
-        nml.update({
-            "nam_pgd_grid": {
-                "cgrid": self.cgrid
-            },
-            "nam_lonlat_reg": {
-                "xlonmin": self.xlonmin,
-                "xlonmax": self.xlonmax,
-                "xlatmin": self.xlatmin,
-                "xlatmax": self.xlatmax,
-                "nlon": self.nlon,
-                "nlat": self.nlat
+        nml.update(
+            {
+                "nam_pgd_grid": {"cgrid": self.cgrid},
+                "nam_lonlat_reg": {
+                    "xlonmin": self.xlonmin,
+                    "xlonmax": self.xlonmax,
+                    "xlatmin": self.xlatmin,
+                    "xlatmax": self.xlatmax,
+                    "nlon": self.nlon,
+                    "nlat": self.nlat,
+                },
             }
-        })
+        )
         return nml
 
     def subset(self, geo):
@@ -587,9 +632,19 @@ class IGN(SurfexGeo):
         domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
-            if "clambert" and "npoints" and "xx" and "xy" and "xdx" and "xdy" and "xx_llcorner" \
-                    and "xy_llcorner" and "xcellsize" and "ncols" and "nrows" \
-                    in domain_dict["nam_ign"]:
+            if (
+                "clambert"
+                and "npoints"
+                and "xx"
+                and "xy"
+                and "xdx"
+                and "xdy"
+                and "xx_llcorner"
+                and "xy_llcorner"
+                and "xcellsize"
+                and "ncols"
+                and "nrows" in domain_dict["nam_ign"]
+            ):
 
                 self.clambert = domain_dict["nam_ign"]["clambert"]
                 npoints = domain_dict["nam_ign"]["npoints"]
@@ -610,10 +665,12 @@ class IGN(SurfexGeo):
             raise KeyError
 
         if self.clambert == 7:
-            proj4 = "+proj=lcc +lat_0=63.5 +lon_0=15.0 +lat_1=63.5 +lat_2=63.5 " \
-                    "+no_defs +R=6.37122e+6"
+            proj4 = (
+                "+proj=lcc +lat_0=63.5 +lon_0=15.0 +lat_1=63.5 +lat_2=63.5 "
+                "+no_defs +R=6.37122e+6"
+            )
             self.xloncen = 17
-            self.xlatcen = 63.
+            self.xlatcen = 63.0
             self.xlon0 = 15
             self.xlat0 = 63.5
         else:
@@ -630,9 +687,9 @@ class IGN(SurfexGeo):
         lons = []
         lats = []
         for i in range(0, npoints):
-            lon, lat = pyproj.Transformer.from_crs(proj, wgs84,
-                                                   always_xy=True).transform(self.x_x[i],
-                                                                             self.x_y[i])
+            lon, lat = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(
+                self.x_x[i], self.x_y[i]
+            )
             lons.append(lon)
             lats.append(lat)
 
@@ -664,17 +721,17 @@ class IGN(SurfexGeo):
         zdout = []
         ksize = 0
         if len(pin) > 0:
-            zdout.append(float(pdin[0]) / 2.)
+            zdout.append(float(pdin[0]) / 2.0)
             pout.append(pin[0])
             ksize = 1
             if len(pin) > 1:
                 ksize = 2
                 pout.append(pin[0] - pdin[0])
-                zdout.append(0.)
+                zdout.append(0.0)
             if len(pin) > 2:
                 ksize = 3
                 pout.append(pin[0] + pdin[0])
-                zdout.append(0.)
+                zdout.append(0.0)
 
         # print ksize
         for i, pinval in enumerate(pin):
@@ -685,7 +742,7 @@ class IGN(SurfexGeo):
                 if j == ksize - 1:
                     ksize = ksize + 1
                     pout.append(pinval)
-                    zdout.append(float(pdin[i]) / 2.)
+                    zdout.append(float(pdin[i]) / 2.0)
 
             # Mesh constrains
             for j in range(0, ksize):
@@ -695,7 +752,7 @@ class IGN(SurfexGeo):
                 if j == ksize - 1:
                     ksize = ksize + 1
                     pout.append(pin[i] - pdin[i])
-                    zdout.append(0.)
+                    zdout.append(0.0)
 
             for j in range(0, ksize):
                 if pout[j] > pin[i] and (pout[j] - zdout[j]) <= (pin[i] + pdin[i]):
@@ -703,7 +760,7 @@ class IGN(SurfexGeo):
                 if j == ksize - 1:
                     ksize = ksize + 1
                     pout.append(pin[i] + pdin[i])
-                    zdout.append(0.)
+                    zdout.append(0.0)
 
         # Sort pout
         pout = sorted(pout)
@@ -779,24 +836,24 @@ class IGN(SurfexGeo):
         Returns:
             nml (f90nml.Namelist): Namelist object.
         """
-        nml.update({
-            "nam_pgd_grid": {
-                "cgrid": self.cgrid
-            },
-            "nam_ign": {
-                "clambert": self.clambert,
-                "npoints": self.npoints,
-                "xx": self.x_x,
-                "xy": self.x_y,
-                "xdx": self.xdx,
-                "xdy": self.xdy,
-                "xx_llcorner": self.xx_llcorner,
-                "xy_llcorner": self.xy_llcorner,
-                "xcellsize": self.xcellsize,
-                "ncols": self.ncols,
-                "nrows": self.nrows
+        nml.update(
+            {
+                "nam_pgd_grid": {"cgrid": self.cgrid},
+                "nam_ign": {
+                    "clambert": self.clambert,
+                    "npoints": self.npoints,
+                    "xx": self.x_x,
+                    "xy": self.x_y,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy,
+                    "xx_llcorner": self.xx_llcorner,
+                    "xy_llcorner": self.xy_llcorner,
+                    "xcellsize": self.xcellsize,
+                    "ncols": self.ncols,
+                    "nrows": self.nrows,
+                },
             }
-        })
+        )
         return nml
 
     def subset(self, geo):
@@ -868,9 +925,7 @@ def set_domain(settings, domain, hm_mode=False):
                     ezone = settings[domain]["EZONE"]
 
                 domain_dict = {
-                    "nam_pgd_grid": {
-                        "cgrid": "CONF PROJ"
-                    },
+                    "nam_pgd_grid": {"cgrid": "CONF PROJ"},
                     "nam_conf_proj": {
                         "xlat0": settings[domain]["LAT0"],
                         "xlon0": settings[domain]["LON0"],
@@ -884,7 +939,7 @@ def set_domain(settings, domain, hm_mode=False):
                         "njmax": settings[domain]["NLAT"] - ezone,
                         "xdx": settings[domain]["GSIZE"],
                         "xdy": settings[domain]["GSIZE"],
-                    }
+                    },
                 }
             else:
                 domain_dict = settings[domain]
@@ -909,10 +964,12 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
     """
     from_json = json.load(open(ref_proj, mode="r", encoding="utf-8"))
     geo = get_geo_object(from_json)
-    earth = 6.37122e+6
-    proj_string = f"+proj=lcc +lat_0={str(geo.xlat0)} +lon_0={str(geo.xlon0)} " \
-                  f"+lat_1={str(geo.xlat0)} +lat_2={str(geo.xlat0)} " \
-                  f"+units=m +no_defs +R={str(earth)}"
+    earth = 6.37122e6
+    proj_string = (
+        f"+proj=lcc +lat_0={str(geo.xlat0)} +lon_0={str(geo.xlon0)} "
+        f"+lat_1={str(geo.xlat0)} +lat_2={str(geo.xlat0)} "
+        f"+units=m +no_defs +R={str(earth)}"
+    )
 
     logging.debug(proj_string)
     proj = pyproj.CRS.from_string(proj_string)
@@ -936,7 +993,9 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
         lats.append(point[1])
         values.append(point[2])
 
-    xxx, yyy = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(lons, lats)
+    xxx, yyy = pyproj.Transformer.from_crs(wgs84, proj, always_xy=True).transform(
+        lons, lats
+    )
     x_1 = min(xxx)
     x_2 = max(xxx)
     y_1 = min(yyy)
@@ -973,9 +1032,7 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
                 npoints = npoints + 1
 
     nam_json = {
-        "nam_pgd_grid": {
-            "cgrid": "IGN"
-        },
+        "nam_pgd_grid": {"cgrid": "IGN"},
         "nam_ign": {
             "clambert": 7,
             "npoints": npoints,
@@ -987,8 +1044,8 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
             "xy_llcorner": 0,
             "xcellsize": "250",
             "ncols": 0,
-            "nrows": 0
-        }
+            "nrows": 0,
+        },
     }
     with open(output, "w", encoding="utf-8") as file_handler:
         json.dump(nam_json, file_handler, indent=indent)
