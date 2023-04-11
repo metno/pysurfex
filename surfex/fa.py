@@ -14,14 +14,12 @@ from .interpolation import Interpolation
 class Fa(object):
     """Fichier Arpege."""
 
-    def __init__(self, fname, debug=False):
+    def __init__(self, fname):
         """Construct a FA object.
 
         Args:
             fname (str): filename
-            debug (bool, optional): _description_. Defaults to False.
         """
-        self.debug = debug
         self.fname = fname
         self.projection = None
         self.lons = None
@@ -104,11 +102,12 @@ class Fa(object):
 
         Args:
             varname (str): Variable name
-            geo (surfex.Geo): Geometry
-            validtime (datetime.datetime): Validtime
-            interpolation (str): Interpoaltion method
+            geo (surfex.geo.Geo): Geometry
+            validtime (as_datetime): Validtime
+            interpolation (str, optional): Interpoaltion method. Defaults to "nearest".
+
         Returns:
-            np.array: vector with inpterpolated values
+            tuple: field, interpolator
 
         """
         field, geo_in = self.field(varname, validtime)

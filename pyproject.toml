@@ -34,7 +34,7 @@
     set_domain = "surfex.cli:cli_set_domain"
     set_geo_from_obs_set = "surfex.cli:cli_set_geo_from_obs_set"
     set_geo_from_stationlist = "surfex.cli:set_geo_from_stationlist"
-    shape2ign = "surfex.cli:shape2ign"
+    shape2ign = "surfex.cli:cli_shape2ign"
     soda = "surfex.cli:soda"
     timeseries2json = "surfex.cli:timeseries2json"
     titan = "surfex.cli:titan"

@@ -4,8 +4,8 @@ import logging
 import os
 import subprocess
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
 
+from .datetime_utils import as_datetime, as_timedelta
 from .ecoclimap import Ecoclimap, EcoclimapSG, ExternalSurfexInputFile
 from .file import AsciiSurfexFile, FaSurfexFile, NCSurfexFile
 
@@ -13,8 +13,10 @@ from .file import AsciiSurfexFile, FaSurfexFile, NCSurfexFile
 class InputDataToSurfexBinaries(ABC):
     """Abstract input data."""
 
+    @abstractmethod
     def __init__(self):
         """Construct."""
+        return NotImplementedError
 
     @abstractmethod
     def prepare_input(self):
@@ -25,8 +27,10 @@ class InputDataToSurfexBinaries(ABC):
 class OutputDataFromSurfexBinaries(ABC):
     """Abstract output data."""
 
+    @abstractmethod
     def __init__(self):
         """Construct."""
+        return NotImplementedError
 
     @abstractmethod
     def archive_files(self):
@@ -62,7 +66,7 @@ class JsonOutputData(OutputDataFromSurfexBinaries):
             cmd = command + " " + output_file + " " + target
             try:
                 logging.info(cmd)
-                subprocess.check_call(cmd, shell=True)
+                subprocess.check_call(cmd, shell=True)  # noqaS602
             except IOError:
                 logging.error("%s failed", cmd)
                 raise Exception(cmd + " failed") from IOError
@@ -119,7 +123,7 @@ class JsonInputData(InputDataToSurfexBinaries):
                     cmd = command
                 try:
                     logging.info(cmd)
-                    subprocess.check_call(cmd, shell=True)
+                    subprocess.check_call(cmd, shell=True)  # noqaS602
                 except IOError:
                     raise (cmd + " failed") from IOError
 
@@ -127,7 +131,7 @@ class JsonInputData(InputDataToSurfexBinaries):
         """Add data.
 
         Args:
-            data (_type_): _description_
+            data (dict): Data to add
         """
         for key in data:
             value = data[key]
@@ -141,7 +145,7 @@ class JsonInputDataFromFile(JsonInputData):
         """Construct JSON input data.
 
         Args:
-            file (_type_): _description_
+            file (str): JSON file name
 
         """
         with open(file, mode="r", encoding="utf-8") as file_handler:
@@ -160,9 +164,9 @@ class PgdInputData(JsonInputData):
         """Construct PD input.
 
         Args:
-            config (_type_): _description_
-            system_file_paths (_type_): _description_
-            check_existence (bool, optional): _description_. Defaults to True.
+            config (Configuration): Surfex configuration
+            system_file_paths (SystemFilePaths): System file paths
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
 
         """
         # Ecoclimap settings
@@ -216,7 +220,6 @@ class PgdInputData(JsonInputData):
         }
         for namelist_section, ftypes in possible_direct_data.items():
             for ftype, data_dir in ftypes.items():
-                # data_dir = possible_direct_data[namelist_section][ftype]
                 fname = str(
                     config.get_setting("SURFEX#" + namelist_section + "#" + ftype)
                 )
@@ -259,11 +262,11 @@ class PrepInputData(JsonInputData):
         """Construct input data for PREP.
 
         Args:
-            config (_type_): _description_
-            system_file_paths (_type_): _description_
-            check_existence (bool, optional): _description_. Defaults to True.
-            prep_file (_type_, optional): _description_. Defaults to None.
-            prep_pgdfile (_type_, optional): _description_. Defaults to None.
+            config (Configuration): Surfex configuration
+            system_file_paths (SystemFilePaths): System file paths
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
+            prep_file (str, optional): Prep input file. Defaults to None.
+            prep_pgdfile (str, optional): Filetype for prep input. Defaults to None.
 
         """
         data = {}
@@ -275,7 +278,6 @@ class PrepInputData(JsonInputData):
 
         logging.debug("prep class %s", system_file_paths.__class__)
         ext_data = ExternalSurfexInputFile(system_file_paths)
-        # ext_data = system_file_paths
         if prep_file is not None:
             if not prep_file.endswith(".json"):
                 fname = os.path.basename(prep_file)
@@ -308,12 +310,12 @@ class OfflineInputData(JsonInputData):
         """Construct input data for offline.
 
         Args:
-            config (_type_): _description_
-            system_file_paths (_type_): _description_
-            check_existence (bool, optional): _description_. Defaults to True.
+            config (Configuration): Surfex configuration
+            system_file_paths (SystemFilePaths): System file paths
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Filetype not implemented
 
         """
         data = {}
@@ -346,9 +348,10 @@ class InlineForecastInputData(JsonInputData):
         """Construct input data for inline forecast.
 
         Args:
-            config (_type_): _description_
-            system_file_paths (_type_): _description_
-            check_existence (bool, optional): _description_. Defaults to True.
+            config (Configuration): Surfex configuration
+            system_file_paths (SystemFilePaths): System file paths
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
+
         """
         data = {}
         # Ecoclimap settings
@@ -375,12 +378,12 @@ class SodaInputData(JsonInputData):
         """Construct input data for SODA.
 
         Args:
-            config (_type_): _description_
-            system_file_paths (_type_): _description_
-            check_existence (bool, optional): _description_. Defaults to True.
-            masterodb (bool, optional): _description_. Defaults to True.
-            perturbed_file_pattern (_type_, optional): _description_. Defaults to None.
-            dtg (_type_, optional): _description_. Defaults to None.
+            config (Configuration): Surfex configuration
+            system_file_paths (SystemFilePaths): System file paths
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
+            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
+            perturbed_file_pattern (str, optional): File pattern for perturbed files. Defaults to None.
+            dtg (datetime, optional): Basetime. Defaults to None.
 
         """
         self.config = config
@@ -388,7 +391,7 @@ class SodaInputData(JsonInputData):
         self.file_paths = ExternalSurfexInputFile(self.system_file_paths)
         if dtg is not None:
             if isinstance(dtg, str):
-                dtg = datetime.strptime(dtg, "%Y%m%d%H")
+                dtg = as_datetime(dtg)
         self.dtg = dtg
         JsonInputData.__init__(self, {})
 
@@ -446,16 +449,20 @@ class SodaInputData(JsonInputData):
         """Input data for observations.
 
         Args:
-            check_existence (bool, optional): _description_. Defaults to True.
+            check_existence (bool, optional): Check if input files exist. Defaults to True.
+
+        Raises:
+            NotImplementedError: File format not implemented
+            RuntimeError: Obs ASCII file needs DTG information
 
         Returns:
-            _type_: _description_
+            obssettings: Input observations.
 
         """
         cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
         if cfile_format_obs == "ASCII":
             if self.dtg is None:
-                raise Exception("Obs ASCII file needs DTG information")
+                raise RuntimeError("Obs ASCII file needs DTG information")
             cyy = self.dtg.strftime("%y")
             cmm = self.dtg.strftime("%m")
             cdd = self.dtg.strftime("%d")
@@ -481,10 +488,13 @@ class SodaInputData(JsonInputData):
         """Input data for sea assimilation.
 
         Args:
-            check_existence (bool, optional): _description_. Defaults to True.
+            check_existence (bool, optional): Check if input files are existing. Defaults to True.
+
+        Raises:
+            NotImplementedError: File format not implemented
 
         Returns:
-            _type_: _description_
+            sea_settings(dict): Input filed for sea assimilation
 
         """
         cfile_format_sst = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")
@@ -509,8 +519,12 @@ class SodaInputData(JsonInputData):
     def set_input_vertical_soil_oi(self):
         """Input data for OI in soil.
 
+        Raises:
+            NotImplementedError: File format not implemented
+            RuntimeError: You must set DTG
+
         Returns:
-            _type_: _description_
+            oi_settings(dict): Input files for OI
 
         """
         oi_settings = {}
@@ -535,7 +549,7 @@ class SodaInputData(JsonInputData):
         cfile_format_fg = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")
         if cfile_format_fg.upper() == "ASCII":
             if self.dtg is None:
-                raise Exception("First guess in ASCII format needs DTG information")
+                raise RuntimeError("First guess in ASCII format needs DTG information")
             cyy = self.dtg.strftime("%y")
             cmm = self.dtg.strftime("%m")
             cdd = self.dtg.strftime("%d")
@@ -600,17 +614,21 @@ class SodaInputData(JsonInputData):
         """Input data for EKF in soil.
 
         Args:
-            check_existence (bool, optional): _description_. Defaults to True.
-            masterodb (bool, optional): _description_. Defaults to True.
-            pert_fp (_type_, optional): _description_. Defaults to None.
-            geo (_type_, optional): _description_. Defaults to None.
+            check_existence (bool, optional): Check if files exist. Defaults to True.
+            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
+            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.
+            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.
+
+        Raises:
+            NotImplementedError: File type not implmented
+            RuntimeError: You must set DTG
 
         Returns:
-            _type_: _description_
+            ekf_settings(dict): EKF input files
 
         """
         if self.dtg is None:
-            raise Exception("You must set DTG")
+            raise RuntimeError("You must set DTG")
 
         cyy = self.dtg.strftime("%y")
         cmm = self.dtg.strftime("%m")
@@ -620,7 +638,7 @@ class SodaInputData(JsonInputData):
 
         # TODO
         fcint = 3
-        fg_dtg = self.dtg - timedelta(hours=fcint)
+        fg_dtg = self.dtg - as_timedelta(seconds=fcint * 3600.0)
         data_dir = "first_guess_dir"
         first_guess = self.system_file_paths.get_system_path(
             data_dir,
@@ -746,17 +764,21 @@ class SodaInputData(JsonInputData):
         """Input data for ENKF in soil.
 
         Args:
-            check_existence (bool, optional): _description_. Defaults to True.
-            masterodb (bool, optional): _description_. Defaults to True.
-            pert_fp (_type_, optional): _description_. Defaults to None.
-            geo (_type_, optional): _description_. Defaults to None.
+            check_existence (bool, optional): Check if files exist. Defaults to True.
+            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
+            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.
+            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.
 
         Returns:
-            _type_: _description_
+            enkf_settings(dict): ENKF input data
+
+        Raises:
+            NotImplementedError: File type not implemented
+            RuntimeError: You must set DTG
 
         """
         if self.dtg is None:
-            raise Exception("You must set DTG")
+            raise RuntimeError("You must set DTG")
 
         cyy = self.dtg.strftime("%y")
         cmm = self.dtg.strftime("%m")
@@ -769,7 +791,7 @@ class SodaInputData(JsonInputData):
 
         # TODO
         fcint = 3
-        fg_dtg = self.dtg - timedelta(hours=fcint)
+        fg_dtg = self.dtg - as_timedelta(hours=fcint * 3600)
         fgf = self.config.get_setting(
             "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
         )
@@ -823,9 +845,6 @@ class SodaInputData(JsonInputData):
             }
         )
 
-        # nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-        # pert_enkf = 0
-        # pert_input = 0
         for ppp in range(0, nens_m):
             data_dir = "perturbed_run_dir"
             if pert_fp is None:

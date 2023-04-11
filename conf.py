@@ -1,3 +1,4 @@
+"""Configuration file for documentation with sphinx."""
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -10,15 +11,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
 
 # -- Project information -----------------------------------------------------
 
 project = "SURFEX Python API (pysurfex)"
-copyright = "2020, Trygve Aspelien"
+copyright = "2020, Trygve Aspelien"  # noqa A001
 author = "Trygve Aspelien"
 
 
@@ -27,9 +24,7 @@ author = "Trygve Aspelien"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-# extensions = [
-# ]
-# extensions = ['sphinx.ext.autodoc']
+
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
@@ -56,7 +51,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
 html_theme = "default"
 
 # Add any paths that contain custom static files (such as style sheets) here,

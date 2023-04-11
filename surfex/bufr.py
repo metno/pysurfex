@@ -1,7 +1,6 @@
 """bufr treatment."""
 import logging
 import sys
-from datetime import datetime
 from math import exp
 
 import numpy as np
@@ -15,11 +14,12 @@ except RuntimeError:
     eccodes = None
     logging.warning("ECCODES not found. Needed for bufr reading")
 # Needed in Python 3.5
-except Exception as ex:
-    logging.warning("Could not load eccodes %s", str(ex))
+except Exception:
+    logging.warning("Could not load eccodes")
     eccodes = None
 
 
+from .datetime_utils import as_datetime_args
 from .obs import ObservationSet
 from .observation import Observation
 
@@ -50,6 +50,10 @@ class BufrObservationSet(ObservationSet):
             label (str): A label for the resulting observations set
             use_first (bool): Use only the first valid observation for a point if more are found
 
+        Raises:
+            RuntimeError: ECCODES not found. Needed for bufr reading
+            NotImplementedError: Not implemented
+
         """
         if lonrange is None:
             lonrange = [-180, 180]
@@ -57,7 +61,7 @@ class BufrObservationSet(ObservationSet):
             latrange = [-90, 90]
 
         if eccodes is None:
-            raise Exception("ECCODES not found. Needed for bufr reading")
+            raise RuntimeError("ECCODES not found. Needed for bufr reading")
         logging.debug(eccodes.__file__)
 
         # open bufr file
@@ -122,26 +126,19 @@ class BufrObservationSet(ObservationSet):
             ndomain.update({var: 0})
             nobs.update({var: 0})
 
-        print("Reading " + bufrfile)
-        print("Looking for keys: " + str(keys))
+        logging.info("Reading %s", bufrfile)
+        logging.info("Looking for keys: %s", str(keys))
         cnt = 0
         observations = list()
 
         # loop for the messages in the file
-        # nerror = 0
-        # ndomain = 0
-        # nundef = 0
-        # ntime = 0
         not_decoded = 0
-        # removed = 0
         registry = {}
         while 1:
             # get handle for message
             bufr = eccodes.codes_bufr_new_from_file(file_handler)
             if bufr is None:
                 break
-
-            # print("message: %s" % cnt)
 
             # we need to instruct ecCodes to expand all the descriptors
             # i.e. unpack the data values
@@ -250,8 +247,6 @@ class BufrObservationSet(ObservationSet):
 
                     except eccodes.CodesInternalError:
                         logging.debug('Report does not contain key="%s"', key)
-                        # all_found = False
-                        # print('Report does not contain key="%s" : %s' % (key, err.msg))
 
                 got_pos = True
                 if np.isnan(lat):
@@ -283,21 +278,18 @@ class BufrObservationSet(ObservationSet):
                                     try:
                                         value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
-                                    except Exception as conv_ex:
-                                        logging.debug(
-                                            "Got exception for %s:%s", var, str(conv_ex)
-                                        )
+                                    except Exception:
+                                        logging.debug("Got exception for %s:", var)
                                         value = np.nan
                                 else:
                                     if not np.isnan(temp) and not np.isnan(t_d):
                                         try:
                                             value = self.td2rh(t_d, temp)
                                             value = value * 0.01
-                                        except Exception as conv_ex:
+                                        except Exception:
                                             logging.debug(
-                                                "Got exception for %s:%s",
+                                                "Got exception for %s",
                                                 var,
-                                                str(conv_ex),
                                             )
                                             value = np.nan
                             elif var == "airTemperatureAt2M":
@@ -352,10 +344,9 @@ class BufrObservationSet(ObservationSet):
                             latrange[0] <= lat <= latrange[1]
                             and lonrange[0] <= lon <= lonrange[1]
                         ):
-                            obs_dtg = datetime(
+                            obs_dtg = as_datetime_args(
                                 year=year, month=month, day=day, hour=hour, minute=minute
                             )
-                            # print(value)
                             if not np.isnan(value):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
                                     logging.debug(
@@ -395,23 +386,29 @@ class BufrObservationSet(ObservationSet):
                 cnt += 1
 
                 if (cnt % 1000) == 0:
-                    print(".", end="")
+                    logging.info(".", end="")
                     sys.stdout.flush()
 
             # delete handle
             eccodes.codes_release(bufr)
 
-        print("\nFound " + str(len(observations)) + "/" + str(cnt))
-        print("Not decoded: " + str(not_decoded))
+        logging.info("\nFound %s/%s", str(len(observations)), str(cnt))
+        logging.info("Not decoded: %s", str(not_decoded))
         for var in variables:
-            print("\nObservations for var=" + var + ": " + str(nobs[var]))
-            print("Observations removed because of domain check: " + str(ndomain[var]))
-            print(
-                "Observations removed because of not being defined/found: "
-                + str(nundef[var])
+            logging.info("\nObservations for var=%s: %s", var, str(nobs[var]))
+            logging.info(
+                "Observations removed because of domain check: %s", str(ndomain[var])
             )
-            print("Observations removed because of time window: " + str(ntime[var]))
-            print("Messages not containing information on all keys: " + str(nerror[var]))
+            logging.info(
+                "Observations removed because of not being defined/found: %s",
+                str(nundef[var]),
+            )
+            logging.info(
+                "Observations removed because of time window: %s", str(ntime[var])
+            )
+            logging.info(
+                "Messages not containing information on all keys: %s", str(nerror[var])
+            )
         # close the file
         file_handler.close()
 
@@ -422,13 +419,13 @@ class BufrObservationSet(ObservationSet):
         """Convert dew point to temperature.
 
         Args:
-            td (int): _description_
-            t (int): _description_
-            kelvin (bool, optional): _description_. Defaults to True.
+            t_d (float): Dew point temperature
+            temp (float): Temperature
+            kelvin (bool, optional): Kelvin. Defaults to True.
 
         Raises:
-            Exception: _description_
-            Exception: _description_
+            RuntimeError: Dew point temperature is probably not Kelvin
+            RuntimeError: Temperature is probably not Kelvin
 
         Returns:
             float: Relative humidity (percent)
@@ -436,9 +433,9 @@ class BufrObservationSet(ObservationSet):
         """
         if kelvin:
             if t_d < 100:
-                raise Exception("Dew point temperature is probably not Kelvin")
+                raise RuntimeError("Dew point temperature is probably not Kelvin")
             if temp < 100:
-                raise Exception("Temperature is probably not Kelvin")
+                raise RuntimeError("Temperature is probably not Kelvin")
             t_d = t_d - 273.15
             temp = temp - 273.15
 
@@ -468,12 +465,12 @@ class BufrObservationSet(ObservationSet):
         """Check if inside window.
 
         Args:
-            obs_dtg (_type_): _description_
-            valid_dtg (_type_): _description_
-            valid_range (_type_): _description_
+            obs_dtg (as_datetime): Observation datetime
+            valid_dtg (as_datetime): Valid datetime
+            valid_range (as_timedelta): Window
 
         Returns:
-            _type_: _description_
+            bool: True if inside window
 
         """
         if valid_dtg is None:

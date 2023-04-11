@@ -85,7 +85,7 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            bool: True if found
         """
         if (
             self.get_setting(
@@ -187,15 +187,15 @@ class Configuration(object):
         """Check if value is one of the settings.
 
         Args:
-            settings (list):
-            value:
-            sep (str):
-            abort (bool):
+            settings (list): Settings
+            value(any): Value
+            sep (str, optional): Separator. Defaults to "#"
+            abort (bool, optional): Abort. Defaults to True
             system_variables (dict): Arbitrary settings to substitute
                                      @NAME@ = system_variables={"NAME": "Value"}
             check_parsing (bool): Check if all @@ pairs were parsed
-            validtime (datetime.daetime): Parse setting with this as validtime
-            basedtg (datetime.datetime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as validtime
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
             tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
             pert (int): Parse setting with this as perturbation number @PERT@
@@ -204,6 +204,9 @@ class Configuration(object):
         Returns:
             found (bool): True if value is found in any of the settings
 
+        Raises:
+            ValueError: Expected a list as input
+
         See Also:
             self.get_setting()
             surfex.SystemFilePaths.parse_setting()
@@ -211,7 +214,8 @@ class Configuration(object):
 
         """
         if not isinstance(settings, list):
-            raise Exception("Expected a list as input, got ", type(settings))
+            raise ValueError("Expected a list as input, got ", type(settings))
+
         found = False
         for check_s in settings:
             setting = self.get_setting(
@@ -318,10 +322,10 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Raises:
-            Exception: _description_
+            ValueError: Excpected a list as input
 
         Returns:
-            _type_: _description_
+            bool: True if found
 
         """
         found = False
@@ -339,7 +343,8 @@ class Configuration(object):
             var=var,
         )
         if not isinstance(values, list):
-            raise Exception("Excpected a list as input, got ", type(values))
+            raise ValueError("Excpected a list as input, got ", type(values))
+
         for val in values:
             if setting == val:
                 found = True
@@ -377,7 +382,7 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            bool: _description_
 
         """
         found = self.setting_is_one_of(
@@ -444,8 +449,8 @@ class Configuration(object):
             surfex.SystemFilePaths.parse_setting()
             surfex.SystemFilePaths.substitute_string()
 
-        Raise:
-            KeyError
+        Raises:
+            KeyError: Key not found
 
         """
         settings = self.settings
@@ -531,6 +536,9 @@ class ConfigurationFromHarmonie(Configuration):
         Args:
             env (dict): System environment e.g. os.environ
             conf (dict): The default configuration for this deterministic run/ensemble member
+
+        Raises:
+            NotImplementedError: soil_texture not implemented
 
         """
         Configuration.__init__(self, conf)
@@ -663,7 +671,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ISBA#YSAND", ysand + ".dir")
         self.update_setting("SURFEX#ISBA#YCLAY", yclay + ".dir")
 
-        # LDB_VERSION = 3.0  # Lake database version.
+        # Lake database version.
         self.update_setting("SURFEX#FLAKE#LDB_VERSION", env["LDB_VERSION"])
 
         # Treeheight

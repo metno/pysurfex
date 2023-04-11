@@ -1,10 +1,10 @@
 """Variable."""
 import copy
 import logging
-from datetime import timedelta
 
 import numpy as np
 
+from .datetime_utils import as_timedelta
 from .fa import Fa
 from .file import SurfexFileVariable, get_surfex_io_object
 from .geo import get_geo_object
@@ -21,17 +21,16 @@ class Variable(object):
         """Construct variable.
 
         Args:
-            var_type (_type_): _description_
-            var_dict (_type_): _description_
-            initial_basetime (_type_): _description_
-            debug (bool, optional): _description_. Defaults to False.
-            prefer_forecast (bool, optional): _description_. Defaults to True.
+            var_type (str): Variable type.
+            var_dict (dict): Variable definitions
+            initial_basetime (datetime): Initial basetime
+            prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.
 
         Raises:
-            NotImplementedError: _description_
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            NotImplementedError: Variable not implemented
+            RuntimeError: No filepattern provided
+            RuntimeError: variable must have attribute
+            RuntimeError: You can not have larger offset than the frequency of forecasts
 
         """
         self.var_type = var_type
@@ -61,8 +60,6 @@ class Variable(object):
             ]
         elif self.var_type == "surfex":
             mandatory = ["varname", "fcint", "offset", "filepattern"]
-            # , "patches", "layers", "accumulated", "fcint", "offset", "file_inc", "filepattern",
-            #         "fileformat", "filetype"]
         elif self.var_type == "fa":
             mandatory = ["name", "fcint", "offset", "filepattern"]
         elif self.var_type == "obs":
@@ -72,7 +69,7 @@ class Variable(object):
 
         for mand_val in mandatory:
             if mand_val not in var_dict:
-                raise Exception(
+                raise RuntimeError(
                     var_type
                     + " variable must have attribute "
                     + mand_val
@@ -88,7 +85,7 @@ class Variable(object):
         if "filepattern" in var_dict:
             self.filepattern = var_dict["filepattern"]
         else:
-            raise Exception("No filepattern provided")
+            raise RuntimeError("No filepattern provided")
         self.initial_basetime = initial_basetime
         self.fcint = int(self.var_dict["fcint"])
         self.offset = int(self.var_dict["offset"])
@@ -97,16 +94,14 @@ class Variable(object):
             self.prefer_forecast = self.var_dict["prefer_forecast"]
 
         if self.offset > self.fcint:
-            raise Exception(
+            raise RuntimeError(
                 "You can not have larger offset than the frequency of forecasts "
                 + str(self.offset)
                 + " > "
                 + str(self.fcint)
             )
 
-        logging.debug(
-            "Constructed %s for %s", self.__class__.__name__, str(self.var_dict)
-        )
+        logging.debug("Constructed variable for %s", str(self.var_dict))
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
@@ -132,6 +127,9 @@ class Variable(object):
             validtime (datetime.datetime): Valid time.
             cache (surfex.Cache, optional): Cache. Defaults to None.
             previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+
+        Raises:
+            NotImplementedError: Variable type not implemented
 
         Returns:
             tuple: Filehandler and file name
@@ -253,8 +251,11 @@ class Variable(object):
         Args:
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
 
+        Raises:
+            NotImplementedError: Variable not implemented
+
         Returns:
-            _type_: _description_
+            tuple: accumulated, instant, var
 
         """
         accumulated = False
@@ -349,6 +350,9 @@ class Variable(object):
             validtime (datetime.datetime): Valid time.
             cache (surfex.cache): Cache. Defaults to None
 
+        Raises:
+            RuntimeError: Negative accumulated value found
+
         Returns:
             np.darray: Field read and interpolated.
 
@@ -358,7 +362,7 @@ class Variable(object):
         previous_field = None
         if accumulated:
             # Re-read field
-            previoustime = validtime - timedelta(seconds=self.interval)
+            previoustime = validtime - as_timedelta(seconds=self.interval)
             # Don't read if previous time is older than the very first basetime
             if previoustime >= self.initial_basetime:
                 logging.debug("Re-read %s", previoustime)
@@ -376,7 +380,7 @@ class Variable(object):
         if accumulated or instant > 0:
             field = self.deaccumulate(field, previous_field, instant)
             if any(field[field < 0.0]):
-                raise Exception("Negative accumulated value found for " + var)
+                raise RuntimeError("Negative accumulated value found for " + var)
         return field
 
     def print_variable_info(self):
@@ -448,7 +452,7 @@ class Variable(object):
         first = False
         offset = self.offset
 
-        basetime = validtime - timedelta(seconds=offset)
+        basetime = validtime - as_timedelta(seconds=offset)
         if basetime <= self.initial_basetime:
             first = True
             basetime = self.initial_basetime
@@ -470,23 +474,23 @@ class Variable(object):
         if seconds_since_midnight == 86400:
             seconds_since_midnight = 0
         basetime_inc = int(
-            seconds_since_midnight / int(timedelta(seconds=self.fcint).total_seconds())
+            seconds_since_midnight / int(as_timedelta(seconds=self.fcint).total_seconds())
         )
 
-        prefer_forecast = timedelta(seconds=0)
+        prefer_forecast = as_timedelta(seconds=0)
         if seconds_since_midnight == basetime_inc * int(
-            timedelta(seconds=self.fcint).seconds
+            as_timedelta(seconds=self.fcint).seconds
         ):
             if first:
                 logging.debug("First basetime")
             else:
                 if self.prefer_forecast:
                     logging.debug("Prefer forecasts instead of analyis")
-                    prefer_forecast = timedelta(seconds=self.fcint)
+                    prefer_forecast = as_timedelta(seconds=self.fcint)
                 else:
                     logging.debug("Prefer analysis instead of forecast")
 
-        fcint = timedelta(seconds=self.fcint)
+        fcint = as_timedelta(seconds=self.fcint)
         basetime = (
             basetime.replace(hour=0, minute=0, second=0, microsecond=0)
             + (basetime_inc * fcint)
@@ -500,7 +504,7 @@ class Variable(object):
         logging.debug("seconds_since_midnight: %s", seconds_since_midnight)
         logging.debug(
             "         cycle seconds: %s",
-            basetime_inc * int(timedelta(seconds=self.fcint).seconds),
+            basetime_inc * int(as_timedelta(seconds=self.fcint).seconds),
         )
         logging.debug("       prefer_forecast: %s", self.prefer_forecast)
         logging.debug("   prefer_forecast_inc: %s", prefer_forecast)

@@ -1,9 +1,7 @@
 """obs."""
-import glob
 import json
 import logging
 import os
-from datetime import datetime, timedelta
 
 import numpy as np
 import requests
@@ -18,7 +16,8 @@ except:  # noqa
     cfunits = None
 
 
-from .interpolation import get_num_neighbours, grid2points
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, utcfromtimestamp
+from .interpolation import gridpos2points, inside_grid
 from .observation import Observation
 from .titan import QCDataSet, dataset_from_file
 
@@ -163,7 +162,7 @@ class ObservationSet(object):
                 my_times.append(None)
                 my_stids.append("NA")
                 my_values.append(np.nan)
-                print("Could not find position " + pos + " in this data source")
+                logging.info("Could not find position %s in this data source", pos)
 
         my_values = np.asanyarray(my_values)
         return my_times, my_values, my_stids
@@ -216,27 +215,31 @@ class NetatmoObservationSet(ObservationSet):
         """Construct netatmo obs.
 
         Args:
-            filenames (_type_): _description_
-            variable (_type_): _description_
-            target_time (_type_): _description_
+            filenames (list): Filenames
+            variable (str): Variable
+            target_time (as_datetime): _description_
             dt (int, optional): _description_. Defaults to 3600.
             re (bool, optional): _description_. Defaults to True.
             lonrange (_type_, optional): _description_. Defaults to None.
             latrange (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "netatmo".
 
+        Raises:
+            RuntimeError: Lonrange must be a list with length 2
+            RuntimeError: Latrange must be a list with length 2
+
         """
         if lonrange is None:
             lonrange = [-180, 180]
 
         if not isinstance(lonrange, list) or len(lonrange) != 2:
-            raise Exception(f"Lonrange must be a list with length 2 {lonrange}")
+            raise RuntimeError(f"Lonrange must be a list with length 2 {lonrange}")
 
         if latrange is None:
             latrange = [-90, 90]
 
         if not isinstance(latrange, list) or len(latrange) != 2:
-            raise Exception(f"Latrange must be a list with length 2 {latrange}")
+            raise RuntimeError(f"Latrange must be a list with length 2 {latrange}")
 
         data = {}  # key: id, value: list of values
         times = {}  # key: id, value: list of times
@@ -274,8 +277,8 @@ class NetatmoObservationSet(ObservationSet):
                 raw = json.loads(text)
                 raw = raw["data"]
                 logging.debug("Parsing %d stations in %s", len(raw), ifilename)
-            except Exception as exc:
-                logging.error("Could not parse %s. Exception: %s", ifilename, str(exc))
+            except Exception:
+                logging.error("Could not parse %s.", ifilename)
                 continue
 
             for line in raw:
@@ -283,7 +286,6 @@ class NetatmoObservationSet(ObservationSet):
                     my_id = line["_id"]
                     location = line["location"]
                     curr_data = line["data"]
-                    # print(curr_data)
                     if variable in curr_data:
                         if "time_utc" in curr_data:
                             time_utc = curr_data["time_utc"]
@@ -334,11 +336,9 @@ class NetatmoObservationSet(ObservationSet):
             num_valid_stations = 0
             for my_id, time in times.items():
                 this_diff_times = [
-                    (datetime.utcfromtimestamp(t) - target_time).total_seconds()
-                    for t in time
+                    (utcfromtimestamp(t) - target_time).total_seconds() for t in time
                 ]
-                curr_times = [datetime.utcfromtimestamp(t) for t in time]
-                # print(this_diff_times, target_time, np.min(np.abs(np.array(this_diff_times))), dt)
+                curr_times = [utcfromtimestamp(t) for t in time]
                 if np.min(np.abs(np.array(this_diff_times))) < dt:
                     ibest = int(np.argmin(np.abs(np.array(this_diff_times))))
                     curr_time = curr_times[ibest]
@@ -479,7 +479,6 @@ class MetFrostObservations(ObservationSet):
             # extract list of stations (if response was valid)
             if req.status_code == 200:
                 data = req.json()["data"]
-                # print(data)
                 ids = []
                 count_discard = 0
                 for data_block in data:
@@ -550,7 +549,6 @@ class MetFrostObservations(ObservationSet):
                     )
                     if keep_this_id:  # write into dict
                         ids.append(my_id)
-                        # print('station: ' + str(id) + '\n' + str(data[i]))
                         # create a dictionary for these stations to store lat,long,elev for each
                         station_dict[my_id] = [
                             data_block["geometry"]["coordinates"][1],
@@ -578,7 +576,7 @@ class MetFrostObservations(ObservationSet):
         # check how long the list of stations is and potentially break it up to shorten
         observations = []
         it_ids = len(ids)
-        dt = timedelta(seconds=dt)
+        dt = as_timedelta(seconds=dt)
         while it_ids > 0:
             if it_ids > 50:
                 # get last 50
@@ -642,7 +640,7 @@ class MetFrostObservations(ObservationSet):
                         ref_hour = int(ref_str[11:13])
                         ref_min = int(ref_str[14:16])
                         ref_sec = int(ref_str[17:19])
-                        ref_time = datetime(
+                        ref_time = as_datetime_args(
                             year=ref_year,
                             month=ref_month,
                             day=ref_day,
@@ -706,7 +704,6 @@ class MetFrostObservations(ObservationSet):
                                     else:
                                         raise Exception("Did not read a unit to convert!")
                                 ids_obs_dict[my_id[0]] = value
-                            # print(ids_obs_dict)
 
                     logging.debug(
                         "Station list length: %s, total number of observations "
@@ -754,13 +751,16 @@ class JsonObservationSet(ObservationSet):
             label (str, optional): Label of set. Defaults to "json".
             var (str, optional): Variable name. Defaults to None.
 
+        Raises:
+            RuntimeError: Varname is not found
+
         """
         with open(filename, mode="r", encoding="utf-8") as file_handler:
             obs = json.load(file_handler)
         observations = []
         for i in range(0, len(obs)):
             ind = str(i)
-            obstime = datetime.strptime(obs[ind]["obstime"], "%Y%m%d%H%M%S")
+            obstime = as_datetime(obs[ind]["obstime"])
             lon = obs[ind]["lon"]
             lat = obs[ind]["lat"]
             elev = obs[ind]["elev"]
@@ -771,7 +771,7 @@ class JsonObservationSet(ObservationSet):
                 varname = obs[ind]["varname"]
 
             if varname == "" and var is not None:
-                raise Exception("Varname is not found " + varname)
+                raise RuntimeError("Varname is not found " + varname)
 
             if var is None or var == varname:
                 observations.append(
@@ -850,7 +850,7 @@ def snow_pseudo_obs_cryoclim(
     res_lons = []
     res_lats = []
     p_snow_class = {}
-    for i in range(0, n_x):
+    for __ in range(0, n_x):
         jjj = 0
         for __ in range(0, n_y):
             res_lons.append(grid_lons[iii, jjj])
@@ -860,8 +860,15 @@ def snow_pseudo_obs_cryoclim(
             jjj = jjj + step
         iii = iii + step
 
-    p_fg_snow_depth = grid2points(
+    p_fg_snow_depth = gridpos2points(
         fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_snow_fg
+    )
+    in_grid = inside_grid(
+        fg_geo.lons,
+        fg_geo.lats,
+        np.asarray(res_lons),
+        np.asarray(res_lats),
+        distance=2500.0,
     )
 
     # Ordering of points must be the same.....
@@ -876,21 +883,12 @@ def snow_pseudo_obs_cryoclim(
         logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
             # Check if in grid
-            neighbours = get_num_neighbours(
-                fg_geo.lons,
-                fg_geo.lats,
-                float(res_lons[i]),
-                float(res_lats[i]),
-                distance=2500.0,
-            )
-
-            if neighbours > 0:
+            if in_grid[i]:
                 obs_value = np.nan
                 if p_snow_class[str(i)] == 1:
                     if p_snow_fg > 0:
                         if fg_threshold is not None:
                             if p_snow_fg <= fg_threshold:
-                                # print(p_snow_fg)
                                 obs_value = p_snow_fg
                         else:
                             obs_value = p_snow_fg
@@ -952,7 +950,7 @@ def sm_obs_sentinel(
     res_lons = []
     res_lats = []
     p_sm_class = {}
-    for i in range(0, n_x):
+    for __ in range(0, n_x):
         jjj = 0
         for __ in range(0, n_y):
             res_lons.append(grid_lons[iii, jjj])
@@ -962,10 +960,16 @@ def sm_obs_sentinel(
             jjj = jjj + step
         iii = iii + step
 
-    p_fg_sm = grid2points(
+    p_fg_sm = gridpos2points(
         fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_sm_fg
     )
-
+    in_grid = inside_grid(
+        fg_geo.lons,
+        fg_geo.lats,
+        np.asarray(res_lons),
+        np.asarray(res_lats),
+        distance=2500.0,
+    )
     # Ordering of points must be the same.....
     obs = []
     flags = []
@@ -977,15 +981,7 @@ def sm_obs_sentinel(
         p_sm_fg = p_fg_sm[i]
         if not np.isnan(p_sm_fg):
             # Check if in grid
-            neighbours = get_num_neighbours(
-                fg_geo.lons,
-                fg_geo.lats,
-                float(res_lons[i]),
-                float(res_lats[i]),
-                distance=2500.0,
-            )
-
-            if neighbours > 0:
+            if in_grid[i]:
                 obs_value = np.nan
                 if (p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0):
                     if p_sm_fg <= fg_threshold:

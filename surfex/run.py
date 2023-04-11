@@ -2,8 +2,8 @@
 import logging
 import os
 import shutil
-import subprocess
 import sys
+from subprocess import PIPE, STDOUT, CalledProcessError, Popen
 
 from .util import remove_existing_file
 
@@ -29,21 +29,25 @@ class BatchJob(object):
         Args:
             cmd (str): Command to run.
 
+        Raises:
+            CalledProcessError: Command failed.
+            RuntimeError: No command provided!
+
         """
         if cmd is None:
-            raise Exception("No command provided!")
+            raise RuntimeError("No command provided!")
         cmd = self.wrapper + " " + cmd
 
         if "OMP_NUM_THREADS" in self.rte:
             logging.info("BATCH: %s", self.rte["OMP_NUM_THREADS"])
         logging.info("Batch running %s", cmd)
 
-        process = subprocess.Popen(
+        process = Popen(  # noqaS602
             cmd,
-            shell=True,
+            shell=True,  # noqaS602
             env=self.rte,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stdout=PIPE,
+            stderr=STDOUT,
             universal_newlines=True,
             bufsize=1,
         )
@@ -57,7 +61,7 @@ class BatchJob(object):
 
         return_code = process.wait()
         if return_code != 0:
-            raise subprocess.CalledProcessError(return_code, cmd)
+            raise CalledProcessError(return_code, cmd)
 
 
 class SURFEXBinary(object):
@@ -72,6 +76,11 @@ class SURFEXBinary(object):
             iofile (surfex.SurfexIO): Input file to command.
             settings (f90nml.Namelist): Fortran namelist namelist
             input_data (surfex.InputDataToSurfexBinaries): Input to binary
+            kwargs (dict): Key word arguments.
+
+        Raises:
+            FileNotFoundError: Input file not found
+            RuntimeError: Execution failed
 
         """
         self.binary = binary

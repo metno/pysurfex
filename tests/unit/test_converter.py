@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from surfex.cache import Cache
-from surfex.geo import get_geo_object, set_domain
+from surfex.geo import get_geo_object
 from surfex.read import ConvertedInput, Converter
 
 
@@ -39,7 +39,6 @@ def domain_file(domain_dict, tmp_path_factory):
 
 def test_converter(domain_dict):
     """Test converter."""
-
     my_geo = get_geo_object(domain_dict)
 
     fileformat = "surfex"

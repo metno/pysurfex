@@ -40,7 +40,7 @@ def domain_file(tmp_path_factory, domain_dict):
 
 @contextlib.contextmanager
 def working_directory(path):
-    """Changes working directory and returns to previous on exit."""
+    """Change working directory and returns to previous on exit."""
     prev_cwd = Path.cwd()
     os.chdir(path)
     try:

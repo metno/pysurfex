@@ -3,7 +3,6 @@ import abc
 import json
 import logging
 import os
-from datetime import datetime
 
 import numpy as np
 
@@ -11,12 +10,9 @@ try:
     import titanlib as tit
 except ImportError:
     tit = None
-try:
-    import gridpp
-except ImportError:
-    gridpp = None
 
-
+from .datetime_utils import as_datetime
+from .interpolation import ObsOperator, inside_grid
 from .netcdf import read_first_guess_netcdf_file
 from .observation import Observation
 
@@ -67,9 +63,7 @@ class QualityControl(object):
         Returns:
             list: Updated global flags.
         """
-        imask = np.where(
-            (np.array(global_flags) == 0) & (np.array([flag for flag in flags]) == 1)
-        )[0]
+        imask = np.where((np.array(global_flags) == 0) & (np.array(list(flags)) == 1))[0]
         imask = np.intersect1d(imask, np.array(mask))
         if len(imask) > 0:
             global_flags[imask] = code
@@ -102,6 +96,9 @@ class Plausibility(QualityControl):
             minval (float, optional): Minimum value. Defaults to None.
             maxval (float, optional): Maximum value. Defaults to None.
 
+        Raises:
+            RuntimeError: You must set minval and maxval
+
         """
         used_min = self.def_min
         used_max = self.def_max
@@ -111,7 +108,7 @@ class Plausibility(QualityControl):
             used_max = maxval
 
         if used_min is None or used_max is None:
-            raise Exception("You must set minval and maxval")
+            raise RuntimeError("You must set minval and maxval")
 
         logging.debug("minval: %s", used_min)
         logging.debug("maxval: %s", used_max)
@@ -132,6 +129,12 @@ class Plausibility(QualityControl):
             dataset (QCDataSet): The data set to perform the test on.
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 102.
+
+        Raises:
+            ModuleNotFoundError: titanlib was not loaded properly
+
+        Returns:
+            global_flags(list): Global flags.
 
         """
         if tit is None:
@@ -207,6 +210,9 @@ class FirstGuess(QualityControl):
             posdiff (float, optional): Positive diff. Defaults to None.
             negdiff (float, optional): Negative diff. Defaults to None.
 
+        Raises:
+            RuntimeError: You must set negdiff and posdiff
+
         """
         used_negdiff = self.def_negdiff
         used_posdiff = self.def_posdiff
@@ -218,7 +224,7 @@ class FirstGuess(QualityControl):
             used_negdiff = negdiff
 
         if used_negdiff is None or used_posdiff is None:
-            raise Exception("You must set negdiff and posdiff")
+            raise RuntimeError("You must set negdiff and posdiff")
 
         logging.debug("posdiff: %s", used_posdiff)
         logging.debug("negdiff: %s", used_negdiff)
@@ -239,6 +245,12 @@ class FirstGuess(QualityControl):
             dataset (QCDataSet): The data set to perform the test on.
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 108.
+
+        Returns:
+            global_flags(list): Global flags.
+
+        Raises:
+            ModuleNotFoundError: titanlib was not loaded properly
 
         """
         if tit is None:
@@ -332,6 +344,9 @@ class Fraction(QualityControl):
             minval (float, optional): Minimum value. Defaults to None.
             maxval (float, optional): Maximum value. Defaults to None.
 
+        Raises:
+            RuntimeError: You must set min and max
+
         """
         used_min = self.def_min
         used_max = self.def_max
@@ -343,7 +358,7 @@ class Fraction(QualityControl):
             used_max = maxval
 
         if used_min is None or used_max is None:
-            raise Exception("You must set min and max")
+            raise RuntimeError("You must set min and max")
 
         logging.debug("min: %s", used_min)
         logging.debug("max: %s", used_max)
@@ -367,6 +382,9 @@ class Fraction(QualityControl):
 
         Returns:
             global_flags(list): Global flags.
+
+        Raises:
+            ModuleNotFoundError: titanlib was not loaded properly
 
         """
         if tit is None:
@@ -537,6 +555,15 @@ class Sct(QualityControl):
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 105.
 
+        Raises:
+            ModuleNotFoundError: titanlib was not loaded properly
+            RuntimeError: Longitude is not defined!
+            RuntimeError: Latitude is not defined!
+            RuntimeError: Value is not defined!
+
+        Returns:
+            global_flags(list): Global flags.
+
         """
         if tit is None:
             raise ModuleNotFoundError("titanlib was not loaded properly")
@@ -554,7 +581,6 @@ class Sct(QualityControl):
             if np.isnan(dataset.elevs[old_mask_ind]):
                 if not self.missing_elev_to_zero:
                     ind = i - nmissing_elev
-                    # print(i, old_mask[i], nmissing_elev, ind, len(self.pos))
                     self.pos.pop(ind)
                     self.neg.pop(ind)
                     self.eps2.pop(ind)
@@ -576,15 +602,15 @@ class Sct(QualityControl):
             # DEBUG
             if np.isnan(dataset.lons[mask_ind]):
                 logging.error(i, "lon")
-                raise Exception("Longitude is not defined!")
+                raise RuntimeError("Longitude is not defined!")
 
             if np.isnan(dataset.lats[mask_ind]):
                 logging.error(i, "lat")
-                raise Exception("Latitude is not defined!")
+                raise RuntimeError("Latitude is not defined!")
 
             if np.isnan(dataset.values[mask_ind]):
                 logging.error(i, "value")
-                raise Exception("Value is not defined!")
+                raise RuntimeError("Value is not defined!")
 
         if nmissing_elev > 0:
             if self.missing_elev_to_zero:
@@ -734,7 +760,7 @@ class Buddy(QualityControl):
         if obs_to_check is not None:
             used_distance_lim = obs_to_check
 
-        for __ in range(0, len(size)):
+        for __ in range(0, size):
             distance_lim.append(used_distance_lim)
             priorities.append(used_priorities)
             buddies_min.append(used_buddies_min)
@@ -761,6 +787,13 @@ class Buddy(QualityControl):
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 104.
 
+        Raises:
+            ModuleNotFoundError: titanlib was not loaded properly
+            RuntimeError: Buddy check failed!
+
+        Returns:
+            global_flags(list): Global flags.
+
         """
         if tit is None:
             raise ModuleNotFoundError("titanlib was not loaded properly")
@@ -768,11 +801,6 @@ class Buddy(QualityControl):
         global_flags = dataset.flags
         # Buddy does not work properly for dataset.
         # Also without data set the values must be set without subscripts
-
-        # status = dataset.buddy_check(self.distance_lim, self.priorities,
-        #                              self.buddies_min, self.thresholds,
-        #                              self.diff_elev_max, self.adjust_for_elev_diff,
-        #                              self.obs_to_check, mask)
 
         lons = []
         lats = []
@@ -797,7 +825,7 @@ class Buddy(QualityControl):
             self.obs_to_check,
         )
         if not status:
-            raise Exception("Buddy check failed!")
+            raise RuntimeError("Buddy check failed!")
 
         for i, mask_ind in enumerate(mask):
             if global_flags[mask_ind] == 0 and flags[i] == 1:
@@ -831,7 +859,7 @@ class Climatology(QualityControl):
 
         """
         if isinstance(an_time, str):
-            an_time = datetime.strptime(an_time, "%Y%m%d%H")
+            an_time = as_datetime(an_time)
         self.unixtime = int(an_time.strftime("%s"))
         self.def_min = minval
         self.def_max = maxval
@@ -850,6 +878,9 @@ class Climatology(QualityControl):
             maxval (float, optional): Maximum value. Defaults to None.
             offset (int, optional): Offset. Defaults to 0.
 
+        Raises:
+            RuntimeError: You must set min and max values!
+
         """
         used_min = self.def_min
         used_max = self.def_max
@@ -861,7 +892,7 @@ class Climatology(QualityControl):
         if offset is not None:
             used_offset = offset
         if used_min is None or used_max is None:
-            raise Exception("You must set min and max values!")
+            raise RuntimeError("You must set min and max values!")
 
         minvals = []
         maxvals = []
@@ -881,6 +912,9 @@ class Climatology(QualityControl):
             dataset (QCDataSet): The data set to perform the test on.
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 103.
+
+        Returns:
+            global_flags(list): Global flags.
 
         """
         lons = []
@@ -947,6 +981,9 @@ class Redundancy(QualityControl):
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 115.
 
+        Returns:
+            flags(list): Flags.
+
         """
         data = {}
         flags = dataset.flags
@@ -1005,9 +1042,13 @@ class Blacklist(QualityControl):
         Args:
             blacklist (dict): Blacklist positions/stids
 
+        Raises:
+            RuntimeError: You must set blacklist as a dict
+            RuntimeError: Blacklist must have the same length for both lons and lats
+
         """
         if blacklist is None or not isinstance(blacklist, dict):
-            raise Exception("You must set blacklist as a dict")
+            raise RuntimeError("You must set blacklist as a dict")
 
         blacklist_pos = {}
         blacklist_stid = {}
@@ -1015,7 +1056,7 @@ class Blacklist(QualityControl):
             for i in range(0, len(blacklist["lons"])):
 
                 if len(blacklist["lons"]) != len(blacklist["lats"]):
-                    raise Exception(
+                    raise RuntimeError(
                         "Blacklist must have the same length for both lons and lats"
                     )
 
@@ -1045,6 +1086,9 @@ class Blacklist(QualityControl):
             dataset (QCDataSet): The data set to perform the test on.
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 100.
+
+        Returns:
+            flags(list): Flags.
 
         """
         flags = dataset.flags
@@ -1089,13 +1133,15 @@ class DomainCheck(QualityControl):
             domain_geo (surfex.Geo): Surfex geometry
             max_distance (int, optional): Maximum distance to grid border. Defaults to 5000.
 
+        Raises:
+             RuntimeError: Domain geo was not set!
+
         """
         if domain_geo is None:
-            raise Exception("Domain geo was not set!")
+            raise RuntimeError("Domain geo was not set!")
 
-        lons = np.transpose(np.asarray(domain_geo.lons))
-        lats = np.transpose(np.asarray(domain_geo.lats))
-        self.grid = gridpp.Grid(lats, lons)
+        self.lons = domain_geo.lons
+        self.lats = domain_geo.lats
         self.max_distance = max_distance
         QualityControl.__init__(self, "domain")
 
@@ -1110,13 +1156,17 @@ class DomainCheck(QualityControl):
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 199.
 
+        Returns:
+            flags(list): Flags.
+
         """
         flags = dataset.flags
-        for i, mask_ind in enumerate(mask):
-            lon = dataset.lons[mask_ind]
-            lat = dataset.lats[mask_ind]
-            neighbours = self.grid.get_num_neighbours(lat, lon, self.max_distance)
-            if neighbours == 0:
+        in_grid = inside_grid(
+            self.lons, self.lats, dataset.lons, dataset.lats, distance=self.max_distance
+        )
+        # TODO vectorize
+        for __, mask_ind in enumerate(mask):
+            if not in_grid[mask_ind]:
                 flags[mask_ind] = code
 
         for i, mask_ind in enumerate(mask):
@@ -1151,6 +1201,9 @@ class NoMeta(QualityControl):
             mask (list): Active data.
             code (int, optional): Code to use for flagging. Defaults to 101.
 
+        Returns:
+            flags(list): Flags.
+
         """
         flags = dataset.flags
         for mask_ind in mask:
@@ -1181,6 +1234,13 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
         an_time(datetime.datetime): Analysis time
         domain_geo(surfex.Geo): Geo object
         blacklist(dict): Optional blacklist. Needd for blacklist test
+
+    Raises:
+        NotImplementedError: Test not implemented
+        RuntimeError: You must set the name of fg file and variable
+        RuntimeError: You must set the name of fraction file and variable
+        RuntimeError: You must set both fraction_field and fraction_geo
+        RuntimeError: You must set both fg_field and fg_geo
 
     Returns:
         tests(list): List of QualityControl objects
@@ -1222,13 +1282,13 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
                         kwargs.update({opt: test_options[opt]})
             if fg_geo is None and fg_field is None:
                 if fg_file is None or fg_var is None:
-                    raise Exception("You must set the name of fg file and variable")
+                    raise RuntimeError("You must set the name of fg file and variable")
                 fg_geo, __, fg_field, __, __ = read_first_guess_netcdf_file(
                     fg_file, fg_var
                 )
             else:
                 if fg_geo is None or fg_field is None:
-                    raise Exception("You must set both fg_field and fg_geo")
+                    raise RuntimeError("You must set both fg_field and fg_geo")
             tests.append(FirstGuess(fg_geo, fg_field, **kwargs))
 
         elif qct.lower() == "fraction":
@@ -1253,14 +1313,18 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
 
             if fraction_geo is None and fraction_field is None:
                 if fraction_var is None or fraction_file is None:
-                    raise Exception("You must set the name of fraction file and variable")
+                    raise RuntimeError(
+                        "You must set the name of fraction file and variable"
+                    )
 
                 fraction_geo, __, fraction_field, __, __ = read_first_guess_netcdf_file(
                     fraction_file, fraction_var
                 )
             else:
                 if fraction_field is None or fraction_geo is None:
-                    raise Exception("You must set both fraction_field and fraction_geo")
+                    raise RuntimeError(
+                        "You must set both fraction_field and fraction_geo"
+                    )
             tests.append(Fraction(fraction_geo, fraction_field, **kwargs))
 
         elif qct.lower() == "buddy":
@@ -1429,19 +1493,19 @@ class QCDataSet(object):
         self.providers = providers
         if passed_tests is None:
             passed_tests = []
-            for i in range(0, len(observations)):
+            for __ in range(0, len(observations)):
                 passed_tests.append([])
             self.passed_tests = passed_tests
         else:
             self.passed_tests = passed_tests
         if fg_dep is None:
             fg_dep = []
-            for i in range(0, len(observations)):
+            for __ in range(0, len(observations)):
                 fg_dep.append(np.nan)
         self.fg_dep = fg_dep
         if an_dep is None:
             an_dep = []
-            for i in range(0, len(observations)):
+            for __ in range(0, len(observations)):
                 an_dep.append(np.nan)
         self.an_dep = an_dep
 
@@ -1498,7 +1562,7 @@ class QCDataSet(object):
                 {
                     i: {
                         "varname": self.varnames[i],
-                        "obstime": datetime.strftime(self.obstimes[i], "%Y%m%d%H%M%S"),
+                        "obstime": as_datetime(self.obstimes[i]),
                         "lon": lon_val,
                         "lat": self.lats[i],
                         "stid": self.stids[i],
@@ -1526,8 +1590,11 @@ class QCDataSet(object):
 
         """
         nsize = len(mask)
+        corep = []
+        for i in range(0, nsize):
+            corep.append(self.cis[mask[i]])
+        corep = np.asarray(corep)
         if nsize > 0:
-            corep = np.asarray(self.cis[mask])
 
             def ecdf(xxx):
                 xxx = np.sort(xxx)
@@ -1564,7 +1631,8 @@ class QCDataSet(object):
                 corep1 = (qcorep[gav] - qav) / (qmx - qav)
                 corep[gav] = corep_mean[gav] + (corep_max[gav] - corep_mean[gav]) * corep1
 
-            self.cis[mask] = qcorep
+        for i in range(0, nsize):
+            self.cis[mask[i]] = qcorep[i]
 
 
 class TitanDataSet(QCDataSet):
@@ -1583,6 +1651,9 @@ class TitanDataSet(QCDataSet):
             an_time (datetime.datetime): Analysis time
             corep (int, optional): Correlations between observations. Defaults to 1.
             test_flags (dict, optional): Dictionary to set custom test flags. Defaults to None.
+
+        Raises:
+            ModuleNotFoundError: itanlib was not loaded properly
 
         """
         if tit is None:
@@ -1621,10 +1692,10 @@ class TitanDataSet(QCDataSet):
             elevs = elevs + lelevs
             values = values + lvalues
             varnames = varnames + lvarnames
-            for i in range(0, len(llons)):
+            for __ in range(0, len(llons)):
                 providers.append(obs_set.label)
 
-        for i in range(0, len(lons)):
+        for __ in range(0, len(lons)):
             passed_tests.append([])
         flags = np.zeros(len(lons))
         cis = np.ones(len(lons)) * corep
@@ -1647,7 +1718,7 @@ class TitanDataSet(QCDataSet):
         self.titan_dataset = tit.Dataset(points, values)
         if passed_tests is None:
             passed_tests = []
-            for i in range(0, len(lons)):
+            for __ in range(0, len(lons)):
                 passed_tests.append([])
             self.passed_tests = passed_tests
         else:
@@ -1717,7 +1788,6 @@ class TitanDataSet(QCDataSet):
                     logging.info(
                         "Test %s size=%s settings=%s", test.name, len(mask), test_settings
                     )
-                    # t.set_input(test_settings, len(mask))
                     test.set_input(len(lmask), **test_settings)
 
                 else:
@@ -1790,82 +1860,6 @@ class TitanDataSet(QCDataSet):
             logging.info("\n")
 
 
-class ObsOperator(object):
-    """Obs operator. Class to convert a field to an observation point."""
-
-    def __init__(self, operator, geo, dataset, grid_values, max_distance=5000):
-        """Construct the observation operator.
-
-        Args:
-            operator (str): Interpolation operator.
-            geo (surfex.Geo): Surfex geometry.
-            dataset (QCDataSet): QC data set.
-            grid_values (np.darray): Values in the grid.
-            max_distance (int, optional): Max allowed deviation in meters from grid borders.
-                                          Defaults to 5000.
-
-        """
-        # TODO rewrite to use lonlatval geo
-        grid_lons = np.transpose(geo.lons)
-        grid_lats = np.transpose(geo.lats)
-        grid_values = np.transpose(grid_values)
-
-        grid = gridpp.Grid(grid_lats, grid_lons)
-        lons = dataset.lons
-        lats = dataset.lats
-        points = gridpp.Points(lats, lons)
-
-        logging.info(
-            'Setting up "%s" observation operator for %s points', operator, str(len(lons))
-        )
-        if operator == "nearest":
-            obs_values = gridpp.nearest(grid, points, grid_values)
-        elif operator == "bilinear":
-            obs_values = gridpp.bilinear(grid, points, grid_values)
-        else:
-            raise NotImplementedError(operator)
-
-        inside_grid = []
-        # Check if they are in grid
-        for i in range(0, len(obs_values)):
-            lon = lons[i]
-            lat = lats[i]
-            neighbours = grid.get_num_neighbours(lat, lon, max_distance)
-            # print(i, lons[i], lats[i], obs_values[i], nn)
-            if neighbours == 0:
-                inside_grid.append(False)
-            else:
-                inside_grid.append(True)
-
-        self.inside_grid = inside_grid
-        self.obs_values = obs_values
-
-    def get_obs_value(self, pos=None):
-        """Get the observed value.
-
-        Args:
-            pos (int, optional): Position. Defaults to None.
-
-        Returns:
-            float: Observation value for index.
-        """
-        if pos is None:
-            return self.obs_values
-        else:
-            raise NotImplementedError
-
-    def is_in_grid(self, index):
-        """Check if index is in grid.
-
-        Args:
-            index (int): Index to check.
-
-        Returns:
-            bool: True if inside
-        """
-        return self.inside_grid[index]
-
-
 class Departure(object):
     """Departure. Difference between an observation and a value."""
 
@@ -1880,6 +1874,9 @@ class Departure(object):
             mode (str): What kind of departure (analysis/first_guess)
             max_distance (int, optional): Max allowed deviation in meters from grid borders.
                                           Defaults to 5000.
+
+        Raises:
+            NotImplementedError: Mode not implemented
 
         """
         self.obs_operator = ObsOperator(
@@ -1995,12 +1992,11 @@ def dataset_from_json(
 
         if skip_flags is not None:
             for sfl in skip_flags:
-                # print(i, int(f), int(data[i]["flag"]))
                 if int(data[i]["flag"]) == int(sfl):
                     add = False
 
         if add:
-            obstime = datetime.strptime(data[i]["obstime"], "%Y%m%d%H%M%S")
+            obstime = as_datetime(data[i]["obstime"])
             lon = data[i]["lon"]
             lat = data[i]["lat"]
             stid = data[i]["stid"]

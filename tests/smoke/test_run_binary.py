@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 import tomlkit
 
-from surfex.binary_input import JsonInputDataFromFile, JsonOutputDataFromFile
 from surfex.cli import (
     parse_args_masterodb,
     parse_args_surfex_binary,
@@ -47,7 +46,7 @@ def domain_file(tmp_path_factory, domain_dict):
 
 @contextlib.contextmanager
 def working_directory(path):
-    """Changes working directory and returns to previous on exit."""
+    """Change working directory and returns to previous on exit."""
     prev_cwd = Path.cwd()
     os.chdir(path)
     try:
@@ -160,7 +159,7 @@ def test_run_pgd(
     task = "pgd"
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/PGD_test.nc"
-    binary = f"touch PGD.nc"
+    binary = "touch PGD.nc"
 
     argv = [
         "-w",
@@ -194,11 +193,10 @@ def test_run_prep(
     # PREP
     task = "prep"
 
-    # pgd = output
     pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
     pgd.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/PREP_test.nc"
-    binary = f"touch PREP.nc"
+    binary = "touch PREP.nc"
 
     argv = [
         "-w",
@@ -244,7 +242,7 @@ def test_run_offline(
     prep = tmp_path_factory.getbasetemp() / "PREP_input.nc"
     prep.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/SURFOUT_test.nc"
-    binary = f"touch SURFOUT.nc"
+    binary = "touch SURFOUT.nc"
 
     argv = [
         "-w",
@@ -273,7 +271,6 @@ def test_run_offline(
         binary,
     ]
     kwargs = parse_args_surfex_binary(argv, task)
-    # kwargs.update({"check_existence": False})
     with working_directory(tmp_path_factory.getbasetemp()):
         run_surfex_binary(task, **kwargs)
 
@@ -290,7 +287,7 @@ def test_run_soda(
     prep = tmp_path_factory.getbasetemp() / "PREP_input.nc"
     prep.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ANALYSIS_test.nc"
-    binary = f"touch SURFOUT.nc"
+    binary = "touch SURFOUT.nc"
 
     argv = [
         "-w",
@@ -327,13 +324,12 @@ def test_masterodb_forecast(
     get_fa_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
 ):
     """Test masterodb."""
-
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
     pgd.touch()
     prep = tmp_path_factory.getbasetemp() / "ICMSHHARMINIT.sfx"
     prep.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ICMSHHARM+0003.sfx"
-    binary = f"touch ICMSHHARM+0003.fa"
+    binary = "touch ICMSHHARM+0003.fa"
 
     argv = [
         "-w",
@@ -362,7 +358,6 @@ def test_masterodb_forecast(
         binary,
     ]
     kwargs = parse_args_masterodb(argv)
-    # kwargs.update({"check_existence": False})
     with working_directory(tmp_path_factory.getbasetemp()):
         run_masterodb(**kwargs)
 
@@ -377,7 +372,7 @@ def test_masterodb_canari(
     prep = tmp_path_factory.getbasetemp() / "ICMSHHARMINIT.sfx"
     prep.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ICMSHHARM+0003.sfx"
-    binary = f"touch ICMSHANAL.sfx"
+    binary = "touch ICMSHANAL.sfx"
     argv = [
         "-w",
         "",

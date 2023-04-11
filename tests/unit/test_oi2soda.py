@@ -1,7 +1,6 @@
 """Test oi2soda."""
 from datetime import datetime
 
-import pytest
 from netCDF4 import Dataset
 
 from surfex.netcdf import oi2soda

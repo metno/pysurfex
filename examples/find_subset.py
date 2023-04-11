@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Example."""
 import json
 
 import numpy as np
@@ -45,18 +45,15 @@ print(lats.shape)
 x0 = np.empty([geo.nimax])
 y0 = np.empty([geo.njmax])
 for i in range(0, geo.nimax):
-    # print(i, j, lons[j][i], wanted_lon, lats[j][i], wanted_lat)
     x0[i] = float(geo.x[i]) - (0.5 * ((float(nx) - 1.0) * geo.xdx))
 
 for j in range(0, geo.njmax):
     y0[j] = float(geo.y[j]) - (0.5 * ((float(ny) - 1.0) * geo.xdy))
 
 x0v, y0v = np.meshgrid(x0, y0)
-# print(x0v, y0v)
 lonc, latc = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(x0v, y0v)
 for i in range(0, geo.nimax):
     for j in range(0, geo.njmax):
-        # print(i, j, lonc[j][i], wanted_lon, latc[j][i], wanted_lat)
         if abs(lonc[j][i] - wanted_lon) < 0.01 and abs(latc[j][i] - wanted_lat) < 0.01:
             print(
                 "Possible subset centre points",

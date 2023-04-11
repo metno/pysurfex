@@ -1,6 +1,7 @@
 """Cache."""
-import datetime
 import logging
+
+from .datetime_utils import as_datetime_args
 
 
 class Cache:
@@ -182,7 +183,7 @@ class Cache:
             month = int(key[-6:-4])
             day = int(key[-4:-2])
             hour = int(float(key[-2:]))
-            field_time = datetime.datetime(year, month, day, hour)
+            field_time = as_datetime_args(year=year, month=month, day=day, hour=hour)
             time_duration = (this_time - field_time).total_seconds()
             if time_duration > self.max_age:
                 del_keys.append(key)

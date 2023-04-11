@@ -158,7 +158,7 @@ class SurfexGeo(ABC, Geo):
         Returns:
             _type_: _description_
         """
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def subset(self, geo):
@@ -167,7 +167,7 @@ class SurfexGeo(ABC, Geo):
         Args:
             geo (surfex.Geo): Geometry to check.
         """
-        return NotImplementedError
+        raise NotImplementedError
 
 
 class ConfProj(SurfexGeo):
@@ -177,8 +177,13 @@ class ConfProj(SurfexGeo):
         """Construct conf proj geo.
 
         Args:
-            from_json (_type_): _description_
-            debug (bool, optional): _description_. Defaults to False.
+            from_json (dict): Domain definition
+
+        Raises:
+            KeyError: Missing keys1
+            KeyError: Missing keys2
+            KeyError: Missing keys3
+            KeyError: Missing keys4
 
         """
         self.cgrid = "CONF PROJ"
@@ -268,10 +273,6 @@ class ConfProj(SurfexGeo):
         logging.debug("lons.shape=%s", lons)
         logging.debug("lats.shape=%s", lats)
         SurfexGeo.__init__(self, proj, lons, lats)
-        # raise
-        # SurfexGeo.__init__(self, proj, npoints, self.nimax, self.njmax,
-        #                   np.reshape(lons, [npoints], order="F"),
-        #                   np.reshape(lats, [npoints], order="F"), from_json)
 
     def update_namelist(self, nml):
         """Update namelist.
@@ -358,12 +359,10 @@ class ConfProj(SurfexGeo):
                 y_0 = None
 
                 for i in range(0, geo.nimax):
-                    # print("Test i:", i, geo.x[i], self.x0)
                     if round(self.x_0, 4) == round(geo.xxx[i], 4):
                         x_0 = i
                         break
                 for j in range(0, geo.njmax):
-                    # print("Test j:", j, geo.y[j], self.y0)
                     if round(self.y_0, 4) == round(geo.yyy[j], 4):
                         y_0 = j
                         break
@@ -387,6 +386,10 @@ class LonLatVal(SurfexGeo):
 
         Args:
             from_json (dict): Domain description,
+
+        Raises:
+            KeyError: Missing key
+            KeyError: Missing keys
 
         """
         self.cgrid = "LONLATVAL"
@@ -435,6 +438,9 @@ class LonLatVal(SurfexGeo):
 
         Args:
             geo (surfex.Geo): Geometry to check.
+
+        Returns:
+            tuple: lons, lats
         """
         logging.info("Subset not implemented")
         lons = []
@@ -450,6 +456,10 @@ class Cartesian(SurfexGeo):
 
         Args:
             from_json (_type_): _description_
+
+        Raises:
+            KeyError: Missing key
+            KeyError: Missing keys
 
         """
         self.cgrid = "CARTESIAN"
@@ -481,11 +491,9 @@ class Cartesian(SurfexGeo):
 
                 SurfexGeo.__init__(self, proj, np.asarray(lons), np.asarray(lats))
             else:
-                print("Missing keys")
-                raise KeyError
+                raise KeyError("Missing keys")
         else:
-            print("Missing key")
-            raise KeyError
+            raise KeyError("Missing key")
 
     def update_namelist(self, nml):
         """Update namelist.
@@ -517,6 +525,10 @@ class Cartesian(SurfexGeo):
 
         Args:
             geo (surfex.Geo): Geometry to check.
+
+        Returns:
+            tuple: lons, lats
+
         """
         logging.info("Subset not implemented")
         lons = []
@@ -532,6 +544,11 @@ class LonLatReg(SurfexGeo):
 
         Args:
             from_json (dict): Domain definition.
+
+        Raises:
+            KeyError: Missing key
+            KeyError: Missing keys
+            ZeroDivisionError: nlon and/or nlat is 0
 
         """
         self.cgrid = "LONLAT REG"
@@ -554,18 +571,16 @@ class LonLatReg(SurfexGeo):
                 self.nlon = domain_dict["nam_lonlat_reg"]["nlon"]
                 self.nlat = domain_dict["nam_lonlat_reg"]["nlat"]
             else:
-                print("Missing keys")
-                raise KeyError
+                raise KeyError("Missing keys")
         else:
-            print("Missing key")
-            raise KeyError
+            raise KeyError("Missing key")
 
         proj_string = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84"
         proj = pyproj.CRS.from_string(proj_string)
         lons = []
         lats = []
         if self.nlon == 0 or self.nlat == 0:
-            raise ZeroDivisionError
+            raise ZeroDivisionError("nlon and/or nlat is 0")
 
         dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
         dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
@@ -609,6 +624,10 @@ class LonLatReg(SurfexGeo):
 
         Args:
             geo (surfex.Geo): Geometry to check.
+
+        Returns:
+            tuple: lons, lats
+
         """
         logging.info("Subset not implemented")
         lons = []
@@ -625,6 +644,11 @@ class IGN(SurfexGeo):
         Args:
             from_json (dict): Domain definition.
             recreate (bool, optional): Recreate the cached mask. Defaults to False.
+
+        Raises:
+            NotImplementedError: Projection not implemented
+            KeyError: Missing key
+            KeyError: Missing keys
 
         """
         self.cgrid = "IGN"
@@ -658,11 +682,9 @@ class IGN(SurfexGeo):
                 self.ncols = domain_dict["nam_ign"]["ncols"]
                 self.nrows = domain_dict["nam_ign"]["nrows"]
             else:
-                print("Missing keys")
-                raise KeyError
+                raise KeyError("Missing keys")
         else:
-            print("Missing key")
-            raise KeyError
+            raise KeyError("Missing key")
 
         if self.clambert == 7:
             proj4 = (
@@ -700,17 +722,17 @@ class IGN(SurfexGeo):
         """Get the IGN coordinates.
 
         Args:
-            pin (_type_): _description_
-            pdin (_type_): _description_
-            coord (_type_): _description_
+            pin (list): _description_
+            pdin (list): _description_
+            coord (list): _description_
             recreate (bool, optional): _description_. Defaults to False.
 
         Returns:
-            _type_: _description_
+            list: Output coordinates
 
         """
         pout = []
-        cache = "/tmp/." + coord + "_cached"
+        cache = "/tmp/." + coord + "_cached"  # noqa S108
         if os.path.isfile(cache) and not recreate:
             with open(cache, mode="r", encoding="utf-8") as file_handler:
                 cached_coord = file_handler.read().splitlines()
@@ -733,10 +755,8 @@ class IGN(SurfexGeo):
                 pout.append(pin[0] + pdin[0])
                 zdout.append(0.0)
 
-        # print ksize
         for i, pinval in enumerate(pin):
             for j in range(0, ksize):
-                # print i,j,len(pin),ksize,pout[j],pin[i]
                 if pout[j] == pinval:
                     break
                 if j == ksize - 1:
@@ -746,7 +766,6 @@ class IGN(SurfexGeo):
 
             # Mesh constrains
             for j in range(0, ksize):
-                # print i, j, len(pin), ksize, pout[j], pin[i]
                 if pout[j] < pin[i] and (pout[j] + zdout[j]) >= (pin[i] - pdin[i]):
                     break
                 if j == ksize - 1:
@@ -790,7 +809,7 @@ class IGN(SurfexGeo):
         """
         mask = []
 
-        cache = "/tmp/.mask"
+        cache = "/tmp/.mask"  # noqa S108
         if os.path.isfile(cache) and not recreate:
             with open(cache, mode="r", encoding="utf-8") as file_handler:
                 cached_mask = file_handler.read().splitlines()
@@ -812,7 +831,6 @@ class IGN(SurfexGeo):
                 count = count + 1
                 for k, xval in enumerate(xxx):
                     if xval == pxall_val and yyy[k] == pyall_val:
-                        # print i,j,k,l,xx[k],pxall[i],yy[k],pyall[j]
                         mask.append(count)
                         break
 
@@ -823,7 +841,6 @@ class IGN(SurfexGeo):
             for mask_ind in mask:
                 file_handler.write(str(mask_ind) + "\n")
 
-        # f.write("mask="+str(mask)+"\n")
         logging.info("Created mask: %s", mask)
         return mask
 
@@ -861,6 +878,10 @@ class IGN(SurfexGeo):
 
         Args:
             geo (surfex.Geo): Geometry to check.
+
+        Returns:
+            tuple: lons, lats
+
         """
         logging.info("Subset not implemented")
         lons = []
@@ -873,6 +894,11 @@ def get_geo_object(from_json):
 
     Args:
         from_json (dict): Domain definition.
+
+    Raises:
+        NotImplementedError: Grid not implemented
+        KeyError: Missing grid information cgrid
+        KeyError: nam_pgd_grid not set!
 
     Returns:
         surfex.Geo: Surfex geometry.
@@ -908,9 +934,13 @@ def set_domain(settings, domain, hm_mode=False):
     """Set domain.
 
     Args:
-        settings (_type_): _description_
-        domain (_type_): _description_
-        hm_mode (bool, optional): _description_. Defaults to False.
+        settings (dict): Domain definitions
+        domain (str): Domain name
+        hm_mode (bool, optional): Harmonie definition. Defaults to False.
+
+    Raises:
+        KeyError: Domain not found
+        ValueError: Settings should be a dict
 
     Returns:
         dict: Domain dictionary
@@ -946,9 +976,9 @@ def set_domain(settings, domain, hm_mode=False):
             return domain_dict
 
         logging.error("Domain not found: %s", domain)
-        raise Exception("Domain not found: " + domain)
+        raise KeyError("Domain not found: " + domain)
     logging.error("Settings should be a dict")
-    raise Exception("Settings should be a dict")
+    raise ValueError("Settings should be a dict")
 
 
 def shape2ign(catchment, infile, output, ref_proj, indent=None):

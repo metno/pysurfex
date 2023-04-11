@@ -2,11 +2,11 @@
 import json
 import logging
 import os
-from datetime import datetime, timedelta
 
 import f90nml
 import yaml
 
+from .datetime_utils import as_datetime, as_timedelta
 from .ecoclimap import Ecoclimap, EcoclimapSG
 
 
@@ -23,7 +23,6 @@ class SystemFilePaths(object):
             system_file_paths (_type_): _description_
         """
         self.system_file_paths = system_file_paths
-        # self.system_variables = None
 
     def get_system_path(
         self,
@@ -45,8 +44,8 @@ class SystemFilePaths(object):
             default_dir (str): A fallback if the desired dtype is not found
             check_existence (bool): Check if the path found also exists
             check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
-            validtime (datetime.dateime): Parse setting with this as valid time
-            basedtg (datetime.dateime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as valid time
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member
             tstep (int): Parse setting with this as time step
             pert (int): Parse setting with this as pertubation number
@@ -119,8 +118,8 @@ class SystemFilePaths(object):
             default_dir (str): A fallback if the desired dtype is not found
             check_existence (bool): Check if the path found also exists
             check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
-            validtime (datetime.dateime): Parse setting with this as valid time
-            basedtg (datetime.dateime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as valid time
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member
             tstep (int): Parse setting with this as time step
             pert (int): Parse setting with this as pertubation number
@@ -130,7 +129,8 @@ class SystemFilePaths(object):
             data_dir (str):
 
         Raises:
-            Exception: If path not found and check_existence is True
+            ValueError: data dir is not a string!
+            NotADirectoryError: Not a directory
 
         See Also:
             self.parse_setting
@@ -149,7 +149,7 @@ class SystemFilePaths(object):
                         data_dir = str(key)
                 logging.debug("Data directory before parsing is: %s", data_dir)
                 if not isinstance(data_dir, str):
-                    raise Exception("data dir is not a string!")
+                    raise ValueError("data dir is not a string!")
                 data_dir = self.parse_setting(
                     self.substitute_string(data_dir),
                     check_parsing=check_parsing,
@@ -193,8 +193,8 @@ class SystemFilePaths(object):
             default_dir (str): A fallback if the desired dtype is not found
             check_existence (bool): Check if the path found also exists
             check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
-            validtime (datetime.dateime): Parse setting with this as valid time
-            basedtg (datetime.dateime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as valid time
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member
             tstep (int): Parse setting with this as time step
             pert (int): Parse setting with this as pertubation number
@@ -202,11 +202,11 @@ class SystemFilePaths(object):
             system_variables (dict): Arbitrary settings to substitute @NAME@ =
                                      system_variables={"NAME": "Value"}
 
+        Raises:
+            FileNotFoundError: If file not found
+
         Returns:
             data_dir (str):
-
-        Raises:
-            Exception: If path not found and check_existence is True
 
         See Also:
             self.parse_setting
@@ -277,6 +277,9 @@ class SystemFilePaths(object):
             pert (int): Parse setting with this as perturbation number @PERT@
             var (str): Parse setting with this as the variable (@VAR@)
 
+        Raises:
+            RuntimeError: Setting was not substituted properly?
+
         Returns:
             setting: Possibly parsed setting is type is str
 
@@ -290,10 +293,10 @@ class SystemFilePaths(object):
 
             if basedtg is not None:
                 if isinstance(basedtg, str):
-                    basedtg = datetime.strptime(basedtg, "%Y%m%d%H")
+                    basedtg = as_datetime(basedtg)
             if validtime is not None:
                 if isinstance(validtime, str):
-                    validtime = datetime.strptime(validtime, "%Y%m%d%H")
+                    validtime = as_datetime(validtime)
             else:
                 validtime = basedtg
 
@@ -305,7 +308,6 @@ class SystemFilePaths(object):
                 setting = str(setting).replace("@HH_LL@", validtime.strftime("%H"))
                 setting = str(setting).replace("@mm_LL@", validtime.strftime("%M"))
                 lead_seconds = int(lead_time.total_seconds())
-                # lead_minutes = int(lead_seconds / 3600)
                 lead_hours = int(lead_seconds / 3600)
                 setting = str(setting).replace("@LL@", f"{lead_hours:02d}")
                 setting = str(setting).replace("@LLL@", f"{lead_hours:03d}")
@@ -343,7 +345,7 @@ class SystemFilePaths(object):
 
         if check_parsing:
             if isinstance(setting, str) and setting.count("@") > 1:
-                raise Exception("Setting was not substituted properly? " + setting)
+                raise RuntimeError("Setting was not substituted properly? " + setting)
 
         return setting
 
@@ -399,15 +401,12 @@ class SystemFilePaths(object):
             system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables=
                                     {"NAME": "Value"}
             check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
-            validtime (datetime.dateime): Parse setting with this as valid time
-            basedtg (datetime.dateime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as valid time
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member
             tstep (int): Parse setting with this as time step
             pert (int): Parse setting with this as pertubation number
             var (str): Parse setting with this as variable
-
-        Returns:
-            None
 
         See Also:
             self.parse_setting
@@ -474,13 +473,17 @@ class BaseNamelist(object):
             fcint (int): The intervall between the cycles. Used for first guesses.
             geo (surfex.Geo): Surfex geometry. The domain you want to run on
 
+        Raises:
+            RuntimeError: Needed input
+            NotImplementedError: Mode not implemented
+
         """
         self.config = config
         self.input_path = input_path
         self.forc_zs = forc_zs
         if dtg is not None:
             if isinstance(dtg, str):
-                dtg = datetime.strptime(dtg, "%Y%m%d%H")
+                dtg = as_datetime(dtg)
         self.dtg = dtg
         check_parsing = True
         if self.dtg is None:
@@ -491,7 +494,7 @@ class BaseNamelist(object):
         # The time stamp of next cycle file
         forecast_length = self.fcint
         if self.dtg is not None:
-            self.end_of_forecast = self.dtg + timedelta(hours=forecast_length)
+            self.end_of_forecast = self.dtg + as_timedelta(seconds=forecast_length * 3600)
         else:
             self.end_of_forecast = None
 
@@ -504,7 +507,7 @@ class BaseNamelist(object):
             self.set_pgd_namelist()
         elif program == "prep":
             if prep_file is None:
-                raise Exception(
+                raise RuntimeError(
                     "Prep need an input file either as a json namelist or a surfex "
                     "supported format"
                 )
@@ -856,7 +859,6 @@ class BaseNamelist(object):
                         }
                     )
         if self.dtg is not None:
-            # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
             prep_time = self.dtg
             self.input_list.append(
                 {"json": {"NAM_PREP_SURF_ATM": {"NYEAR": int(prep_time.strftime("%Y"))}}}
@@ -992,7 +994,6 @@ class BaseNamelist(object):
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-            # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var, cvar_val in enumerate(cvar_m):
                 self.input_list.append(
                     {"json": {"NAM_VAR": {"CVAR_M(" + str(var + 1) + ")": cvar_val}}}
@@ -1007,7 +1008,6 @@ class BaseNamelist(object):
         # TODO the need for this in forecast must be removed!
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
-        # nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
         if len(nnco) != len(cobs_m):
             raise Exception("Mismatch in nnco/cobs_m")
@@ -1057,7 +1057,6 @@ class BaseNamelist(object):
         nobstype = 0
         nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
         cobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#COBS_M")
-        # nobstype_m = self.config.get_setting("SURFEX#ASSIM#OBS#NOBSTYPE_M")
         xerrobs_m = self.config.get_setting("SURFEX#ASSIM#OBS#XERROBS_M")
         logging.debug("%s %s %s", nnco, cobs_m, xerrobs_m)
         if len(nnco) != len(cobs_m) or len(nnco) != len(xerrobs_m):
@@ -1583,6 +1582,9 @@ class BaseNamelist(object):
             old_dict (dict): Exististing settings
             my_file (str): Filename with new settings
 
+        Raises:
+            FileNotFoundError: Namelist input not found
+
         Returns:
             dict: Merged settings.
 
@@ -1654,13 +1656,18 @@ class Namelist(object):
             fcint (int): The intervall between the cycles. Used for first guesses.
             geo (surfex.Geo): Surfex geometry. The domain you want to run on
 
+        Raises:
+            RuntimeError: Input
+            RuntimeError: Merged dictionary contains a @ in value
+            NotImplementedError: Mode is not implemented
+
         """
         self.config = config
         self.input_path = input_path
         self.forc_zs = forc_zs
         if dtg is not None:
             if isinstance(dtg, str):
-                dtg = datetime.strptime(dtg, "%Y%m%d%H")
+                dtg = as_datetime(dtg)
         self.dtg = dtg
         check_parsing = True
         if self.dtg is None:
@@ -1671,13 +1678,12 @@ class Namelist(object):
         # The time stamp of next cycle file
         forecast_length = self.fcint
         if self.dtg is not None:
-            self.end_of_forecast = self.dtg + timedelta(hours=forecast_length)
+            self.end_of_forecast = self.dtg + as_timedelta(seconds=forecast_length * 3600)
         else:
             self.end_of_forecast = None
 
         logging.info("Creating JSON namelist input for program: %s", program)
 
-        # self.input_list = []
         merged_dict = {}
         merged_dict = self.prolog(merged_dict, check_parsing=check_parsing)
         # Program specific settings
@@ -1685,7 +1691,7 @@ class Namelist(object):
             merged_dict = self.set_pgd_namelist(merged_dict)
         elif program == "prep":
             if prep_file is None:
-                raise Exception(
+                raise RuntimeError(
                     "Prep need an input file either as a json namelist or a surfex "
                     "supported format"
                 )
@@ -1730,7 +1736,7 @@ class Namelist(object):
                         value,
                         key,
                     )
-                    raise Exception()
+                    raise RuntimeError("Merged dictionary contains a @ in value")
 
         self.namelist_dict = merged_dict
 
@@ -1738,7 +1744,11 @@ class Namelist(object):
         """Prolog.
 
         Args:
-            check_parsing (bool): Check if parsing is ok.
+            merged_dict(dict): Merged settings.
+            check_parsing (bool, optional): Check if parsing is ok. Defaults to True.
+
+        Returns:
+            merged_dict(dict): Merged settings
 
         """
         merged_dict = self.merge_json_namelist_file(
@@ -1875,12 +1885,10 @@ class Namelist(object):
         )
 
         # COVER
-        # ecoclimap_dir = "ecoclimap_dir"
         eco_sg = self.config.get_setting("SURFEX#COVER#SG")
         merged_dict = self.sub(merged_dict, "NAM_FRAC", "LECOSG", eco_sg)
         # Ecoclimap SG
         if eco_sg:
-            # ecoclimap_dir = "ecoclimap_sg_cover_dir"
             merged_dict = self.merge_json_namelist_file(
                 merged_dict, self.input_path + "/pgd_eco_sg.json"
             )
@@ -2103,16 +2111,26 @@ class Namelist(object):
         """Set prep namelist.
 
         Args:
+            merged_dict(dict): Merged settings.
             prep_file (_type_, optional): _description_. Defaults to None.
             prep_filetype (_type_, optional): _description_. Defaults to None.
             prep_pgdfile (_type_, optional): _description_. Defaults to None.
             prep_pgdfiletype (_type_, optional): _description_. Defaults to None.
 
+        Raises:
+            FileNotFoundError: Main prep namelist input
+            RuntimeError: You must provide a DTG for prep
+            RuntimeError: Filetype for input to PREP is not set!
+            RuntimeError: Filetype for PGD input to PREP is not set
+
+        Returns:
+            merged_dict(dict): Merged settings.
+
         """
         if prep_file is not None and prep_filetype is None:
-            raise Exception("Filetype for input to PREP is not set!")
+            raise RuntimeError("Filetype for input to PREP is not set!")
         if prep_pgdfile is not None and prep_pgdfiletype is None:
-            raise Exception("Filetype for PGD input to PREP is not set!")
+            raise RuntimeError("Filetype for PGD input to PREP is not set!")
 
         merged_dict = self.merge_json_namelist_file(
             merged_dict, self.input_path + "/prep.json"
@@ -2145,7 +2163,6 @@ class Namelist(object):
                     )
 
         if self.dtg is not None:
-            # prep_time = datetime.strptime(dtg, "%Y%m%d%H")
             prep_time = self.dtg
             merged_dict = self.sub(
                 merged_dict, "NAM_PREP_SURF_ATM", "NYEAR", int(prep_time.strftime("%Y"))
@@ -2163,7 +2180,7 @@ class Namelist(object):
                 float(prep_time.strftime("%H")) * 3600.0,
             )
         else:
-            raise Exception("You must provide a DTG for prep")
+            raise RuntimeError("You must provide a DTG for prep")
 
         if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
             merged_dict = self.merge_json_namelist_file(
@@ -2219,12 +2236,7 @@ class Namelist(object):
         return merged_dict
 
     def set_offline_namelist(self, merged_dict):
-        """Set offline namelist.
-
-        Raises:
-            Exception: _description_
-
-        """
+        """Set offline namelist."""
         merged_dict = self.merge_json_namelist_file(
             merged_dict, self.input_path + "/offline.json"
         )
@@ -2349,7 +2361,6 @@ class Namelist(object):
             merged_dict = self.delete(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)")
             merged_dict = self.delete(merged_dict, "NAM_VAR", "NNCV(@VAR@)")
             merged_dict = self.sub(merged_dict, "NAM_VAR", "NVAR", nvar)
-            # self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
 
@@ -2361,9 +2372,7 @@ class Namelist(object):
             nvar = 0
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
-            # nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
             for var, cvar_val in enumerate(cvar_m):
-                # print(merged_dict)
                 merged_dict = self.sub(
                     merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
                 )
@@ -2377,7 +2386,6 @@ class Namelist(object):
             merged_dict = self.delete(merged_dict, "NAM_VAR", "CVAR_M(@VAR@)")
             merged_dict = self.delete(merged_dict, "NAM_VAR", "NNCV(@VAR@)")
             merged_dict = self.sub(merged_dict, "NAM_VAR", "NVAR", nvar)
-            # self.input_list.append({"json": {"NAM_VAR": {"NVAR": nvar}}})
         return merged_dict
 
     def set_obs(self, merged_dict):
@@ -2437,6 +2445,11 @@ class Namelist(object):
 
         Args:
             merged_dict (dict): Merged dict
+
+        Raises:
+            RuntimeError: You must provide a DTG when using a list for snow
+            RuntimeError: Mismatch in nncv/cvar_m
+            RuntimeError: Mismatch in nncv/cvar_m/xsigma_m/xtprt_m
 
         Returns:
             dict: Merged dict.
@@ -2530,7 +2543,7 @@ class Namelist(object):
                         logging.debug("true")
                         laesnm = True
             else:
-                raise Exception(
+                raise RuntimeError(
                     "You must provide a DTG when using a list for snow  "
                     "assimilation cycles"
                 )
@@ -2590,7 +2603,7 @@ class Namelist(object):
                 or len(nncv) != len(xsigma_m)
                 or len(nncv) != len(xtprt_m)
             ):
-                raise Exception("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
+                raise RuntimeError("Mismatch in nncv/cvar_m/xsigma_m/xtprt_m")
             for var, cvar_val in enumerate(cvar_m):
                 merged_dict = self.sub(
                     merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
@@ -2614,7 +2627,6 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_VAR", "NVAR", nvar)
             xscale_q = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#XSCALE_Q")
             merged_dict = self.sub(merged_dict, "NAM_VAR", "XSCALE_Q", xscale_q)
-            # self.input_list.append({"json": {"NAM_VAR": {"XSCALE_Q": xscale_q}}})
             merged_dict = self.sub(merged_dict, "NAM_IO_VARASSIM", "LPRT", False)
             merged_dict = self.sub(
                 merged_dict,
@@ -2637,7 +2649,7 @@ class Namelist(object):
             cvar_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#CVAR_M")
             nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
             if len(nncv) != len(cvar_m):
-                raise Exception("Mismatch in nncv/cvar_m")
+                raise RuntimeError("Mismatch in nncv/cvar_m")
             for var, cvar_val in enumerate(cvar_m):
                 merged_dict = self.sub(
                     merged_dict, "NAM_VAR", "CVAR_M(@VAR@)", cvar_val, var=var + 1
@@ -2700,11 +2712,10 @@ class Namelist(object):
             merged_dict (dict): Merged dict
             nam_block (str): Namelist block
             key (str): Key
-            value (): Value
-
-        Raises:
-            FileNotFoundError: _description_
-            Exception: _description_
+            value (any): Value
+            vtype(int, optional): Veg type. Defaults to None.
+            decade(int, optional): Decade type. Defaults to None.
+            var(int, optional): Var type. Defaults to None.
 
         Returns:
             dict: Merged dict

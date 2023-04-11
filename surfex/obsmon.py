@@ -1,6 +1,5 @@
 """Obsmon."""
 import logging
-from datetime import datetime
 
 import numpy as np
 
@@ -11,6 +10,7 @@ except ImportWarning:
     logging.warning("Could not import sqlite3 modules")
 
 
+from .datetime_utils import as_datetime
 from .netcdf import read_first_guess_netcdf_file
 from .obs import Observation
 from .titan import Departure, dataset_from_file
@@ -440,7 +440,7 @@ def write_obsmon_sqlite_file(**kwargs):
 
     an_time = kwargs["dtg"]
     if isinstance(an_time, str):
-        an_time = datetime.strptime(an_time, "%Y%m%d%H")
+        an_time = as_datetime(an_time)
     dtg = an_time.strftime("%Y%m%d%H")
     varname = kwargs["varname"]
     dbname = kwargs["output"]

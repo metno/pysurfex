@@ -1,8 +1,8 @@
 """Time series."""
 import json
 import logging
-from datetime import datetime, timedelta
 
+from .datetime_utils import as_datetime, as_timedelta
 from .obs import Observation
 from .read import Converter
 
@@ -148,7 +148,7 @@ class TimeSeriesFromJson(TimeSeries):
 
         for dtime in data["data"]:
             add = True
-            this_time = datetime.strptime(dtime, "%Y%m%d%H%M%S")
+            this_time = as_datetime(dtime)
             if starttime is not None and this_time < starttime:
                 add = False
             if endtime is not None and this_time > endtime:
@@ -167,7 +167,7 @@ class TimeSeriesFromJson(TimeSeries):
 
             if validtime is not None:
                 if interval is not None:
-                    validtime = validtime + timedelta(seconds=interval)
+                    validtime = validtime + as_timedelta(seconds=interval)
         TimeSeries.__init__(self, times, values, lons1, lats1, stids1, varname=varname)
 
 
@@ -204,7 +204,6 @@ class TimeSeriesFromConverter(TimeSeries):
             stids_file (_type_, optional): _description_. Defaults to None.
 
         """
-        # validtime = start
         basetime = start
         defs = {}
 
@@ -225,7 +224,7 @@ class TimeSeriesFromConverter(TimeSeries):
             values.append(converter.read_time_step(geo, this_time, cache))
             times.append(this_time)
 
-            this_time = this_time + timedelta(seconds=interval)
+            this_time = this_time + as_timedelta(seconds=interval)
             if cache is not None:
                 cache.clean_fields(this_time)
 

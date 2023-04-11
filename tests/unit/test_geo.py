@@ -259,9 +259,9 @@ def test_set_domain_unittest():
     domain = set_domain(domains, "NAME")
     assert domains["NAME"]["nam_pgd_grid"]["cgrid"] == domain["nam_pgd_grid"]["cgrid"]
 
-    with pytest.raises(Exception):
+    with pytest.raises(KeyError):
         set_domain(domains, "not_existing")
 
     domains = ["NAME"]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):  # noqa PT011
         set_domain(domains, "NAME")

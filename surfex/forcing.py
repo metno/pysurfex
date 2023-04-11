@@ -6,7 +6,6 @@ import logging
 import os
 import shutil
 import time
-from datetime import datetime, timedelta
 
 import netCDF4
 import numpy as np
@@ -14,6 +13,7 @@ import toml
 
 from .cache import Cache
 from .configuration import ConfigurationFromHarmonie
+from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
 from .geo import get_geo_object
 from .read import ConstantValue, ConvertedInput, Converter
@@ -520,7 +520,7 @@ def run_time_loop(options, var_objs, att_objs):
     ntimes = 0
     while this_time <= options["stop"]:
         ntimes = ntimes + 1
-        this_time = this_time + timedelta(seconds=options["timestep"])
+        this_time = this_time + as_timedelta(seconds=options["timestep"])
     if single:
         time_step = 1
         if ntimes == 1:
@@ -578,13 +578,13 @@ def run_time_loop(options, var_objs, att_objs):
         output.time_step = output.time_step + 1
         if not single:
             output.time_step_value = output.time_step
-            this_time = this_time + timedelta(seconds=options["timestep"])
+            this_time = this_time + as_timedelta(seconds=options["timestep"])
             if cache is not None:
                 cache.clean_fields(this_time)
         else:
             output.time_step_value = 0
             if output.time_step > 1:
-                this_time = this_time + timedelta(seconds=options["timestep"])
+                this_time = this_time + as_timedelta(seconds=options["timestep"])
 
     # Finalize forcing
     output.finalize()
@@ -853,12 +853,12 @@ def set_forcing_config(**kwargs):
             "Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop)
         )
 
-    start = datetime.strptime(str.strip(str(dtg_start)), "%Y%m%d%H")
-    stop = datetime.strptime(str.strip(str(dtg_stop)), "%Y%m%d%H")
+    start = as_datetime(str.strip(str(dtg_start)))
+    stop = as_datetime(str.strip(str(dtg_stop)))
     if file_base is None:
         first_base_time = start
     else:
-        first_base_time = datetime.strptime(str.strip(str(file_base)), "%Y%m%d%H")
+        first_base_time = as_datetime(str.strip(str(file_base)))
 
     # Merge all settings with user all settings
     merged_conf = deep_update(config, user_config)

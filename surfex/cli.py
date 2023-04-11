@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 from argparse import Action, ArgumentParser
-from datetime import datetime, timedelta
 
 import numpy as np
 import toml
@@ -17,7 +16,6 @@ except ModuleNotFoundError:
 
 
 from . import __version__
-from .assim import horizontal_oi
 from .binary_input import (
     InlineForecastInputData,
     JsonOutputDataFromFile,
@@ -29,11 +27,13 @@ from .binary_input import (
 from .bufr import BufrObservationSet
 from .cache import Cache
 from .configuration import Configuration, ConfigurationFromHarmonie
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
 from .forcing import run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
 from .input_methods import get_datasources, set_geo_from_obs_set
+from .interpolation import horizontal_oi
 from .namelist import BaseNamelist, Namelist, SystemFilePathsFromFile
 from .netcdf import (
     create_netcdf_first_guess_template,
@@ -798,7 +798,7 @@ def run_first_guess_for_oi(**kwargs):
         raise Exception("No output file provided")
 
     dtg = kwargs["dtg"]
-    validtime = datetime.strptime(dtg, "%Y%m%d%H")
+    validtime = as_datetime(dtg)
     variables = kwargs["variables"]
     variables = variables + ["altitude", "land_area_fraction"]
 
@@ -888,7 +888,7 @@ def run_first_guess_for_oi(**kwargs):
             logging.debug("config: %s", config)
             raise Exception(f"No converter {converter} definition found in {config}!")
 
-        initial_basetime = validtime - timedelta(seconds=10800)
+        initial_basetime = validtime - as_timedelta(seconds=10800)
         converter = Converter(
             converter, initial_basetime, defs, converter_conf, fileformat
         )
@@ -900,19 +900,20 @@ def run_first_guess_for_oi(**kwargs):
             n_x = geo.nlons
             n_y = geo.nlats
             f_g = create_netcdf_first_guess_template(variables, n_x, n_y, output, geo=geo)
-            epoch = float((validtime - datetime(1970, 1, 1)).total_seconds())
+            epoch = float(
+                (validtime - as_datetime_args(year=1970, month=1, day=1)).total_seconds()
+            )
             f_g.variables["time"][:] = epoch
             f_g.variables["longitude"][:] = np.transpose(geo.lons)
             f_g.variables["latitude"][:] = np.transpose(geo.lats)
-            f_g.variables["x"][:] = [i for i in range(0, n_x)]
-            f_g.variables["y"][:] = [i for i in range(0, n_y)]
+            f_g.variables["x"][:] = list(range(0, n_x))
+            f_g.variables["y"][:] = list(range(0, n_y))
 
         if var == "altitude":
             field[field < 0] = 0
 
         if np.isnan(np.sum(field)):
             fill_nan_value = f_g.variables[var].getncattr("_FillValue")
-            # fill_nan_value = fg.variables[var]._FillValue
             logging.info("Field %s got Nan. Fill with: %s", var, str(fill_nan_value))
             field[np.where(np.isnan(field))] = fill_nan_value
 
@@ -1088,7 +1089,7 @@ def run_masterodb(**kwargs):
     dtg = None
     if "dtg" in kwargs:
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
 
     # TODO
@@ -1212,6 +1213,10 @@ def parse_args_surfex_binary(argv, mode):
 
     Args:
         argv (list): List with arguments.
+        mode(str): Type of surfex binary
+
+    Raises:
+        NotImplementedError: Mode not implemented
 
     Returns:
         dict: Parsed arguments.
@@ -1412,7 +1417,7 @@ def run_surfex_binary(mode, **kwargs):
     dtg = None
     if "dtg" in kwargs:
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
 
     logging.debug("kwargs: %s", str(kwargs))
@@ -1768,7 +1773,7 @@ def run_create_namelist(**kwargs):
     dtg = None
     if "dtg" in kwargs:
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+            dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
 
     logging.debug("kwargs: %s", str(kwargs))
@@ -2076,7 +2081,6 @@ def run_titan(**kwargs):
     elif "blacklist_file" in kwargs:
         if kwargs["blacklist_file"] is not None:
             blacklist = json.load(open(kwargs["blacklist_file"], "r", encoding="utf-8"))
-    # kwargs.update({"blacklist": blacklist})
 
     if "input_file" in kwargs:
         input_file = kwargs["input_file"]
@@ -2100,8 +2104,7 @@ def run_titan(**kwargs):
 
     an_time = kwargs["dtg"]
     if isinstance(an_time, str):
-        an_time = datetime.strptime(an_time, "%Y%m%d%H")
-    # kwargs.update({"an_time": an_time})
+        an_time = as_datetime(an_time)
     var = kwargs["variable"]
 
     tests = define_quality_control(
@@ -2209,7 +2212,7 @@ def run_oi2soda(**kwargs):
     if sm_file is not None:
         s_m = {"file": sm_file, "var": kwargs["sm_var"]}
 
-    dtg = datetime.strptime(kwargs["dtg"], "%Y%m%d%H")
+    dtg = as_datetime(kwargs["dtg"])
     oi2soda(dtg, t2m=t2m, rh2m=rh2m, s_d=s_d, s_m=s_m, output=output)
 
 
@@ -2218,6 +2221,9 @@ def parse_args_lsm_file_assim(argv):
 
     Args:
         argv (list): List with arguments.
+
+    Raises:
+        FileNotFoundError: Domain not found
 
     Returns:
         dict: Parsed arguments.
@@ -2269,7 +2275,7 @@ def parse_args_lsm_file_assim(argv):
         raise FileNotFoundError(domain)
     dtg = kwargs["dtg"]
     if dtg is not None and isinstance(dtg, str):
-        kwargs.update({"dtg": datetime.strptime(dtg, "%Y%m%d%H")})
+        kwargs.update({"dtg": as_datetime(dtg)})
     return kwargs
 
 
@@ -2297,7 +2303,7 @@ def run_lsm_file_assim(**kwargs):
     converter_conf = {"none": {"name": var}}
 
     var = "LSM"
-    initial_basetime = validtime - timedelta(seconds=10800)
+    initial_basetime = validtime - as_timedelta(seconds=10800)
     converter = Converter(converter, initial_basetime, defs, converter_conf, fileformat)
     field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [geo.nlons, geo.nlats])
@@ -2452,8 +2458,8 @@ def run_bufr2json(**kwargs):
     if "latrange" in kwargs:
         latrange = kwargs["latrange"]
 
-    valid_dtg = datetime.strptime(valid_dtg, "%Y%m%d%H")
-    valid_range = timedelta(seconds=int(valid_range))
+    valid_dtg = as_datetime(valid_dtg)
+    valid_range = as_timedelta(seconds=int(valid_range))
     bufr_set = BufrObservationSet(
         bufrfile,
         variables,
@@ -2625,7 +2631,7 @@ def run_plot_points(**kwargs):
         geo_file = kwargs["geo"]
     validtime = None
     if kwargs["validtime"] is not None:
-        validtime = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
+        validtime = as_datetime(kwargs["validtime"])
     variable = None
     if "variable" in kwargs:
         variable = kwargs["variable"]
@@ -2788,7 +2794,7 @@ def run_plot_points(**kwargs):
             raise Exception("You must provide an obs type")
 
         if geo is None:
-            obs_time = datetime.strptime(kwargs["validtime"], "%Y%m%d%H")
+            obs_time = as_datetime(kwargs["validtime"])
             varname = variable
             inputfile = kwargs["inputfile"]
             geo = set_geo_from_obs_set(
@@ -2926,10 +2932,10 @@ def run_plot_timeseries_from_json(**kwargs):
     stationlist = kwargs["stationlist"]
     starttime = kwargs["start"]
     if starttime is not None:
-        starttime = datetime.strptime(kwargs["start"], "%Y%m%d%H")
+        starttime = as_datetime(kwargs["start"])
     endtime = kwargs["end"]
     if endtime is not None:
-        endtime = datetime.strptime(kwargs["end"], "%Y%m%d%H")
+        endtime = as_datetime(kwargs["end"])
     interval = kwargs["interval"]
     filename = kwargs["filename"]
     output = kwargs["output"]
@@ -3259,12 +3265,6 @@ def parse_args_merge_qc_data(argv):
     return kwargs
 
 
-def merge_qc_data(an_time, filenames, output, indent=None):
-    """Merge the qc data."""
-    qc_data = merge_json_qc_data_sets(an_time, filenames)
-    qc_data.write_output(output, indent=indent)
-
-
 def parse_timeseries2json(argv):
     """Parse the command line input arguments for time series to json.
 
@@ -3442,8 +3442,8 @@ def run_timeseries2json(**kwargs):
     indent = kwargs["indent"]
     sfx_type = kwargs["sfx_type"]
     obs_set = kwargs["obs_set"]
-    start = datetime.strptime(starttime, "%Y%m%d%H")
-    end = datetime.strptime(endtime, "%Y%m%d%H")
+    start = as_datetime(starttime)
+    end = as_datetime(endtime)
     geo_in = None
     if "geo_in" in kwargs:
         geo_in = kwargs["geo_in"]
@@ -3771,6 +3771,11 @@ def run_shape2ign(**kwargs):
 
 
 def sentinel_obs(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_sentinel_obs(argv)
@@ -3790,6 +3795,11 @@ def sentinel_obs(argv=None):
 
 
 def qc2obsmon(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_qc2obsmon(argv)
@@ -3809,6 +3819,11 @@ def qc2obsmon(argv=None):
 
 
 def prep(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_surfex_binary(argv, "prep")
@@ -3828,6 +3843,11 @@ def prep(argv=None):
 
 
 def plot_timeseries(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_plot_timeseries_args(argv)
@@ -3847,6 +3867,11 @@ def plot_timeseries(argv=None):
 
 
 def plot_points(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_plot_points(argv)
@@ -3866,6 +3891,11 @@ def plot_points(argv=None):
 
 
 def pgd(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_surfex_binary(argv, "pgd")
@@ -3885,6 +3915,11 @@ def pgd(argv=None):
 
 
 def perturbed_offline(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_surfex_binary(argv, "perturbed")
@@ -3904,6 +3939,11 @@ def perturbed_offline(argv=None):
 
 
 def offline(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_surfex_binary(argv, "offline")
@@ -3923,6 +3963,11 @@ def offline(argv=None):
 
 
 def cli_oi2soda(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_oi2soda(argv)
@@ -3942,6 +3987,11 @@ def cli_oi2soda(argv=None):
 
 
 def modify_forcing(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_modify_forcing(argv)
@@ -3961,6 +4011,11 @@ def modify_forcing(argv=None):
 
 
 def merge_toml_settings(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_merge_toml_settings(argv)
@@ -3980,6 +4035,11 @@ def merge_toml_settings(argv=None):
 
 
 def merge_qc_data(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_merge_qc_data(argv)
@@ -3995,10 +4055,17 @@ def merge_qc_data(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ merge_qc_data ******************")
-    merge_qc_data(kwargs["validtime"], kwargs["filenames"], ["output"], indent=["indent"])
+
+    qc_data = merge_json_qc_data_sets(kwargs.get("validtime"), kwargs.get("filenames"))
+    qc_data.write_output(kwargs.get("output"), indent=kwargs.get("indent"))
 
 
 def masterodb(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_masterodb(argv)
@@ -4018,6 +4085,11 @@ def masterodb(argv=None):
 
 
 def hm2pysurfex(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_hm2pysurfex(argv)
@@ -4037,6 +4109,11 @@ def hm2pysurfex(argv=None):
 
 
 def gridpp(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_gridpp(argv)
@@ -4056,6 +4133,11 @@ def gridpp(argv=None):
 
 
 def dump_environ(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     with open("rte.json", mode="w", encoding="utf-8") as file_handler:
@@ -4063,6 +4145,11 @@ def dump_environ(argv=None):
 
 
 def first_guess_for_oi(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4083,6 +4170,11 @@ def first_guess_for_oi(argv=None):
 
 
 def cryoclim_pseudoobs(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_cryoclim_pseudoobs(argv)
@@ -4102,6 +4194,11 @@ def cryoclim_pseudoobs(argv=None):
 
 
 def create_namelist(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_create_namelist(argv)
@@ -4121,6 +4218,11 @@ def create_namelist(argv=None):
 
 
 def create_lsm_file_assim(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_lsm_file_assim(argv)
@@ -4140,6 +4242,11 @@ def create_lsm_file_assim(argv=None):
 
 
 def create_forcing(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_create_forcing(argv)
@@ -4160,6 +4267,11 @@ def create_forcing(argv=None):
 
 
 def bufr2json(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_bufr2json(argv)
@@ -4202,6 +4314,16 @@ def parse_set_domain(argv):
 
 
 def cli_set_domain(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        FileNotFoundError: File not found
+        RuntimeError: Domain not provided
+
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4231,12 +4353,17 @@ def cli_set_domain(argv=None):
             with open(output, mode="w", encoding="utf-8") as file_handler:
                 json.dump(domain_json, file_handler, indent=indent)
         else:
-            raise Exception
+            raise RuntimeError("Domain not provided")
     else:
         raise FileNotFoundError
 
 
 def cli_set_geo_from_obs_set(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4260,6 +4387,11 @@ def cli_set_geo_from_obs_set(argv=None):
 
 
 def cli_set_geo_from_stationlist(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4282,7 +4414,12 @@ def cli_set_geo_from_stationlist(argv=None):
         json.dump(geo.json, file_handler)
 
 
-def shape2ign(argv=None):
+def cli_shape2ign(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4303,6 +4440,11 @@ def shape2ign(argv=None):
 
 
 def soda(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4323,6 +4465,11 @@ def soda(argv=None):
 
 
 def timeseries2json(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -4343,6 +4490,11 @@ def timeseries2json(argv=None):
 
 
 def titan(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
     if argv is None:
         argv = sys.argv[1:]
     kwargs = parse_args_titan(argv)

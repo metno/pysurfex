@@ -1,8 +1,7 @@
 """Test variable."""
-from datetime import datetime, timedelta
-
 import pytest
 
+from surfex.datetime_utils import as_datetime_args, as_timedelta
 from surfex.variable import Variable
 
 
@@ -189,15 +188,15 @@ def fixture():
 
 def test_open_new_file_nc(fixture):
     """Test to open a netcdf file."""
-    initialtime = datetime(2019, 11, 13, 0)
+    initialtime = as_datetime_args(year=2019, month=11, day=13)
     intervall = 3600
     case = "netcdf"
 
     var_dict = fixture[case]
     var_type = case
     for i in range(11):
-        validtime = initialtime + timedelta(seconds=intervall * i)
-        previoustime = validtime - timedelta(seconds=intervall)
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
+        previoustime = validtime - as_timedelta(seconds=intervall)
         variable = Variable(var_type, var_dict, initialtime)
         previous_filename = variable.get_filename(validtime, previoustime=previoustime)
         filename = variable.get_filename(validtime)
@@ -208,15 +207,15 @@ def test_open_new_file_nc(fixture):
 
 def test_open_new_file_grib1(fixture):
     """Test to open a grib1 file."""
-    initialtime = datetime(2019, 11, 13, 0)
+    initialtime = as_datetime_args(year=2019, month=11, day=13)
     intervall = 3600
     case = "grib1"
 
     var_dict = fixture[case]
     var_type = case
     for i in range(11):
-        validtime = initialtime + timedelta(seconds=intervall * i)
-        previoustime = validtime - timedelta(seconds=intervall)
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
+        previoustime = validtime - as_timedelta(seconds=intervall)
         variable = Variable(var_type, var_dict, initialtime)
         previous_filename = variable.get_filename(validtime, previoustime=previoustime)
         filename = variable.get_filename(validtime)
@@ -227,15 +226,15 @@ def test_open_new_file_grib1(fixture):
 
 def test_open_new_file_grib2(fixture):
     """Test to open a grib2 file."""
-    initialtime = datetime(2019, 11, 13, 2)
+    initialtime = as_datetime_args(year=2019, month=11, day=13, hour=2)
     intervall = 3600
     case = "grib2"
 
     var_dict = fixture[case]
     var_type = case
     for i in range(11):
-        validtime = initialtime + timedelta(seconds=intervall * i)
-        previoustime = validtime - timedelta(seconds=intervall)
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
+        previoustime = validtime - as_timedelta(seconds=intervall)
         variable = Variable(var_type, var_dict, initialtime)
         previous_filename = variable.get_filename(validtime, previoustime=previoustime)
         filename = variable.get_filename(validtime)
@@ -246,7 +245,7 @@ def test_open_new_file_grib2(fixture):
 
 def test_open_new_file_an(fixture):
     """Test to open a met nordic file."""
-    initialtime = datetime(2019, 11, 13, 0)
+    initialtime = as_datetime_args(year=2019, month=11, day=13)
     intervall = 3600
     case = "met_nordic"
 
@@ -255,7 +254,7 @@ def test_open_new_file_an(fixture):
     if var_type == "met_nordic":
         var_type = "netcdf"
     for i in range(11):
-        validtime = initialtime + timedelta(seconds=intervall * i)
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
         variable = Variable(var_type, var_dict, initialtime)
         filename = variable.get_filename(validtime)
         assert filename == var_dict["blueprint"][str(i)]
@@ -263,12 +262,12 @@ def test_open_new_file_an(fixture):
 
 def test_open_new_file_fail(fixture):
     """Test failing to open a file."""
-    initialtime = datetime(2019, 11, 13, 0)
+    initialtime = as_datetime_args(year=2019, month=11, day=13)
     case = "met_nordic"
     var_dict = fixture[case]
     var_dict["offset"] = 7200
     var_type = case
     if var_type == "met_nordic":
         var_type = "netcdf"
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         Variable(var_type, var_dict, initialtime)

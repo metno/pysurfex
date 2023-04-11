@@ -1,10 +1,10 @@
-"""Input methods"""
+"""Input methods."""
 import glob
 import logging
 import os
-from datetime import timedelta
 
 from .bufr import BufrObservationSet
+from .datetime_utils import as_timedelta
 from .geo import LonLatVal
 from .obs import JsonObservationSet, MetFrostObservations, NetatmoObservationSet
 from .util import parse_filepattern
@@ -19,17 +19,21 @@ def get_datasources(obs_time, settings):
         obs_time (datetime.datetime): Observation time
         settings (dict): Settings
 
+    Raises:
+        NotImplementedError: Unknown observation file format
+        RuntimeError: No filenames or filepattern found
+        RuntimeError: You must set variable name
+        RuntimeError: You must set varname to read NETATMO JSON files
+        RuntimeError: You must set variable name
+
+    Returns:
+        datasources(list): List of observation data sets
     """
-    # nmissing = 0
     datasources = []
     for obs_set in settings:
 
         kwargs = {}
         kwargs.update({"label": obs_set})
-
-        # tolerate_nmissing = False
-        # if "tolerate_missing" in settings[obs_set]:
-        #     tolerate_nmissing = settings[obs_set]["tolerate_nmissing"]
 
         if "filetype" in settings[obs_set]:
             filetype = settings[obs_set]["filetype"]
@@ -43,7 +47,7 @@ def get_datasources(obs_time, settings):
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
                 else:
-                    raise Exception("You must set variable name")
+                    raise RuntimeError("You must set variable name")
 
                 if "lonrange" in settings[obs_set]:
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
@@ -54,8 +58,7 @@ def get_datasources(obs_time, settings):
                 else:
                     deltat = 1800
 
-                print("kwargs", kwargs)
-                valid_range = timedelta(seconds=deltat)
+                valid_range = as_timedelta(seconds=deltat)
                 if os.path.exists(filename):
                     datasources.append(
                         BufrObservationSet(
@@ -63,7 +66,7 @@ def get_datasources(obs_time, settings):
                         )
                     )
                 else:
-                    print("WARNING: filename " + filename + " not set. Not added.")
+                    logging.warning("WARNING: filename %s not set. Not added.", filename)
 
             elif filetype.lower() == "netatmo":
                 filenames = None
@@ -79,25 +82,24 @@ def get_datasources(obs_time, settings):
                         if "pos_t_range" in settings[obs_set]:
                             pos_t_range = settings[obs_set]["pos_t_range"]
 
-                        dtg = validtime - timedelta(minutes=int(neg_t_range))
-                        end_dtg = validtime + timedelta(minutes=int(pos_t_range))
+                        dtg = validtime - as_timedelta(seconds=int(neg_t_range) * 60)
+                        end_dtg = validtime + as_timedelta(seconds=int(pos_t_range) * 60)
 
                         filenames = []
                         while dtg < end_dtg:
                             fname = parse_filepattern(filepattern, dtg, dtg)
                             fname = glob.glob(fname)
-                            # print(fname)
                             if len(fname) == 1:
                                 fname = fname[0]
                                 if os.path.exists(fname) and fname not in filenames:
                                     filenames.append(fname)
-                            dtg = dtg + timedelta(minutes=1)
+                            dtg = dtg + as_timedelta(seconds=60)
                     else:
-                        raise Exception("No filenames or filepattern found")
+                        raise RuntimeError("No filenames or filepattern found")
                 if "varname" in settings[obs_set]:
                     variable = settings[obs_set]["varname"]
                 else:
-                    raise Exception("You must set varname to read NETATMO JSON files")
+                    raise RuntimeError("You must set varname to read NETATMO JSON files")
 
                 if "lonrange" in settings[obs_set]:
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
@@ -119,7 +121,7 @@ def get_datasources(obs_time, settings):
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
                 else:
-                    raise Exception("You must set variable name")
+                    raise RuntimeError("You must set variable name")
 
                 if "lonrange" in settings[obs_set]:
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
@@ -141,11 +143,13 @@ def get_datasources(obs_time, settings):
                 if os.path.exists(filename):
                     datasources.append(JsonObservationSet(filename, **kwargs))
                 else:
-                    print("WARNING: filename " + filename + " not existing. Not added.")
+                    logging.warning(
+                        "WARNING: filename %s not existing. Not added.", filename
+                    )
             else:
                 raise NotImplementedError("Unknown observation file format")
         else:
-            print("No file type provided")
+            logging.info("No file type provided")
     return datasources
 
 
@@ -191,7 +195,6 @@ def set_geo_from_obs_set(
         if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
             lon = round(lon, 5)
             lat = round(lat, 5)
-            # print(i, lon, lat)
             selected_lons.append(lon)
             selected_lats.append(lat)
 

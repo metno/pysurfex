@@ -4,13 +4,12 @@ import logging
 import os
 import re
 import shutil
-from datetime import datetime, timedelta
 
-# from netCDF4 import Dataset, num2date, chartostring
 import netCDF4
 import numpy as np
 import pyproj
 
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, isdatetime
 from .fa import Fa
 from .geo import IGN, ConfProj, LonLatReg, LonLatVal
 from .interpolation import Interpolation
@@ -146,10 +145,8 @@ class SurfexSurfIO(object):
             if os.path.abspath(self.archive_file) != f_in:
                 logging.info("Move %s to %s", f_in, self.archive_file)
                 if os.path.islink(self.archive_file):
-                    # print("is link")
                     os.unlink(self.archive_file)
                 if os.path.isfile(self.archive_file):
-                    # print("is file")
                     os.remove(self.archive_file)
                 if os.path.isdir(self.archive_file):
                     shutil.rmtree(self.archive_file)
@@ -268,7 +265,6 @@ class SURFFile(SurfexSurfIO):
             csurf_filetype (str): File type
             csurffile (str): Name of the PREP file
             input_file (str, optional): Input file. Defaults to None.
-            symlink (bool, optional): Symlink input_file to surfexfile. Defaults to True.
             archive_file (str, optional): Location to store the result. Defaults to None.
             lfagmap (bool, optional): File use LFAGMAP. Defaults to False.
             masterodb (bool, optional): File produced by masterodb. Defaults to False.
@@ -344,6 +340,11 @@ def get_surfex_io_object(
         lfagmap (bool, optional): File use LFAGMAP. Defaults to False.
         masterodb (bool, optional): File produced by masterodb. Defaults to False.
 
+    Raises:
+        RuntimeError: Invalid filetype
+        NotImplementedError: Filetype not implemented
+        RuntimeError: Format needs a geometry
+
     Returns:
         SurfexIO: SurfexIO object.
 
@@ -355,7 +356,9 @@ def get_surfex_io_object(
             and filetype.lower() != "ts"
             and filetype.lower() != "forcing"
         ):
-            raise Exception("Invalid filetype: " + filetype + " Allowed: surf/ts/forcing")
+            raise RuntimeError(
+                "Invalid filetype: " + filetype + " Allowed: surf/ts/forcing"
+            )
 
     if fileformat is None:
         fileformat, filetype = guess_file_format(fname, filetype)
@@ -376,11 +379,11 @@ def get_surfex_io_object(
     elif fileformat.lower() == "netcdf":
         if filetype.lower() == "ts":
             if geo is None:
-                raise Exception("Format NetCDF needs a geometry")
+                raise RuntimeError("Format NetCDF needs a geometry")
             obj = NetCDFSurfexFile(fname, geo)
         elif filetype.lower() == "forcing":
             if geo is None:
-                raise Exception(
+                raise RuntimeError(
                     "Format NetCDF needs a geometry for reading forcing files"
                 )
             obj = ForcingFileNetCDF(fname, geo)
@@ -388,18 +391,13 @@ def get_surfex_io_object(
             raise NotImplementedError
     elif fileformat.lower() == "texte":
         if geo is None:
-            raise Exception("Format TEXTE needs a geometry")
+            raise RuntimeError("Format TEXTE needs a geometry")
         obj = TexteSurfexFile(fname, geo)
     elif fileformat.lower() == "fa":
         if filetype.lower() == "surf":
             obj = FaSurfexFile(fname, geo=geo, lfagmap=lfagmap, masterodb=masterodb)
         else:
             raise NotImplementedError
-    # elif fileformat.lower() == "sfx":
-    #    if filetype.lower() == "surf":
-    #        obj = FaSurfexFile(fname, geo=geo, lfagmap=True, masterodb=masterodb)
-    #    else:
-    #        raise NotImplementedError
     else:
         raise NotImplementedError("Format not implemented: " + fileformat)
 
@@ -415,8 +413,8 @@ def guess_file_format(fname, ftype=None):
         ftype (str, optional): Filetype if known/wished. Defaults to None.
 
     Raises:
-        Exception: _description_
-        Exception: _description_
+        RuntimeError: Can not-auto decide filetype for files
+        RuntimeError: Filetype and/or format not set
 
     Returns:
         tuple: fileformat, filetype
@@ -437,7 +435,7 @@ def guess_file_format(fname, ftype=None):
         for needle in needles:
             if re.search(needle, f_n):
                 ftype = "ts"
-        for needle in needles:
+        for __ in needles:
             if ext.endswith("TXT"):
                 ftype = "ts"
         needles = ["Forc_.*", "FORCING.*"]
@@ -446,7 +444,7 @@ def guess_file_format(fname, ftype=None):
                 ftype = "forcing"
 
         if re.search("SURFOUT.*", f_n) and ftype is None:
-            raise Exception(
+            raise RuntimeError(
                 "Can not-auto decide filetype for files called SURFOUT.*.txt. "
                 + "Specify either surf or ts"
             )
@@ -468,7 +466,7 @@ def guess_file_format(fname, ftype=None):
         fileformat = "fa"
 
     if ftype is None or fileformat is None:
-        raise Exception(
+        raise RuntimeError(
             "Filetype and/or format not set: " + str(ftype) + " & " + str(fileformat)
         )
     logging.info("Filetype: %s format: %s", ftype, fileformat)
@@ -484,6 +482,7 @@ class AsciiSurfexFile(SurfexIO):
 
         Args:
             filename (str): Filename
+            geo(surfex.geo.Geo, optional): Geometry, Defaults to None.
 
         """
         suffix = SurfFileTypeExtension("ASCII").suffix
@@ -594,7 +593,6 @@ class AsciiSurfexFile(SurfexIO):
                     "ilate": 0,
                 },
             }
-            # print(domain)
             return ConfProj(domain)
         else:
             raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
@@ -603,36 +601,30 @@ class AsciiSurfexFile(SurfexIO):
         """Read the file.
 
         Args:
-            read_par (_type_): _description_
-            read_tile (_type_): _description_
-            datatype (_type_): _description_
+            read_par (str): Parameter to read
+            read_tile (str): Tile to read
+            datatype (str): Datatype
 
         Raises:
-            NotImplementedError: _description_
-            Exception: _description_
+            NotImplementedError: Datatype not implemented
+            RuntimeError: Could not read datatype
 
         Returns:
-            _type_: _description_
+            numpy.array: Values read
 
         """
         # Add & if not given
         if read_tile.find("&") < 0:
             read_tile = "&" + read_tile
-        # print read_tile,read_par
         file = open(self.filename, mode="r", encoding="utf-8")
         read_desc = False
         read_value = False
         values = []
         for line in file:
-            # for line in file.read().splitlines():
-
-            # print "T:"+line
             words = line.split()
             if len(words) > 0:
-                # print "Line:",read_desc,read_value,":",line
                 if read_value and not read_desc:
                     if words[0].find("&") < 0:
-                        # print "Value:", line
                         try:
                             if datatype.lower() == "float":
                                 for word in words:
@@ -655,13 +647,12 @@ class AsciiSurfexFile(SurfexIO):
                                     "Type not implemented " + str(datatype)
                                 )
                         except ValueError:
-                            raise Exception(
+                            raise RuntimeError(
                                 f"Conversion from {str(words)} to {str(datatype)} "
                                 "does not work! Try a different datatype!"
                             ) from ValueError
 
                 if read_desc:
-                    # print "Description: ", words[0]
                     read_desc = False
                     read_value = True
 
@@ -681,7 +672,6 @@ class AsciiSurfexFile(SurfexIO):
             # Description could be empty
             else:
                 if read_desc:
-                    # print "Description: ", words[0]
                     read_desc = False
                     read_value = True
 
@@ -709,7 +699,6 @@ class AsciiSurfexFile(SurfexIO):
         field = self.read(read_par, read_tile, datatype)
         geo_in = self.get_geo()
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
-        # field = np.transpose(field)
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest"):
@@ -757,6 +746,9 @@ class NCSurfexFile(SurfexIO):
     def get_geo(self):
         """Get geometry in file.
 
+        Raises:
+            NotImplementedError: Grid not implemented
+
         Returns:
             surfex.Geometry: Surfex geometry in file
 
@@ -767,7 +759,6 @@ class NCSurfexFile(SurfexIO):
             logging.debug("Geo not open %s as a netCDF file", self.filename)
             return None
         cgrid = str(netCDF4.chartostring(f_h["GRID_TYPE"][:])).strip()
-        # print(":" + cgrid + ":")
         if cgrid == "CONF PROJ":
             lon0 = f_h["LON0"][:]
             lat0 = f_h["LAT0"][:]
@@ -857,6 +848,9 @@ class NCSurfexFile(SurfexIO):
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
             validtime (_type_, optional): _description_. Defaults to None.
 
+        Raises:
+            RuntimeError: Mismatch in times in file and the wanted time
+
         Returns:
             np.darray: Field, surfex.Geo in read file
 
@@ -873,25 +867,22 @@ class NCSurfexFile(SurfexIO):
                 hour = int(time / 3600)
 
                 # TODO minutes
-                time_in_file = datetime(year=year, month=month, day=day, hour=hour)
+                time_in_file = as_datetime_args(
+                    year=year, month=month, day=day, hour=hour
+                )
                 if validtime != time_in_file:
                     logging.error("%s %s", time_in_file, validtime)
-                    raise Exception("Mismatch in times in file and the wanted time")
+                    raise RuntimeError("Mismatch in times in file and the wanted time")
             else:
-                print("Not checking time")
+                logging.info("Not checking time")
 
         geo_in = self.get_geo()
         field = f_h[var.varname][:]
-        # print(fh[var.varname])
         fillvalue = f_h[var.varname].getncattr("_FillValue")
-        # if np.any(np.isnan(field)):
         logging.info("Set %s to nan", fillvalue)
         field = field.filled(np.nan)
-        # print(field)
 
         # Reshape to fortran 2D style
-        # field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
-        # Does not work wih interpolator
         field = np.transpose(field)
         return field, geo_in
 
@@ -936,16 +927,8 @@ class FaSurfexFile(SurfexIO):
         if not filename.endswith(extension_suffix):
             filename = filename + extension_suffix
 
-        # if geo is None:
-        #    geo = self.get_geo()
-
         SurfexIO.__init__(self, filename, geo, extension)
         self.lfagmap = lfagmap
-
-    # def get_geo(self):
-    #    # TODO read geo from SURFEX FA file
-    #    # geo = None
-    #    return None
 
     def field(self, var, validtime=None):
         """Read field from FA file.
@@ -953,7 +936,9 @@ class FaSurfexFile(SurfexIO):
         Args:
             var (SurfexFileVariable): Variable in surfex file.
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
-            validtime (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            RuntimeError: validtime must be a datetime object
 
         Returns:
             np.darray: Field, surfex.Geo in read file
@@ -962,8 +947,8 @@ class FaSurfexFile(SurfexIO):
         file_handler = Fa(self.filename)
         if validtime is None:
             pass
-        elif not isinstance(validtime, datetime):
-            raise Exception("validime must be a datetime object")
+        elif isdatetime(validtime):
+            raise RuntimeError("validtime must be a datetime object")
 
         geo_in = self.geo
         field = file_handler.field(var.varname, validtime)
@@ -1048,6 +1033,14 @@ class NetCDFSurfexFile(SurfexIO):
             var (SurfexFileVariable): Variable in surfex file.
             times (list): List of datetime.datetime objects
 
+        Raises:
+            ValueError: times must be list or tuple
+            ValueError: patches must be list or tuple
+            ValueError: patches must be list or tuple
+            RuntimeError: Variable not found!
+            NotImplementedError: Dimension not implemented
+            RuntimeError: Mismatch in points
+
         Returns:
             (tuple): (np.array. surfex.Geometry)
 
@@ -1056,11 +1049,11 @@ class NetCDFSurfexFile(SurfexIO):
         patches = var.patches
 
         if not isinstance(times, (list, tuple)):
-            raise Exception("times must be list or tuple")
+            raise ValueError("times must be list or tuple")
         if not isinstance(layers, (list, tuple)):
-            raise Exception("patches must be list or tuple")
+            raise ValueError("patches must be list or tuple")
         if not isinstance(patches, (list, tuple)):
-            raise Exception("patches must be list or tuple")
+            raise ValueError("patches must be list or tuple")
 
         values = np.array([])
         times_read = []
@@ -1070,9 +1063,7 @@ class NetCDFSurfexFile(SurfexIO):
         npatch = 1
 
         if self.file_handler.variables[var].shape[0] > 0:
-            # p rint self.fh.variables[var]
             for dim in self.file_handler.variables[var].dimensions:
-                # print dim,ndims
                 dimlen = self.file_handler.variables[var].shape[ndims]
                 this_dim = []
 
@@ -1093,7 +1084,6 @@ class NetCDFSurfexFile(SurfexIO):
                         for t_to_find, t_to_find_val in enumerate(times):
                             for tstep in range(0, len(indices)):
                                 if times_for_var[tstep] == t_to_find_val:
-                                    # print t, t_to_find, times_for_var[t], times[t_to_find]
                                     this_dim.append(tstep)
                                     times_read.append(times[t_to_find])
                     else:
@@ -1121,7 +1111,6 @@ class NetCDFSurfexFile(SurfexIO):
                     mapping[4] = ndims
                     npatch = dimlen
                     if len(layers) > 0:
-                        # nlayers = len(layers)
                         this_dim = layers
                     else:
                         this_dim = list(range(0, dimlen))
@@ -1140,12 +1129,11 @@ class NetCDFSurfexFile(SurfexIO):
             field = self.file_handler.variables[var][dim_indices]
 
             # Add extra dimensions
-            # print mapping
             i = 0
             reverse_mapping = []
             for dim in range(0, 5):
                 if dim not in mapping:
-                    # print "Adding dimension " + str(d)
+                    logging.debug("Adding dimension %s", dim)
                     field = np.expand_dims(field, len(dim_indices) + i)
                     reverse_mapping.append(len(dim_indices) + i)
                     i = i + 1
@@ -1153,8 +1141,6 @@ class NetCDFSurfexFile(SurfexIO):
                     reverse_mapping.append(mapping[dim])
 
             # Transpose to 5D array
-            # print "Transpose to 5D array"
-            # print reverse_mapping
             field = np.transpose(field, reverse_mapping)
             npoints = self.geo.npoints * npatch
 
@@ -1162,7 +1148,6 @@ class NetCDFSurfexFile(SurfexIO):
             for tstep in range(0, field.shape[0]):
                 field2d = np.empty(npoints)
                 i = 0
-                # print t,npatch,npoints,field.shape,field2d.shape
                 for (patch,) in range(0, npatch):
                     if self.geo.mask is not None:
                         iii = 0
@@ -1174,7 +1159,6 @@ class NetCDFSurfexFile(SurfexIO):
                                 if xxx in range(0, field.shape[1]) and yyy in range(
                                     0, field.shape[2]
                                 ):
-                                    # print i, ii,j, t, x, y, p, self.geo.mask[j]
                                     if self.geo.mask[j] == iii:
                                         field2d[i] = np.nan
                                         if field[tstep, xxx, yyy, patch] != np.nan:
@@ -1190,14 +1174,16 @@ class NetCDFSurfexFile(SurfexIO):
                                     field2d[i] = field[tstep, xxx, yyy, patch]
                                 i = i + 1
                 if i != npoints:
-                    raise Exception("Mismatch in points " + str(i) + "!=" + str(npoints))
+                    raise RuntimeError(
+                        "Mismatch in points " + str(i) + "!=" + str(npoints)
+                    )
 
                 values = np.append(values, field2d)
             # Re-shape to proper format
             values = np.reshape(values, [field.shape[0], npoints])
 
         else:
-            raise Exception("Variable " + var + " not found!")
+            raise RuntimeError("Variable " + var + " not found!")
 
         return values, self.geo
 
@@ -1261,14 +1247,14 @@ class TexteSurfexFile(SurfexIO):
         """Read file.
 
         Args:
-            var (SurfexFileVariable): Variable in surfex file.
+            variable (SurfexFileVariable): Variable in surfex file.
             times (list): List of datetime.datetime to read.
 
         Raises:
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            RuntimeError: Basetime must be set for TEXTE
+            RuntimeError: Interval must be set for TEXTE
+            RuntimeError: times must be list or tuple
+            RuntimeError: Dimension of domain does not match end of line
 
         Returns:
             tuple: (np.array, surfex.Geometry)
@@ -1281,12 +1267,12 @@ class TexteSurfexFile(SurfexIO):
         npatch = variable.patches
 
         if base_time is None:
-            raise Exception("Basetime must be set for TEXTE")
+            raise RuntimeError("Basetime must be set for TEXTE")
         if interval is None:
-            raise Exception("Interval must be set for TEXTE")
+            raise RuntimeError("Interval must be set for TEXTE")
 
         if not isinstance(times, (list, tuple)):
-            raise Exception("times must be list or tuple")
+            raise RuntimeError("times must be list or tuple")
 
         values = np.array([])
         times_read = np.array([])
@@ -1310,21 +1296,20 @@ class TexteSurfexFile(SurfexIO):
 
                         if (
                             times is None
-                            or (base_time + timedelta(seconds=(tstep * interval)))
+                            or (base_time + as_timedelta(seconds=(tstep * interval)))
                             in times
                         ):
                             values = np.append(values, this_time)
                             times_read = np.append(
                                 times_read,
-                                base_time + timedelta(seconds=(tstep * interval)),
+                                base_time + as_timedelta(seconds=(tstep * interval)),
                             )
-                            # print i, col, base_time + timedelta(seconds=(t * interval)), this_time
 
                         tstep = tstep + 1
                         col = 0
                         this_time[:] = np.nan
                         if i != len(words) - 1:
-                            raise Exception(
+                            raise RuntimeError(
                                 "Dimension of domain does not match end of line! "
                                 + str(i)
                                 + " != "
@@ -1336,7 +1321,6 @@ class TexteSurfexFile(SurfexIO):
         else:
             logging.info("No data found!")
 
-        # print values.shape
         self.file.close()
         return values, self.geo
 
@@ -1347,12 +1331,15 @@ class TexteSurfexFile(SurfexIO):
             var (SurfexFileVariable): Variable in surfex file.
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
 
+        Raises:
+            RuntimeError: You must set times to read forcing data
+
         Returns:
             tuple: (np.array, surfex.Geometry)
 
         """
         if validtime is None:
-            raise Exception("You must set times to read forcing data")
+            raise RuntimeError("You must set times to read forcing data")
         else:
             validtime = [validtime]
 
@@ -1396,8 +1383,6 @@ class ForcingFileNetCDF(SurfexIO):
         self.file_handler = netCDF4.Dataset(fname, "r")
         self.lons = self.file_handler.variables["LON"]
         self.lats = self.file_handler.variables["LAT"]
-        # self.n_x = self.lons.shape[0]
-        # self.n_y = self.lats.shape[0]
         SurfexIO.__init__(self, fname, geo, "nc")
 
     def read_field(self, variable, times):
@@ -1408,12 +1393,12 @@ class ForcingFileNetCDF(SurfexIO):
             times (_type_): _description_
 
         Raises:
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            RuntimeError: You must set time!
+            RuntimeError: No points found
+            RuntimeError: Valid time not found in file!
 
         Returns:
-            _type_: _description_
+            tuple: field, geo
 
         """
         var = variable.varname
@@ -1425,7 +1410,7 @@ class ForcingFileNetCDF(SurfexIO):
                     field = self.file_handler.variables[var][0:dimlen]
                 else:
                     if len(times) == 0:
-                        raise Exception("You must set time!")
+                        raise RuntimeError("You must set time!")
 
                     times_read = []
                     ndims = 0
@@ -1448,7 +1433,7 @@ class ForcingFileNetCDF(SurfexIO):
                             for times_to_read_val in times:
                                 for tstep, times_for_var_val in enumerate(times_for_var):
                                     test_time = times_for_var_val.strftime("%Y%m%d%H")
-                                    test_time = datetime.strptime(test_time, "%Y%m%d%H")
+                                    test_time = as_datetime(test_time)
                                     if test_time == times_to_read_val:
                                         times_read.append(tstep)
                                         logging.debug("%s %s", tstep, times_to_read_val)
@@ -1458,11 +1443,11 @@ class ForcingFileNetCDF(SurfexIO):
                         ndims = ndims + 1
 
                     if npoints == 0:
-                        raise Exception("No points found")
+                        raise RuntimeError("No points found")
 
                     if len(times_read) == 0 and len(times) > 0:
                         logging.error("%s", times)
-                        raise Exception("Valid time not found in file!")
+                        raise RuntimeError("Valid time not found in file!")
 
                     field = self.file_handler.variables[var][times_read, 0:npoints]
         else:
@@ -1474,18 +1459,14 @@ class ForcingFileNetCDF(SurfexIO):
 
         Args:
             var (_type_): _description_
-            validtime (_type_, optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
+            validtime (list, optional): Validtime. Defaults to None.
 
         Returns:
-            _type_: _description_
+            tuple: field, geo
 
         """
         if validtime is None:
             validtime = []
-            # raise Exception("You must set times to read forcing data")
         else:
             validtime = [validtime]
 

@@ -2,7 +2,6 @@
 import logging
 import os
 import re
-from datetime import date, datetime
 from enum import Enum
 
 import netCDF4
@@ -18,6 +17,7 @@ except:  # noqa
     cfunits = None
 
 
+from .datetime_utils import fromtimestamp, isdatetime, utcfromtimestamp
 from .geo import ConfProj, Geo
 from .interpolation import Interpolation
 
@@ -29,20 +29,14 @@ class Netcdf(object):
         """Construct NetCDF.
 
         Args:
-            filename (_type_): _description_
+            filename (str): Filename
 
         """
         self.filename = filename
         logging.debug("filename: %s", filename)
         self.file = netCDF4.Dataset(filename, "r")
 
-    def num_height(self, field):
-        """num_height."""
-
-    def num_time(self, field):
-        """num_time."""
-
-    def slice(
+    def nc_slice(
         self,
         var_name,
         levels=None,
@@ -69,13 +63,24 @@ class Netcdf(object):
             units (str): CF unit for the variable to be read
             lev_from_ind (bool): level list are indices and not values
 
+        Raises:
+            NotImplementedError: Subsetting of the input dimensions not implemented yet!
+            ValueError: Times must be a list!
+            ValueError: Levels must be a list!
+            ValueError: Members must be a list!
+            RuntimeError: No ensemble members found
+            RuntimeError: cfunits not loaded!
+            ValueError: Axis is not defined!")
+
         Returns:
-         np.array: 5D array with values
+            np.array: 5D array with values
 
         """
         var = NetCDFFileVariable(self.file, var_name)
         if xcoords is not None or ycoords is not None:
-            raise Exception("Subsetting of the input dimensions not implemented yet!")
+            raise NotImplementedError(
+                "Subsetting of the input dimensions not implemented yet!"
+            )
 
         tinfo = ""
         if times is not None:
@@ -92,8 +97,8 @@ class Netcdf(object):
                     prev_time_steps.append(0)
         else:
             if not isinstance(times, (list, tuple)):
-                raise Exception("Times must be a list!")
-            if isinstance(times[0], date):
+                raise ValueError("Times must be a list!")
+            if isdatetime(times[0]):
                 logging.debug("Time provided in call as datetime objects")
                 times_in_var = var.datetimes
                 for i, times_in_var_val in enumerate(times_in_var):
@@ -132,7 +137,7 @@ class Netcdf(object):
         else:
             logging.debug("Level provided in call. lev_from_ind=%s", str(lev_from_ind))
             if not isinstance(levels, (list, tuple)):
-                raise Exception("Levels must be a list!")
+                raise ValueError("Levels must be a list!")
             levels_in_var = var.levels
             for i in range(0, levels_in_var.shape[0]):
                 for level_ind in levels:
@@ -152,7 +157,7 @@ class Netcdf(object):
                 members_to_read.append(i)
         else:
             if not isinstance(members, (list, tuple)):
-                raise Exception("Members must be a list!")
+                raise ValueError("Members must be a list!")
             logging.debug("Ensemble members provided in call")
             members_in_var = var.members
             for i in range(0, members_in_var.shape[0]):
@@ -161,7 +166,7 @@ class Netcdf(object):
                         members_to_read.append(i)
 
             if len(members_to_read) == 0:
-                raise Exception("No ensemble members found for " + var.var_name)
+                raise RuntimeError("No ensemble members found for " + var.var_name)
 
         lons = var.lons
         lats = var.lats
@@ -215,7 +220,7 @@ class Netcdf(object):
                 prev_dims.append(members_to_read)
                 mapping[4] = i
             else:
-                raise Exception(str(types[i]) + " is not defined!")
+                raise ValueError(str(types[i]) + " is not defined!")
 
         logging.debug("Read %s with dimensions: %s", var.var_name, str(dims))
         if deaccumulate:
@@ -227,7 +232,7 @@ class Netcdf(object):
         field = self.file[var.var_name][dims]
         if units is not None:
             if cfunits is None:
-                raise Exception("cfunits not loaded!")
+                raise RuntimeError("cfunits not loaded!")
             field = cfunits.Units.conform(
                 field, cfunits.Units(var.units), cfunits.Units(units)
             )
@@ -238,7 +243,7 @@ class Netcdf(object):
             previous_field = self.file[var.var_name][prev_dims]
             if units is not None:
                 if cfunits is None:
-                    raise Exception("cfunits not loaded!")
+                    raise RuntimeError("cfunits not loaded!")
                 previous_field = cfunits.Units.conform(
                     previous_field, cfunits.Units(var.units), cfunits.Units(units)
                 )
@@ -272,28 +277,23 @@ class Netcdf(object):
         """Read field.
 
         Args:
-            var_name (_type_): _description_
-            level (_type_, optional): _description_. Defaults to None.
-            member (_type_, optional): _description_. Defaults to None.
-            validtime (_type_, optional): _description_. Defaults to None.
-            units (_type_, optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
+            var_name (str): Variable name
+            level (int, optional): Level. Defaults to None.
+            member (int, optional): Realization. Defaults to None.
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            units (str, optional): Units. Defaults to None.
 
         Returns:
-            _type_: _description_
+            tuple: Field, Geo
 
         """
         if validtime is None:
             validtime = []
-        elif not isinstance(validtime, datetime):
-            raise Exception("validime must be a datetime object")
         else:
             validtime = [validtime]
 
         logging.debug("level %s member %s validtime %s", level, member, validtime)
-        field, geo_in = self.slice(
+        field, geo_in = self.nc_slice(
             var_name, levels=level, members=member, times=validtime, units=units
         )
         # Reshape to fortran 2D style
@@ -304,18 +304,15 @@ class Netcdf(object):
         """Read a field and interpolate it to requested positions.
 
         Args:
-            var (_type_): _description_
-            geo (_type_): _description_
-            validtime (_type_, optional): _description_. Defaults to None.
-            interpolation (str, optional): _description_. Defaults to "bilinear".
+            var (NetCDFReadVariable): NetCDF variable
+            geo (surfx.geo.Geo): Geometry
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            interpolation (str, optional): Interpolation. Defaults to "bilinear".
 
         Returns:
-            _type_: _description_
+            tuple: Field, Interpolator
 
         """
-        # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime,
-        #                              units=units)
-        # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
         var_name = var.name
         level = var.level
         member = var.member
@@ -388,7 +385,6 @@ class NetCDFFileVariable(object):
 
         if self.file.variables[self.var_name]:
             for dim_name in self.file.variables[self.var_name].dimensions:
-                # dim_name = self.file.variables[self.var_name].dimensions[i]
                 if dim_name == "longitude" or dim_name == "lon":
                     types.append(Axis.LON)
                 elif dim_name == "x":
@@ -433,8 +429,11 @@ class NetCDFFileVariable(object):
     def lats(self):
         """Get lats.
 
+        Raises:
+            RuntimeError: No latitude found
+
         Returns:
-           np.array: 2D array of latitudes
+            np.array: 2D array of latitudes
 
         """
         latvals = np.array([])
@@ -450,15 +449,18 @@ class NetCDFFileVariable(object):
                 latvals = np.transpose(latvals, (1, 0))
 
         if latvals.shape[0] == 0:
-            raise Exception("No latitude found for " + self.var_name)
+            raise RuntimeError("No latitude found for " + self.var_name)
         return latvals
 
     @property
     def lons(self):
         """Get lons.
 
+        Raises:
+            RuntimeError: No longitude found
+
         Returns:
-           np.array: 2D array of longitudes
+            np.array: 2D array of longitudes
 
         """
         lonvals = np.array([])
@@ -473,12 +475,15 @@ class NetCDFFileVariable(object):
                 lonvals = np.transpose(lonvals, (1, 0))
 
         if lonvals.shape[0] == 0:
-            raise Exception("No longitude found for " + self.var_name)
+            raise RuntimeError("No longitude found for " + self.var_name)
         return lonvals
 
     @property
     def datetimes(self):
         """Get datetimes.
+
+        Raises:
+            RuntimeError: cfunits not loaded!
 
         Returns:
             list()
@@ -491,7 +496,7 @@ class NetCDFFileVariable(object):
                 val = self.file.variables[self.dim_names[i]]
                 for tval in val:
                     if cfunits is None:
-                        raise Exception("cfunits not loaded!")
+                        raise RuntimeError("cfunits not loaded!")
                     epochtime = int(
                         cfunits.Units.conform(
                             tval,
@@ -500,7 +505,7 @@ class NetCDFFileVariable(object):
                         )
                     )
                     logging.debug("epoctime %s", epochtime)
-                    d_t = datetime.utcfromtimestamp(epochtime)
+                    d_t = utcfromtimestamp(epochtime)
                     logging.debug("dt %s", d_t)
                     times.append(d_t)
 
@@ -567,10 +572,10 @@ class NetCDFFileVariable(object):
         """Check if is level.
 
         Args:
-            axis_type (_type_): _description_
+            axis_type (Axis): Acis type
 
         Returns:
-            _type_: _description_
+            bool: If axis is a level type
 
         """
         if (
@@ -694,10 +699,11 @@ def read_first_guess_netcdf_file(input_file, var):
         var (_type_): _description_
 
     Raises:
-        NotImplementedError: _description_
+        NotImplementedError: Only conf proj implemented when reading geo from file
+        RuntimeError: cfunits not loaded!
 
     Returns:
-        _type_: _description_
+        tuple:  geo, validtime, background, glafs, gelevs
 
     """
     file_handler = netCDF4.Dataset(input_file)
@@ -705,7 +711,7 @@ def read_first_guess_netcdf_file(input_file, var):
     lats = file_handler["latitude"][:]
 
     if cfunits is None:
-        raise Exception("cfunits not loaded!")
+        raise RuntimeError("cfunits not loaded!")
     validtime = int(
         cfunits.Units.conform(
             file_handler["time"][:],
@@ -713,7 +719,7 @@ def read_first_guess_netcdf_file(input_file, var):
             cfunits.Units("seconds since 1970-01-01 00:00:00"),
         )
     )
-    validtime = datetime.fromtimestamp(validtime)
+    validtime = fromtimestamp(validtime)
 
     n_x = lons.shape[1]
     n_y = lons.shape[0]
@@ -801,8 +807,8 @@ def write_analysis_netcdf_file(
         )
         file_handler.variables["longitude"][:] = np.transpose(geo.lons)
         file_handler.variables["latitude"][:] = np.transpose(geo.lats)
-        file_handler.variables["x"][:] = [i for i in range(0, geo.nlons)]
-        file_handler.variables["y"][:] = [i for i in range(0, geo.nlats)]
+        file_handler.variables["x"][:] = list(range(0, geo.nlons))
+        file_handler.variables["y"][:] = list(range(0, geo.nlats))
         file_handler.variables["altitude"][:] = np.transpose(elevs)
         file_handler.variables["land_area_fraction"][:] = np.transpose(lafs)
 
@@ -819,12 +825,16 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
     """Convert analysis to ASCII obs file for SODA.
 
     Args:
-        dtg (_type_): _description_
-        t2m (_type_, optional): _description_. Defaults to None.
-        rh2m (_type_, optional): _description_. Defaults to None.
-        s_d (_type_, optional): _description_. Defaults to None.
-        s:m (_type_, optional): _description_. Defaults to None.
-        output (_type_, optional): _description_. Defaults to None.
+        dtg (surfex.datetime_utils): Analysis time
+        t2m (dict, optional): Screen level temperature var and file name. Defaults to None.
+        rh2m (dict, optional): Screen level relative humidiy var and file name. Defaults to None.
+        s_d (dict, optional): Snow depth var and file name. Defaults to None.
+        s_m (dict, optional): Soil moisture var and file name. Defaults to None.
+        output (str, optional): Output file name. Defaults to None.
+
+    Raises:
+        RuntimeError: You must specify at least one file to read from
+        RuntimeError: Mismatch in ?? dimension
 
     """
 
@@ -835,9 +845,13 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         if my_ny < 0:
             my_ny = ny1
         if my_nx != nx1:
-            raise Exception("Mismatch in nx dimension " + str(my_nx) + " != " + str(nx1))
+            raise RuntimeError(
+                "Mismatch in nx dimension " + str(my_nx) + " != " + str(nx1)
+            )
         if my_ny != ny1:
-            raise Exception("Mismatch in ny dimension " + str(my_ny) + " != " + str(ny1))
+            raise RuntimeError(
+                "Mismatch in ny dimension " + str(my_ny) + " != " + str(ny1)
+            )
 
         return my_nx, my_ny
 
@@ -921,7 +935,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         sm_var = sm_var.tolist()
 
     if i == 0:
-        raise Exception("You must specify at least one file to read from!")
+        raise RuntimeError("You must specify at least one file to read from!")
 
     if output is None:
         output = (
@@ -950,6 +964,9 @@ def read_cryoclim_nc(infiles):
     Args:
         infiles (list): Input files.
 
+    Raises:
+        RuntimeError: "No files were read properly"
+
     Returns:
         tuple: grid_lons, grid_lats, grid_snow_class
 
@@ -959,7 +976,7 @@ def read_cryoclim_nc(infiles):
     grid_snow_class = None
     for filename in infiles:
         if os.path.exists(filename):
-            logging.info("Reading: " + filename)
+            logging.info("Reading: %s", filename)
             ncf = netCDF4.Dataset(filename, "r")
             grid_lons = ncf["lon"][:]
             grid_lats = ncf["lat"][:]
@@ -973,7 +990,7 @@ def read_cryoclim_nc(infiles):
             logging.warning("Warning file %s does not exists", filename)
 
     if grid_lons is None or grid_lats is None or grid_snow_class is None:
-        raise Exception("No files were read properly")
+        raise RuntimeError("No files were read properly")
 
     return grid_lons, grid_lats, grid_snow_class
 
@@ -984,6 +1001,11 @@ def read_sentinel_nc(infiles):
     Args:
         infiles (list): Input files.
 
+    Raises:
+        RuntimeError: "No files were read properly"
+
+    Returns:
+        tuple: longitudes, latitudes, soil moisture
     """
     grid_lons = None
     grid_lats = None
@@ -995,13 +1017,11 @@ def read_sentinel_nc(infiles):
             grid_lons = nch["LON"][:]
             grid_lats = nch["LAT"][:]
             grid_sm = nch["surface_soil_moisture"][:]
-            #            grid_sm[grid_snow_class_read == 1] = 1
-            #            grid_snow_class[grid_snow_class_read == 0] = 0
             nch.close()
         else:
             logging.warning("Warning file %s does not exists", filename)
 
     if grid_lons is None or grid_lats is None or grid_sm is None:
-        raise Exception("No files were read properly")
+        raise RuntimeError("No files were read properly")
 
     return grid_lons, grid_lats, grid_sm

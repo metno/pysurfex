@@ -70,7 +70,6 @@ class Observation(object):
         Returns:
             _type_: _description_
         """
-        # print(my_obs.obstime, my_obs.lon, my_obs.lat, my_obs.stid, my_obs.elev, my_obs.value)
         return (
             my_obs.obstime,
             my_obs.lon,

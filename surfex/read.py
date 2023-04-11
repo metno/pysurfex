@@ -1,13 +1,12 @@
 """Converter and read data."""
 import copy
 import logging
-import os
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
 from .interpolation import fill_field
-from .util import data_merge
+from .util import deep_update
 from .variable import Variable
 
 
@@ -20,7 +19,6 @@ class ReadData(object):
         """Construct readData object."""
         self.geo = geo
         self.var_name = var_name
-        # print "Constructed "+self.__class__.__name__+" for " + self.var_name
 
     @abstractmethod
     def read_time_step(self, validtime, cache):
@@ -35,17 +33,6 @@ class ReadData(object):
         raise NotImplementedError(
             "users must define read_time_step to use this base class"
         )
-
-
-# class Points(object):
-#    def __init__(self, values, interpolator):
-#        self.values = values
-#        self.interpolator = interpolator
-
-# class TwoDField(object):
-#    def __init__(self, values, geo):
-#        self.values = values
-#        self.geo = geo
 
 
 # Direct data can be ead with this class with converter = None
@@ -84,8 +71,10 @@ class ConvertedInput(ReadData):
         field = self.converter.read_time_step(self.geo, validtime, cache)
         # Preserve positive values for precipitation
         # TODO
-        # if self.var_name == "RAIN" or self.var_name == "SNOW":
-        #    field[field < 0.] = 0.
+        """
+        if self.var_name == "RAIN" or self.var_name == "SNOW":
+            field[field < 0.] = 0.
+        """
         return field
 
     def print_info(self):
@@ -104,13 +93,16 @@ class ConstantValue(ReadData):
             var_name (str): Variable name
             var_dict (dict): Variable definition
 
+        Raises:
+            RuntimeError: Constant value must have a value!
+
         """
         ReadData.__init__(self, geo, var_name)
         self.var_dict = var_dict
         if "value" in self.var_dict:
             self.value = self.var_dict["value"]
         else:
-            raise Exception("Constant value must have a value!")
+            raise RuntimeError("Constant value must have a value!")
 
     def read_time_step(self, validtime, cache):
         """Read time step.
@@ -125,7 +117,6 @@ class ConstantValue(ReadData):
         """
         field = np.array([float(i) for i in range(0, self.geo.npoints)])
         field.fill(self.value)
-        # print field.shape
         return field
 
     def print_info(self):
@@ -143,34 +134,25 @@ class Converter(object):
     Main interface to read a field is done through a converter.
     The converter name is default "None" to read a plain field without any conversion.
 
-    Args:
-        name (str): name of the converter
-        initial_time (datetime.datetime): The valid time you want to read
-        defs (dict): A dictionary defining the variables
-        conf (dict): A dictionary defining the converter
-        fileformat (str): Fileformat of the converter
-
     """
 
     def __init__(self, name, initial_time, defs, conf, fileformat):
         """Initialize the converter.
 
         Args:
-            name (_type_): _description_
-            initial_time (_type_): _description_
-            defs (_type_): _description_
-            conf (_type_): _description_
-            fileformat (_type_): _description_
+            name (str): Converter name
+            initial_time (as_datetime): The valid time you want to read
+            defs (dict): A dictionary defining the variables
+            conf (dict): A dictionary defining the converter
+            fileformat (str): File format
 
         Raises:
-            KeyError: _description_
-            NotImplementedError: _description_
+            KeyError: Missing definitions
+            NotImplementedError: Converter not implemented
 
         """
         self.name = name
         self.initial_time = initial_time
-        # self.validtime = validtime
-        # self.basetime = basetime
 
         logging.debug("Converter name: %s", self.name)
         logging.debug("Converter config: %s", conf)
@@ -269,7 +251,7 @@ class Converter(object):
             var_dict (dict): Variable dictionary
 
         Raises:
-             NotImplementedError: Not implemented
+            RuntimeError: Variable is not set
 
         Returns:
             field: The read field
@@ -280,8 +262,8 @@ class Converter(object):
         defs = copy.deepcopy(defs)
         var_dict = copy.deepcopy(var_dict)
         if var_dict is None:
-            raise Exception("Variable is not set")
-        merged_dict = data_merge(defs, var_dict)
+            raise RuntimeError("Variable is not set")
+        merged_dict = deep_update(defs, var_dict)
 
         var = Variable(fileformat, merged_dict, self.initial_time)
 
@@ -331,14 +313,12 @@ class Converter(object):
         """
         gravity = 9.81
         field = None
-        # field = np.empty(geo.npoints)
         # Specific reading for each converter
         if self.name == "none" or self.name == "analysis":
             field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x_wind.read_variable(geo, validtime, cache)
             field_y = self.y_wind.read_variable(geo, validtime, cache)
-            # field_y = self.y.read_variable(geo,validtime,cache)
             if self.name == "windspeed":
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
                 np.where(field < 0.005, field, 0)
@@ -346,6 +326,12 @@ class Converter(object):
                 field = np.mod(90 - np.rad2deg(np.arctan2(field_y, field_x)), 360)
 
         elif self.name == "rh2q" or self.name == "rh2q_mslp":
+            """
+            ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
+            ZE = ZRH * ZES
+            ZRATIO = 0.622 * ZE / (ZPRES / 100.)
+            RH2Q = 1. / (1. / ZRATIO + 1.)
+            """
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
             field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
@@ -361,11 +347,6 @@ class Converter(object):
             exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
             esat = np.multiply(6.112, np.exp(exp))
             field = np.divide(np.multiply(0.622, field_r_h / 100.0) * esat, field_p_mb)
-
-            # ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
-            # ZE = ZRH * ZES
-            # ZRATIO = 0.622 * ZE / (ZPRES / 100.)
-            # RH2Q = 1. / (1. / ZRATIO + 1.)
 
         elif self.name == "mslp2ps":
             field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
@@ -387,18 +368,7 @@ class Converter(object):
             field[field_t <= 274.16] = 0
         elif self.name == "calcsnow":
             field_totalprec = self.totalprec.read_variable(geo, validtime, cache)
-            # field_rh = self.rh.read_variable(geo, validtime,cache) #
             field_t = self.temp.read_variable(geo, validtime, cache)  # In K
-            # field_p = self.p.read_variable(geo, validtime,cache)   # In Pa
-            # tc = field_t + 273.15
-            # e  = (field_rh)*0.611*exp((17.63*tc)/(tc+243.04));
-            # Td = (116.9 + 243.04*log(e))/(16.78-log(e));
-            # gamma = 0.00066 * field_p/1000;
-            # delta = (4098*e)/pow(Td+243.04,2);
-            # if(gamma + delta == 0):
-            # print("problem?")
-            # wetbulbTemperature = (gamma * tc + delta * Td)/(gamma + delta);
-            # wetbulbTemperatureK  = wetbulbTemperature + 273.15;
             field = field_totalprec
             field[field_t > 274.16] = 0
         elif self.name == "snowplusgraupel":

@@ -36,7 +36,6 @@ def domains_file(domains, tmp_path_factory):
 
 def test_set_domain(domains, domains_file, tmp_path_factory):
     """Test set domain."""
-
     saved_domain = domains["CONF_PROJ_TEST"]
     domain_file = f"{tmp_path_factory.getbasetemp().as_posix()}/set_geo_domain.json"
     argv = [
@@ -54,5 +53,5 @@ def test_set_domain(domains, domains_file, tmp_path_factory):
     assert domain_json == saved_domain
 
     argv = ["-d", "not-existing", "--domains", domains_file, "-o", domain_file, "--debug"]
-    with pytest.raises(Exception):
+    with pytest.raises(KeyError):
         cli_set_domain(argv=argv)

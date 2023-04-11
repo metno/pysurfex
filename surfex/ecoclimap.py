@@ -128,12 +128,16 @@ class Ecoclimap(object):
         Args:
             check_existence (bool, optional): _description_. Defaults to True.
 
+        Raises:
+            RuntimeError: System file path must be set for this method
+
         Returns:
             dict: File mappings.
 
         """
         if self.system_file_paths is None:
-            raise Exception("System file path must be set for this method")
+            raise RuntimeError("System file path must be set for this method")
+
         data = {}
         for fname in self.ecoclimap_files:
             fname_data = self.system_file_paths.get_system_file(
@@ -193,12 +197,15 @@ class EcoclimapSG(Ecoclimap):
         Args:
             check_existence (bool, optional): Check if files are existing. Defaults to True.
 
+        Raises:
+            RuntimeError: System file path must be set for this method
+
         Returns:
             dict: Mapping of files.
 
         """
         if self.system_file_paths is None:
-            raise Exception("System file path must be set for this method")
+            raise RuntimeError("System file path must be set for this method")
 
         data = {}
         tree_height_dir = "tree_height_dir"
