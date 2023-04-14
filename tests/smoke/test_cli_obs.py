@@ -1,16 +1,9 @@
 """Observation tests."""
 
-import pytest
 
 from surfex.cli import bufr2json
 
 
-@pytest.fixture(scope="module")
-def _mockers_run_time(session_mocker):
-    """Define mockers used in the tests for the tasks' `run` methods."""
-
-
-@pytest.mark.usefixtures("_mockers_run_time")
 def test_bufr2json(tmp_path_factory):
     """Test bufr to json conversion."""
     bufr_file = tmp_path_factory.getbasetemp() / "ob2020111306"

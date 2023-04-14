@@ -7,6 +7,7 @@ from .bufr import BufrObservationSet
 from .datetime_utils import as_timedelta
 from .geo import LonLatVal
 from .obs import JsonObservationSet, MetFrostObservations, NetatmoObservationSet
+from .obsoul import ObservationDataSetFromObsoulFile
 from .util import parse_filepattern
 
 
@@ -115,7 +116,7 @@ def get_datasources(obs_time, settings):
                         NetatmoObservationSet(filenames, variable, obs_time, **kwargs)
                     )
                 else:
-                    print("WARNING: filenames not set. Not added.")
+                    logging.warning("WARNING: filenames not set. Not added.")
 
             elif filetype.lower() == "frost":
                 if "varname" in settings[obs_set]:
@@ -133,6 +134,30 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"level": settings[obs_set]["level"]})
                 kwargs.update({"validtime": obs_time})
                 datasources.append(MetFrostObservations(varname, **kwargs))
+            elif filetype.lower() == "obsoul":
+                filename = parse_filepattern(filepattern, obs_time, validtime)
+                obnumber = None
+                neg_dt = None
+                pos_dt = None
+                obtypes = None
+                subtypes = None
+                if "obnumber" in settings[obs_set]:
+                    obnumber = int(settings[obs_set]["obnumber"])
+                if "neg_dt" in settings[obs_set]:
+                    neg_dt = int(settings[obs_set]["neg_dt"])
+                if "pos_dt" in settings[obs_set]:
+                    pos_dt = int(settings[obs_set]["pos_dt"])
+                if "obtypes" in settings[obs_set]:
+                    obtypes = settings[obs_set]["obtypes"]
+                if "subtypes" in settings[obs_set]:
+                    subtypes = settings[obs_set]["subtypes"]
+                if os.path.exists(filename):
+                    datasources.append(ObservationDataSetFromObsoulFile(filename, an_time=obs_time,
+                                                                        neg_dt=neg_dt, pos_dt=pos_dt,
+                                                                        obtypes=obtypes, subtypes=subtypes,
+                                                                        obnumber=obnumber))
+                else:
+                    print("WARNING: filename " + filename + " not existing. Not added.")
             elif filetype.lower() == "json":
                 filename = parse_filepattern(filepattern, obs_time, validtime)
                 varname = None

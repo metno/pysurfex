@@ -1,8 +1,0 @@
-#!/usr/bin/env python3
-"""Dump environment."""
-import json
-import os
-
-if __name__ == "__main__":
-    with open("rte.json", mode="w", encoding="utf-8") as file_handler:
-        json.dump(os.environ.copy(), file_handler)

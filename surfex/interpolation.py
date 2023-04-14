@@ -16,12 +16,13 @@ class Grid:
 
     """
 
-    def __init__(self, grid_lons, grid_lats):
+    def __init__(self, grid_lons, grid_lats, elevs=None):
         """Construct a gridpp Grid wrapper.
 
         Args:
-            grid_lons(np.ndarray): grid longitudes
-            grid_lats(np.ndarray): grid latitudes
+            grid_lons (np.ndarray): grid longitudes
+            grid_lats (np.ndarray): grid latitudes
+            elevs (np.ndarray, optional): elevations
 
         Raises:
             RuntimeError: You need gridpp for interpolation
@@ -36,7 +37,11 @@ class Grid:
         grid_lats = np.transpose(grid_lats)
         logging.debug("grid_lons_shape in 1 %s", grid_lons.shape)
         logging.debug("grid_lats_shape in 1 %s", grid_lats.shape)
-        self.grid = gridpp.Grid(grid_lats, grid_lons)
+        if elevs is None:
+            self.grid = gridpp.Grid(grid_lats, grid_lons)
+        else:
+            elevs = np.transpose(elevs)
+            self.grid = gridpp.Grid(grid_lats, grid_lons, elevs)
 
 
 class Points:
@@ -47,7 +52,7 @@ class Points:
 
     """
 
-    def __init__(self, p_lons, p_lats):
+    def __init__(self, p_lons, p_lats, p_elevs=None):
         """Construct a gridpp Points wrapper.
 
         Args:
@@ -68,9 +73,14 @@ class Points:
         logging.debug("p_lats_shape in %s", p_lats.shape)
         self.lons = np.transpose(p_lons)
         self.lats = np.transpose(p_lats)
+        self.elevs = p_elevs
         logging.debug("self.lons_shape in %s", self.lons.shape)
         logging.debug("self.lats_shape in %s", self.lats.shape)
-        self.points = gridpp.Points(self.lats, self.lons)
+        if p_elevs is None:
+            self.points = gridpp.Points(self.lats, self.lons)
+        else:
+            p_elevs = np.transpose(p_elevs)
+            self.points = gridpp.Points(self.lats, self.lons, p_elevs)
 
     def inside_grid(self, grid, distance=2500.0):
         """Check if inside grid.
@@ -287,8 +297,8 @@ def fill_field(field_tmp, geo, radius=1):
 
 
 def gridpos2points(
-    grid_lons, grid_lats, p_lons, p_lats, grid_values, operator="bilinear"
-):
+        grid_lons, grid_lats, p_lons, p_lats, grid_values, operator="bilinear",
+        elev_gradient=None):
     """Convert grid positions to points.
 
     Args:
@@ -298,16 +308,18 @@ def gridpos2points(
         p_lats (np.ndarray): Point latitudes
         grid_values (np.ndarray): Grid values
         operator (str, optional): Interpolation operator. Defaults to "bilinear".
+        elev_gradient (float, optional): Elevation gradient for downscaler
 
     Returns:
         np.ndarray: Interpolated values
     """
     grid = Grid(grid_lons, grid_lats)
     points = Points(p_lons, p_lats)
-    return grid2points(grid, points, grid_values, operator=operator)
+    return grid2points(grid, points, grid_values, operator=operator,
+                       elev_gradient=elev_gradient)
 
 
-def grid2points(grid, points, grid_values, operator="bilinear"):
+def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=None):
     """Convert a grid to points.
 
     Args:
@@ -315,6 +327,7 @@ def grid2points(grid, points, grid_values, operator="bilinear"):
         points (Points): Points object
         grid_values (np.ndarray): Grid values
         operator (str, optional): Interpolation operator. Defaults to "bilinear".
+        elev_gradient (float, optional): Elevation gradient for downscaler
 
     Raises:
         NotImplementedError: Operator not implemented
@@ -329,9 +342,19 @@ def grid2points(grid, points, grid_values, operator="bilinear"):
     grid_values = np.transpose(grid_values)
     logging.debug("grid_values.shape 1: %s", grid_values.shape)
     if operator == "bilinear":
-        values = gridpp.bilinear(grid.grid, points.points, grid_values)
-    elif operator == "linear":
-        values = gridpp.nearest(grid.grid, points.points, grid_values)
+        if elev_gradient is None:
+            values = gridpp.bilinear(grid.grid, points.points, grid_values)
+        else:
+            values = gridpp.simple_gradient(
+                grid.grid, points.points, grid_values, elev_gradient, gridpp.Bilinear
+            )
+    elif operator == "nearest":
+        if elev_gradient is None:
+            values = gridpp.nearest(grid.grid, points.points, grid_values)
+        else:
+            values = gridpp.simple_gradient(
+                grid.grid, points.points, grid_values, elev_gradient, gridpp.Nearest
+            )
     else:
         raise NotImplementedError(f"Operator {operator} not implemented!")
     return values
@@ -376,7 +399,7 @@ class ObsOperator(object):
         logging.info(
             'Setting up "%s" observation operator for %s points', operator, str(len(lons))
         )
-        obs_values = grid2points(
+        obs_values = gridpos2points(
             geo.lons, geo.lats, lons, lats, grid_values, operator=operator
         )
         self.inside_grid = inside_grid(
@@ -421,7 +444,7 @@ def horizontal_oi(
     hlength=10000.0,
     vlength=10000.0,
     wlength=0.5,
-    elev_gradient=0,
+    elev_gradient=None,
     structure_function="Barnes",
     max_locations=50,
     epsilon=0.5,
@@ -460,7 +483,7 @@ def horizontal_oi(
 
     """
     if gridpp is None:
-        raise Exception("You need gridpp to perform OI")
+        raise RuntimeError("You need gridpp to perform OI")
 
     logging.debug(gridpp.__file__)
     logging.debug(gridpp.__version__)
@@ -481,29 +504,10 @@ def horizontal_oi(
     vectors = np.vectorize(obs2vectors)
     lons, lats, __, elevs, values, __, __ = vectors(observations)
 
-    glats = np.transpose(glats)
-    glons = np.transpose(glons)
-    background = np.transpose(background)
-    gelevs = np.transpose(gelevs)
-
-    logging.debug(
-        "glats.shape=%s glons.shape=%s gelevs.shape=%s",
-        glats.shape,
-        glons.shape,
-        gelevs.shape,
-    )
-    bgrid = gridpp.Grid(glats, glons, gelevs)
-    points = gridpp.Points(lats, lons, elevs)
-    if interpol == "bilinear":
-        pbackground = gridpp.simple_gradient(
-            bgrid, points, background, elev_gradient, gridpp.Bilinear
-        )
-    elif interpol == "nearest":
-        pbackground = gridpp.simple_gradient(
-            bgrid, points, background, elev_gradient, gridpp.Nearest
-        )
-    else:
-        raise NotImplementedError(f"Interpolation method {interpol} not implemented")
+    bgrid = Grid(glons, glats, gelevs)
+    points = Points(lons, lats, elevs)
+    pbackground = grid2points(bgrid, points, background, operator=interpol,
+                              elev_gradient=elev_gradient)
 
     # Remove undefined backgrounds
     if any(np.isnan(pbackground)):
@@ -526,30 +530,22 @@ def horizontal_oi(
                 elevs2.append(elevs[point])
                 values2.append(values[point])
         values = values2
-        points = gridpp.Points(lats2, lons2, elevs2)
-        if interpol == "bilinear":
-            pbackground = gridpp.simple_gradient(
-                bgrid, points, background, elev_gradient, gridpp.Bilinear
-            )
+        points = Points(lons2, lats2, elevs2)
+        pbackground = grid2points(bgrid, points, background, operator=interpol,
+                                  elev_gradient=elev_gradient)
 
-        elif interpol == "nearest":
-            pbackground = gridpp.simple_gradient(
-                bgrid, points, background, elev_gradient, gridpp.Nearest
-            )
-        else:
-            raise NotImplementedError
-
-    variance_ratios = np.full(points.size(), epsilon)
+    variance_ratios = np.full(points.points.size(), epsilon)
 
     if structure_function == "Barnes":
         structure = gridpp.BarnesStructure(hlength, vlength, wlength)
     else:
         raise NotImplementedError
 
+    background = np.transpose(background)
     field = gridpp.optimal_interpolation(
-        bgrid,
+        bgrid.grid,
         background,
-        points,
+        points.points,
         values,
         variance_ratios,
         pbackground,

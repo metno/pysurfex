@@ -1,18 +1,12 @@
 """Test grib."""
-from datetime import datetime
-
 import pytest
-from eccodes import (
-    codes_grib_new_from_samples,
-    codes_release,
-    codes_set,
-    codes_set_array,
-    codes_write,
-)
+import json
 
 from surfex.cache import Cache
+from surfex.datetime_utils import as_datetime
 from surfex.geo import ConfProj
 from surfex.read import ConvertedInput, Converter
+from surfex.grib import Grib1Variable, Grib2Variable, Grib
 
 
 @pytest.fixture(scope="module")
@@ -34,89 +28,9 @@ def domain_dict():
     return domain
 
 
-@pytest.fixture(scope="module")
-def geo(domain_dict):
-    return ConfProj(domain_dict)
 
-
-@pytest.fixture(scope="session")
-def grib1_fg_file(tmp_path_factory):
-    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/fc2020111303+0003grib1"
-
-    messages = [
-        {
-            "editionNumber": 1,
-            "table2Version": 253,
-            "centre": 233,
-            "generatingProcessIdentifier": 40,
-            "indicatorOfParameter": 11,
-            "indicatorOfTypeOfLevel": 109,
-            "level": 65,
-            "timeRangeIndicator": 0,
-            "subCentre": 255,
-            "paramId": "233253011",
-            "dataDate": 20201113,
-            "dataTime": 300,
-            "stepUnits": 1,
-            "stepRange": "3",
-            "startStep": 3,
-            "endStep": 3,
-            "shortName": "t",
-            "GDSPresent": 1,
-            "bitmapPresent": 0,
-            "numberOfVerticalCoordinateValues": 132,
-            "Nx": 3,
-            "Ny": 2,
-            "latitudeOfFirstGridPointInDegrees": 58.828,
-            "longitudeOfFirstGridPointInDegrees": 7.893,
-            "earthIsOblate": 0,
-            "uvRelativeToGrid": 1,
-            "iScansNegatively": 0,
-            "jScansPositively": 1,
-            "jPointsAreConsecutive": 0,
-            "missingValue": -1e100,
-            "sphericalHarmonics": 0,
-            "complexPacking": 0,
-            "integerPointValues": 0,
-            "additionalFlagPresent": 0,
-            "packingType": "grid_simple",
-            "bitsPerValue": 24,
-            "values": [
-                274.938,
-                274.861,
-                274.915,
-                275.027,
-                275.573,
-                276.03,
-            ],
-            "gridType": "lambert",
-        }
-    ]
-
-    with open(fname, "wb") as fout:
-        gid = codes_grib_new_from_samples("GRIB1")
-        for msg in messages:
-            for key, value in msg.items():
-                print(key, value)
-                if key in ["pv", "values"]:
-                    codes_set_array(gid, key, value)
-                else:
-                    codes_set(gid, key, value)
-                codes_write(gid, fout)
-
-        codes_release(gid)
-    return fname
-
-
-@pytest.fixture(scope="session")
-def grib2_fg_file(tmp_path_factory):
-    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/fc2020111303+0003grib2"
-
-    return fname
-
-
-@pytest.fixture(scope="module")
-def config(grib1_fg_file, grib2_fg_file):
+@pytest.fixture()
+def config(lambert_t2m_grib1, lambert_t1_grib2):
     config = {
         "grib1": {"fcint": 10800, "file_inc": 3600, "offset": 0},
         "grib2": {"fcint": 10800, "file_inc": 3600, "offset": 0},
@@ -128,7 +42,7 @@ def config(grib1_fg_file, grib2_fg_file):
                         "type": 105,
                         "level": 2,
                         "tri": 0,
-                        "filepattern": "testdata/fc2020111303+0003grib1",
+                        "filepattern": lambert_t2m_grib1,
                     }
                 }
             }
@@ -143,7 +57,7 @@ def config(grib1_fg_file, grib2_fg_file):
                         "levelType": 103,
                         "typeOfStatisticalProcessing": -1,
                         "level": 2,
-                        "filepattern": "testdata/fc2020111303+0003grib2",
+                        "filepattern": lambert_t1_grib2,
                     }
                 }
             }
@@ -152,7 +66,35 @@ def config(grib1_fg_file, grib2_fg_file):
     return config
 
 
-def test_grib1_from_converter(config, geo):
+def get_var(edition, conf):
+    kwargs = conf["none"]
+    if edition == 1:
+        parameter = kwargs["parameter"]
+        typ = kwargs["type"]
+        level= kwargs["level"]
+        tri = kwargs["tri"]
+        var = Grib1Variable(parameter, typ, level, tri)
+        return var
+    elif edition == 2:
+        discipline = kwargs["discipline"]
+        parameter_category = kwargs["parameterCategory"]
+        parameter_number = kwargs["parameterNumber"]
+        level_type = kwargs["levelType"]
+        level = kwargs["level"]
+        type_of_statistical_processing = kwargs["typeOfStatisticalProcessing"]
+        var = Grib2Variable(discipline, parameter_category,
+                            parameter_number, level_type, level,
+                            type_of_statistical_processing)
+        return var
+
+
+def write_json_file(fname, keys):
+    with open(fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(keys, fhandler)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_grib1_from_converter(config, conf_proj_domain):
     """Test grib1 from converter."""
     # Grib 1
     fileformat = "grib1"
@@ -160,15 +102,17 @@ def test_grib1_from_converter(config, geo):
     print(var, fileformat)
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
-
-    validtime = datetime(year=2020, month=3, day=30, hour=6)
+    
+    var = get_var(1, converter_conf)
+    validtime = as_datetime("2020111306")
     cache = Cache(7200)
     initial_basetime = validtime
     converter = Converter("none", initial_basetime, defs, converter_conf, fileformat)
-    ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    ConvertedInput(conf_proj_domain, var, converter).read_time_step(validtime, cache)
 
 
-def test_grib2_from_converter(config, geo):
+@pytest.mark.usefixtures("_mockers")
+def test_grib2_from_converter(config, conf_proj_domain):
     """Test grib2 from converter."""
     fileformat = "grib2"
     var = "t1"
@@ -176,8 +120,59 @@ def test_grib2_from_converter(config, geo):
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 
-    validtime = datetime(year=2020, month=3, day=30, hour=6)
+    var = get_var(2, converter_conf)
+    validtime = as_datetime("2020111306")
     cache = Cache(7200)
     initial_basetime = validtime
     converter = Converter("none", initial_basetime, defs, converter_conf, fileformat)
-    ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    ConvertedInput(conf_proj_domain, var, converter).read_time_step(validtime, cache)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_read_rotated_ll_grib1(config, rotated_ll_t2m_grib1):
+
+    converter_conf = config["t2m"]["grib1"]["converter"]
+    var = get_var(1, converter_conf)
+    grib_file = Grib(rotated_ll_t2m_grib1)
+    assert var.is_accumulated() == False
+    var.print_keys()
+    validtime = as_datetime("2020111306")
+    grib_file.field(var, validtime)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_read_rotated_ll_grib2(config, rotated_ll_t1_grib2):
+    
+    converter_conf = config["t1"]["grib2"]["converter"]
+    var = get_var(2, converter_conf)
+    grib_file = Grib(rotated_ll_t1_grib2)
+    assert var.is_accumulated() == False
+    var.print_keys()
+    validtime = as_datetime("2020111306")
+    grib_file.field(var, validtime)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_read_regular_ll_grib1(config, regular_ll_t2m_grib1):
+
+    converter_conf = config["t2m"]["grib1"]["converter"]
+    var = get_var(1, converter_conf)
+
+    grib_file = Grib(regular_ll_t2m_grib1)
+    assert var.is_accumulated() == False
+    var.print_keys()
+    validtime = as_datetime("2020111306")
+    grib_file.field(var, validtime)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_read_regular_ll_grib2(config, regular_ll_t1_grib2):
+    
+    converter_conf = config["t1"]["grib2"]["converter"]
+    var = get_var(2, converter_conf)
+
+    grib_file = Grib(regular_ll_t1_grib2)
+    assert var.is_accumulated() == False
+    var.print_keys()
+    validtime = as_datetime("2020111306")
+    grib_file.field(var, validtime)

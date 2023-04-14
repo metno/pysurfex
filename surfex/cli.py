@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import sys
-from argparse import Action, ArgumentParser
 
 import numpy as np
 import toml
@@ -26,15 +25,26 @@ from .binary_input import (
 )
 from .bufr import BufrObservationSet
 from .cache import Cache
-from .configuration import Configuration, ConfigurationFromHarmonie
+from .cmd_parsing import (
+    parse_args_bufr2json, parse_args_create_forcing,
+    parse_args_create_namelist,
+    parse_args_first_guess_for_oi, parse_args_gridpp, parse_args_hm2pysurfex,
+    parse_args_lsm_file_assim, parse_args_masterodb, parse_args_merge_qc_data,
+    parse_args_modify_forcing, parse_args_oi2soda, parse_args_plot_points,
+    parse_args_qc2obsmon, parse_args_set_geo_from_obs_set,
+    parse_args_set_geo_from_stationlist, parse_args_shape2ign,
+    parse_args_surfex_binary, parse_args_titan, parse_cryoclim_pseudoobs,
+    parse_sentinel_obs, parse_set_domain
+    )
+from .configuration import ConfigurationFromTomlFile, ConfigurationFromHarmonieAndConfigFile
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
-from .forcing import run_time_loop, set_forcing_config
+from .forcing import run_time_loop, set_forcing_config, modify_forcing
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
 from .input_methods import get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
-from .namelist import BaseNamelist, Namelist, SystemFilePathsFromFile
+from .namelist import BaseNamelist, Namelist
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
@@ -45,726 +55,19 @@ from .netcdf import (
 )
 from .obs import Observation, sm_obs_sentinel, snow_pseudo_obs_cryoclim
 from .obsmon import write_obsmon_sqlite_file
+from .platform import SystemFilePathsFromFile
 from .read import ConvertedInput, Converter
 from .run import BatchJob, Masterodb, PerturbedOffline, SURFEXBinary
-from .timeseries import TimeSeriesFromConverter, TimeSeriesFromJson
 from .titan import (
     TitanDataSet,
     dataset_from_file,
     define_quality_control,
     merge_json_qc_data_sets,
 )
-from .util import merge_toml_env_from_files
 
 
-class LoadFromFile(Action):
-    """Load arguments from a file."""
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        """Override __call__ method."""
-        with values as f_h:
-            # parse arguments in the file and store them in the target namespace
-            parser.parse_args(f_h.read().split(), namespace)
-
-
-def parse_args_create_forcing(argv):
-    """Parse arguments to create forcing.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create offline forcing")
-    parser.add_argument("dtg_start", type=str, help="Start DTG", nargs="?")
-    parser.add_argument("dtg_stop", type=str, help="Stop DTG", nargs="?")
-    parser.add_argument(
-        "-d",
-        dest="domain",
-        type=str,
-        help="Domain file describing the points or locations",
-        nargs="?",
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration (domain) created from Harmonie environment",
-    )
-    parser.add_argument(
-        "--config_exp_surfex",
-        dest="config_exp_surfex",
-        type=str,
-        help="Toml configuration file for surfex settings potentially "
-        + "used if --harmonie is set",
-        default=None,
-        nargs="?",
-    )
-    parser.add_argument(
-        "-fb", type=str, help="First base time unless equal to dtg_start", default=None
-    )
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-c",
-        "--config",
-        dest="user_config",
-        type=str,
-        help="Configuration file "
-        + "in yaml format describing customized variable setup",
-        default=None,
-        nargs="?",
-    )
-    parser.add_argument(
-        "-t", "--timestep", type=int, help="Surfex time step", default=3600, nargs="?"
-    )
-    parser.add_argument(
-        "-ci",
-        "--cache_interval",
-        type=int,
-        help="clear cached fields after..",
-        default=3600,
-        nargs="?",
-    )
-    parser.add_argument(
-        "-i",
-        "--input_format",
-        type=str,
-        help="Default input file format",
-        default="netcdf",
-        choices=["netcdf", "grib1", "grib2", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "-ig",
-        "--input_geo",
-        dest="geo_input",
-        type=str,
-        help="Default input geometry if needed",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-o",
-        "--output_format",
-        type=str,
-        help="Output file format",
-        default="nc4",
-        choices=["netcdf", "nc4", "ascii"],
-        nargs="?",
-    )
-    parser.add_argument("-a", dest="analysis", action="store_true", default=False)
-    parser.add_argument(
-        "--interpolation",
-        dest="interpolation",
-        required=False,
-        default="bilinear",
-        choices=["nearest", "bilinear"],
-    )
-    parser.add_argument("-of", type=str, help="Output file name", default=None, nargs="?")
-    parser.add_argument(
-        "-p", "--pattern", type=str, help="Filepattern", default=None, nargs="?"
-    )
-    parser.add_argument(
-        "--zref",
-        type=str,
-        help="Temperature/humidity reference height",
-        default="ml",
-        choices=["ml", "screen"],
-    )
-    parser.add_argument(
-        "--uref",
-        type=str,
-        help="Wind reference height: screen/ml/",
-        default="ml",
-        choices=["ml", "screen"],
-    )
-    parser.add_argument("--debug", help="Show debug information", action="store_true")
-    parser.add_argument(
-        "--single", help="Print single time step twice", action="store_true"
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    group_ta = parser.add_argument_group("TA", description="Air temperature [K]")
-    group_ta.add_argument(
-        "--ta",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_ta.add_argument(
-        "--ta_converter",
-        type=str,
-        help="Converter function to air temperature",
-        default="none",
-        choices=["none"],
-    )
-
-    group_qa = parser.add_argument_group("QA", description="Specific humidity")
-    group_qa.add_argument(
-        "--qa",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_qa.add_argument(
-        "--qa_converter",
-        type=str,
-        help="Converter function to specific humidity",
-        default="none",
-        choices=["none", "rh2q", "rh2q_mslp"],
-    )
-
-    group_ps = parser.add_argument_group("PS", description="Surface air pressure [Pa]")
-    group_ps.add_argument(
-        "--ps",
-        type=str,
-        help="Surface air pressure input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_ps.add_argument(
-        "--ps_converter",
-        type=str,
-        help="Converter function to surface air pressure",
-        default="none",
-        choices=["none", "mslp2ps"],
-    )
-
-    group_dir_sw = parser.add_argument_group(
-        "DIR_SW", description="Direct shortwave radiation"
-    )
-    group_dir_sw.add_argument(
-        "--dir_sw",
-        type=str,
-        help="Direct short wave radiation input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_dir_sw.add_argument(
-        "--dir_sw_converter",
-        type=str,
-        help="Converter function to direct short wave radiation",
-        default="none",
-        choices=["none", "analysis"],
-    )
-
-    group_sca_sw = parser.add_argument_group(
-        "SCA_SW", description="Scattered short wave radiation flux"
-    )
-    group_sca_sw.add_argument(
-        "--sca_sw",
-        type=str,
-        help="Scattered short wave radiation input format",
-        default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_sca_sw.add_argument(
-        "--sca_sw_converter",
-        type=str,
-        help="Converter function to scattered shortwave radiation flux",
-        default="none",
-        choices=["none"],
-    )
-
-    group_lw = parser.add_argument_group("LW", description="Long wave radiation flux")
-    group_lw.add_argument(
-        "--lw",
-        type=str,
-        help="Long wave radiation input format",
-        default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_lw.add_argument(
-        "--lw_converter",
-        type=str,
-        help="Converter function to long wave radiation flux",
-        default="none",
-        choices=["none", "analysis"],
-    )
-
-    group_rain = parser.add_argument_group("RAIN", description="Rainfall rate")
-    group_rain.add_argument(
-        "--rain",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_rain.add_argument(
-        "--rain_converter",
-        type=str,
-        help="Converter function to rainfall rate",
-        default="totalprec",
-        choices=["none", "totalprec", "calcrain"],
-    )
-
-    group_snow = parser.add_argument_group("SNOW", description="Snowfall rate")
-    group_snow.add_argument(
-        "--snow",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_snow.add_argument(
-        "--snow_converter",
-        type=str,
-        help="Converter function to snowfall rate",
-        default="none",
-        choices=["none", "calcsnow", "snowplusgraupel"],
-    )
-
-    group_wind = parser.add_argument_group("WIND", description="Wind speed")
-    group_wind.add_argument(
-        "--wind",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_wind.add_argument(
-        "--wind_converter",
-        type=str,
-        help="Converter function to windspeed",
-        default="windspeed",
-        choices=["none", "windspeed"],
-    )
-
-    group_wind_dir = parser.add_argument_group("WIND_DIR", description="Wind direction")
-    group_wind_dir.add_argument(
-        "--wind_dir",
-        type=str,
-        help="Input format",
-        default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
-    )
-    group_wind_dir.add_argument(
-        "--wind_dir_converter",
-        type=str,
-        help="Converter function to wind direction",
-        default="winddir",
-        choices=["none", "winddir"],
-    )
-
-    group_co2 = parser.add_argument_group("CO2", description="Carbon dioxide")
-    group_co2.add_argument(
-        "--co2",
-        type=str,
-        help="CO2 input format",
-        default="default",
-        choices=["netcdf", "grib1", "constant", "grib2", "surfex"],
-    )
-    group_co2.add_argument(
-        "--co2_converter",
-        type=str,
-        help="Converter function to carbon dioxide",
-        default="none",
-        choices=["none"],
-    )
-
-    group_zs = parser.add_argument_group("ZS", description="Surface geopotential")
-    group_zs.add_argument(
-        "--zsoro",
-        type=str,
-        help="ZS input format",
-        default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_zs.add_argument(
-        "--zsoro_converter",
-        type=str,
-        help="Converter function to ZS",
-        default="none",
-        choices=["none", "phi2m"],
-    )
-
-    group_zval = parser.add_argument_group(
-        "ZREF", description="Reference height for temperature " "and humidity"
-    )
-    group_zval.add_argument(
-        "--zval",
-        type=str,
-        help="ZREF input format",
-        default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_zval.add_argument(
-        "--zval_converter",
-        type=str,
-        help="Converter function to ZREF",
-        default="none",
-        choices=["none"],
-    )
-
-    group_uval = parser.add_argument_group(
-        "UREF", description="Reference height for wind"
-    )
-    group_uval.add_argument(
-        "--uval",
-        type=str,
-        help="UREF input format",
-        default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
-    )
-    group_uval.add_argument(
-        "--uval_converter",
-        type=str,
-        help="Converter function to UREF",
-        default="none",
-        choices=["none"],
-    )
-
-    if len(argv) < 4:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-
-    user_config = {}
-    if "user_config" in kwargs and kwargs["user_config"] is not None:
-        user_config = (
-            yaml.safe_load(open(kwargs["user_config"], mode="r", encoding="utf-8")) or {}
-        )
-    kwargs.update({"user_config": user_config})
-
-    # Find name of global config file
-    root = __file__
-    if os.path.islink(root):
-        root = os.path.realpath(root)
-    base = os.path.dirname(os.path.abspath(root))
-    yaml_config = base + "/cfg/config.yml"
-
-    default_conf = yaml.safe_load(
-        open(yaml_config, mode="r", encoding="utf-8")
-    ) or sys.exit(1)
-    kwargs.update({"config": default_conf})
-    return kwargs
-
-
-def parse_args_modify_forcing(argv):
-    """Parse arguments to modify forcing.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Modify offline forcing NetCDF file")
-    parser.add_argument(
-        "-i",
-        "--input_file",
-        type=str,
-        help="Input forcing file",
-        nargs="?",
-        required=True,
-    )
-    parser.add_argument(
-        "-t",
-        "--time_step",
-        type=str,
-        help="Time step ",
-        nargs="?",
-        required=False,
-        default=-1,
-    )
-    parser.add_argument(
-        "-o",
-        "--output_file",
-        type=str,
-        help="Output forcing file",
-        nargs="?",
-        required=True,
-    )
-    parser.add_argument("variables", type=str, nargs="+", help="Variables to substitute")
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_args_qc2obsmon(argv):
-    """Parse arguments for qc2obsmon.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Create SQLite data base for obsmon")
-    parser.add_argument("dtg", type=str, help="YYYYMMDDHH")
-    parser.add_argument("varname", type=str, help="Variable name")
-    parser.add_argument("qc", type=str, help="QC dataset JSONfile")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "--operator",
-        type=str,
-        help="Obs operator",
-        choices=["bilinear", "nearest"],
-        default="bilinear",
-        required=False,
-    )
-    parser.add_argument("--fg_file", type=str, help="First guess file", required=True)
-    parser.add_argument("--an_file", type=str, help="Analysis file", required=True)
-    parser.add_argument("--file_var", type=str, help="File variable", required=True)
-    parser.add_argument(
-        "-o", dest="output", type=str, nargs="?", help="output file", default="ecma.db"
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_args_first_guess_for_oi(argv):
-    """Parse arguments for firstguess4oi.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create first guess file for gridpp")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-dtg", dest="dtg", type=str, help="Date (YYYYMMDDHH)", required=True
-    )
-    parser.add_argument(
-        "-i", "--inputfile", type=str, default=None, help="Default input file", nargs="?"
-    )
-    parser.add_argument(
-        "-if", dest="inputformat", type=str, help="Input file format", default="grib2"
-    )
-    parser.add_argument(
-        "-d", dest="domain", type=str, help="Domain", required=False, default=None
-    )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration (domain) created from Harmonie environment",
-    )
-
-    parser.add_argument(
-        "-t2m_file", type=str, default=None, help="File with T2M", nargs="?"
-    )
-    parser.add_argument(
-        "-t2m_format",
-        type=str,
-        default=None,
-        help="File format for file with T2M",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "-t2m_converter",
-        type=str,
-        default="none",
-        help="Converter for T2M",
-        nargs="?",
-        choices=["none", "tap"],
-    )
-    parser.add_argument(
-        "-rh2m_file", type=str, default=None, help="File with RH2M", nargs="?"
-    )
-    parser.add_argument(
-        "-rh2m_format",
-        type=str,
-        default=None,
-        help="File format for file with RH2M",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "-rh2m_converter",
-        type=str,
-        default="none",
-        help="Converter for RH2M",
-        nargs="?",
-        choices=["none", "rhp"],
-    )
-
-    parser.add_argument(
-        "-sd_file", type=str, default=None, help="Snow depth file", nargs="?"
-    )
-    parser.add_argument(
-        "-sd_format",
-        type=str,
-        default=None,
-        help="Snow depth file format",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "--sd_converter",
-        type=str,
-        default="none",
-        help="",
-        nargs="?",
-        choices=["none", "sweclim", "swe2sd", "sdp"],
-    )
-
-    parser.add_argument(
-        "-cb_file", type=str, default=None, help="Cloud base file", nargs="?"
-    )
-    parser.add_argument(
-        "-cb_format",
-        type=str,
-        default=None,
-        help="Cloud base file format",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "--cb_converter",
-        type=str,
-        default="cloud_base",
-        help="",
-        nargs="?",
-        choices=["cloud_base"],
-    )
-
-    parser.add_argument(
-        "-sm_file", type=str, default=None, help="Soil moisture file", nargs="?"
-    )
-    parser.add_argument(
-        "-sm_format",
-        type=str,
-        default=None,
-        help="Soil moisture file format",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "--sm_converter",
-        type=str,
-        default="none",
-        help="",
-        nargs="?",
-        choices=["none", "smp"],
-    )
-
-    parser.add_argument(
-        "-laf_file",
-        type=str,
-        default=None,
-        help="Land area fraction grib file",
-        nargs="?",
-    )
-    parser.add_argument(
-        "-laf_format",
-        type=str,
-        default=None,
-        help="Snow depth file format",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "--laf_converter",
-        type=str,
-        default="nature_town",
-        help="",
-        nargs="?",
-        choices=["none", "sea2land", "nature_town"],
-    )
-
-    parser.add_argument(
-        "-altitude_file", type=str, default=None, help="SURFEX grib file", nargs="?"
-    )
-    parser.add_argument(
-        "-altitude_format",
-        type=str,
-        default=None,
-        help="Snow depth file format",
-        nargs="?",
-        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
-    )
-    parser.add_argument(
-        "--altitude_converter",
-        type=str,
-        default="phi2m",
-        help="",
-        nargs="?",
-        choices=["none", "phi2m"],
-    )
-
-    parser.add_argument(
-        "-o", dest="output", type=str, help="Output file", default="raw.nc"
-    )
-    parser.add_argument(
-        "--config",
-        "-c",
-        dest="config",
-        type=str,
-        help="YAML config file",
-        default="first_guess.yml",
-        nargs="?",
-    )
-    parser.add_argument(
-        "variables",
-        nargs="+",
-        choices=[
-            "air_temperature_2m",
-            "relative_humidity_2m",
-            "surface_snow_thickness",
-            "cloud_base",
-            "surface_soil_moisture",
-        ],
-        help="Variables to create first guess for",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_first_guess_for_oi(**kwargs):
-    """Run first guess for oi."""
+def get_geo_and_config_from_cmd(**kwargs):
+    """Get geo and config from cmd."""
     if "harmonie" in kwargs and kwargs["harmonie"]:
         config_exp = None
         if "config_exp" in kwargs:
@@ -775,27 +78,42 @@ def run_first_guess_for_oi(**kwargs):
                 f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
             )
         logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
+        config = ConfigurationFromHarmonieAndConfigFile(os.environ, config_exp)
         geo = config.geo
     else:
         if "domain" in kwargs:
             domain = kwargs["domain"]
             if os.path.exists(domain):
-                geo = get_geo_object(json.load(open(domain, "r", encoding="utf-8")))
+                with open(domain, mode="r", encoding="utf-8") as fhandler:
+                    geo = get_geo_object(json.load(fhandler))
             else:
                 raise FileNotFoundError(domain)
         else:
-            raise Exception("Domain is needed")
+            geo = None
 
-    config_file = kwargs["config"]
+        if "config" in kwargs:
+            config = kwargs["config"]
+            if os.path.exists(config):
+                config = ConfigurationFromTomlFile(config)
+            else:
+                raise FileNotFoundError("File not found: " + config)
+        else:
+            config = None
+    return config, geo
+
+
+def run_first_guess_for_oi(**kwargs):
+    """Run first guess for oi."""
+    config, geo = get_geo_and_config_from_cmd(**kwargs)
+
+    config_file = kwargs["input_config"]
     if not os.path.exists(config_file):
         raise FileNotFoundError(config_file)
 
     if "output" in kwargs:
         output = kwargs["output"]
     else:
-        raise Exception("No output file provided")
+        raise RuntimeError("No output file provided")
 
     dtg = kwargs["dtg"]
     validtime = as_datetime(dtg)
@@ -868,10 +186,10 @@ def run_first_guess_for_oi(**kwargs):
             raise NotImplementedError("Variable not implemented " + var)
 
         if inputfile is None:
-            raise Exception("You must set input file")
+            raise RuntimeError("You must set input file")
 
         if fileformat is None:
-            raise Exception("You must set file format")
+            raise RuntimeError("You must set file format")
 
         logging.debug(inputfile)
         logging.debug(fileformat)
@@ -886,7 +204,7 @@ def run_first_guess_for_oi(**kwargs):
         if converter not in config[var][fileformat]["converter"]:
             logging.debug("config_file: %s", config_file)
             logging.debug("config: %s", config)
-            raise Exception(f"No converter {converter} definition found in {config}!")
+            raise RuntimeError(f"No converter {converter} definition found in {config}!")
 
         initial_basetime = validtime - as_timedelta(seconds=10800)
         converter = Converter(
@@ -923,142 +241,10 @@ def run_first_guess_for_oi(**kwargs):
         f_g.close()
 
 
-def parse_args_masterodb(argv):
-    """Parse the command line input arguments for masterodb.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="SURFEX for MASTERRODB")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("--version", action="version", version=f"surfex {__version__}")
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--wrapper", "-w", type=str, default="", help="Execution wrapper command"
-    )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
-    parser.add_argument(
-        "--pgd", type=str, nargs="?", required=True, help="Name of the PGD file"
-    )
-    parser.add_argument(
-        "--prep", type=str, nargs="?", required=True, help="Name of the PREP file"
-    )
-    parser.add_argument(
-        "--force", "-f", action="store_true", default=False, help="Force re-creation"
-    )
-    parser.add_argument("--rte", "-r", required=True, nargs="?")
-    parser.add_argument("--config", "-c", required=False, nargs="?")
-    parser.add_argument(
-        "--system_file_paths",
-        "-s",
-        required=True,
-        nargs="?",
-        help="Input file paths on your system",
-    )
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
-    parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
-    )
-    parser.add_argument("--dtg", type=str, required=False, default=None)
-    parser.add_argument("--output", "-o", type=str, required=False, default=None)
-    parser.add_argument(
-        "--only_archive", action="store_true", default=False, help="Only call archiving"
-    )
-    parser.add_argument(
-        "--tolerate_missing",
-        action="store_true",
-        default=False,
-        help="Tolerate missing files",
-    )
-    parser.add_argument(
-        "--print_namelist",
-        action="store_true",
-        default=False,
-        help="Print namelsist used",
-    )
-    parser.add_argument(
-        "--mode", "-m", type=str, required=True, choices=["forecast", "canari"]
-    )
-    parser.add_argument(
-        "--archive",
-        "-a",
-        required=False,
-        default=None,
-        nargs="?",
-        help="JSON file with archive output",
-    )
-    parser.add_argument(
-        "--binary",
-        "-b",
-        required=False,
-        default=None,
-        nargs="?",
-        help="Full path of MASTERODB binary",
-    )
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_masterodb(**kwargs):
     """Run masterodb."""
     logging.debug("ARGS: %s", kwargs)
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config" in kwargs:
-            if kwargs["config"] is not None:
-                config_exp = kwargs["config"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        with open(config_exp, mode="r", encoding="utf-8") as file_handler:
-            input_data = toml.load(file_handler)
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.geo
-    else:
-        if "domain" not in kwargs:
-            raise Exception("Missing domain definition")
-        if "config" not in kwargs:
-            raise Exception("Missing config")
-
-        domain = kwargs["domain"]
-        if os.path.exists(domain):
-            with open(domain, mode="r", encoding="utf-8") as file_handler:
-                domain_json = json.load(file_handler)
-            geo = get_geo_object(domain_json)
-        else:
-            raise FileNotFoundError("File not found: " + domain)
-
-        config = kwargs["config"]
-        if os.path.exists(config):
-            with open(config, mode="r", encoding="utf-8") as file_handler:
-                logging.debug("config %s", config)
-                input_data = toml.load(file_handler)
-            config = Configuration(input_data)
-        else:
-            raise FileNotFoundError("File not found: " + config)
+    config, geo = get_geo_and_config_from_cmd(**kwargs)
 
     if "config" in kwargs:
         del kwargs["config"]
@@ -1208,174 +394,10 @@ def run_masterodb(**kwargs):
             logging.info("Masterodb is None")
 
 
-def parse_args_surfex_binary(argv, mode):
-    """Parse the command line input arguments for surfex binary.
-
-    Args:
-        argv (list): List with arguments.
-        mode(str): Type of surfex binary
-
-    Raises:
-        NotImplementedError: Mode not implemented
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    pert = False
-    need_pgd = True
-    need_prep = True
-    if mode == "pgd":
-        need_pgd = False
-        need_prep = False
-        desc = "Create physiography for SURFEX (PGD)"
-    elif mode == "prep":
-        need_prep = False
-        desc = "Prepare initial conditions for SURFEX"
-    elif mode == "offline":
-        desc = "Run Offline SURFEX"
-    elif mode == "soda":
-        desc = "Run SURFEX data assimilation (SODA)"
-    elif mode == "perturbed":
-        pert = True
-        desc = "Run perturbed Offline SURFEX"
-    else:
-        raise NotImplementedError(mode + " is not implemented!")
-
-    parser = ArgumentParser(description=desc)
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--wrapper", "-w", type=str, default="", help="Execution wrapper command"
-    )
-    if need_pgd:
-        parser.add_argument(
-            "--pgd", type=str, nargs="?", required=True, help="Name of the PGD file"
-        )
-    if need_prep:
-        parser.add_argument(
-            "--prep", type=str, nargs="?", required=True, help="Name of the PREP file"
-        )
-    if mode == "prep":
-        parser.add_argument("--prep_file", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_filetype", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_pgdfile", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_pgdfiletype", required=False, default=None, nargs="?")
-    if mode == "offline" or mode == "perturbed":
-        parser.add_argument(
-            "--forc_zs",
-            action="store_true",
-            default=False,
-            help="Set model ZS to forcing ZS",
-        )
-        parser.add_argument("--forcing_dir", required=False, default=None, nargs="?")
-    parser.add_argument("--force", "-f", action="store_true", help="Force re-creation")
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
-    parser.add_argument(
-        "--print_namelist", action="store_true", default=False, help="Print namelist used"
-    )
-    parser.add_argument(
-        "--tolerate_missing",
-        action="store_true",
-        default=False,
-        help="Tolerate missing files",
-    )
-    parser.add_argument(
-        "--masterodb",
-        action="store_true",
-        default=False,
-        help="Input file written by masterodb",
-    )
-    parser.add_argument("--rte", "-r", required=True, nargs="?")
-    parser.add_argument("--config", "-c", required=False, nargs="?")
-    parser.add_argument(
-        "--system_file_paths",
-        "-s",
-        required=True,
-        nargs="?",
-        help="Input file paths on your system",
-    )
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
-    parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
-    )
-    parser.add_argument("--output", "-o", type=str, required=True)
-    parser.add_argument("--dtg", type=str, required=False, default=None)
-    if pert:
-        parser.add_argument("--pert", "-p", type=int, required=False, default=None)
-        parser.add_argument(
-            "--negpert", action="store_true", default=False, help="Negative perturbation"
-        )
-    parser.add_argument(
-        "--archive",
-        "-a",
-        type=str,
-        required=False,
-        default=None,
-        nargs="?",
-        help="JSON file with archive output",
-    )
-    parser.add_argument("binary", type=str, help="Command to run")
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_surfex_binary(mode, **kwargs):
     """Run a surfex binary."""
     logging.debug("ARGS: %s", kwargs)
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config" in kwargs:
-            if kwargs["config"] is not None:
-                config_exp = kwargs["config"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, mode="r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.geo
-    else:
-        if "domain" not in kwargs:
-            raise Exception("Missing domain definition")
-        if "config" not in kwargs:
-            raise Exception("Missing config")
-
-        domain = kwargs["domain"]
-        if os.path.exists(domain):
-            with open(domain, mode="r", encoding="utf-8") as file_handler:
-                domain_json = json.load(file_handler)
-            geo = get_geo_object(domain_json)
-        else:
-            raise FileNotFoundError("File not found: " + domain)
-
-        config = kwargs["config"]
-        if os.path.exists(config):
-            with open(config, mode="r", encoding="utf-8") as file_handler:
-                logging.debug(config)
-                input_data = toml.load(file_handler)
-            config = Configuration(input_data)
-        else:
-            raise FileNotFoundError("File not found: " + config)
+    config, geo = get_geo_and_config_from_cmd(**kwargs)
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -1640,105 +662,11 @@ def run_surfex_binary(mode, **kwargs):
         logging.info("%s already exists!", output)
 
 
-def parse_args_create_namelist(argv):
-    """Parse the command line input arguments for creating a namelist.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create namelist")
-    parser.add_argument("--version", action="version", version=__version__)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--wrapper", "-w", type=str, default="", help="Execution wrapper command"
-    )
-    parser.add_argument("mode", type=str, help="Type of namelist")
-    parser.add_argument("--method", required=False, default="blocks", nargs="?")
-    parser.add_argument("--prep_file", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_filetype", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_pgdfile", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_pgdfiletype", required=False, default=None, nargs="?")
-    parser.add_argument(
-        "--forc_zs", action="store_true", default=False, help="Set model ZS to forcing ZS"
-    )
-    parser.add_argument("--forcing_dir", required=False, default=None, nargs="?")
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
-    parser.add_argument(
-        "--system_file_paths",
-        "-s",
-        required=True,
-        nargs="?",
-        help="Input file paths on your system",
-    )
-    parser.add_argument("--config", "-c", required=False, nargs="?")
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
-    parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
-    )
-    parser.add_argument("--output", "-o", type=str, required=False)
-    parser.add_argument("--dtg", type=str, required=False, default=None)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_create_namelist(**kwargs):
     """Create a namelist."""
     logging.debug("ARGS: %s", kwargs)
+    config, geo = get_geo_and_config_from_cmd(**kwargs)
     mode = kwargs.get("mode")
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config" in kwargs:
-            if kwargs["config"] is not None:
-                config_exp = kwargs["config"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, mode="r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.geo
-    else:
-        if "domain" not in kwargs:
-            raise Exception("Missing domain definition")
-        if "config" not in kwargs:
-            raise Exception("Missing config")
-
-        domain = kwargs["domain"]
-        if os.path.exists(domain):
-            with open(domain, mode="r", encoding="utf-8") as file_handler:
-                domain_json = json.load(file_handler)
-            geo = get_geo_object(domain_json)
-        else:
-            raise FileNotFoundError("File not found: " + domain)
-
-        config = kwargs["config"]
-        if os.path.exists(config):
-            with open(config, mode="r", encoding="utf-8") as file_handler:
-                logging.debug(config)
-                input_data = toml.load(file_handler)
-            config = Configuration(input_data)
-        else:
-            raise FileNotFoundError("File not found: " + config)
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -1817,92 +745,6 @@ def run_create_namelist(**kwargs):
     my_settings.write(output)
 
 
-def parse_args_gridpp(argv):
-    """Parse the command line input arguments for gridpp.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create horisontal OI analysis")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-i",
-        "--input_file",
-        type=str,
-        help="Input NetCDF file with all variables",
-        required=True,
-    )
-    parser.add_argument(
-        "-obs",
-        "--obs_file",
-        type=str,
-        help="Input JSON file with QC observations",
-        required=True,
-    )
-    parser.add_argument(
-        "-o",
-        "--output_file",
-        type=str,
-        help="Output NetCDF file with all variables",
-        required=True,
-    )
-    parser.add_argument("-v", "--var", type=str, help="Variable", required=True)
-    parser.add_argument("-hor", dest="hlength", type=float, required=True)
-    parser.add_argument(
-        "-vert", dest="vlength", type=float, default=100000, required=False
-    )
-    parser.add_argument(
-        "--wlength", dest="wlength", type=float, default=0.0, required=False
-    )
-    parser.add_argument(
-        "--maxLocations", dest="max_locations", type=int, default=20, required=False
-    )
-    parser.add_argument(
-        "--elevGradient",
-        dest="elev_gradient",
-        type=float,
-        default=0,
-        required=False,
-        choices=[0, -0.0065],
-    )
-    parser.add_argument(
-        "--epsilon", dest="epsilon", type=float, default=0.25, required=False
-    )
-    parser.add_argument(
-        "--minvalue", dest="minvalue", type=float, default=None, required=False
-    )
-    parser.add_argument(
-        "--maxvalue", dest="maxvalue", type=float, default=None, required=False
-    )
-    parser.add_argument(
-        "--only_diff",
-        action="store_true",
-        help="Only write differences to file",
-        required=False,
-        default=False,
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_gridpp(**kwargs):
     """Gridpp."""
     var = kwargs["var"]
@@ -1924,7 +766,7 @@ def run_gridpp(**kwargs):
     if "elev_gradient" in kwargs:
         elev_gradient = kwargs["elev_gradient"]
     if elev_gradient != -0.0065 and elev_gradient != 0:
-        raise Exception("Not a valid elevation gradient")
+        raise RuntimeError("Not a valid elevation gradient")
     epsilon = 0.25
     if "epsilon" in kwargs:
         epsilon = kwargs["epsilon"]
@@ -1973,107 +815,14 @@ def run_gridpp(**kwargs):
         )
 
 
-def parse_args_titan(argv):
-    """Parse the command line input arguments for titan.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Do quality control of observations")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-i",
-        "--input_file",
-        type=str,
-        help="Input json file with observation sets and test settings",
-        required=True,
-    )
-    parser.add_argument(
-        "-o",
-        "--output_file",
-        type=str,
-        help="Output json file with quality checked observations",
-        required=False,
-        default="qc_obs.json",
-    )
-    parser.add_argument(
-        "-v", "--variable", type=str, required=True, help="Observation variable"
-    )
-    parser.add_argument("--indent", type=int, default=None, help="Indent")
-    parser.add_argument(
-        "-dtg", type=str, help="Date time group YYYYMMDDHH", required=True
-    )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
-    parser.add_argument(
-        "tests", nargs="+", type=str, help="Which tests to run and order to run"
-    )
-    parser.add_argument(
-        "--blacklist",
-        dest="blacklist_file",
-        type=str,
-        required=False,
-        default=None,
-        help="JSON file with blacklist",
-    )
-    parser.add_argument(
-        "--domain", type=str, required=False, default=None, help="JSON file with domain"
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_titan(**kwargs):
     """Titan."""
-    geo = None
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config" in kwargs:
-            if kwargs["config"] is not None:
-                config_exp = kwargs["config"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo = config.geo
-    elif "domain" in kwargs:
-        if kwargs["domain"] is not None:
-            geo = get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
-
-    # Set domain geo if set
+    __, domain_geo = get_geo_and_config_from_cmd(**kwargs)
     if "domain_geo" in kwargs:
-        if geo is not None:
+        if domain_geo is not None:
             logging.info("Override domain with domain_geo")
-            geo = kwargs["domain_geo"]
-
-    if geo is None:
-        raise Exception("You must set domain geometry!")
-    domain_geo = geo
+        with open(kwargs["domain_geo"], mode="r", encoding="utf-8") as fhandler:
+            domain_geo = json.load(fhandler)
 
     blacklist = None
     if "blacklist" in kwargs:
@@ -2092,7 +841,7 @@ def run_titan(**kwargs):
         if "input_data" in kwargs:
             settings = kwargs["input_data"]
         else:
-            raise Exception("You must specify input_file or input_data")
+            raise RuntimeError("You must specify input_file or input_data")
 
     tests = kwargs["tests"]
     output_file = None
@@ -2117,78 +866,6 @@ def run_titan(**kwargs):
 
     if output_file is not None:
         data_set.write_output(output_file, indent=indent)
-
-
-def parse_args_oi2soda(argv):
-    """Parse the command line input arguments for oi2soda.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create ASCII input for SODA from gridpp files")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "--t2m_file", type=str, help="NetCDF file for T2M", required=False, default=None
-    )
-    parser.add_argument(
-        "--t2m_var",
-        type=str,
-        help="NetCDF variable name for T2M",
-        required=False,
-        default="air_temperature_2m",
-    )
-    parser.add_argument(
-        "--rh2m_file", type=str, help="NetCDF file for RH2M", required=False, default=None
-    )
-    parser.add_argument(
-        "--rh2m_var",
-        type=str,
-        help="NetCDF variable name for RH2M",
-        required=False,
-        default="relative_humidity_2m",
-    )
-    parser.add_argument(
-        "--sd_file", type=str, help="NetCDF file for SD", required=False, default=None
-    )
-    parser.add_argument(
-        "--sd_var",
-        type=str,
-        help="NetCDF variable name for SD",
-        required=False,
-        default="surface_snow_thickness",
-    )
-    parser.add_argument(
-        "--sm_file", type=str, help="NetCDF file for SM", required=False, default=None
-    )
-    parser.add_argument(
-        "--sm_var",
-        type=str,
-        help="NetCDF variable name for SM",
-        required=False,
-        default="surface_soil_moisture",
-    )
-    parser.add_argument("dtg", nargs="?", type=str, help="DTG", default=None)
-    parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) < 3:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
 
 
 def run_oi2soda(**kwargs):
@@ -2216,162 +893,9 @@ def run_oi2soda(**kwargs):
     oi2soda(dtg, t2m=t2m, rh2m=rh2m, s_d=s_d, s_m=s_m, output=output)
 
 
-def parse_args_lsm_file_assim(argv):
-    """Parse the command line input arguments for land-sea-mask for assimilation.
-
-    Args:
-        argv (list): List with arguments.
-
-    Raises:
-        FileNotFoundError: Domain not found
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser(description="Create ASCII LSM input for SODA")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("--file", type=str, help="Input file name", required=True)
-    parser.add_argument("--fileformat", type=str, help="Input fileformat", required=True)
-    parser.add_argument(
-        "--var",
-        type=str,
-        help="Variable in input file",
-        required=False,
-        default="air_temperature_2m",
-    )
-    parser.add_argument(
-        "--converter",
-        type=str,
-        help="Converter for variable",
-        required=False,
-        default="none",
-    )
-    parser.add_argument("--dtg", type=str, help="DTG", default=None, required=False)
-    parser.add_argument("--domain", type=str, help="Domain", required=True)
-    parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) < 3:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-
-    domain = kwargs["domain"]
-    logging.debug("domain=%s", domain)
-    if os.path.exists(domain):
-        domain_json = json.load(open(domain, "r", encoding="utf-8"))
-        kwargs.update({"geo": get_geo_object(domain_json)})
-    else:
-        raise FileNotFoundError(domain)
-    dtg = kwargs["dtg"]
-    if dtg is not None and isinstance(dtg, str):
-        kwargs.update({"dtg": as_datetime(dtg)})
-    return kwargs
-
-
-def run_lsm_file_assim(**kwargs):
-    """Create LSM file for assimilation."""
-    validtime = kwargs["dtg"]
-    cache = Cache(3600)
-
-    geo = kwargs["geo"]
-    inputfile = kwargs["file"]
-    fileformat = kwargs["fileformat"]
-    converter = kwargs["converter"]
-    output = kwargs["output"]
-
-    var = kwargs["var"]
-
-    defs = {
-        "filepattern": inputfile,
-        "fileformat": fileformat,
-        "fcint": 10800,
-        "offset": 0,
-    }
-
-    logging.debug("%s %s", var, fileformat)
-    converter_conf = {"none": {"name": var}}
-
-    var = "LSM"
-    initial_basetime = validtime - as_timedelta(seconds=10800)
-    converter = Converter(converter, initial_basetime, defs, converter_conf, fileformat)
-    field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
-    field = np.reshape(field, [geo.nlons, geo.nlats])
-    field = np.transpose(field)
-
-    file_handler = open(output, "w", encoding="utf-8")
-    for lat in range(0, geo.nlats):
-        for lon in range(0, geo.nlons):
-            file_handler.write(str(field[lat, lon]) + "\n")
-    file_handler.close()
-
-
-def parse_args_hm2pysurfex(argv):
-    """Parse the command line input arguments for hm2pysurfex.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("hm2pysurfex")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-c", dest="config", type=str, required=True, help="PySurfex config file"
-    )
-    parser.add_argument(
-        "-e",
-        dest="environment",
-        type=str,
-        required=False,
-        default=None,
-        help="Environment if not taken from running environment",
-    )
-    parser.add_argument(
-        "-o",
-        dest="output",
-        type=str,
-        required=False,
-        default=None,
-        help="Output toml file",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
 def run_hm2pysurfex(**kwargs):
     """Harmonie to pysurfex."""
     pysurfex_config = kwargs["config"]
-    if os.path.exists(pysurfex_config):
-        pysurfex_config = toml.load(open(pysurfex_config, "r", encoding="utf-8"))
-    else:
-        raise FileNotFoundError("Could not find " + pysurfex_config)
 
     output = None
     if "output" in kwargs:
@@ -2383,62 +907,13 @@ def run_hm2pysurfex(**kwargs):
         environment.update(json.load(open(environment_file, "r", encoding="utf-8")))
 
     # Create configuration
-    config = ConfigurationFromHarmonie(environment, pysurfex_config)
+    config = ConfigurationFromHarmonieAndConfigFile(environment, pysurfex_config)
 
     if output is None:
         logging.info("Config settings %s", config.settings)
     else:
-        toml.dump(config.settings, open(output, "w", encoding="utf-8"))
-
-
-def parse_args_bufr2json(argv):
-    """Parse the command line input arguments for bufr2json.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("bufr2json")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("-b", dest="bufr", type=str, required=True, help="Bufr file")
-    parser.add_argument(
-        "-v", dest="vars", nargs="+", type=str, required=True, help="Variables"
-    )
-    parser.add_argument(
-        "-o", dest="output", type=str, required=True, help="Output JSON file"
-    )
-    parser.add_argument(
-        "-dtg", dest="dtg", type=str, required=True, help="DTG (YYYYMMDHH)"
-    )
-    parser.add_argument(
-        "--indent", dest="indent", type=int, required=False, default=None, help="Indent"
-    )
-    parser.add_argument(
-        "-range",
-        dest="valid_range",
-        type=str,
-        help="Valid range in seconds",
-        default=3600,
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
+        with  open(output, "w", encoding="utf-8") as fhandler:
+            toml.dump(config.settings, fhandler)
 
 
 def run_bufr2json(**kwargs):
@@ -2471,157 +946,6 @@ def run_bufr2json(**kwargs):
     )
 
     bufr_set.write_json_file(output, indent=indent)
-
-
-def parse_args_plot_points(argv):
-    """Parse the command line input arguments for plotting points.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Plot points")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-g",
-        "--geo",
-        dest="geo",
-        type=str,
-        help="Domain/points json geometry definition file",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-v",
-        "--variable",
-        dest="variable",
-        type=str,
-        help="Variable name",
-        required=False,
-    )
-    parser.add_argument(
-        "-i",
-        "--inputfile",
-        dest="inputfile",
-        type=str,
-        help="Input file",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-it",
-        "--inputtype",
-        dest="inputtype",
-        type=str,
-        help="Filetype",
-        default="surfex",
-        required=False,
-        choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
-    )
-    parser.add_argument(
-        "-t",
-        "--validtime",
-        dest="validtime",
-        type=str,
-        help="Valid time",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Output file",
-        default=None,
-        required=False,
-    )
-    parser.add_argument("--no-contour", dest="no_contour", action="store_true")
-    parser.add_argument(
-        "--interpolator", type=str, default="nearest", required=False, help="Interpolator"
-    )
-    grib = parser.add_argument_group("grib", "Grib1/2 settings (-it grib1 or -it grib2)")
-    grib.add_argument(
-        "--indicatorOfParameter",
-        type=int,
-        help="Indicator of parameter [grib1]",
-        default=None,
-    )
-    grib.add_argument(
-        "--timeRangeIndicator", type=int, help="Time range indicator [grib1]", default=0
-    )
-    grib.add_argument(
-        "--levelType", type=str, help="Level type [grib1/grib2]", default="sfc"
-    )
-    grib.add_argument("--level", type=int, help="Level [grib1/grib2]", default=0)
-    grib.add_argument("--discipline", type=int, help="Discipline [grib2]", default=None)
-    grib.add_argument(
-        "--parameterCategory", type=int, help="Parameter category [grib2]", default=None
-    )
-    grib.add_argument(
-        "--parameterNumber", type=int, help="ParameterNumber [grib2]", default=None
-    )
-    grib.add_argument(
-        "--typeOfStatisticalProcessing",
-        type=int,
-        help="TypeOfStatisticalProcessing [grib2]",
-        default=-1,
-    )
-
-    sfx = parser.add_argument_group("Surfex", "Surfex settings (-it surfex)")
-    sfx.add_argument(
-        "--sfx_type",
-        type=str,
-        help="Surfex file type",
-        default=None,
-        choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
-    )
-
-    sfx.add_argument("--sfx_patches", type=int, help="Patches [ascii/texte]", default=-1)
-    sfx.add_argument("--sfx_layers", type=int, help="Layers [ascii/texte]", default=-1)
-    sfx.add_argument(
-        "--sfx_datatype",
-        type=str,
-        help="Datatype [ascii]",
-        choices=["string", "float", "integer"],
-        default="float",
-    )
-    sfx.add_argument("--sfx_interval", type=str, help="Interval [texte]", default=None)
-    sfx.add_argument("--sfx_basetime", type=str, help="Basetime [texte]", default=None)
-    sfx.add_argument(
-        "--sfx_geo_input",
-        type=str,
-        default=None,
-        help="JSON file with domain defintion [forcing/netcdf/texte]",
-    )
-
-    obs = parser.add_argument_group("Observations", "Observation settings (scatter plot)")
-    obs.add_argument(
-        "--obs_type",
-        type=str,
-        help="Observation source type (-it obs)",
-        choices=[None, "json", "bufr", "frost", "netatmo"],
-        default=None,
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
 
 
 def run_plot_points(**kwargs):
@@ -2659,7 +983,7 @@ def run_plot_points(**kwargs):
     if inputtype == "grib1":
 
         if filepattern is None:
-            raise Exception("You must provide a filepattern")
+            raise RunTimeError("You must provide a filepattern")
 
         par = kwargs["indicatorOfParameter"]
         ltp = kwargs["levelType"]
@@ -2685,7 +1009,7 @@ def run_plot_points(**kwargs):
     elif inputtype == "grib2":
 
         if filepattern is None:
-            raise Exception("You must provide a filepattern")
+            raise RuntimeError("You must provide a filepattern")
 
         discipline = kwargs["discipline"]
         parameter_category = kwargs["parameterCategory"]
@@ -2725,9 +1049,9 @@ def run_plot_points(**kwargs):
     elif inputtype == "netcdf":
 
         if variable is None:
-            raise Exception("You must provide a variable")
+            raise RuntimeError("You must provide a variable")
         if filepattern is None:
-            raise Exception("You must provide a filepattern")
+            raise RuntimeError("You must provide a filepattern")
 
         title = "netcdf: " + variable + " " + validtime.strftime("%Y%m%d%H")
         var_dict = {
@@ -2742,9 +1066,9 @@ def run_plot_points(**kwargs):
     elif inputtype == "surfex":
 
         if variable is None:
-            raise Exception("You must provide a variable")
+            raise RuntimeError("You must provide a variable")
         if filepattern is None:
-            raise Exception("You must provide a filepattern")
+            raise RuntimeError("You must provide a filepattern")
 
         basetime = kwargs["sfx_basetime"]
         patches = kwargs["sfx_patches"]
@@ -2787,11 +1111,11 @@ def run_plot_points(**kwargs):
 
         contour = False
         if variable is None:
-            raise Exception("You must provide a variable")
+            raise RuntimeError("You must provide a variable")
 
         obs_input_type = kwargs["obs_type"]
         if obs_input_type is None:
-            raise Exception("You must provide an obs type")
+            raise RuntimeError("You must provide an obs type")
 
         if geo is None:
             obs_time = as_datetime(kwargs["validtime"])
@@ -2819,7 +1143,7 @@ def run_plot_points(**kwargs):
     converter_conf = defs[var][inputtype]["converter"]
 
     if geo is None:
-        raise Exception("No geo is set")
+        raise RuntimeError("No geo is set")
 
     cache = Cache(-1)
     converter = "none"
@@ -2827,7 +1151,7 @@ def run_plot_points(**kwargs):
     field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
 
     if field is None:
-        raise Exception("No field read")
+        raise RuntimeError("No field read")
 
     logging.debug(
         "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
@@ -2844,7 +1168,7 @@ def run_plot_points(**kwargs):
         contour = False
 
     if plt is None:
-        raise Exception("Matplotlib is needed to plot")
+        raise ModuleNotFoundError("Matplotlib is needed to plot")
     logging.debug(
         "lons.shape=%s lats.shape=%s field.shape=%s",
         geo.lons.shape,
@@ -2863,231 +1187,6 @@ def run_plot_points(**kwargs):
     else:
         logging.info("Saving figure in %s", output)
         plt.savefig(output)
-
-
-def parse_plot_timeseries_args(argv):
-    """Parse the command line input arguments for plotting time series.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Plot timeseries from JSON time series file")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("filename", type=str, default=None, help="JSON time series file")
-    parser.add_argument(
-        "-lon", type=float, default=None, help="Longitude", required=False
-    )
-    parser.add_argument("-lat", type=float, default=None, help="Latitude", required=False)
-    parser.add_argument(
-        "-stid", type=str, default=None, help="Station id", required=False
-    )
-    parser.add_argument(
-        "-stationlist", type=str, default=None, help="Station list", required=False
-    )
-    parser.add_argument(
-        "-start", type=str, default=None, help="Start time (YYYYMMDDHH)", required=False
-    )
-    parser.add_argument(
-        "-end", type=str, default=None, help="End time (YYYYMMDDHH)", required=False
-    )
-    parser.add_argument(
-        "-interval", type=int, default=None, help="Interval", required=False
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Input format",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) < 3:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_plot_timeseries_from_json(**kwargs):
-    """Plot time series from json."""
-    lon = kwargs["lon"]
-    lat = kwargs["lat"]
-    stid = kwargs["stid"]
-    stationlist = kwargs["stationlist"]
-    starttime = kwargs["start"]
-    if starttime is not None:
-        starttime = as_datetime(kwargs["start"])
-    endtime = kwargs["end"]
-    if endtime is not None:
-        endtime = as_datetime(kwargs["end"])
-    interval = kwargs["interval"]
-    filename = kwargs["filename"]
-    output = kwargs["output"]
-
-    if lon is None and lat is None:
-        if stid is None:
-            raise Exception("You must provide lon and lat or stid")
-        if stationlist is None:
-            raise Exception("You must provide a stationlist with the stid")
-        lons, lats = Observation.get_pos_from_stid(stationlist, [stid])
-        lon = lons[0]
-        lat = lats[0]
-
-    tseries = TimeSeriesFromJson(
-        filename,
-        lons=[lon],
-        lats=[lat],
-        starttime=starttime,
-        endtime=endtime,
-        interval=interval,
-    )
-
-    ntimes = len(tseries.times)
-    vals = np.zeros(ntimes)
-    for i, tseries_t_val in enumerate(tseries.times):
-        vals[i] = tseries_t_val[0]
-
-    ts_stid = str(tseries.stids[0])
-    if ts_stid == "NA" and stid is not None:
-        ts_stid = stid
-
-    if plt is None:
-        raise Exception("Matplotlib is needed to plot")
-
-    plt.title(f"var= {tseries.varname} lon: {str(lon)} lat: {str(lat)} stid: {ts_stid}")
-    plt.plot(tseries.times, vals)
-    if output is None:
-        plt.show()
-    else:
-        plt.savefig(output)
-
-
-def parse_args_set_geo_from_obs_set(argv):
-    """Parse the command line input arguments for setting geo from obs set.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Set a point geometry from an observation set")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-v", type=str, dest="variable", help="Variable name", required=True
-    )
-    parser.add_argument(
-        "-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True
-    )
-    parser.add_argument(
-        "-i", type=str, dest="inputfile", help="Input file", required=False
-    )
-    parser.add_argument(
-        "-it",
-        type=str,
-        dest="obs_type",
-        help="Input type",
-        required=True,
-        choices=["netatmo", "frost", "bufr", "json"],
-    )
-    parser.add_argument(
-        "--lonrange",
-        type=str,
-        dest="lonrange",
-        help="Longitude range",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "--latrange",
-        type=str,
-        dest="latrange",
-        help="Latitude range",
-        default=None,
-        required=False,
-    )
-    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_args_set_geo_from_stationlist(argv):
-    """Parse the command line input arguments for setting geo from station list.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Set a point geometry from a stationlist")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("stationlist", type=str, help="Station list")
-    parser.add_argument(
-        "--lonrange",
-        type=str,
-        dest="lonrange",
-        help="Longitude range",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "--latrange",
-        type=str,
-        dest="latrange",
-        help="Latitude range",
-        default=None,
-        required=False,
-    )
-    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
 
 
 def set_geo_from_stationlist(**kwargs):
@@ -3129,647 +1228,6 @@ def set_geo_from_stationlist(**kwargs):
     return LonLatVal(geo_json)
 
 
-def parse_merge_namelist_settings(argv):
-    """Parse the command line input arguments for merging namelist settings.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Merge namelist settings")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument("--version", action="version", version=f"surfex {__version__}")
-    parser.add_argument(
-        "--json",
-        "-j",
-        type=str,
-        nargs="+",
-        required=True,
-        help="A JSON file with run options",
-    )
-    parser.add_argument(
-        "--indent", required=False, default=2, type=int, help="Indented output"
-    )
-    parser.add_argument("--output", "-o", required=True, nargs="?")
-
-    if len(argv) == 1:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_merge_namelist_settings(my_files, output, indent=None):
-    """Merge namelist settings."""
-    json_settings = {}
-    for fname in my_files:
-        if os.path.exists(fname):
-            BaseNamelist.merge_json_namelist_file(json_settings, fname)
-        else:
-            raise FileNotFoundError
-
-    BaseNamelist.nml2ascii(json_settings, output, indent=indent)
-
-
-def parse_merge_toml_settings(argv):
-    """Parse the command line input arguments for merging toml settings.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Merge toml files")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "--toml",
-        "-t",
-        type=str,
-        nargs="+",
-        required=True,
-        help="TOML files with run options",
-    )
-    parser.add_argument("--output", "-o", required=True, nargs="?")
-
-    if len(argv) == 1:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_merge_toml_settings(**kwargs):
-    """Merge toml settings from files."""
-    my_files = kwargs["toml"]
-    my_output = kwargs["output"]
-
-    merged_settings = merge_toml_env_from_files(my_files)
-
-    # Write merged settigns
-    toml.dump(merged_settings, open(my_output, "w", encoding="utf-8"))
-
-
-def parse_args_merge_qc_data(argv):
-    """Parse the command line input arguments for merge of qc data.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-i",
-        type=str,
-        nargs="+",
-        dest="filenames",
-        help="Input QC JSON files",
-        required=True,
-    )
-    parser.add_argument(
-        "-t", dest="validtime", help="Validtime (YYYYMMDDHH)", required=True
-    )
-    parser.add_argument("--indent", type=int, help="Indent in output", default=None)
-    parser.add_argument("-o", type=str, dest="output", help="Output file", required=True)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_timeseries2json(argv):
-    """Parse the command line input arguments for time series to json.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Convert a time series to json")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-v", "--varname", dest="varname", type=str, help="Variable name", required=True
-    )
-    parser.add_argument(
-        "-lons",
-        dest="lons",
-        type=float,
-        nargs="+",
-        help="Longitudes",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-lats",
-        dest="lats",
-        type=float,
-        nargs="+",
-        help="Latitudes",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-stids",
-        dest="stations",
-        type=str,
-        nargs="+",
-        help="Longitudes",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-stations",
-        dest="stationlist",
-        type=str,
-        help="Longitudes",
-        default=None,
-        required=False,
-    )
-    parser.add_argument(
-        "-i",
-        "--filepattern",
-        dest="filepattern",
-        type=str,
-        help="Input file",
-        default="",
-        required=False,
-    )
-    parser.add_argument(
-        "-it",
-        "--inputtype",
-        dest="inputtype",
-        type=str,
-        help="Input type (format)",
-        default="surfex",
-        required=False,
-        choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
-    )
-    parser.add_argument(
-        "-start", dest="start", type=str, help="Start time (YYYYMMDDHH)", required=True
-    )
-    parser.add_argument(
-        "-end", dest="end", type=str, help="End time (YYYYMMDDHH)", required=True
-    )
-    parser.add_argument(
-        "-int",
-        dest="interval",
-        type=int,
-        help="Interval in seconds",
-        required=False,
-        default=3600,
-    )
-    parser.add_argument(
-        "-indent", dest="indent", type=int, help="Indent", required=False, default=None
-    )
-    parser.add_argument(
-        "-fcint",
-        dest="fcint",
-        type=int,
-        help="Interval between analysis in seconds",
-        required=False,
-        default=3 * 3600,
-    )
-    parser.add_argument(
-        "-file_inc",
-        dest="file_inc",
-        type=int,
-        help="Interval between analysis in seconds",
-        required=False,
-        default=3 * 3600,
-    )
-    parser.add_argument(
-        "-offset",
-        dest="offset",
-        type=int,
-        help="Offset into next forecast by seconds",
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "-sfx",
-        dest="sfx_type",
-        type=str,
-        help="Input type for surfex files",
-        default=None,
-        required=False,
-        choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
-    )
-    parser.add_argument(
-        "-geo",
-        dest="geo_in",
-        type=str,
-        help="JSON file with geometry needed for some surfex file types",
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
-        "-obs",
-        dest="obs_set",
-        type=str,
-        help="Input type",
-        default=None,
-        required=False,
-        choices=[None, "json", "bufr", "frost", "netatmo", "titan"],
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Output image",
-        default=None,
-        required=False,
-    )
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_timeseries2json(**kwargs):
-    """Run timeseries to json."""
-    lons = kwargs["lons"]
-    lats = kwargs["lats"]
-    stations = kwargs["stations"]
-    stationlist = kwargs["stationlist"]
-    starttime = kwargs["start"]
-    endtime = kwargs["end"]
-    interval = kwargs["interval"]
-    varname = kwargs["varname"]
-    inputtype = kwargs["inputtype"]
-    file_inc = kwargs["file_inc"]
-    fcint = kwargs["fcint"]
-    offset = kwargs["offset"]
-    filepattern = kwargs["filepattern"]
-    indent = kwargs["indent"]
-    sfx_type = kwargs["sfx_type"]
-    obs_set = kwargs["obs_set"]
-    start = as_datetime(starttime)
-    end = as_datetime(endtime)
-    geo_in = None
-    if "geo_in" in kwargs:
-        geo_in = kwargs["geo_in"]
-    if isinstance(geo_in, str):
-        geo_in = json.load(open(geo_in, "r", encoding="utf-8"))
-
-    # Get lon and lats from station list
-    if lons is None and lats is None:
-        if stations is None:
-            raise Exception("You must provide a station list if no stations are provided")
-        lons, lats = Observation.get_pos_from_stid(stationlist, stations)
-
-    if len(lons) != len(lats):
-        raise Exception("Mismatch in longitudes and latitudes")
-
-    delta = [0.1] * len(lons)
-    geo_json = {
-        "nam_pgd_grid": {"cgrid": "LONLATVAL"},
-        "nam_lonlatval": {"xx": lons, "xy": lats, "xdx": delta, "xdy": delta},
-    }
-    geo = LonLatVal(geo_json)
-
-    settings = {}
-    if inputtype == "surfex":
-        settings.update({"varname": varname, "filetype": sfx_type})
-    elif inputtype == "obs":
-        settings.update(
-            {
-                "varname": varname,
-                "filetype": obs_set,
-                "fcint": fcint,
-                "file_inc": file_inc,
-                "offset": offset,
-                "filepattern": filepattern,
-            }
-        )
-
-    conf = {varname: {inputtype: {"converter": {"none": settings}}}}
-
-    cache = Cache(7200)
-
-    # Create var
-    converter = "none"
-    if geo_in is not None:
-        geo_in = get_geo_object(geo_in)
-
-    ts1 = TimeSeriesFromConverter(
-        varname,
-        inputtype,
-        conf,
-        geo,
-        converter,
-        start,
-        end,
-        cache=cache,
-        interval=interval,
-        geo_in=geo_in,
-        stids_file=stationlist,
-    )
-
-    ts1.write_json("ts.json", indent=indent)
-
-
-def parse_cryoclim_pseudoobs(argv):
-    """Parse the command line input arguments for cryoclim pseudo obs.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Create CRYOCLIM pseudo-obs")
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-v",
-        "--varname",
-        dest="varname",
-        type=str,
-        help="Variable name",
-        default="surface_snow_thickness",
-        required=False,
-    )
-    parser.add_argument(
-        "-fg",
-        dest="fg_file",
-        type=str,
-        help="First guess file",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-i",
-        dest="infiles",
-        type=str,
-        nargs="+",
-        help="Infiles",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-step",
-        dest="thinning",
-        type=int,
-        help="Thinning step",
-        required=False,
-        default=4,
-    )
-    parser.add_argument(
-        "-indent", dest="indent", type=int, help="Indent", required=False, default=None
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Output image",
-        default=None,
-        required=False,
-    )
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def parse_sentinel_obs(argv):
-    """Parse the command line input arguments for sentinel observations.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Create Sentinel-1 obs")
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-v",
-        "--varname",
-        dest="varname",
-        type=str,
-        help="Variable name",
-        default="surface_soil_moisture",
-        required=False,
-    )
-    parser.add_argument(
-        "-fg",
-        dest="fg_file",
-        type=str,
-        help="First guess file",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-i",
-        dest="infiles",
-        type=str,
-        nargs="+",
-        help="Infiles",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-step",
-        dest="thinning",
-        type=int,
-        help="Thinning step",
-        required=False,
-        default=4,
-    )
-    parser.add_argument(
-        "-indent", dest="indent", type=int, help="Indent", required=False, default=None
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Output image",
-        default=None,
-        required=False,
-    )
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_cryoclim_pseuodoobs(**kwargs):
-    """Create pseudo obs from cryoclim."""
-    fg_file = kwargs["fg_file"]
-    infiles = kwargs["infiles"]
-    step = kwargs["thinning"]
-    output = kwargs["output"]
-    varname = kwargs["varname"]
-    indent = kwargs["indent"]
-
-    grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(infiles)
-    fg_geo, validtime, grid_snow_fg, __, __ = read_first_guess_netcdf_file(
-        fg_file, varname
-    )
-    q_c = snow_pseudo_obs_cryoclim(
-        validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg
-    )
-    q_c.write_output(output, indent=indent)
-
-
-def run_sentinel_obs(**kwargs):
-    """Create pseudo obs from cryoclim."""
-    fg_file = kwargs["fg_file"]
-    infiles = kwargs["infiles"]
-    step = kwargs["thinning"]
-    output = kwargs["output"]
-    varname = kwargs["varname"]
-    indent = kwargs["indent"]
-
-    grid_lons, grid_lats, grid_sm_class = read_sentinel_nc(infiles)
-    fg_geo, validtime, grid_sm_fg, __, __ = read_first_guess_netcdf_file(fg_file, varname)
-    q_c = sm_obs_sentinel(
-        validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg
-    )
-    q_c.write_output(output, indent=indent)
-
-
-def parse_args_shape2ign(argv):
-    """Parse the command line input arguments for shape fiel to ign.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("Convert NVE shape files to IGN geometry")
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-c",
-        "--catchment",
-        dest="catchment",
-        type=str,
-        help="Catchment name",
-        default="None",
-        required=False,
-    )
-    parser.add_argument(
-        "-i",
-        dest="infile",
-        type=str,
-        help="Infile/directory",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-r",
-        dest="ref_proj",
-        type=str,
-        help="Reference projection (domain file)",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "--indent", dest="indent", type=str, help="Indent", default=None, required=False
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="Output json geometry file",
-        default=None,
-        required=False,
-    )
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
-
-
-def run_shape2ign(**kwargs):
-    """Shape2ign."""
-    catchment = kwargs.get("catchment")
-    infile = kwargs.get("infile")
-    output = kwargs.get("output")
-    indent = kwargs.get("indent")
-    ref_proj = kwargs.get("ref_proj")
-
-    shape2ign(catchment, infile, output, ref_proj, indent=indent)
-
-
 def sentinel_obs(argv=None):
     """Command line interface.
 
@@ -3791,7 +1249,19 @@ def sentinel_obs(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ sentinel_obs ******************")
-    run_sentinel_obs(**kwargs)
+    fg_file = kwargs["fg_file"]
+    infiles = kwargs["infiles"]
+    step = kwargs["thinning"]
+    output = kwargs["output"]
+    varname = kwargs["varname"]
+    indent = kwargs["indent"]
+
+    grid_lons, grid_lats, grid_sm_class = read_sentinel_nc(infiles)
+    fg_geo, validtime, grid_sm_fg, __, __ = read_first_guess_netcdf_file(fg_file, varname)
+    q_c = sm_obs_sentinel(
+        validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg
+    )
+    q_c.write_output(output, indent=indent)
 
 
 def qc2obsmon(argv=None):
@@ -3840,30 +1310,6 @@ def prep(argv=None):
         )
     logging.info("************ prep ******************")
     run_surfex_binary("prep", **kwargs)
-
-
-def plot_timeseries(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_plot_timeseries_args(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ plot_timeseries ******************")
-    run_plot_timeseries_from_json(**kwargs)
 
 
 def plot_points(argv=None):
@@ -3986,7 +1432,7 @@ def cli_oi2soda(argv=None):
     run_oi2soda(**kwargs)
 
 
-def modify_forcing(argv=None):
+def cli_modify_forcing(argv=None):
     """Command line interface.
 
     Args:
@@ -4010,31 +1456,7 @@ def modify_forcing(argv=None):
     modify_forcing(**kwargs)
 
 
-def merge_toml_settings(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_merge_toml_settings(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ merge_toml_files ******************")
-    run_merge_toml_settings(**kwargs)
-
-
-def merge_qc_data(argv=None):
+def cli_merge_qc_data(argv=None):
     """Command line interface.
 
     Args:
@@ -4190,7 +1612,22 @@ def cryoclim_pseudoobs(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ cryoclim_pseudoobs ******************")
-    run_cryoclim_pseuodoobs(**kwargs)
+
+    fg_file = kwargs["fg_file"]
+    infiles = kwargs["infiles"]
+    step = kwargs["thinning"]
+    output = kwargs["output"]
+    varname = kwargs["varname"]
+    indent = kwargs["indent"]
+
+    grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(infiles)
+    fg_geo, validtime, grid_snow_fg, __, __ = read_first_guess_netcdf_file(
+        fg_file, varname
+    )
+    q_c = snow_pseudo_obs_cryoclim(
+        validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg
+    )
+    q_c.write_output(output, indent=indent)
 
 
 def create_namelist(argv=None):
@@ -4238,7 +1675,47 @@ def create_lsm_file_assim(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ create_lsm_fil ******************")
-    run_lsm_file_assim(**kwargs)
+
+    domain = kwargs["domain"]
+    logging.debug("domain=%s", domain)
+    if os.path.exists(domain):
+        domain_json = json.load(open(domain, "r", encoding="utf-8"))
+        geo = get_geo_object(domain_json)
+    else:
+        raise FileNotFoundError(domain)
+    validtime =  as_datetime(kwargs["dtg"])
+
+    # TODO Move to a method outside cli
+    cache = Cache(3600)
+    inputfile = kwargs["file"]
+    fileformat = kwargs["fileformat"]
+    converter = kwargs["converter"]
+    output = kwargs["output"]
+
+    var = kwargs["var"]
+
+    defs = {
+        "filepattern": inputfile,
+        "fileformat": fileformat,
+        "filetype": "surf",
+        "fcint": 10800,
+        "offset": 0,
+    }
+
+    logging.debug("%s %s", var, fileformat)
+    converter_conf = {"none": {"name": var, "varname": var}}
+
+    var = "LSM"
+    initial_basetime = validtime - as_timedelta(seconds=10800)
+    converter = Converter(converter, initial_basetime, defs, converter_conf, fileformat)
+    field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
+    field = np.reshape(field, [geo.nlons, geo.nlats])
+    field = np.transpose(field)
+
+    with open(output, mode="w", encoding="utf-8") as file_handler:
+        for lat in range(0, geo.nlats):
+            for lon in range(0, geo.nlons):
+                file_handler.write(str(field[lat, lon]) + "\n")
 
 
 def create_forcing(argv=None):
@@ -4288,29 +1765,6 @@ def bufr2json(argv=None):
         )
     logging.info("************ bufr2json ******************")
     run_bufr2json(**kwargs)
-
-
-def parse_set_domain(argv):
-    """Parse the command line input arguments."""
-    parser = ArgumentParser()
-
-    parser.add_argument("--version", action="version", version=f"surfex {__version__}")
-    parser.add_argument("--domain", "-d", required=True, type=str, help="Name of domain")
-    parser.add_argument("--domains", required=True, type=str, help="Domain definitions")
-    parser.add_argument(
-        "--harmonie", action="store_true", help="Domain in harmonie definition"
-    )
-    parser.add_argument(
-        "--indent", required=False, default=2, type=int, help="Indented output"
-    )
-    parser.add_argument("--output", "-o", required=True, nargs="?")
-    parser.add_argument("--debug", help="Show debug information", action="store_true")
-
-    if len(argv) == 1:
-        parser.print_help()
-        sys.exit()
-
-    return parser.parse_args(argv)
 
 
 def cli_set_domain(argv=None):
@@ -4380,7 +1834,16 @@ def cli_set_geo_from_obs_set(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ set_geo_from_obs_set ******************")
-    geo = set_geo_from_obs_set(**kwargs)
+
+    validtime = as_datetime(kwargs["validtime"])
+    geo = set_geo_from_obs_set(
+        validtime,
+        kwargs["obs_type"],
+        kwargs["variable"],
+        kwargs["inputfile"],
+        kwargs["lonrange"],
+        kwargs["latrange"]
+    )
     output = kwargs["output"]
     with open(output, mode="w", encoding="utf-8") as file_handler:
         json.dump(geo.json, file_handler)
@@ -4436,7 +1899,13 @@ def cli_shape2ign(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ shape2ign ******************")
-    run_shape2ign(**kwargs)
+    catchment = kwargs.get("catchment")
+    infile = kwargs.get("infile")
+    output = kwargs.get("output")
+    indent = kwargs.get("indent")
+    ref_proj = kwargs.get("ref_proj")
+
+    shape2ign(catchment, infile, output, ref_proj, indent=indent)
 
 
 def soda(argv=None):
@@ -4462,31 +1931,6 @@ def soda(argv=None):
         )
     logging.info("************ soda ******************")
     run_surfex_binary("soda", **kwargs)
-
-
-def timeseries2json(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-
-    kwargs = parse_timeseries2json(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ timeseries2json ******************")
-    run_timeseries2json(**kwargs)
 
 
 def titan(argv=None):

@@ -8,10 +8,7 @@ import pytest
 import tomlkit
 
 from surfex.cli import (
-    parse_args_masterodb,
-    parse_args_surfex_binary,
-    run_masterodb,
-    run_surfex_binary,
+    masterodb, soda, pgd, prep, offline, perturbed_offline
 )
 from surfex.file import NCSurfexFile
 from surfex.geo import ConfProj
@@ -55,6 +52,7 @@ def working_directory(path):
         os.chdir(prev_cwd)
 
 
+'''
 @pytest.fixture(scope="module")
 def _mockers_run_time(session_mocker, domain_dict):
     """Define mockers used in the tests for the tasks' `run` methods."""
@@ -66,6 +64,7 @@ def _mockers_run_time(session_mocker, domain_dict):
 
     # Do the actual mocking
     session_mocker.patch("surfex.file.NCSurfexFile.__init__", new=dummy_nc_surf_file)
+'''
 
 
 @pytest.fixture(scope="module")
@@ -150,13 +149,12 @@ def get_nam(tmp_path_factory):
     return nam_dir
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
 def test_run_pgd(
     get_nc_config_file, get_rte_file, get_system, domain_file, get_nam, tmp_path_factory
 ):
     """Test run NC."""
     # PGD
-    task = "pgd"
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/PGD_test.nc"
     binary = "touch PGD.nc"
@@ -180,18 +178,16 @@ def test_run_pgd(
         output,
         binary,
     ]
-    kwargs = parse_args_surfex_binary(argv, task)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_surfex_binary(task, **kwargs)
+        pgd(argv=argv)
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
 def test_run_prep(
     get_nc_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
 ):
 
     # PREP
-    task = "prep"
 
     pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
     pgd.touch()
@@ -225,17 +221,15 @@ def test_run_prep(
         output,
         binary,
     ]
-    kwargs = parse_args_surfex_binary(argv, task)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_surfex_binary(task, **kwargs)
+        prep(argv=argv)
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
 def test_run_offline(
     get_nc_config_file, get_rte_file, get_system, get_nam, tmp_path_factory, domain_file
 ):
     # OFFLINE
-    task = "offline"
 
     pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
     pgd.touch()
@@ -270,17 +264,59 @@ def test_run_offline(
         "testdata",
         binary,
     ]
-    kwargs = parse_args_surfex_binary(argv, task)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_surfex_binary(task, **kwargs)
+        offline(argv=argv)
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
+def test_run_perturbed(
+    get_nc_config_file, get_rte_file, get_system, get_nam, tmp_path_factory, domain_file
+):
+    # PERTURBED OFFLINE
+
+    pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
+    pgd.touch()
+    prep = tmp_path_factory.getbasetemp() / "PREP_input.nc"
+    prep.touch()
+    output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/SURFOUT_1_test.nc"
+    binary = "touch SURFOUT.nc"
+
+    argv = [
+        "-w",
+        "",
+        "--domain",
+        domain_file,
+        "--pgd",
+        pgd.as_posix(),
+        "--prep",
+        prep.as_posix(),
+        "-c",
+        get_nc_config_file,
+        "-s",
+        get_system,
+        "-n",
+        get_nam,
+        "-r",
+        get_rte_file,
+        "--pert", "1",
+        "-f",
+        "--tolerate_missing",
+        "-o",
+        output,
+        "--forc_zs",
+        "--forcing_dir",
+        "testdata",
+        binary,
+    ]
+    with working_directory(tmp_path_factory.getbasetemp()):
+        perturbed_offline(argv=argv)
+
+
+@pytest.mark.usefixtures("_mockers")
 def test_run_soda(
     get_nc_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
 ):
     # SODA
-    task = "soda"
 
     pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
     pgd.touch()
@@ -314,12 +350,11 @@ def test_run_soda(
         output,
         binary,
     ]
-    kwargs = parse_args_surfex_binary(argv, task)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_surfex_binary(task, **kwargs)
+        soda(argv)
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
 def test_masterodb_forecast(
     get_fa_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
 ):
@@ -357,12 +392,11 @@ def test_masterodb_forecast(
         "-b",
         binary,
     ]
-    kwargs = parse_args_masterodb(argv)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_masterodb(**kwargs)
+        masterodb(argv=argv)
 
 
-@pytest.mark.usefixtures("_mockers_run_time")
+@pytest.mark.usefixtures("_mockers")
 def test_masterodb_canari(
     get_fa_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
 ):
@@ -401,6 +435,5 @@ def test_masterodb_canari(
         "-b",
         binary,
     ]
-    kwargs = parse_args_masterodb(argv)
     with working_directory(tmp_path_factory.getbasetemp()):
-        run_masterodb(**kwargs)
+        masterodb(argv=argv)

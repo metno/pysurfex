@@ -19,15 +19,13 @@
     gridpp = "surfex.cli:gridpp"
     hm2pysurfex = "surfex.cli:hm2pysurfex"
     masterodb = "surfex.cli:masterodb"
-    merge_qc_data = "surfex.cli:merge_qc_data"
-    merge_toml_settings = "surfex.cli:merge_toml_settings"
-    modify_forcing = "surfex.cli:modify_forcing"
+    merge_qc_data = "surfex.cli:cli_merge_qc_data"
+    modify_forcing = "surfex.cli:cli_modify_forcing"
     oi2soda = "surfex.cli:cli_oi2soda"
     offline = "surfex.cli:offline"
     perturbed_offline = "surfex.cli:perturbed_offline"
     pgd = "surfex.cli:pgd"
     plot_points = "surfex.cli:plot_points"
-    plot_timeseries = "surfex.cli:plot_timeseries"
     prep = "surfex.cli:prep"
     qc2obsmon = "surfex.cli:qc2obsmon"
     sentinel_obs = "surfex.cli:sentinel_obs"
@@ -36,7 +34,6 @@
     set_geo_from_stationlist = "surfex.cli:set_geo_from_stationlist"
     shape2ign = "surfex.cli:cli_shape2ign"
     soda = "surfex.cli:soda"
-    timeseries2json = "surfex.cli:timeseries2json"
     titan = "surfex.cli:titan"
 
 [build-system]
@@ -99,8 +96,8 @@ eccodes = "^1.5.1"
 
 [tool.pytest.ini_options]
     testpaths = ["tests/unit", "tests/smoke"]
-    #addopts = "-v --cov-report=term-missing --cov-report=term:skip-covered --cov-report=xml:.coverage.xml --cov=./"
-    addopts = "-v --cov-report=term-missing --cov-report=term:skip-covered -cov-report=html --cov=./"
+    addopts = "-v --cov-report=term-missing --cov-report=term:skip-covered --cov-report=xml:.coverage.xml --cov=./"
+    #addopts = "-v --cov-report=term-missing --cov-report=term:skip-covered -cov-report=html --cov=./"
     log_cli_level = "INFO"
 
 [tool.black]

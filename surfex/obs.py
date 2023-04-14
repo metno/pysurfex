@@ -481,6 +481,7 @@ class MetFrostObservations(ObservationSet):
                 data = req.json()["data"]
                 ids = []
                 count_discard = 0
+                print(data)
                 for data_block in data:
                     my_id = data_block["id"]
                     if "masl" in data_block:

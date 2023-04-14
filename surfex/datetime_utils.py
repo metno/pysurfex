@@ -14,6 +14,12 @@ def as_datetime(dtg):
     return datetime.strptime(dtg, fmt)
 
 
+def as_datetime_string(dtg):
+    """Convert string to datetime."""
+    fmt = "%Y%m%d%H%M%S"
+    return dtg.strftime(fmt)
+
+
 def as_timedelta(seconds=0):
     """Convert seconds to timedelta."""
     return timedelta(seconds=seconds)
@@ -34,6 +40,6 @@ def isdatetime(obj):
     return isinstance(obj, date)
 
 
-def as_datetime_args(year=None, month=None, day=None, hour=0, minute=0):
+def as_datetime_args(year=None, month=None, day=None, hour=0, minute=0, second=0):
     """Set datetime object from args."""
-    return datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+    return datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)

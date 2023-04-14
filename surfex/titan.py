@@ -11,7 +11,7 @@ try:
 except ImportError:
     tit = None
 
-from .datetime_utils import as_datetime
+from .datetime_utils import as_datetime_string, as_datetime
 from .interpolation import ObsOperator, inside_grid
 from .netcdf import read_first_guess_netcdf_file
 from .observation import Observation
@@ -1562,7 +1562,7 @@ class QCDataSet(object):
                 {
                     i: {
                         "varname": self.varnames[i],
-                        "obstime": as_datetime(self.obstimes[i]),
+                        "obstime": as_datetime_string(self.obstimes[i]),
                         "lon": lon_val,
                         "lat": self.lats[i],
                         "stid": self.stids[i],
@@ -1746,7 +1746,7 @@ class TitanDataSet(QCDataSet):
             for obs_set in self.datasources:
 
                 if obs_set.label == "":
-                    raise Exception(
+                    raise RuntimeError(
                         "Observations set for quality control are "
                         "assumed to have a label"
                     )

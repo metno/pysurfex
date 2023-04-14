@@ -402,7 +402,7 @@ class Converter(object):
             if month in rhoclim:
                 field = np.divide(field, rhoclim[month])
             else:
-                raise Exception(
+                raise KeyError(
                     "Could not found climatological mean for month " + str(month)
                 )
         elif self.name == "sea2land":

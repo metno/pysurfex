@@ -6,7 +6,7 @@ import os
 import toml
 
 from .geo import ConfProj
-from .namelist import SystemFilePaths
+from .platform import SystemFilePaths
 from .util import merge_toml_env
 
 
@@ -46,7 +46,7 @@ class Configuration(object):
 
         """
         if json is None:
-            raise Exception("json module not loaded")
+            raise RuntimeError("json module not loaded")
 
         logging.debug("settings %s", self.settings)
         json.dump(self.settings, open(filename, "w", encoding="utf-8"), indent=indent)
@@ -427,8 +427,8 @@ class Configuration(object):
         E.g setting = "SURFEX#ASSIM#ASSIM_SCHEMES"
 
         Args:
-            setting: The requested setting
-            default: A fallback setting in case setting is not found
+            setting (str): The requested setting
+            default (any): A fallback setting in case setting is not found
             sep (str): A separation character between different configuration blocks
             abort (bool): Abort if setting is not found and default not set
             system_variables (dict): Arbitrary settings to substitute
@@ -893,10 +893,11 @@ class ConfigurationFromHarmonieAndConfigFile(ConfigurationFromHarmonie):
             conf_file (str): Filename with configuration
 
         """
-        conf = toml.load(open(conf_file, "r", encoding="utf-8"))
+        with open(conf_file, "r", encoding="utf-8") as fhandler:
+            conf = toml.load(fhandler)
         ConfigurationFromHarmonie.__init__(self, env, conf)
 
-
+'''
 class ConfigurationFromJsonFile(Configuration):
     """Configuration from a json file."""
 
@@ -907,5 +908,22 @@ class ConfigurationFromJsonFile(Configuration):
             filename (str): File name
 
         """
-        settings = json.load(open(filename, "r", encoding="utf-8"))
+        with open(filename, mode="r", encoding="utf-8") as fhandler:
+            settings = json.load(fhandler)
+        Configuration.__init__(self, settings)
+'''
+
+
+class ConfigurationFromTomlFile(Configuration):
+    """Configuration from a TOML file."""
+
+    def __init__(self, filename):
+        """Construct the configuration.
+
+        Args:
+            filename (str): File name
+
+        """
+        with open(filename, mode="r", encoding="utf-8") as fhandler:
+            settings = toml.load(fhandler)
         Configuration.__init__(self, settings)

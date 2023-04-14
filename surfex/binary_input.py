@@ -791,7 +791,7 @@ class SodaInputData(JsonInputData):
 
         # TODO
         fcint = 3
-        fg_dtg = self.dtg - as_timedelta(hours=fcint * 3600)
+        fg_dtg = self.dtg - as_timedelta(seconds=fcint * 3600)
         fgf = self.config.get_setting(
             "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
         )

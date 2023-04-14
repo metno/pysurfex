@@ -61,7 +61,7 @@ def test_converter(domain_dict):
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 
-    validtime = datetime(year=2020, month=2, day=1, hour=6)
+    validtime = datetime(year=2020, month=2, day=20, hour=0)
     cache = Cache(7200)
     converter = Converter(converter, validtime, defs, converter_conf, fileformat)
     field = ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)

@@ -859,7 +859,8 @@ class NCSurfexFile(SurfexIO):
         if validtime is None:
             pass
         else:
-            if hasattr(f_h, "DTCUR-YEAR"):
+            time_in_file = None
+            try:
                 year = f_h["DTCUR-YEAR"][0]
                 month = f_h["DTCUR-MONTH"][0]
                 day = f_h["DTCUR-DAY"][0]
@@ -870,11 +871,13 @@ class NCSurfexFile(SurfexIO):
                 time_in_file = as_datetime_args(
                     year=year, month=month, day=day, hour=hour
                 )
+            except IndexError:
+                logging.warning("Could not checking time")
+
+            if time_in_file is not None:
                 if validtime != time_in_file:
                     logging.error("%s %s", time_in_file, validtime)
                     raise RuntimeError("Mismatch in times in file and the wanted time")
-            else:
-                logging.info("Not checking time")
 
         geo_in = self.get_geo()
         field = f_h[var.varname][:]
