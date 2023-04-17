@@ -1,6 +1,5 @@
 """Test netCDF features."""
 
-
 from surfex.datetime_utils import as_datetime
 from surfex.netcdf import Netcdf
 

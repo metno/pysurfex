@@ -52,12 +52,13 @@
     pyproj = "^3.3.0"
     pyyaml = "^6.0"
     tomlkit = "^0.11.6"
-netcdf4 = "^1.6.3"
-gridpp = "^0.6.0"
-titanlib = "^0.3.3"
-cfunits = "^3.3.5"
-matplotlib = "^3.7.1"
-eccodes = "^1.5.1"
+
+    netcdf4 = "^1.6.3"
+    gridpp = "^0.6.0"
+    titanlib = "^0.3.3"
+    cfunits = "^3.3.5"
+    matplotlib = "^3.7.1"
+    eccodes = "^1.5.1"
 
 [tool.poetry.group.dev.dependencies]
     jupyterlab = "^3.6.1"
