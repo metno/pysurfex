@@ -1,8 +1,7 @@
-"""Platform dependent settings"""
-import os
-import logging
+"""Platform dependent settings."""
 import json
-
+import logging
+import os
 
 from .datetime_utils import as_datetime
 
@@ -52,7 +51,7 @@ class SystemFilePaths(object):
             data_dir (str):
 
         Raises:
-            Exception: If path not found and check_existence is True
+            RuntimeError: If path not found and check_existence is True
 
         See Also:
             self.parse_setting

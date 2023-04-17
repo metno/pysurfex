@@ -301,7 +301,7 @@ class SurfexFileVariable(object):
         basetime=None,
         interval=None,
         datatype="float",
-        tiletype="FULL"
+        tiletype="FULL",
     ):
         """Construct a surfex file variable.
 
@@ -531,7 +531,7 @@ class AsciiSurfexFile(SurfexIO):
                     "xy_llcorner": self.read("XY_LLCORNER", "&FULL", "float"),
                     "xcellsize": self.read("XCELLSIZE", "&FULL", "float"),
                     "ncols": self.read("NCOLS", "&FULL", "integer"),
-                    "nrows": self.read("NROWS", "&FULL", "integer"),    
+                    "nrows": self.read("NROWS", "&FULL", "integer"),
                 }
             }
             return IGN(domain)
@@ -574,7 +574,17 @@ class AsciiSurfexFile(SurfexIO):
             ll_lon = self.read("LONORI", "&FULL", "float")
             ll_lat = self.read("LATORI", "&FULL", "float")
 
-            logging.info("lon0=%s lat0=%s n_x=%s, n_y=%s d_x=%s dy=%s, ll_lon=%s, ll_lat=%s", lon0, lat0, n_x, n_y, d_x, d_y, ll_lon, ll_lat)
+            logging.info(
+                "lon0=%s lat0=%s n_x=%s, n_y=%s d_x=%s dy=%s, ll_lon=%s, ll_lat=%s",
+                lon0,
+                lat0,
+                n_x,
+                n_y,
+                d_x,
+                d_y,
+                ll_lon,
+                ll_lat,
+            )
             earth = 6.37122e6
             proj_string = (
                 f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} "
@@ -657,7 +667,8 @@ class AsciiSurfexFile(SurfexIO):
                                 for word in words:
                                     values.append(int(word))
                             elif (
-                                datatype.lower() == "logical" or datatype.lower() == "bool"
+                                datatype.lower() == "logical"
+                                or datatype.lower() == "bool"
                             ):
                                 for word in words:
                                     if word.lower().strip()[0] == "t":
@@ -981,13 +992,11 @@ class FaSurfexFile(SurfexIO):
         elif isdatetime(validtime):
             raise RuntimeError("validtime must be a datetime object")
 
-
         field, geo_in = file_handler.field(var.varname, validtime)
 
         # Reshape to fortran 2D style
-        print(field, field.shape)
+        logging.debug("field=%s, field.shape=%s", field, field.shape)
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
-        # field = np.transpose(field)
         return field, geo_in
 
     def points(self, var, geo_out, validtime=None, interpolation="nearest"):
@@ -1364,9 +1373,6 @@ class TexteSurfexFile(SurfexIO):
             var (SurfexFileVariable): Variable in surfex file.
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
 
-        Raises:
-            RuntimeError: You must set times to read forcing data
-
         Returns:
             tuple: (np.array, surfex.Geometry)
 
@@ -1540,7 +1546,7 @@ def read_surfex_field(
     geo=None,
     datatype=None,
     interval=None,
-    tiletype="FULL"
+    tiletype="FULL",
 ):
     """Read surfex field.
 
@@ -1559,11 +1565,11 @@ def read_surfex_field(
         tiletype(str, optional): Tiletype. Defaults to "FULL".
 
     Raises:
-        NotImplementedError: _description_
-        RuntimeError: _description_
+        RuntimeError: Not implemented and geo is None
+        RuntimeError: You need to provide a geo object.
 
     Returns:
-        _type_: _description_
+        field (np.ndarray): Field
 
     """
     if fileformat is None:
@@ -1578,7 +1584,9 @@ def read_surfex_field(
             if geo is None:
                 raise RuntimeError("Not implemented and geo is None")
     elif geo is None:
-        raise RuntimeError("You need to provide a geo object. Filetype is: " + str(filetype))
+        raise RuntimeError(
+            "You need to provide a geo object. Filetype is: " + str(filetype)
+        )
 
     sfx_io = get_surfex_io_object(
         filename, filetype=filetype, fileformat=fileformat, geo=geo
@@ -1611,7 +1619,7 @@ def read_surfex_points(
     datatype=None,
     interval=None,
     interpolation="nearest",
-    tiletype="FULL"
+    tiletype="FULL",
 ):
     """Read surfex points.
 
@@ -1630,6 +1638,7 @@ def read_surfex_points(
         interval (int, optional): Interval between times. Defaults to None.
         interpolation (str, optional): Interpolation method. Defaults to "nearest".
         tiletype(str, optional): Tiletype. Defaults to "FULL".
+
     Raises:
         NotImplementedError: _description_
         RuntimeError: _description_
@@ -1652,7 +1661,9 @@ def read_surfex_points(
                     f"{fileformat} is not implemented and geo is None"
                 )
     elif geo is None:
-        raise RuntimeError("You need to provide a geo object. Filetype is: " + str(filetype))
+        raise RuntimeError(
+            "You need to provide a geo object. Filetype is: " + str(filetype)
+        )
 
     sfx_io = get_surfex_io_object(
         filename, filetype=filetype, fileformat=fileformat, geo=geo

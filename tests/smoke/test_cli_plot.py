@@ -1,10 +1,5 @@
 """Test plotting."""
-import json
-
-import numpy as np
 import pytest
-from netCDF4 import Dataset
-
 
 from surfex.cli import plot_points
 
@@ -12,7 +7,6 @@ from surfex.cli import plot_points
 @pytest.mark.usefixtures("_mockers")
 def test_plot_grib1(tmp_path_factory, conf_proj_2x3_file, lambert_t2m_grib1):
     """Test plotting from grib1."""
-    
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib1.png"
     argv = [
         "-it",

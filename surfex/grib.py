@@ -479,13 +479,13 @@ class Grib2Variable(object):
         """Check if matches.
 
         Args:
-            gid (_type_): _description_
+            gid (int): Grib ID
 
         Raises:
-            Exception: _description_
+            ModuleNotFoundError: If not eccodes found
 
         Returns:
-            _type_: _description_
+            bool: True if matches
         """
         if eccodes is None:
             raise ModuleNotFoundError("eccodes not found. Needed for reading grib files")

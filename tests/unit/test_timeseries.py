@@ -1,7 +1,7 @@
 """Test timeseries."""
 import json
-import pytest
 
+import pytest
 
 from surfex.datetime_utils import as_datetime
 from surfex.geo import LonLatVal
@@ -35,20 +35,12 @@ def obsset_ts(tmp_path_factory):
     json.dump(obs, open(fname, mode="w", encoding="utf-8"))
     return fname
 
+
 def test_timeseries_from_converter_from_obs(obsset_ts, tmp_path_factory):
     starttime = as_datetime("20201113060000")
-    endtime =  as_datetime("20201113070000")
-    defs = {
-        "filetype": "json",
-        "fcint": 3600,
-        "offset": 0,
-        "filepattern": obsset_ts
-    }
-    conf = {
-        "none": {
-            "name": "air_temperature"
-        }
-    }
+    endtime = as_datetime("20201113070000")
+    defs = {"filetype": "json", "fcint": 3600, "offset": 0, "filepattern": obsset_ts}
+    conf = {"none": {"name": "air_temperature"}}
     fileformat = "obs"
     converter = Converter("none", starttime, defs, conf, fileformat)
 
@@ -61,8 +53,7 @@ def test_timeseries_from_converter_from_obs(obsset_ts, tmp_path_factory):
         }
     }
     geo = LonLatVal(positions)
-    ts = TimeSeriesFromConverter("air_temperature",
-                                 geo, converter, starttime, endtime)
+    ts = TimeSeriesFromConverter("air_temperature", geo, converter, starttime, endtime)
 
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/ts_air_temperature.json"
     ts.write_json(output_file, indent=2)

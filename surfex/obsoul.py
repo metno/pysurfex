@@ -1,7 +1,7 @@
-"""Obsoul"""
+"""Obsoul."""
 import logging
-import numpy as np
 
+import numpy as np
 
 from .datetime_utils import as_datetime, as_timedelta
 from .obs import ObservationSet
@@ -11,12 +11,27 @@ from .observation import Observation
 class ObservationDataSetFromObsoul(ObservationSet):
     """Observation set from obsoul file."""
 
-    def __init__(self, content, an_time=None, label="", obnumber=None, obtypes=None, subtypes=None,
-                 neg_dt=None, pos_dt=None):
+    def __init__(
+        self,
+        content,
+        an_time=None,
+        label="",
+        obnumber=None,
+        obtypes=None,
+        subtypes=None,
+        neg_dt=None,
+        pos_dt=None,
+    ):
         """Constuct obs set from a obsoul json file.
+
         Args:
             content(str): Obsoul content
-            an_time (datetime.datetime, optional): Analysis time
+            an_time (as_datetime, optional): Analysis time
+            neg_dt  (int, optional): Negative timedelta. Defaults to None.
+            pos_dt  (int, optional): Positive timedelta. Defaults to None.
+            obtypes  (list, optional): Observation types. Defaults to None.
+            subtypes  (list, optional): Observation sub types. Defaults to None.
+            obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
         """
         observations = []
@@ -42,7 +57,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
             subt = int(line[7:17])
             lon = float(line[17:27])
             lat = float(line[27:38])
-            stid = line[38:50].replace("'","").strip()
+            stid = line[38:50].replace("'", "").strip()
             elev = np.nan
             date = line[50:60].strip()
             time = int(line[60:67].strip())
@@ -84,14 +99,34 @@ class ObservationDataSetFromObsoul(ObservationSet):
                         if (an_time - n_dt) <= obtime <= (an_time + p_dt):
                             pass
                         else:
-                            logging.debug("Outside time window %s %s %s %s", obtime, an_time, n_dt, p_dt)
+                            logging.debug(
+                                "Outside time window %s %s %s %s",
+                                obtime,
+                                an_time,
+                                n_dt,
+                                p_dt,
+                            )
                             add_obs = False
                     else:
-                        logging.debug("Not checking time window. neg_dt=%s and/or pos_dt=%s are None", neg_dt, pos_dt)
+                        logging.debug(
+                            "Not checking time window. neg_dt=%s and/or pos_dt=%s are None",
+                            neg_dt,
+                            pos_dt,
+                        )
                 value = parts[3]
                 logging.debug("Obs %s %s %s %s", lineno, obn, obnumber, add_obs)
                 if add_obs:
-                    observations.append(Observation(obtime, lon, lat, value, elev=elev, stid=stid, varname=str(obnumber)))
+                    observations.append(
+                        Observation(
+                            obtime,
+                            lon,
+                            lat,
+                            value,
+                            elev=elev,
+                            stid=stid,
+                            varname=str(obnumber),
+                        )
+                    )
                 lineno += 1
         logging.debug("nObs %s", len(observations))
         ObservationSet.__init__(self, observations, label=label)
@@ -100,17 +135,40 @@ class ObservationDataSetFromObsoul(ObservationSet):
 class ObservationDataSetFromObsoulFile(ObservationDataSetFromObsoul):
     """Observation set from obsoul file."""
 
-    def __init__(self, filename, an_time=None, neg_dt=None, pos_dt=None, label="", obnumber=None, obtypes=None, subtypes=None):
+    def __init__(
+        self,
+        filename,
+        an_time=None,
+        neg_dt=None,
+        pos_dt=None,
+        label="",
+        obnumber=None,
+        obtypes=None,
+        subtypes=None,
+    ):
         """Constuct obs set from a obsoul file.
+
         Args:
             filename (str): File name
-            an_time (datetime.datetime, optional): Analysis time
+            an_time (as_datetime, optional): Analysis time
+            neg_dt  (int, optional): Negative timedelta. Defaults to None.
+            pos_dt  (int, optional): Positive timedelta. Defaults to None.
+            obtypes  (list, optional): Observation types. Defaults to None.
+            subtypes  (list, optional): Observation sub types. Defaults to None.
             obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
         """
         logging.info("Opening OBSOUL file %s", filename)
         with open(filename, mode="r", encoding="utf8") as fhandler:
             content = fhandler.read()
-            ObservationDataSetFromObsoul.__init__(self, content, an_time=an_time, label=label, obnumber=obnumber, pos_dt=pos_dt,
-                                                  neg_dt=neg_dt, obtypes=obtypes, subtypes=subtypes)
-        
+            ObservationDataSetFromObsoul.__init__(
+                self,
+                content,
+                an_time=an_time,
+                label=label,
+                obnumber=obnumber,
+                pos_dt=pos_dt,
+                neg_dt=neg_dt,
+                obtypes=obtypes,
+                subtypes=subtypes,
+            )

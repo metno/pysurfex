@@ -58,6 +58,7 @@ class Points:
         Args:
             p_lons(np.array): Point longitudes
             p_lats(np.array): Point latitudes
+            p_elevs(np.array, optional): Point elevations. Defaults to None.
 
         Raises:
             RuntimeError: You need gridpp for interpolation
@@ -297,8 +298,14 @@ def fill_field(field_tmp, geo, radius=1):
 
 
 def gridpos2points(
-        grid_lons, grid_lats, p_lons, p_lats, grid_values, operator="bilinear",
-        elev_gradient=None):
+    grid_lons,
+    grid_lats,
+    p_lons,
+    p_lats,
+    grid_values,
+    operator="bilinear",
+    elev_gradient=None,
+):
     """Convert grid positions to points.
 
     Args:
@@ -315,8 +322,9 @@ def gridpos2points(
     """
     grid = Grid(grid_lons, grid_lats)
     points = Points(p_lons, p_lats)
-    return grid2points(grid, points, grid_values, operator=operator,
-                       elev_gradient=elev_gradient)
+    return grid2points(
+        grid, points, grid_values, operator=operator, elev_gradient=elev_gradient
+    )
 
 
 def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=None):
@@ -473,10 +481,8 @@ def horizontal_oi(
         only_diff (bool, optional): _description_. Defaults to False.
 
     Raises:
-        Exception: _description_
-        NotImplementedError: _description_
-        NotImplementedError: _description_
-        NotImplementedError: _description_
+        NotImplementedError: Structure function not implemented
+        RuntimeError: You need gridpp to perform OI
 
     Returns:
         _type_: _description_
@@ -506,8 +512,9 @@ def horizontal_oi(
 
     bgrid = Grid(glons, glats, gelevs)
     points = Points(lons, lats, elevs)
-    pbackground = grid2points(bgrid, points, background, operator=interpol,
-                              elev_gradient=elev_gradient)
+    pbackground = grid2points(
+        bgrid, points, background, operator=interpol, elev_gradient=elev_gradient
+    )
 
     # Remove undefined backgrounds
     if any(np.isnan(pbackground)):
@@ -531,8 +538,9 @@ def horizontal_oi(
                 values2.append(values[point])
         values = values2
         points = Points(lons2, lats2, elevs2)
-        pbackground = grid2points(bgrid, points, background, operator=interpol,
-                                  elev_gradient=elev_gradient)
+        pbackground = grid2points(
+            bgrid, points, background, operator=interpol, elev_gradient=elev_gradient
+        )
 
     variance_ratios = np.full(points.points.size(), epsilon)
 

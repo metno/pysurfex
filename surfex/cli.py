@@ -14,7 +14,6 @@ except ModuleNotFoundError:
     plt = None
 
 
-from . import __version__
 from .binary_input import (
     InlineForecastInputData,
     JsonOutputDataFromFile,
@@ -26,20 +25,35 @@ from .binary_input import (
 from .bufr import BufrObservationSet
 from .cache import Cache
 from .cmd_parsing import (
-    parse_args_bufr2json, parse_args_create_forcing,
+    parse_args_bufr2json,
+    parse_args_create_forcing,
     parse_args_create_namelist,
-    parse_args_first_guess_for_oi, parse_args_gridpp, parse_args_hm2pysurfex,
-    parse_args_lsm_file_assim, parse_args_masterodb, parse_args_merge_qc_data,
-    parse_args_modify_forcing, parse_args_oi2soda, parse_args_plot_points,
-    parse_args_qc2obsmon, parse_args_set_geo_from_obs_set,
-    parse_args_set_geo_from_stationlist, parse_args_shape2ign,
-    parse_args_surfex_binary, parse_args_titan, parse_cryoclim_pseudoobs,
-    parse_sentinel_obs, parse_set_domain
-    )
-from .configuration import ConfigurationFromTomlFile, ConfigurationFromHarmonieAndConfigFile
+    parse_args_first_guess_for_oi,
+    parse_args_gridpp,
+    parse_args_hm2pysurfex,
+    parse_args_lsm_file_assim,
+    parse_args_masterodb,
+    parse_args_merge_qc_data,
+    parse_args_modify_forcing,
+    parse_args_oi2soda,
+    parse_args_plot_points,
+    parse_args_qc2obsmon,
+    parse_args_set_geo_from_obs_set,
+    parse_args_set_geo_from_stationlist,
+    parse_args_shape2ign,
+    parse_args_surfex_binary,
+    parse_args_titan,
+    parse_cryoclim_pseudoobs,
+    parse_sentinel_obs,
+    parse_set_domain,
+)
+from .configuration import (
+    ConfigurationFromHarmonieAndConfigFile,
+    ConfigurationFromTomlFile,
+)
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
-from .forcing import run_time_loop, set_forcing_config, modify_forcing
+from .forcing import modify_forcing, run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
 from .input_methods import get_datasources, set_geo_from_obs_set
@@ -912,7 +926,7 @@ def run_hm2pysurfex(**kwargs):
     if output is None:
         logging.info("Config settings %s", config.settings)
     else:
-        with  open(output, "w", encoding="utf-8") as fhandler:
+        with open(output, "w", encoding="utf-8") as fhandler:
             toml.dump(config.settings, fhandler)
 
 
@@ -983,7 +997,7 @@ def run_plot_points(**kwargs):
     if inputtype == "grib1":
 
         if filepattern is None:
-            raise RunTimeError("You must provide a filepattern")
+            raise RuntimeError("You must provide a filepattern")
 
         par = kwargs["indicatorOfParameter"]
         ltp = kwargs["levelType"]
@@ -1659,6 +1673,10 @@ def create_lsm_file_assim(argv=None):
 
     Args:
         argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        FileNotFoundError: Domain file not found
+
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -1683,7 +1701,7 @@ def create_lsm_file_assim(argv=None):
         geo = get_geo_object(domain_json)
     else:
         raise FileNotFoundError(domain)
-    validtime =  as_datetime(kwargs["dtg"])
+    validtime = as_datetime(kwargs["dtg"])
 
     # TODO Move to a method outside cli
     cache = Cache(3600)
@@ -1842,7 +1860,7 @@ def cli_set_geo_from_obs_set(argv=None):
         kwargs["variable"],
         kwargs["inputfile"],
         kwargs["lonrange"],
-        kwargs["latrange"]
+        kwargs["latrange"],
     )
     output = kwargs["output"]
     with open(output, mode="w", encoding="utf-8") as file_handler:

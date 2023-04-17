@@ -14,7 +14,7 @@ def as_datetime(dtg):
         fmt = "%Y%m%d%H%M%S"
     else:
         raise RuntimeError(f"dtg={dtg} len(dtg) is {len(dtg)}")
-    
+
     return datetime.strptime(dtg, fmt)
 
 
@@ -46,4 +46,6 @@ def isdatetime(obj):
 
 def as_datetime_args(year=None, month=None, day=None, hour=0, minute=0, second=0):
     """Set datetime object from args."""
-    return datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
+    return datetime(
+        year=year, month=month, day=day, hour=hour, minute=minute, second=second
+    )

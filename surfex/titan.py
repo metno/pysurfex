@@ -11,7 +11,7 @@ try:
 except ImportError:
     tit = None
 
-from .datetime_utils import as_datetime_string, as_datetime
+from .datetime_utils import as_datetime, as_datetime_string
 from .interpolation import ObsOperator, inside_grid
 from .netcdf import read_first_guess_netcdf_file
 from .observation import Observation

@@ -7,12 +7,12 @@ from surfex.titan import (
     Buddy,
     Climatology,
     DomainCheck,
+    FirstGuess,
+    Fraction,
     NoMeta,
     Plausibility,
     Redundancy,
     Sct,
-    FirstGuess,
-    Fraction,
     dataset_from_json,
 )
 
@@ -98,7 +98,7 @@ def test_domain(conf_proj_2x3, an_time):
 
 def test_first_guess(conf_proj_2x3, an_time):
     mask = [0, 1]
-    first_guess = np.ndarray(shape=(2,3), dtype=float)
+    first_guess = np.ndarray(shape=(2, 3), dtype=float)
     qc = FirstGuess(conf_proj_2x3, first_guess, negdiff=0.1, posdiff=0.2)
     qc.set_input(2)
     qc.test(obs_set(an_time), mask)
@@ -106,7 +106,7 @@ def test_first_guess(conf_proj_2x3, an_time):
 
 def test_fraction(conf_proj_2x3, an_time):
     mask = [0, 1]
-    lsm = np.ndarray(shape=(2,3), dtype=float)
+    lsm = np.ndarray(shape=(2, 3), dtype=float)
     qc = Fraction(conf_proj_2x3, lsm, minval=0, maxval=1)
     qc.set_input(2)
     qc.test(obs_set(an_time), mask)

@@ -1,24 +1,18 @@
 """Test namelist settings."""
-import os
 import json
-import pytest
 
+import pytest
 
 from surfex.configuration import ConfigurationFromTomlFile
 from surfex.datetime_utils import as_datetime
 from surfex.namelist import BaseNamelist, Namelist
 
 
-
 @pytest.fixture()
 def namelist_dict():
     dict_data = {
-        "nam_block": {
-            "key": "val"
-        },
-        "TEST": {
-            "@VEGTYPE@@DECADE@@VAR@": "@VEGTYPE@@DECADE@@VAR@"
-        }
+        "nam_block": {"key": "val"},
+        "TEST": {"@VEGTYPE@@DECADE@@VAR@": "@VEGTYPE@@DECADE@@VAR@"},
     }
     return dict_data
 
@@ -31,7 +25,9 @@ def namelist_file(namelist_dict, tmp_path_factory):
     return fname
 
 
-def test_namelist(config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_file, tmp_path_factory):
+def test_namelist(
+    config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_file, tmp_path_factory
+):
     nml = BaseNamelist.ascii_file2nml(namelist_file)
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_output_testjson"
     prep_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_prep_input.json"
@@ -52,19 +48,17 @@ def test_namelist(config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_
             "prep_pgdfiletype": None,
         }
         if program == "prep":
-            kwargs.update({
-                "dtg": as_datetime("2020022000"),
-                "prep_file": prep_file,
-                "prep_filetype": "json",
-            })
+            kwargs.update(
+                {
+                    "dtg": as_datetime("2020022000"),
+                    "prep_file": prep_file,
+                    "prep_filetype": "json",
+                }
+            )
         if program == "offline":
-            kwargs.update({
-                "forc_zs": True
-            })
+            kwargs.update({"forc_zs": True})
         if program == "soda":
-            kwargs.update({
-                "dtg": as_datetime("2020022000")
-            })  
+            kwargs.update({"dtg": as_datetime("2020022000")})
         config = ConfigurationFromTomlFile(config_exp_surfex_toml)
         config.update_setting("SURFEX#COVER#SG", True)
         config.update_setting("SURFEX#ISBA#SCHEME", "DIF")
@@ -74,8 +68,12 @@ def test_namelist(config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_
         config.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF")
         BaseNamelist(program, config, get_nam_path, **kwargs)
 
-    BaseNamelist.set_direct_data_namelist("DATA_ISBA", "YSOC_TOP", "/data/db.dir", "input_path")
-    BaseNamelist.set_direct_data_namelist("DATA_ISBA", "YSOC_TOP", "/data/db.json", "input_path")
+    BaseNamelist.set_direct_data_namelist(
+        "DATA_ISBA", "YSOC_TOP", "/data/db.dir", "input_path"
+    )
+    BaseNamelist.set_direct_data_namelist(
+        "DATA_ISBA", "YSOC_TOP", "/data/db.json", "input_path"
+    )
 
     key = "@VEGTYPE@@DECADE@@VAR@"
     value = "value"

@@ -1,7 +1,6 @@
 """Bufr testing."""
 import pytest
 
-
 from surfex.bufr import BufrObservationSet
 from surfex.datetime_utils import as_timedelta
 from surfex.input_methods import get_datasources
@@ -23,11 +22,13 @@ def settings(bufr_file):
 
 
 def test_get_bufr_datasource(obstime, settings):
-    __ = get_datasources(obstime, settings)
+    get_datasources(obstime, settings)
 
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_bufr(bufr_file, obstime):
     variables = ["airTemperatureAt2M"]
-    bufr_set = BufrObservationSet(bufr_file, variables, obstime, as_timedelta(seconds=1800))
+    bufr_set = BufrObservationSet(
+        bufr_file, variables, obstime, as_timedelta(seconds=1800)
+    )
     assert len(bufr_set.observations) == 1

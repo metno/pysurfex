@@ -38,16 +38,10 @@ class Configuration(object):
         """Dump configuration to json file.
 
         Args:
-            filename (_type_): _description_
-            indent (_type_, optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
+            filename (str): Filename
+            indent (int, optional): Indentation. Defaults to None.
 
         """
-        if json is None:
-            raise RuntimeError("json module not loaded")
-
         logging.debug("settings %s", self.settings)
         json.dump(self.settings, open(filename, "w", encoding="utf-8"), indent=indent)
 
@@ -896,22 +890,6 @@ class ConfigurationFromHarmonieAndConfigFile(ConfigurationFromHarmonie):
         with open(conf_file, "r", encoding="utf-8") as fhandler:
             conf = toml.load(fhandler)
         ConfigurationFromHarmonie.__init__(self, env, conf)
-
-'''
-class ConfigurationFromJsonFile(Configuration):
-    """Configuration from a json file."""
-
-    def __init__(self, filename):
-        """Construct the configuration.
-
-        Args:
-            filename (str): File name
-
-        """
-        with open(filename, mode="r", encoding="utf-8") as fhandler:
-            settings = json.load(fhandler)
-        Configuration.__init__(self, settings)
-'''
 
 
 class ConfigurationFromTomlFile(Configuration):

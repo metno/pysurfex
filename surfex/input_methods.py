@@ -152,10 +152,17 @@ def get_datasources(obs_time, settings):
                 if "subtypes" in settings[obs_set]:
                     subtypes = settings[obs_set]["subtypes"]
                 if os.path.exists(filename):
-                    datasources.append(ObservationDataSetFromObsoulFile(filename, an_time=obs_time,
-                                                                        neg_dt=neg_dt, pos_dt=pos_dt,
-                                                                        obtypes=obtypes, subtypes=subtypes,
-                                                                        obnumber=obnumber))
+                    datasources.append(
+                        ObservationDataSetFromObsoulFile(
+                            filename,
+                            an_time=obs_time,
+                            neg_dt=neg_dt,
+                            pos_dt=pos_dt,
+                            obtypes=obtypes,
+                            subtypes=subtypes,
+                            obnumber=obnumber,
+                        )
+                    )
                 else:
                     print("WARNING: filename " + filename + " not existing. Not added.")
             elif filetype.lower() == "json":

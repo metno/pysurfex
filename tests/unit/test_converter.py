@@ -1,14 +1,11 @@
 """Test converter."""
-import json
 from datetime import datetime
 
 import numpy as np
-import pytest
 
 from surfex.cache import Cache
 from surfex.geo import get_geo_object
 from surfex.read import ConvertedInput, Converter
-
 
 
 def test_converter_meps_nc(conf_proj_2x3_dict, data_thredds_nc_file):
@@ -40,4 +37,4 @@ def test_converter_meps_nc(conf_proj_2x3_dict, data_thredds_nc_file):
     converter = Converter(converter, validtime, defs, converter_conf, fileformat)
     field = ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
-    assert field.shape == (2,3)
+    assert field.shape == (2, 3)

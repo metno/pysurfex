@@ -395,9 +395,8 @@ class BaseNamelist(object):
             prep_pgdfiletype (_type_, optional): _description_. Defaults to None.
 
         Raises:
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            RuntimeError: Filetype for input to PREP is not set!
+            RuntimeError: Filetype for PGD input to PREP is not set!
 
         """
         if prep_file is not None and prep_filetype is None:
@@ -485,7 +484,7 @@ class BaseNamelist(object):
         """Set offline namelist.
 
         Raises:
-            Exception: _description_
+            RuntimeError: Mismatch in nnco/cobs_m
 
         """
         self.input_list.append({"file": self.input_path + "/offline.json"})
@@ -605,10 +604,9 @@ class BaseNamelist(object):
         """Set SODA namelist.
 
         Raises:
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            RuntimeError: Mismatch in nnco/cobs_m/xerrobs_m
+            RuntimeError: You must provide a DTG when using a list for snow
+            RuntimeError: Mismatch in nncv/cvar_m/xsigma_m/xtprt_m
 
         """
         self.input_list.append({"file": self.input_path + "/soda.json"})
@@ -1961,10 +1959,10 @@ class Namelist(object):
         """Set obs.
 
         Args:
-            merged_dict (_type_): _description_
+            merged_dict (dict): Merged settings
 
         Raises:
-            Exception: _description_
+            RuntimeError: Mismatch in nnco/cobs_m/xerrobs_m
 
         Returns:
             _type_: _description_

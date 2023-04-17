@@ -1,11 +1,11 @@
 """Test binary input data to surfex commands."""
-import os
-import pytest
 import contextlib
+import os
 from pathlib import Path
 
+import pytest
 
-from surfex.binary_input import SodaInputData, JsonOutputData
+from surfex.binary_input import JsonOutputData, SodaInputData
 from surfex.configuration import ConfigurationFromTomlFile
 from surfex.platform import SystemFilePaths
 
@@ -104,9 +104,7 @@ def test_json_output(tmp_path_factory):
     target2.touch()
     data = {
         "target_output_file": destination.as_posix(),
-        "target_output_file2": {
-            destination2.as_posix(): "cp"
-        }
+        "target_output_file2": {destination2.as_posix(): "cp"},
     }
     with working_directory(tmp_path_factory.getbasetemp()):
         JsonOutputData(data).archive_files()

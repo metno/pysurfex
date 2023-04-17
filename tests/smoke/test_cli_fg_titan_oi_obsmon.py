@@ -1,14 +1,18 @@
 """Test fg + titan + gridpp + obsmon."""
-import os
-import numpy as np
 import json
+import os
 import shutil
+
+import numpy as np
 import pytest
 
-
 from surfex.cli import (
-    gridpp, first_guess_for_oi, titan, qc2obsmon, cli_oi2soda,
-    cli_merge_qc_data
+    cli_merge_qc_data,
+    cli_oi2soda,
+    first_guess_for_oi,
+    gridpp,
+    qc2obsmon,
+    titan,
 )
 
 an_time = "2020022006"
@@ -242,7 +246,7 @@ def hm_env():
         "ENSMSELX": "-1",
         "ENSMBR": "-1",
         "LL": "03",
-        "METER_UNIT": "hhmm"
+        "METER_UNIT": "hhmm",
     }
     for key, value in env.items():
         os.environ[key] = value
@@ -252,36 +256,22 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
     qc_settings = {
         "t2m": {
             "do_test": True,
-            "plausibility": {
-                "minval": 200,
-                "maxval": 350
-            },
+            "plausibility": {"minval": 200, "maxval": 350},
             "firstguess": {
                 "fg_file": first_guess_file,
                 "fg_var": "air_temperature_2m",
                 "negdiff": 2,
                 "posdiff": 3,
-                "do_test": False
+                "do_test": False,
             },
             # Not working yet
-            "buddy": {
-                "do_test": False
-            },
-            "climatology": {
-                "do_test": False,
-                "minval": 270,
-                "maxval": 275
-            },
-            "sct": {
-            },
-            "redundancy": {
-            },
-            "blacklist": {
-            },
-            "domain": {
-            },
-            "nometa": {
-            },
+            "buddy": {"do_test": False},
+            "climatology": {"do_test": False, "minval": 270, "maxval": 275},
+            "sct": {},
+            "redundancy": {},
+            "blacklist": {},
+            "domain": {},
+            "nometa": {},
             "fraction": {
                 "fraction_file": first_guess_file,
                 "fraction_var": "land_area_fraction",
@@ -291,46 +281,28 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filepattern": json_obs_file,
                     "filetype": "json",
                     "varname": "airTemperatureAt2M",
-                    "tests": {
-                        "firstguess": {
-                            "do_test": True
-                        }
-                    }
+                    "tests": {"firstguess": {"do_test": True}},
                 }
-            }
+            },
         },
         "rh2m": {
             "do_test": True,
-            "plausibility": {
-                "minval": 0,
-                "maxval": 1
-            },
+            "plausibility": {"minval": 0, "maxval": 1},
             "firstguess": {
                 "fg_file": first_guess_file,
                 "fg_var": "relative_humidity_2m",
                 "negdiff": 0.2,
                 "posdiff": 0.2,
-                "do_test": False
+                "do_test": False,
             },
             # Not working yet
-            "buddy": {
-                "do_test": False
-            },
-            "climatology": {
-                "do_test": False,
-                "minval": 0,
-                "maxval": 1
-            },
-            "sct": {
-            },
-            "redundancy": {
-            },
-            "blacklist": {
-            },
-            "domain": {
-            },
-            "nometa": {
-            },
+            "buddy": {"do_test": False},
+            "climatology": {"do_test": False, "minval": 0, "maxval": 1},
+            "sct": {},
+            "redundancy": {},
+            "blacklist": {},
+            "domain": {},
+            "nometa": {},
             "fraction": {
                 "fraction_file": first_guess_file,
                 "fraction_var": "land_area_fraction",
@@ -340,46 +312,28 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filepattern": json_obs_file,
                     "filetype": "json",
                     "varname": "relativeHumidityAt2M",
-                    "tests": {
-                        "firstguess": {
-                            "do_test": True
-                        }
-                    }
+                    "tests": {"firstguess": {"do_test": True}},
                 }
-            }
+            },
         },
         "sd": {
             "do_test": True,
-            "plausibility": {
-                "minval": 0,
-                "maxval": 50
-            },
+            "plausibility": {"minval": 0, "maxval": 50},
             "firstguess": {
                 "fg_file": first_guess_file,
                 "fg_var": "surface_snow_thickness",
                 "negdiff": 0.4,
                 "posdiff": 0.4,
-                "do_test": True
+                "do_test": True,
             },
             # Not working yet
-            "buddy": {
-                "do_test": False
-            },
-            "climatology": {
-                "do_test": False,
-                "minval": 0,
-                "maxval": 1
-            },
-            "sct": {
-            },
-            "redundancy": {
-            },
-            "blacklist": {
-            },
-            "domain": {
-            },
-            "nometa": {
-            },
+            "buddy": {"do_test": False},
+            "climatology": {"do_test": False, "minval": 0, "maxval": 1},
+            "sct": {},
+            "redundancy": {},
+            "blacklist": {},
+            "domain": {},
+            "nometa": {},
             "fraction": {
                 "fraction_file": first_guess_file,
                 "fraction_var": "land_area_fraction",
@@ -389,20 +343,15 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filepattern": json_obs_file,
                     "filetype": "json",
                     "varname": "totalSnowDepth",
-                    "tests": {
-                        "firstguess": {
-                            "do_test": True
-                        }
-                    }
+                    "tests": {"firstguess": {"do_test": True}},
                 }
-            }
-        }
+            },
+        },
     }
     with open(qc_fname, mode="w", encoding="utf-8") as file_handler:
         json.dump(qc_settings, file_handler)
     with open(blacklist_fname, mode="w", encoding="utf-8") as file_handler:
         json.dump({}, file_handler)
-
 
 
 def create_obs_data(var, obs_fname):
@@ -432,7 +381,16 @@ def create_obs_data(var, obs_fname):
             "provider": "bufr",
             "fg_dep": np.nan,
             "an_dep": np.nan,
-            "passed_tests": ["domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction", "sct"]
+            "passed_tests": [
+                "domain",
+                "blacklist",
+                "nometa",
+                "plausibility",
+                "redundancy",
+                "firstguess",
+                "fraction",
+                "sct",
+            ],
         },
         "1": {
             "varname": name,
@@ -448,15 +406,17 @@ def create_obs_data(var, obs_fname):
             "provider": "bufr",
             "fg_dep": np.nan,
             "an_dep": np.nan,
-            "passed_tests": []
-        }
+            "passed_tests": [],
+        },
     }
 
     json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
 
 
 @pytest.fixture(params=["t2m", "rh2m", "sd"])
-def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm):
+def _qc_gridpp_obsmon(
+    tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm
+):
     harmonie = []
     if hm == "harmonie":
         hm_env()
@@ -480,7 +440,7 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
             "nc_name": "surface_snow_thickness",
             "hor": "60000.0",
             "vert": "500.0",
-        }
+        },
     }
 
     first_guess_file = firstguess4gridpp
@@ -489,7 +449,9 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
     create_obs_data(var, obs_fname)
 
     # Titan
-    qc_settings_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc_settings_{var}.json"
+    qc_settings_fname = (
+        f"{tmp_path_factory.getbasetemp().as_posix()}/qc_settings_{var}.json"
+    )
     qc_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc _{var}.json"
     blacklist_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/blacklist_{var}.json"
     create_titan_settings(qc_settings_fname, first_guess_file, blacklist_fname, obs_fname)
@@ -498,15 +460,29 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
         titan(argv=["fail"])
 
     argv = [
-        "-i", qc_settings_fname,
-        "-v", var,
-        "-dtg", an_time,
-        "--blacklist", blacklist_fname,
-        "--domain", conf_proj_domain_file,
-        "-o", qc_fname,
+        "-i",
+        qc_settings_fname,
+        "-v",
+        var,
+        "-dtg",
+        an_time,
+        "--blacklist",
+        blacklist_fname,
+        "--domain",
+        conf_proj_domain_file,
+        "-o",
+        qc_fname,
         "--debug",
-        "domain", "blacklist", "nometa", "plausibility", "redundancy", "firstguess", "fraction",
-        "buddy", "climatology", "sct"
+        "domain",
+        "blacklist",
+        "nometa",
+        "plausibility",
+        "redundancy",
+        "firstguess",
+        "fraction",
+        "buddy",
+        "climatology",
+        "sct",
     ]
     argv += harmonie
     titan(argv=argv)
@@ -514,9 +490,13 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
     shutil.copy(qc_fname, f"{qc_fname}-1")
     shutil.copy(qc_fname, f"{qc_fname}-2")
     argv = [
-        "-t", an_time,
-        "-i", f"{qc_fname}-1", f"{qc_fname}-2",
-        "-o", f"{qc_fname}-merged"
+        "-t",
+        an_time,
+        "-i",
+        f"{qc_fname}-1",
+        f"{qc_fname}-2",
+        "-o",
+        f"{qc_fname}-merged",
     ]
     cli_merge_qc_data(argv=argv)
 
@@ -525,14 +505,22 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
         gridpp(argv=["fail"])
 
     analysis_file = f"{tmp_path_factory.getbasetemp().as_posix()}/an_{var}.nc"
-    argv = ["-i", first_guess_file,
-            "-o", analysis_file,
-            "-obs", qc_fname,
-            "-hor", translation[var]["hor"],
-            "-vert", translation[var]["vert"],
-            "-v", translation[var]["nc_name"],
-            "--elevGradient", translation[var]["elevGradient"]
-            ]
+    argv = [
+        "-i",
+        first_guess_file,
+        "-o",
+        analysis_file,
+        "-obs",
+        qc_fname,
+        "-hor",
+        translation[var]["hor"],
+        "-vert",
+        translation[var]["vert"],
+        "-v",
+        translation[var]["nc_name"],
+        "--elevGradient",
+        translation[var]["elevGradient"],
+    ]
     gridpp(argv=argv)
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/OBSERVATIONS_200330H06.DAT"
@@ -540,16 +528,23 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstgue
         cli_oi2soda(argv=["fail"])
 
     argv = [
-        "--t2m_file", first_guess_file,
-        "--t2m_var", "air_temperature_2m",
-        "--rh2m_file", first_guess_file,
-        "--rh2m_var", "relative_humidity_2m",
-        "--sd_file", first_guess_file,
-        "--sd_var", "surface_snow_thickness",
+        "--t2m_file",
+        first_guess_file,
+        "--t2m_var",
+        "air_temperature_2m",
+        "--rh2m_file",
+        first_guess_file,
+        "--rh2m_var",
+        "relative_humidity_2m",
+        "--sd_file",
+        first_guess_file,
+        "--sd_var",
+        "surface_snow_thickness",
         "--debug",
-        "-o", output,
-        "2020033006"
-        ]
+        "-o",
+        output,
+        "2020033006",
+    ]
     cli_oi2soda(argv=argv)
 
     # Obsmon
@@ -562,29 +557,35 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
     translation = {
         "t2m": "air_temperature_2m",
         "rh2m": "relative_humidity_2m",
-        "sd": "surface_snow_thickness"
+        "sd": "surface_snow_thickness",
     }
     nc_name = translation[var]
 
     with pytest.raises(SystemExit):
         qc2obsmon(argv=["fail"])
 
-    argv = [an_time,
-            var, qc_fname,
-            "--fg_file", first_guess_file,
-            "--an_file", analysis_file,
-            "--file_var", nc_name,
-            "-o", db_file
-            ]
+    argv = [
+        an_time,
+        var,
+        qc_fname,
+        "--fg_file",
+        first_guess_file,
+        "--an_file",
+        analysis_file,
+        "--file_var",
+        nc_name,
+        "-o",
+        db_file,
+    ]
     qc2obsmon(argv=argv)
 
 
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"], scope="module")
+@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon(_qc_gridpp_obsmon):
     _qc_gridpp_obsmon
 
 
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"], scope="module")
+@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file, hm):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp_output.nc"
     harmonie = []
@@ -596,18 +597,26 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
         first_guess_for_oi(argv=["fail"])
 
     argv = [
-        "-c", "surfex/cfg/first_guess.yml",
-        "-i", data_thredds_nc_file,
-        "-if", "netcdf",
-        "-dtg", an_time,
-        "-d", conf_proj_2x3_file,
-        "--laf_converter", "none",
-        "--sd_converter", "sweclim",
+        "-c",
+        "surfex/cfg/first_guess.yml",
+        "-i",
+        data_thredds_nc_file,
+        "-if",
+        "netcdf",
+        "-dtg",
+        an_time,
+        "-d",
+        conf_proj_2x3_file,
+        "--laf_converter",
+        "none",
+        "--sd_converter",
+        "sweclim",
         "--debug",
-        "-o", output,
+        "-o",
+        output,
         "air_temperature_2m",
         "relative_humidity_2m",
-        "surface_snow_thickness"
+        "surface_snow_thickness",
     ]
     argv += harmonie
     first_guess_for_oi(argv=argv)

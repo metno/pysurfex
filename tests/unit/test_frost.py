@@ -1,8 +1,7 @@
-"""Test observations from frost API"""
+"""Test observations from frost API."""
 import os
-import pytest
-import json
 
+import pytest
 
 from surfex.input_methods import get_datasources
 
@@ -17,6 +16,6 @@ def test_get_bufr_datasource(obstime):
             "latrange": [55, 65],
             "dt": 1800,
         }
-    }    
+    }
     os.environ["CLIENTID"] = "dummy"
-    __ = get_datasources(obstime, settings)
+    get_datasources(obstime, settings)

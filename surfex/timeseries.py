@@ -61,21 +61,12 @@ class TimeSeriesFromConverter(TimeSeries):
     """Time-Series from a converter."""
 
     def __init__(
-        self,
-        var,
-        geo,
-        converter,
-        start,
-        end,
-        interval=3600,
-        cache=None,
-        stids_file=None
+        self, var, geo, converter, start, end, interval=3600, cache=None, stids_file=None
     ):
         """Construct.
 
         Args:
             var (_type_): _description_
-            fileformat (_type_): _description_
             geo (_type_): _description_
             converter (Converter): _description_
             start (_type_): _description_
@@ -85,7 +76,6 @@ class TimeSeriesFromConverter(TimeSeries):
             stids_file (_type_, optional): _description_. Defaults to None.
 
         """
-
         times = []
         values = []
         # Loop output time steps

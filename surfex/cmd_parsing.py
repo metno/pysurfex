@@ -1,6 +1,4 @@
 """Command line interfaces."""
-import json
-import logging
 import os
 import sys
 from argparse import Action, ArgumentParser
@@ -1244,9 +1242,6 @@ def parse_args_lsm_file_assim(argv):
 
     Args:
         argv (list): List with arguments.
-
-    Raises:
-        FileNotFoundError: Domain not found
 
     Returns:
         dict: Parsed arguments.

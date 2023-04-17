@@ -1,7 +1,7 @@
 """Test create_namelist."""
 import json
-import pytest
 
+import pytest
 
 from surfex.cli import create_namelist
 
@@ -28,9 +28,16 @@ def prep_file(tmp_path_factory):
     return prep_file
 
 
-
 @pytest.mark.parametrize("mode", ["pgd", "prep", "offline", "soda"])
-def test_create_namelist(tmp_path_factory, mode, config_exp_surfex_toml, get_nam_path, get_system, conf_proj_2x3_file, prep_file):
+def test_create_namelist(
+    tmp_path_factory,
+    mode,
+    config_exp_surfex_toml,
+    get_nam_path,
+    get_system,
+    conf_proj_2x3_file,
+    prep_file,
+):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_{mode}"
     with pytest.raises(SystemExit):
         create_namelist(argv=["fail"])
@@ -39,16 +46,19 @@ def test_create_namelist(tmp_path_factory, mode, config_exp_surfex_toml, get_nam
     if mode == "prep" or mode == "soda":
         extra += ["--dtg", "2020010100"]
     if mode == "prep":
-        extra += ["--prep_file", prep_file,
-                  "--prep_filetype", "json"
-                  ]
+        extra += ["--prep_file", prep_file, "--prep_filetype", "json"]
     argv = [
-        "-c", config_exp_surfex_toml,
-        "-n", get_nam_path,
-        "-o", output,
-        "--domain", conf_proj_2x3_file,
-        "-s", get_system,
-        mode
+        "-c",
+        config_exp_surfex_toml,
+        "-n",
+        get_nam_path,
+        "-o",
+        output,
+        "--domain",
+        conf_proj_2x3_file,
+        "-s",
+        get_system,
+        mode,
     ]
     argv += extra
     create_namelist(argv=argv)

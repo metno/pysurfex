@@ -7,13 +7,8 @@ from pathlib import Path
 import pytest
 import tomlkit
 
-from surfex.cli import (
-    masterodb, soda, pgd, prep, offline, perturbed_offline
-)
-from surfex.file import NCSurfexFile
-from surfex.geo import ConfProj
+from surfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda
 from surfex.util import merge_toml_env_from_files
-
 
 
 @contextlib.contextmanager
@@ -65,7 +60,9 @@ def get_rte_file(tmp_path_factory):
 
 @pytest.fixture()
 def get_system(tmp_path_factory):
-    system_file = f"{tmp_path_factory.getbasetemp().as_posix()}/system_cli_run_binary.json"
+    system_file = (
+        f"{tmp_path_factory.getbasetemp().as_posix()}/system_cli_run_binary.json"
+    )
     system = {
         "climdir": "climdir",
         "ecoclimap_bin_dir": "ecoclimap_bin_dir",
@@ -79,7 +76,12 @@ def get_system(tmp_path_factory):
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_pgd(
-    get_nc_config_file, get_rte_file, get_system, conf_proj_2x3_file, get_nam_path, tmp_path_factory
+    get_nc_config_file,
+    get_rte_file,
+    get_system,
+    conf_proj_2x3_file,
+    get_nam_path,
+    tmp_path_factory,
 ):
     """Test run NC."""
     # PGD
@@ -112,7 +114,12 @@ def test_run_pgd(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_prep(
-    get_nc_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
+    get_nc_config_file,
+    get_system,
+    get_rte_file,
+    get_nam_path,
+    conf_proj_2x3_file,
+    tmp_path_factory,
 ):
 
     # PREP
@@ -155,7 +162,12 @@ def test_run_prep(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_offline(
-    get_nc_config_file, get_rte_file, get_system, get_nam_path, tmp_path_factory, conf_proj_2x3_file
+    get_nc_config_file,
+    get_rte_file,
+    get_system,
+    get_nam_path,
+    tmp_path_factory,
+    conf_proj_2x3_file,
 ):
     # OFFLINE
 
@@ -198,7 +210,12 @@ def test_run_offline(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_perturbed(
-    get_nc_config_file, get_rte_file, get_system, get_nam_path, tmp_path_factory, conf_proj_2x3_file
+    get_nc_config_file,
+    get_rte_file,
+    get_system,
+    get_nam_path,
+    tmp_path_factory,
+    conf_proj_2x3_file,
 ):
     # PERTURBED OFFLINE
 
@@ -226,7 +243,8 @@ def test_run_perturbed(
         get_nam_path,
         "-r",
         get_rte_file,
-        "--pert", "1",
+        "--pert",
+        "1",
         "-f",
         "--tolerate_missing",
         "-o",
@@ -242,7 +260,12 @@ def test_run_perturbed(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_soda(
-    get_nc_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
+    get_nc_config_file,
+    get_system,
+    get_rte_file,
+    get_nam_path,
+    conf_proj_2x3_file,
+    tmp_path_factory,
 ):
     # SODA
 
@@ -284,7 +307,12 @@ def test_run_soda(
 
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_forecast(
-    get_fa_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
+    get_fa_config_file,
+    get_system,
+    get_rte_file,
+    get_nam_path,
+    conf_proj_2x3_file,
+    tmp_path_factory,
 ):
     """Test masterodb."""
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -326,7 +354,12 @@ def test_masterodb_forecast(
 
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_canari(
-    get_fa_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
+    get_fa_config_file,
+    get_system,
+    get_rte_file,
+    get_nam_path,
+    conf_proj_2x3_file,
+    tmp_path_factory,
 ):
     # CANARI
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"

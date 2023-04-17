@@ -35,8 +35,8 @@ class Fa(object):
             validtime (_type_): _description_
 
         Raises:
-            Exception: _description_
-            NotImplementedError: _description_
+            ModuleNotFoundError: You need epygram to read FA files
+            NotImplementedError: Geometry not implemented
 
         Returns:
             tuple: np.field, surfex.Geometry
@@ -64,7 +64,6 @@ class Fa(object):
             ):
                 n_y = field.geometry.dimensions["Y_CIzone"]
                 n_x = field.geometry.dimensions["X_CIzone"]
-                # ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
                 lon0 = field.geometry.projection["reference_lon"].get("degrees")
                 lat0 = field.geometry.projection["reference_lat"].get("degrees")
                 c0, c1 = field.geometry.getcenter()

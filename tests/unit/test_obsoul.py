@@ -1,16 +1,16 @@
 """Obsoul unit testing."""
 import pytest
 
-
-from surfex.obsoul import ObservationDataSetFromObsoulFile
 from surfex.input_methods import get_datasources
+from surfex.obsoul import ObservationDataSetFromObsoulFile
 
 
 @pytest.fixture()
 def obsoul_cryoclim_cy43(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write("""
+        fhandler.write(
+            """
             1           2
   15  1        17  80.47041   24.15402  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
          92  999999.00  -2147483647.00  0.100  2048
@@ -20,14 +20,17 @@ def obsoul_cryoclim_cy43(tmp_path_factory):
          92  999999.00  -2147483647.00  0.100  2048
   15  1        17  80.21594   25.50849  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
          92  999999.00  -2147483647.00  0.000  2048
-        """)
+"""
+        )
     return fname
+
 
 @pytest.fixture()
 def obsoul_carra1(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/carra1.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write("""
+        fhandler.write(
+            """
      20200220          06
   17  4      1165  73.94860   29.84100  '2600537 '  20200220  90000  0.000000000     1  1111      100000
            1  -100130.00000000000        1.7000000000000000E+038   0.0000000000000000             2064
@@ -38,7 +41,7 @@ def obsoul_carra1(tmp_path_factory):
           41   100900.00000000000        4.0000000000000000        330.00000000000000             3680
            1   100000.00000000000        1.7000000000000000E+038   750.00000000000000             2560
            2   100000.00000000000        1.7000000000000000E+038   275.19999999999999             2560
-          29   100000.00000000000        1.7000000000000000E+038   90.000000000000000             2560        
+          29   100000.00000000000        1.7000000000000000E+038   90.000000000000000             2560
 1102  5     81035  63.71000    9.60100  '01241   '  20200220 110000  10.00000000    10       11111           0
           39   101700.00000000000        1.7000000000000000E+038   270.30000000000001             3680
           58   101700.00000000000        1.7000000000000000E+038   83.000000000000000             3680
@@ -50,7 +53,8 @@ def obsoul_carra1(tmp_path_factory):
            1   100000.00000000000        1.7000000000000000E+038   1370.0000000000000             2560
            2   100000.00000000000        1.7000000000000000E+038   269.88999999999999             2560
           29   100000.00000000000        1.7000000000000000E+038   73.000000000000000             2560
-        """)
+"""
+        )
     return fname
 
 
@@ -74,6 +78,7 @@ def test_get_obsoul_cryoclim_datasource(obstime, cryoclim_settings):
     assert len(dataset) == 1
     print(dataset[0])
     assert len(dataset[0].observations) == 4
+
 
 def test_get_obsoul_carra1(obsoul_carra1):
     obsset = ObservationDataSetFromObsoulFile(obsoul_carra1)

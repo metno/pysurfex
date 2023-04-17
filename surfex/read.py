@@ -299,16 +299,16 @@ class Converter(object):
         """Read time step.
 
         Args:
-            geo (_type_): _description_
-            validtime (_type_): _description_
-            cache (_type_): _description_
+            geo (Geo): Geometry_
+            validtime (as_datetime): Validtime
+            cache (Cache): Cache
 
         Raises:
-            Exception: _description_
+            KeyError:Could not found climatological mean for month
             NotImplementedError: _description_
 
         Returns:
-            _type_: _description_
+            field (np.ndarray): Read and converted field
 
         """
         gravity = 9.81
@@ -358,7 +358,7 @@ class Converter(object):
             field_snow = self.snow.read_variable(geo, validtime, cache)
             field = np.subtract(field_totalprec, field_snow)
             if any(field[field < 0.0]):
-                print("Set negative rain values to zero")
+                logging.info("Set negative rain values to zero")
                 field[field < 0.0] = 0
 
         elif self.name == "calcrain":

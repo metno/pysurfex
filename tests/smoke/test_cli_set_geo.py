@@ -6,7 +6,6 @@ import pytest
 from surfex.cli import cli_set_domain, cli_shape2ign
 
 
-
 @pytest.fixture()
 def ref_domain_file(tmp_path_factory, ref_domain_dict):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj_ref.json"
@@ -17,13 +16,8 @@ def ref_domain_file(tmp_path_factory, ref_domain_dict):
 @pytest.fixture()
 def ref_domain_dict():
     domain_dict = {
-        "nam_pgd_grid": {
-            "cgrid": "CONF PROJ"
-        },
-        "nam_conf_proj": {
-            "xlat0": 59.5,
-            "xlon0": 9
-        },
+        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
+        "nam_conf_proj": {"xlat0": 59.5, "xlon0": 9},
         "nam_conf_proj_grid": {
             "ilone": 1,
             "ilate": 1,
@@ -32,8 +26,8 @@ def ref_domain_dict():
             "nimax": 9,
             "njmax": 19,
             "xdx": 10000.0,
-            "xdy": 10000.0
-        }
+            "xdy": 10000.0,
+        },
     }
     return domain_dict
 
@@ -93,11 +87,16 @@ def test_shape2ign(tmp_path_factory, ref_domain_file, mocker):
     infile = f"{tmp_path_factory.getbasetemp().as_posix()}/input"
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/ign_geo.json"
     argv = [
-        "-c", "catchment",
-        "-i", infile,
-        "-r", ref_domain_file,
-        "-o", output,
-        "--indent", "2"
+        "-c",
+        "catchment",
+        "-i",
+        infile,
+        "-r",
+        ref_domain_file,
+        "-o",
+        output,
+        "--indent",
+        "2",
     ]
     mocker.patch("surfex.geo.ogr")
     with pytest.raises(TypeError):

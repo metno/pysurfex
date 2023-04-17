@@ -1,7 +1,7 @@
 """Test Observation sets."""
 import json
-import pytest
 
+import pytest
 
 from surfex.datetime_utils import as_datetime
 from surfex.input_methods import get_datasources
@@ -11,6 +11,7 @@ from surfex.input_methods import get_datasources
 def obs_time():
     obstime = as_datetime("2020022000")
     return obstime
+
 
 @pytest.fixture()
 def filepattern(tmp_path_factory):
@@ -56,4 +57,4 @@ def settings(filepattern):
 
 
 def test_get_bufr_datasource(obs_time, settings):
-    __ = get_datasources(obs_time, settings)
+    get_datasources(obs_time, settings)
