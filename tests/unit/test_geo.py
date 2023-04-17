@@ -13,28 +13,6 @@ from surfex.geo import (
 from surfex.namelist import BaseNamelist
 
 
-@pytest.fixture(scope="module")
-def domain_conf_proj():
-    domain_conf_proj = {
-        "nam_conf_proj_grid": {
-            "xlatcen": 60,
-            "ilone": 1,
-            "xdx": 2500.0,
-            "njmax": 2,
-            "xloncen": 10,
-            "xdy": 2500.0,
-            "nimax": 3,
-            "ilate": 2,
-        },
-        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
-        "nam_conf_proj": {
-            "xlon0": 0,
-            "xlat0": 50,
-        },
-    }
-    return domain_conf_proj
-
-
 def test_geo_not_defined():
     """Test geometry not defined."""
     domain = {"nam_pgd_grid": {"cgrid": "not_existing"}}
@@ -53,40 +31,40 @@ def test_get_geo_obj():
         get_geo_object(domain)
 
 
-def test_geo_conf_proj(domain_conf_proj):
+def test_geo_conf_proj(conf_proj_2x3_dict):
     """Test conf proj geometry."""
-    my_geo = get_geo_object(domain_conf_proj)
+    my_geo = get_geo_object(conf_proj_2x3_dict)
 
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
     my_settings = BaseNamelist.ascii2nml(json_settings)
     my_geo.update_namelist(my_settings)
-    assert domain_conf_proj["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
+    assert conf_proj_2x3_dict["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
     print(my_geo.identifier())
 
     new_domain = {
         "not_existing": {"not_existing": "some_value"},
-        "nam_conf_proj_grid": domain_conf_proj["nam_conf_proj_grid"],
+        "nam_conf_proj_grid": conf_proj_2x3_dict["nam_conf_proj_grid"],
     }
     with pytest.raises(KeyError):
         ConfProj(new_domain)
 
     new_domain = {
         "not_existing": {"not_existing": "some_value"},
-        "nam_conf_proj": domain_conf_proj["nam_conf_proj"],
+        "nam_conf_proj": conf_proj_2x3_dict["nam_conf_proj"],
     }
     with pytest.raises(KeyError):
         ConfProj(new_domain)
 
     new_domain = {
         "nam_conf_proj": {"not_existing": "some_value"},
-        "nam_conf_proj_grid": domain_conf_proj["nam_conf_proj_grid"],
+        "nam_conf_proj_grid": conf_proj_2x3_dict["nam_conf_proj_grid"],
     }
     with pytest.raises(KeyError):
         ConfProj(new_domain)
 
     new_domain = {
         "nam_conf_proj_grid": {"not_existing": "some_value"},
-        "nam_conf_proj": domain_conf_proj["nam_conf_proj"],
+        "nam_conf_proj": conf_proj_2x3_dict["nam_conf_proj"],
     }
     with pytest.raises(KeyError):
         ConfProj(new_domain)

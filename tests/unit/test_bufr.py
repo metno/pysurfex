@@ -3,23 +3,16 @@ import pytest
 
 
 from surfex.bufr import BufrObservationSet
-from surfex.datetime_utils import as_datetime, as_timedelta
+from surfex.datetime_utils import as_timedelta
 from surfex.input_methods import get_datasources
 
 
-@pytest.fixture(scope="module")
-def filepattern(tmp_path_factory):
-    filename = tmp_path_factory.getbasetemp() / "bufr_file_dummy.bufr"
-    filename.touch()
-    return filename.as_posix()
-
-
-@pytest.fixture(scope="module")
-def settings(filepattern):
+@pytest.fixture()
+def settings(bufr_file):
     settings_dict = {
         "label": {
             "filetype": "bufr",
-            "filepattern": filepattern,
+            "filepattern": bufr_file,
             "varname": "airTemperatureAt2m",
             "lonrange": [0, 20],
             "latrange": [55, 65],
@@ -37,3 +30,4 @@ def test_get_bufr_datasource(obstime, settings):
 def test_read_bufr(bufr_file, obstime):
     variables = ["airTemperatureAt2M"]
     bufr_set = BufrObservationSet(bufr_file, variables, obstime, as_timedelta(seconds=1800))
+    assert len(bufr_set.observations) == 1

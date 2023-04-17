@@ -10,17 +10,17 @@ from surfex.cli import plot_points
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_plot_grib1(tmp_path_factory, conf_proj_domain_file):
+def test_plot_grib1(tmp_path_factory, conf_proj_2x3_file, lambert_t2m_grib1):
     """Test plotting from grib1."""
-    input_file = f"{tmp_path_factory.getbasetemp().as_posix()}/fc2020111303+0003grib1"
+    
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib1.png"
     argv = [
         "-it",
         "grib1",
         "-t",
-        "2020111306",
+        "2020022006",
         "-g",
-        conf_proj_domain_file,
+        conf_proj_2x3_file,
         "--indicatorOfParameter",
         "11",
         "--level",
@@ -28,7 +28,7 @@ def test_plot_grib1(tmp_path_factory, conf_proj_domain_file):
         "--levelType",
         "105",
         "-i",
-        input_file,
+        lambert_t2m_grib1,
         "-o",
         output_file,
         "--debug",
@@ -37,17 +37,16 @@ def test_plot_grib1(tmp_path_factory, conf_proj_domain_file):
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_plot_grib2(tmp_path_factory, conf_proj_domain_file):
+def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2):
     """Test plotting from grib2."""
-    input_file = f"{tmp_path_factory.getbasetemp().as_posix()}/fc2020111303+0003grib2"
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib2.png"
     argv = [
         "-it",
         "grib2",
         "-t",
-        "2020111306",
+        "2020022006",
         "-g",
-        conf_proj_domain_file,
+        conf_proj_2x3_file,
         "--levelType",
         "103",
         "--discipline",
@@ -59,7 +58,7 @@ def test_plot_grib2(tmp_path_factory, conf_proj_domain_file):
         "--level",
         "2",
         "-i",
-        input_file,
+        lambert_t1_grib2,
         "-o",
         output_file,
         "--debug",
@@ -68,24 +67,20 @@ def test_plot_grib2(tmp_path_factory, conf_proj_domain_file):
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_plot_netcdf(tmp_path_factory, conf_proj_domain_file):
+def test_plot_netcdf(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file):
     """Test plotting from netcdf."""
-    input_file = (
-        f"{tmp_path_factory.getbasetemp().as_posix()}/meps_det_2_5km_20201113T03Z.nc"
-    )
-    Dataset(input_file, "w")
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_nc.png"
     argv = [
         "-it",
         "netcdf",
         "-t",
-        "2020111306",
+        "2020022006",
         "-g",
-        conf_proj_domain_file,
+        conf_proj_2x3_file,
         "-v",
         "air_temperature_2m",
         "-i",
-        input_file,
+        data_thredds_nc_file,
         "-o",
         output_file,
         "--debug",

@@ -69,7 +69,7 @@ class JsonOutputData(OutputDataFromSurfexBinaries):
                 subprocess.check_call(cmd, shell=True)  # noqaS602
             except IOError:
                 logging.error("%s failed", cmd)
-                raise Exception(cmd + " failed") from IOError
+                raise RuntimeError(cmd + " failed") from IOError
 
 
 class JsonOutputDataFromFile(JsonOutputData):

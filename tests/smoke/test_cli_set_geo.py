@@ -7,14 +7,14 @@ from surfex.cli import cli_set_domain, cli_shape2ign
 
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def ref_domain_file(tmp_path_factory, ref_domain_dict):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj_ref.json"
     json.dump(ref_domain_dict, open(fname, mode="w", encoding="utf-8"))
     return fname
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def ref_domain_dict():
     domain_dict = {
         "nam_pgd_grid": {
@@ -38,7 +38,7 @@ def ref_domain_dict():
     return domain_dict
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def domains():
     return {
         "CONF_PROJ_TEST": {
@@ -58,7 +58,7 @@ def domains():
     }
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def domains_file(domains, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/domains.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:

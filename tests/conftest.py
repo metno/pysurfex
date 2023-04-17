@@ -1,13 +1,19 @@
 """Mockers"""
+import os
 import pytest
 import json
 import numpy as np
+from netCDF4 import Dataset
 
 
 from surfex.datetime_utils import as_datetime
-from surfex.file import NCSurfexFile
 from surfex.geo import ConfProj
 
+
+@pytest.fixture(scope="module")
+def config_exp_surfex_toml():
+    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../surfex//cfg/config_exp_surfex.toml"
+    return fname
 
 class DummyFrostRequest():
     def __init__(self):
@@ -58,6 +64,42 @@ def conf_proj_domain_dict():
 
 
 @pytest.fixture(scope="module")
+def conf_proj_2x3_dict():
+    conf_proj_2x3_dict = {
+        "nam_pgd_grid": {
+            "cgrid": "CONF PROJ"
+        },
+        "nam_conf_proj": {
+            "xlat0": 59.5,
+            "xlon0": 9
+        },
+        "nam_conf_proj_grid": {
+            "ilone": 1,
+            "ilate": 1,
+            "xlatcen": 60,
+            "xloncen": 10,
+            "nimax": 2,
+            "njmax": 3,
+            "xdx": 10000.0,
+            "xdy": 10000.0
+        }
+    }
+    return conf_proj_2x3_dict
+
+@pytest.fixture(scope="module")
+def conf_proj_2x3(conf_proj_2x3_dict):
+    return ConfProj(conf_proj_2x3_dict)
+
+
+@pytest.fixture(scope="module")
+def conf_proj_2x3_file(tmp_path_factory, conf_proj_2x3_dict):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj_2x3.json"
+    with open(fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(conf_proj_2x3_dict, fhandler)
+    return fname
+
+
+@pytest.fixture(scope="module")
 def conf_proj_domain_file(conf_proj_domain_dict, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj_domain.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -105,12 +147,19 @@ def obsset():
 
 
 @pytest.fixture(scope="module")
+def an_time():
+    return as_datetime("202002200600")
+
+
+@pytest.fixture(scope="module")
 def obstime_str():
     return "20200220060000"
+
 
 @pytest.fixture(scope="module")
 def obstime(obstime_str):
     return as_datetime(obstime_str)
+
 
 @pytest.fixture(scope="module")
 def obsset_fname(tmp_path_factory, obsset, obstime_str):
@@ -118,6 +167,7 @@ def obsset_fname(tmp_path_factory, obsset, obstime_str):
     with open(filename, mode="w", encoding="utf-8") as fhandler:
         json.dump(obsset, fhandler)
     return filename
+
 
 @pytest.fixture(scope="module")
 def obsset_filepattern(tmp_path_factory):
@@ -163,6 +213,33 @@ def qc_dataset(obstime_str):
     }
     return qc_data
 
+
+@pytest.fixture(scope="module")
+def get_nam_path(tmp_path_factory):
+    nam_dir = f"{tmp_path_factory.getbasetemp().as_posix()}/nam"
+    if not os.path.exists(nam_dir):
+        os.makedirs(nam_dir, exist_ok=True)
+    files = [
+        "io",
+        "constants",
+        "rsmin",
+        "rsmin_mod",
+        "cv",
+        "sea",
+        "treedrag",
+        "flake",
+        "prep_from_namelist_values",
+        "prep",
+        "prep_snow",
+        "offline",
+        "soda",
+        "selected_output",
+        "override"
+    ]
+    for fff in files:
+        with open(f"{nam_dir}/{fff}.json", mode="w", encoding="utf-8") as nam:
+            json.dump({}, nam)
+    return nam_dir
 
 @pytest.fixture(scope="module")
 def rotated_ll_t2m_grib1(tmp_path_factory):
@@ -314,6 +391,7 @@ def regular_ll_t2m_grib1(tmp_path_factory):
         json.dump(keys, fhandler)
     return fname
 
+
 @pytest.fixture(scope="module")
 def regular_ll_t1_grib2(tmp_path_factory):
     keys = {
@@ -340,6 +418,7 @@ def regular_ll_t1_grib2(tmp_path_factory):
         json.dump(keys, fhandler)
     return fname
 
+
 @pytest.fixture(scope="module")
 def bufr_file(tmp_path_factory):
     keys = {
@@ -365,62 +444,305 @@ def bufr_file(tmp_path_factory):
         json.dump(keys, fhandler, indent=2)
     return fname
 
+
+
+@pytest.fixture()
+def data_thredds_nc_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write("""
+netcdf meps_thredds {                                                                                                                                                      
+dimensions:                                                                                                                                                                                    
+        time = UNLIMITED ;                                                                                                                                                                                                                                                       
+        height0 = 1 ;
+        height1 = 1 ;
+        height7 = 1 ;
+        hybrid = 2 ;                                                                                                   
+        x = 2 ;                                                                                                                                                                              
+        y = 3 ;                                                                                                                                                                             
+variables:                                                                                                                                                                                     
+        double time(time) ;                                                                             
+                time:long_name = "time" ;                                                                             
+                time:standard_name = "time" ;                                                                                                                                                  
+                time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;                                                                                             
+        double forecast_reference_time ;                                                                                           
+                forecast_reference_time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;                            
+                forecast_reference_time:standard_name = "forecast_reference_time" ; 
+        double hybrid(hybrid) ;                     
+        int projection_lambert ;                                                                                                                                                               
+                projection_lambert:grid_mapping_name = "lambert_conformal_conic" ;                                                                                                             
+                projection_lambert:standard_parallel = 63.3, 63.3 ;                                                                                                                            
+                projection_lambert:longitude_of_central_meridian = 15. ;                                                                                                                       
+                projection_lambert:latitude_of_projection_origin = 63.3 ;                                                                                                                      
+                projection_lambert:earth_radius = 6371000. ;                                                                                                                                   
+                projection_lambert:proj4 = "+proj=lcc +lat_0=63.3 +lon_0=15 +lat_1=63.3 +lat_2=63.3 +no_defs +R=6.371e+06" ;                                                                   
+        float x(x) ;                                                                                                                                                    
+        float y(y) ;                                                                                                                                         
+        double longitude(y, x) ;                                                                                                                                        
+        double latitude(y, x) ;   
+        float air_temperature_2m(time, height1, y, x) ;
+                air_temperature_2m:_FillValue = 9.96921e+36f ;
+                air_temperature_2m:long_name = "Screen level temperature (T2M)" ;
+                air_temperature_2m:standard_name = "air_temperature" ;
+                air_temperature_2m:units = "K" ;
+                air_temperature_2m:grid_mapping = "projection_lambert" ;
+                air_temperature_2m:coordinates = "longitude latitude" ;
+        float x_wind_ml(time, hybrid, y, x) ;
+        float y_wind_ml(time, hybrid, y, x) ;
+        float x_wind_10m(time, height7, y, x) ;
+        float y_wind_10m(time, height7, y, x) ;
+        float integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time(time, height0, y, x) ;
+        float integral_of_surface_downwelling_longwave_flux_in_air_wrt_time(time, height0, y, x) ;
+        float snowfall_amount_acc(time, height0, y, x) ;
+        float precipitation_amount_acc(time, height0, y, x) ;   
+        float surface_air_pressure(time, height0, y, x) ;
+        float air_temperature_ml(time, hybrid, y, x);
+        float specific_humidity_ml(time, hybrid, y, x) ;
+        float relative_humidity_2m(time, height1, y, x) ;
+        float surface_geopotential(time, y, x);
+        float land_area_fraction(time, height0, y, x) ;
+        float liquid_water_content_of_surface_snow(time, height0, y, x);
+        float height0(height0) ;
+        float height1(height1) ;
+        float height7(height7) ;
+
+data:
+
+forecast_reference_time = 1582178400;
+
+time = 1582178400, 1582182000;
+
+height0 = 0;
+height1 = 2;
+height7 = 10;
+
+x = 1, 2;
+
+y = 1, 2, 3;
+
+hybrid = 0.995552182197571, 0.998519629240036 ;
+
+longitude = 10.0, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6;
+
+latitude = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5, 60.6;
+
+land_area_fraction = 0, 0, 1, 1, 1, 0;
+
+surface_geopotential = 100, 100, 100, 100, 100, 100;
+
+air_temperature_ml = 
+271.0, 272.0,
+273.0, 274.0,
+275.0, 276.0,
+271.0, 272.0,
+273.0, 274.0,
+275.0, 276.0;
+
+air_temperature_2m = 
+271.0, 272.0,
+273.0, 274.0,
+275.0, 276.0;
+
+relative_humidity_2m = 0.1, 0.2, 0.3, 0.4, 0.5, 0.6;
+
+liquid_water_content_of_surface_snow = 
+200, 0, 230, 20, 0, 1000;
+
+
+}
+        """)
+    Dataset(fname, mode="w").fromcdl(cdlfname, ncfilename=fname, mode='a',format='NETCDF3_CLASSIC')
+    return fname
+
+
+@pytest.fixture()
+def firstguess4gridpp(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write("""
+netcdf FirstGuess4gridpp {
+dimensions:
+        y = 3 ;
+        x = 2 ;
+        time = 1 ;
+variables:
+        double time(time) ;
+                time:long_name = "time" ;
+                time:standard_name = "time" ;
+                time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;
+        double longitude(y, x) ;
+                longitude:units = "degree_east" ;
+                longitude:long_name = "longitude" ;
+                longitude:standard_name = "longitude" ;
+        double latitude(y, x) ;
+                latitude:units = "degree_north" ;
+                latitude:long_name = "latitude" ;
+                latitude:standard_name = "latitude" ;
+        float x(x) ;
+                x:long_name = "x-coordinate in Cartesian system" ;
+                x:standard_name = "projection_x_coordinate" ;
+                x:units = "m" ;
+        float y(y) ;
+                y:long_name = "y-coordinate in Cartesian system" ;
+                y:standard_name = "projection_y_coordinate" ;
+                y:units = "m" ;
+        float air_temperature_2m(y, x) ;
+                air_temperature_2m:_FillValue = 9.96921e+36f ;
+                air_temperature_2m:long_name = "Screen level temperature (T2M)" ;
+                air_temperature_2m:standard_name = "air_temperature" ;
+                air_temperature_2m:units = "K" ;
+        float relative_humidity_2m(y, x) ;
+                relative_humidity_2m:_FillValue = 9.96921e+36f ;
+                relative_humidity_2m:long_name = "Screen level relative humidity (RH2M)" ;
+                relative_humidity_2m:standard_name = "relative_humidity" ;
+                relative_humidity_2m:units = "1" ;
+        float surface_snow_thickness(y, x) ;
+                surface_snow_thickness:_FillValue = 9.96921e+36f ;
+                surface_snow_thickness:long_name = "Surface snow thickness" ;
+                surface_snow_thickness:standard_name = "surface_snow_thickness" ;
+                surface_snow_thickness:units = "m" ;
+        float altitude(y, x) ;
+                altitude:_FillValue = 9.96921e+36f ;
+                altitude:long_name = "Altitude" ;
+                altitude:standard_name = "altitude" ;
+                altitude:units = "m" ;
+        float land_area_fraction(y, x) ;
+                land_area_fraction:_FillValue = 9.96921e+36f ;
+                land_area_fraction:long_name = "Land Area Fraction" ;
+                land_area_fraction:standard_name = "land_area_fraction" ;
+                land_area_fraction:units = "1" ;
+
+// global attributes:
+                :projection = "lambert" ;
+                :dlon = 10000. ;
+                :dlat = 10000. ;
+                :projlat = 59.5 ;
+                :projlat2 = 59.5 ;
+                :projlon = 9LL ;
+                :lonc = 10LL ;
+                :latc = 59.5 ;
+
+data:
+
+time = 1582178400;
+
+x = 1, 2;
+
+y = 1, 2, 3;
+
+longitude = 10.0, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6;
+
+longitude = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5, 60.6;
+
+air_temperature_2m =
+ 271, 272, 273, 274, 275, 276;
+
+relative_humidity_2m =
+0.1, 0.2, 0.3, 0.4, 0.8, 1.0;
+
+surface_snow_thickness =
+  0.2, 0, 1.4, 0.2, 0, 0.4;
+
+altitude =
+  228.3734, 106.4936, 62.45805, 161.9377, 97.11469, 68.86867;
+
+land_area_fraction =
+   1, 1, 0, 1, 0.1664643, 0.1266151;
+}
+        """)
+    if not os.path.exists(fname):
+        Dataset(fname, mode="w").fromcdl(cdlfname, ncfilename=fname, mode='a')
+    return fname
+
+
+class DummyFaPos():
+    def __init__(self, value):
+        self.value = value
+
+    def get(self, mode):
+        return self.value
+
+
+class DummyFAGeometry():
+    def __init__(self, geometry):
+        self.name = geometry["name"]
+        self.dimensions = geometry["dimensions"]
+        self.projection = {
+            "reference_lon": DummyFaPos(geometry["projection"]["reference_lon"]),
+            "reference_lat": DummyFaPos(geometry["projection"]["reference_lat"]),
+        }
+        self.grid = geometry["grid"]
+        self.center = geometry["center"]
+
+    def getcenter(self):
+        return DummyFaPos(self.center["lon"]), DummyFaPos(self.center["lat"])
+    
+    @staticmethod
+    def gimme_corners_ij(subzone=None):
+        return {
+            "ll": [0, 0], 
+            "lr": [8, 0],
+            "ur": [8, 18]
+        }
+
+
+class DummyFAField():
+    def __init__(self):
+        geometry = {
+            "name": "lambert",
+            "dimensions": {
+                "Y_CIzone": 3,
+                "X_CIzone": 2,
+                "X": 2,
+                "Y": 3,
+            },
+            "projection": {
+                "reference_lon": 10.0,
+                "reference_lat": 60.0
+            },
+            "center": {
+                "lon": 10.0,
+                "lat": 60.0
+            },
+            "grid": {
+                "X_resolution": 10000,
+                "Y_resolution": 10000
+            },
+            "corners": {
+                "ll": {
+                    10.0, 60.0
+                }
+            }
+        }
+        self.geometry = DummyFAGeometry(geometry)
+        self.data = np.zeros_like([np.arange(2 * 3)])
+
+
+class MyFaResource():
+    def __init__(self, name, openmode=None):
+        self.name = name
+
+    def readfield(self, name):
+            print("Read FA field ", name)
+            return DummyFAField()
+
+
 @pytest.fixture(scope="module")
-def _mockers(session_mocker, conf_proj_domain, tmp_path_factory):
+def _mockers(session_mocker):
     """Define mockers used in the tests for the tasks' `run` methods."""
 
-    def return_points(*args, **kwargs):
-        return np.zeros_like([np.arange(9 * 19)]), None
-
-
-    def my_read_cryoclim_nc(*args, **kwargs):
-
-        print("Could read nc files")
-        lons = np.arange(5, 14, 0.1)
-        nx = lons.shape[0]
-        lats = np.arange(59, 61, 0.1)
-        ny = lats.shape[0]
-        grid_lons, grid_lats = np.meshgrid(lats, lons)
-        grid_snow_class = np.zeros_like(
-            [np.arange(nx * ny)]
-        )
-        grid_snow_class = grid_snow_class.reshape(1, nx, ny)
-        return grid_lons, grid_lats, grid_snow_class
-
-    def my_read_sentinel_nc(*args, **kwargs):
-
-        print("Could read nc files")
-        lons = np.arange(5, 14, 0.1)
-        nx = lons.shape[0]
-        lats = np.arange(59, 61, 0.1)
-        ny = lats.shape[0]
-        grid_lons, grid_lats = np.meshgrid(lats, lons)
-        grid_sm = np.zeros_like(
-            [np.arange(nx * ny)]
-        )
-        grid_sm = grid_sm.reshape(nx, ny)
-        return grid_lons, grid_lats, grid_sm
-
-    def my_first_guess_netcdf_file(*args, **kwargs):
-        fg_geo = conf_proj_domain
-        validtime = as_datetime("2020010106")
-        grid_snow_fg = np.zeros_like([np.arange(9 * 19)])
-        grid_snow_fg = grid_snow_fg.reshape(9, 19)
-        return fg_geo, validtime, grid_snow_fg, None, None
-
     def dummy_frost_data(*args, **kwargs):
+        print("Frost request ", args, kwargs)
         return DummyFrostRequest()
 
-    original_ncsurfexfile_init_method = NCSurfexFile.__init__
-    def dummy_nc_surf_file(*args, **kwargs):
-        kwargs.update({"geo": conf_proj_domain})
-        original_ncsurfexfile_init_method(*args, **kwargs)
-
     def my_codes_grib_new_from_file(file_handler):
+        print(file_handler)
         gid = json.load(file_handler)
         print(gid)
         return gid
-    
+
     def my_codes_bufr_new_from_file(file_handler):
         try:
             gid = json.load(file_handler)
@@ -430,7 +752,7 @@ def _mockers(session_mocker, conf_proj_domain, tmp_path_factory):
         return gid
 
     def my_codes_get(gid, key):
-        print(key)
+        print("codes_get", key)
         av_keys = ["average", "min", "max"]
         if key in av_keys:
             return -1
@@ -438,6 +760,7 @@ def _mockers(session_mocker, conf_proj_domain, tmp_path_factory):
             return gid[key]
     
     def my_codes_get_size(gid, key):
+        print("codes_get_size", key)
         try:
             nx = gid["Ni"]
             ny = gid["Nj"]
@@ -454,17 +777,10 @@ def _mockers(session_mocker, conf_proj_domain, tmp_path_factory):
             nx = gid["Nx"]
             ny = gid["Ny"]
         return np.zeros_like([np.arange(nx * ny)])
-    
+
     # Do the actual mocking
-    
-    # Do the actual mocking
-    session_mocker.patch("surfex.cli.read_cryoclim_nc", new=my_read_cryoclim_nc)
-    session_mocker.patch("surfex.cli.read_sentinel_nc", new=my_read_sentinel_nc)
-    session_mocker.patch("surfex.cli.read_first_guess_netcdf_file", new=my_first_guess_netcdf_file)
-    session_mocker.patch("surfex.netcdf.Netcdf.points", new=return_points)
-    
+
     session_mocker.patch("surfex.obs.requests.get", new=dummy_frost_data)
-    session_mocker.patch("surfex.file.NCSurfexFile.__init__", new=dummy_nc_surf_file)
     session_mocker.patch("surfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_grib_new_from_file)
     session_mocker.patch("surfex.grib.eccodes.codes_get", new=my_codes_get)
     session_mocker.patch("surfex.grib.eccodes.codes_get_long", new=my_codes_get)
@@ -473,15 +789,4 @@ def _mockers(session_mocker, conf_proj_domain, tmp_path_factory):
     session_mocker.patch("surfex.grib.eccodes.codes_release")
     session_mocker.patch("surfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file)
     session_mocker.patch("surfex.bufr.eccodes.codes_set")
-
-
-@pytest.fixture(scope="module")
-def _mockers_points(session_mocker):
-    """Define mockers used in the tests for the tasks' `run` methods."""
-
-    def return_points(*args, **kwargs):
-        return np.zeros_like([np.arange(9 * 19)]), None
-    
-    # Do the actual mocking
-    session_mocker.patch("surfex.netcdf.Netcdf.points", new=return_points)
-    session_mocker.patch("surfex.grib.Grib.points", new=return_points)
+    session_mocker.patch("surfex.fa.resource", new=MyFaResource)

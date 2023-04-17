@@ -6,7 +6,7 @@ import pytest
 from surfex.cli import hm2pysurfex
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def hm_env():
     hm_env = {
         "NPATCH": "2",

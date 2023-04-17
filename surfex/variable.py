@@ -308,9 +308,12 @@ class Variable(object):
                 patches = self.var_dict["patches"]
             if "accumulated" in self.var_dict:
                 accumulated = self.var_dict["accumulated"]
-            datatype = None
+            datatype = "float"
             if "datatype" in self.var_dict:
                 datatype = self.var_dict["datatype"]
+            tiletype = "FULL"
+            if "tiletype" in self.var_dict:
+                tiletype = self.var_dict["tiletype"]
 
             basetime = self.get_basetime(validtime)
             var = SurfexFileVariable(
@@ -321,6 +324,7 @@ class Variable(object):
                 basetime=basetime,
                 interval=self.interval,
                 datatype=datatype,
+                tiletype=tiletype,
             )
         elif self.var_type == "fa":
             var = self.var_dict["name"]

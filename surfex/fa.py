@@ -2,9 +2,9 @@
 import logging
 
 try:
-    import epygram  # type: ignore
+    from epygram.formats import resource
 except ImportError:
-    epygram = None
+    resource = None
 
 
 from .geo import ConfProj
@@ -42,11 +42,11 @@ class Fa(object):
             tuple: np.field, surfex.Geometry
 
         """
-        if epygram is None:
-            raise Exception("You need epygram to read FA files")
+        if resource is None:
+            raise ModuleNotFoundError("You need epygram to read FA files")
         else:
-            resource = epygram.formats.resource(self.fname, openmode="r")
-            field = resource.readfield(varname)
+            fa_file = resource(self.fname, openmode="r")
+            field = fa_file.readfield(varname)
             # TODO this might not work with forcing...
             zone = "CI"
             crnrs = field.geometry.gimme_corners_ij(subzone=zone)
@@ -64,7 +64,7 @@ class Fa(object):
             ):
                 n_y = field.geometry.dimensions["Y_CIzone"]
                 n_x = field.geometry.dimensions["X_CIzone"]
-                ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
+                # ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
                 lon0 = field.geometry.projection["reference_lon"].get("degrees")
                 lat0 = field.geometry.projection["reference_lat"].get("degrees")
                 c0, c1 = field.geometry.getcenter()

@@ -9,8 +9,8 @@ from surfex.read import Converter
 from surfex.timeseries import TimeSeriesFromConverter
 
 
-@pytest.fixture(scope="module")
-def obsset(tmp_path_factory):
+@pytest.fixture()
+def obsset_ts(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs_set_t2m.json"
     obs = {
         "0": {
@@ -35,14 +35,14 @@ def obsset(tmp_path_factory):
     json.dump(obs, open(fname, mode="w", encoding="utf-8"))
     return fname
 
-def test_timeseries_from_converter_from_obs(obsset, tmp_path_factory):
+def test_timeseries_from_converter_from_obs(obsset_ts, tmp_path_factory):
     starttime = as_datetime("20201113060000")
     endtime =  as_datetime("20201113070000")
     defs = {
         "filetype": "json",
         "fcint": 3600,
         "offset": 0,
-        "filepattern": obsset
+        "filepattern": obsset_ts
     }
     conf = {
         "none": {

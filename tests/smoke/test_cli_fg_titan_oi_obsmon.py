@@ -11,7 +11,7 @@ from surfex.cli import (
     cli_merge_qc_data
 )
 
-an_time = "2020111306"
+an_time = "2020022006"
 
 
 def hm_env():
@@ -404,40 +404,6 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
         json.dump({}, file_handler)
 
 
-@pytest.fixture(scope="module")
-def first_guess_file(tmp_path_factory):
-    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
-    return fname
-
-
-
-@pytest.fixture(scope="module")
-def _create_firstguess(first_guess_file, conf_proj_domain_file, hm):
-    """Test first guess from grib1."""
-    harmonie = []
-    if hm == "harmonie":
-        hm_env()
-        harmonie = ["--harmonie"]
-
-    with pytest.raises(SystemExit):
-        first_guess_for_oi(argv=["fail"])
-
-    argv = [
-        "-c", "surfex/cfg/first_guess.yml",
-        "-i", "grib1_fg_file",
-        "-if", "grib1",
-        "-dtg", an_time,
-        "-d", conf_proj_domain_file,
-        "--laf_converter", "none",
-        "--debug",
-        "-o", first_guess_file,
-        "air_temperature_2m",
-        "relative_humidity_2m",
-        "surface_snow_thickness"
-    ]
-    argv += harmonie
-    first_guess_for_oi(argv=argv)
-
 
 def create_obs_data(var, obs_fname):
     if var == "t2m":
@@ -454,7 +420,7 @@ def create_obs_data(var, obs_fname):
     qc_data = {
         "0": {
             "varname": name,
-            "obstime": "20201113060000",
+            "obstime": "202002200600",
             "lon": 6.9933000000000005,
             "lat": 62.191,
             "stid": "1111",
@@ -470,7 +436,7 @@ def create_obs_data(var, obs_fname):
         },
         "1": {
             "varname": name,
-            "obstime": "20201113060000",
+            "obstime": "202002200600",
             "lon": 7.8173,
             "lat": 59.767500000000005,
             "stid": "NA",
@@ -490,7 +456,7 @@ def create_obs_data(var, obs_fname):
 
 
 @pytest.fixture(params=["t2m", "rh2m", "sd"])
-def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, first_guess_file, hm):
+def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm):
     harmonie = []
     if hm == "harmonie":
         hm_env()
@@ -517,6 +483,7 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, first_gu
         }
     }
 
+    first_guess_file = firstguess4gridpp
     # Create observations
     obs_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs_{var}.json"
     create_obs_data(var, obs_fname)
@@ -587,10 +554,10 @@ def _qc_gridpp_obsmon(tmp_path_factory, request, conf_proj_domain_file, first_gu
 
     # Obsmon
     db_file = f"{tmp_path_factory.getbasetemp().as_posix()}/ecma.db"
-    obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file, harmonie)
+    obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file)
 
 
-def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file, harmonie):
+def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
 
     translation = {
         "t2m": "air_temperature_2m",
@@ -612,8 +579,35 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file, harmoni
     qc2obsmon(argv=argv)
 
 
-@pytest.mark.usefixtures("_mockers_points")
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"], scope="module")
-def test_qc_gridpp_obsmon(_create_firstguess, _qc_gridpp_obsmon):
-    _create_firstguess
+def test_qc_gridpp_obsmon(_qc_gridpp_obsmon):
     _qc_gridpp_obsmon
+
+
+@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"], scope="module")
+def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file, hm):
+    output = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp_output.nc"
+    harmonie = []
+    if hm == "harmonie":
+        hm_env()
+        harmonie = ["--harmonie"]
+
+    with pytest.raises(SystemExit):
+        first_guess_for_oi(argv=["fail"])
+
+    argv = [
+        "-c", "surfex/cfg/first_guess.yml",
+        "-i", data_thredds_nc_file,
+        "-if", "netcdf",
+        "-dtg", an_time,
+        "-d", conf_proj_2x3_file,
+        "--laf_converter", "none",
+        "--sd_converter", "sweclim",
+        "--debug",
+        "-o", output,
+        "air_temperature_2m",
+        "relative_humidity_2m",
+        "surface_snow_thickness"
+    ]
+    argv += harmonie
+    first_guess_for_oi(argv=argv)

@@ -12,7 +12,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
     """Observation set from obsoul file."""
 
     def __init__(self, content, an_time=None, label="", obnumber=None, obtypes=None, subtypes=None,
-                 neg_dt=1800, pos_dt=1800):
+                 neg_dt=None, pos_dt=None):
         """Constuct obs set from a obsoul json file.
         Args:
             content(str): Obsoul content
@@ -23,6 +23,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
         lineno = 0
         first_line = True
         lines = content.split("\n")
+        logging.debug("Found %s lines", lines)
         while lineno < len(lines) - 1:
             line = lines[lineno]
             if line.strip() == "":
@@ -45,7 +46,8 @@ class ObservationDataSetFromObsoul(ObservationSet):
             elev = np.nan
             date = line[50:60].strip()
             time = int(line[60:67].strip())
-            yyyymmdhhmm = f"{date}{time:04d}"
+            yyyymmdhhmm = f"{date}{time:06d}"
+            logging.debug("Date=%s Time=%s", date, time)
             obtime = as_datetime(yyyymmdhhmm)
             records = int(line[80:86])
             lineno += 1
@@ -56,6 +58,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
                 logging.debug("Data parts %s", parts)
                 obn = int(parts[0])
                 add_obs = True
+                logging.debug("obtypes=%s obn=%s", obtypes, obn)
                 if obtypes is not None:
                     if obt in obtypes:
                         if subtypes is not None:
@@ -75,13 +78,16 @@ class ObservationDataSetFromObsoul(ObservationSet):
 
                 # Remove if outside window
                 if an_time is not None:
-                    n_dt = as_timedelta(seconds=neg_dt)
-                    p_dt = as_timedelta(seconds=pos_dt)
-                    if (an_time - n_dt) <= obtime <= (an_time + p_dt):
-                        pass
+                    if neg_dt is not None and pos_dt is not None:
+                        n_dt = as_timedelta(seconds=neg_dt)
+                        p_dt = as_timedelta(seconds=pos_dt)
+                        if (an_time - n_dt) <= obtime <= (an_time + p_dt):
+                            pass
+                        else:
+                            logging.debug("Outside time window %s %s %s %s", obtime, an_time, n_dt, p_dt)
+                            add_obs = False
                     else:
-                        logging.debug("Outside time window %s %s %s %s", obtime, an_time, n_dt, p_dt)
-                        add_obs = False
+                        logging.debug("Not checking time window. neg_dt=%s and/or pos_dt=%s are None", neg_dt, pos_dt)
                 value = parts[3]
                 logging.debug("Obs %s %s %s %s", lineno, obn, obnumber, add_obs)
                 if add_obs:

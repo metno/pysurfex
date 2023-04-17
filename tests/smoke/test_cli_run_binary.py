@@ -15,31 +15,6 @@ from surfex.geo import ConfProj
 from surfex.util import merge_toml_env_from_files
 
 
-@pytest.fixture(scope="module")
-def domain_dict():
-    domain = {
-        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
-        "nam_conf_proj": {"xlat0": 59.5, "xlon0": 9},
-        "nam_conf_proj_grid": {
-            "ilone": 1,
-            "ilate": 1,
-            "xlatcen": 60,
-            "xloncen": 10,
-            "nimax": 9,
-            "njmax": 19,
-            "xdx": 10000.0,
-            "xdy": 10000.0,
-        },
-    }
-    return domain
-
-
-@pytest.fixture(scope="module")
-def domain_file(tmp_path_factory, domain_dict):
-    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj.json"
-    json.dump(domain_dict, open(fname, mode="w", encoding="utf-8"))
-    return fname
-
 
 @contextlib.contextmanager
 def working_directory(path):
@@ -52,65 +27,45 @@ def working_directory(path):
         os.chdir(prev_cwd)
 
 
-'''
-@pytest.fixture(scope="module")
-def _mockers_run_time(session_mocker, domain_dict):
-    """Define mockers used in the tests for the tasks' `run` methods."""
-    original_ncsurfexfile_init_method = NCSurfexFile.__init__
-
-    def dummy_nc_surf_file(*args, **kwargs):
-        kwargs.update({"geo": ConfProj(domain_dict)})
-        original_ncsurfexfile_init_method(*args, **kwargs)
-
-    # Do the actual mocking
-    session_mocker.patch("surfex.file.NCSurfexFile.__init__", new=dummy_nc_surf_file)
-'''
-
-
-@pytest.fixture(scope="module")
-def config_exp_surfex():
-    return f"{os.path.abspath(os.path.dirname(__file__))}/../..//surfex/cfg/config_exp_surfex.toml"
-
-
-@pytest.fixture(scope="module")
-def get_nc_config_file(config_exp_surfex, tmp_path_factory):
+@pytest.fixture()
+def get_nc_config_file(config_exp_surfex_toml, tmp_path_factory):
     this_config = f"{tmp_path_factory.getbasetemp().as_posix()}/nc.toml"
     config_file = f"{tmp_path_factory.getbasetemp().as_posix()}/config.toml"
     nc_config = {"SURFEX": {"IO": {"CSURF_FILETYPE": "NC"}}}
     with open(this_config, mode="w", encoding="utf-8") as fhandler:
         tomlkit.dump(nc_config, fhandler)
 
-    config = merge_toml_env_from_files([config_exp_surfex, this_config])
+    config = merge_toml_env_from_files([config_exp_surfex_toml, this_config])
     with open(config_file, mode="w", encoding="utf-8") as file_handler:
         tomlkit.dump(config, file_handler)
     return config_file
 
 
-@pytest.fixture(scope="module")
-def get_fa_config_file(config_exp_surfex, tmp_path_factory):
+@pytest.fixture()
+def get_fa_config_file(config_exp_surfex_toml, tmp_path_factory):
     this_config = f"{tmp_path_factory.getbasetemp().as_posix()}/fa.toml"
     config_file = f"{tmp_path_factory.getbasetemp().as_posix()}/config.toml"
     nc_config = {"SURFEX": {"IO": {"CSURF_FILETYPE": "FA"}}}
     with open(this_config, mode="w", encoding="utf-8") as fhandler:
         tomlkit.dump(nc_config, fhandler)
 
-    config = merge_toml_env_from_files([config_exp_surfex, this_config])
+    config = merge_toml_env_from_files([config_exp_surfex_toml, this_config])
     with open(config_file, mode="w", encoding="utf-8") as file_handler:
         tomlkit.dump(config, file_handler)
     return config_file
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def get_rte_file(tmp_path_factory):
-    rte = f"{tmp_path_factory.getbasetemp().as_posix()}/rte.json"
+    rte = f"{tmp_path_factory.getbasetemp().as_posix()}/rte_cli_run_binary.json"
     with open(rte, mode="w", encoding="utf-8") as file_handler:
         json.dump(dict(os.environ), file_handler)
     return rte
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def get_system(tmp_path_factory):
-    system_file = f"{tmp_path_factory.getbasetemp().as_posix()}/system.json"
+    system_file = f"{tmp_path_factory.getbasetemp().as_posix()}/system_cli_run_binary.json"
     system = {
         "climdir": "climdir",
         "ecoclimap_bin_dir": "ecoclimap_bin_dir",
@@ -122,36 +77,9 @@ def get_system(tmp_path_factory):
     return system_file
 
 
-@pytest.fixture(scope="module")
-def get_nam(tmp_path_factory):
-    nam_dir = f"{tmp_path_factory.getbasetemp().as_posix()}/nam"
-    if not os.path.exists(nam_dir):
-        os.makedirs(nam_dir, exist_ok=True)
-    files = [
-        "io",
-        "constants",
-        "rsmin",
-        "rsmin_mod",
-        "cv",
-        "sea",
-        "treedrag",
-        "flake",
-        "prep_from_namelist_values",
-        "prep",
-        "prep_snow",
-        "offline",
-        "soda",
-        "selected_output",
-    ]
-    for fff in files:
-        with open(f"{nam_dir}/{fff}.json", mode="w", encoding="utf-8") as nam:
-            json.dump({}, nam)
-    return nam_dir
-
-
 @pytest.mark.usefixtures("_mockers")
 def test_run_pgd(
-    get_nc_config_file, get_rte_file, get_system, domain_file, get_nam, tmp_path_factory
+    get_nc_config_file, get_rte_file, get_system, conf_proj_2x3_file, get_nam_path, tmp_path_factory
 ):
     """Test run NC."""
     # PGD
@@ -165,11 +93,11 @@ def test_run_pgd(
         "-c",
         get_nc_config_file,
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",
@@ -184,7 +112,7 @@ def test_run_pgd(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_prep(
-    get_nc_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
+    get_nc_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
 ):
 
     # PREP
@@ -198,11 +126,11 @@ def test_run_prep(
         "-w",
         "",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep_file",
-        get_nam + "/prep_from_namelist_values.json",
+        get_nam_path + "/prep_from_namelist_values.json",
         "--prep_filetype",
         "json",
         "--dtg",
@@ -212,7 +140,7 @@ def test_run_prep(
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",
@@ -227,7 +155,7 @@ def test_run_prep(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_offline(
-    get_nc_config_file, get_rte_file, get_system, get_nam, tmp_path_factory, domain_file
+    get_nc_config_file, get_rte_file, get_system, get_nam_path, tmp_path_factory, conf_proj_2x3_file
 ):
     # OFFLINE
 
@@ -242,7 +170,7 @@ def test_run_offline(
         "-w",
         "",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep",
@@ -252,7 +180,7 @@ def test_run_offline(
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",
@@ -270,7 +198,7 @@ def test_run_offline(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_perturbed(
-    get_nc_config_file, get_rte_file, get_system, get_nam, tmp_path_factory, domain_file
+    get_nc_config_file, get_rte_file, get_system, get_nam_path, tmp_path_factory, conf_proj_2x3_file
 ):
     # PERTURBED OFFLINE
 
@@ -285,7 +213,7 @@ def test_run_perturbed(
         "-w",
         "",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep",
@@ -295,7 +223,7 @@ def test_run_perturbed(
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "--pert", "1",
@@ -314,7 +242,7 @@ def test_run_perturbed(
 
 @pytest.mark.usefixtures("_mockers")
 def test_run_soda(
-    get_nc_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
+    get_nc_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
 ):
     # SODA
 
@@ -329,19 +257,19 @@ def test_run_soda(
         "-w",
         "",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep",
         prep.as_posix(),
         "--dtg",
-        "2020022003",
+        "2020022006",
         "-c",
         get_nc_config_file,
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",
@@ -356,7 +284,7 @@ def test_run_soda(
 
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_forecast(
-    get_fa_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
+    get_fa_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
 ):
     """Test masterodb."""
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -372,7 +300,7 @@ def test_masterodb_forecast(
         "-m",
         "forecast",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep",
@@ -382,7 +310,7 @@ def test_masterodb_forecast(
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",
@@ -398,7 +326,7 @@ def test_masterodb_forecast(
 
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_canari(
-    get_fa_config_file, get_system, get_rte_file, get_nam, domain_file, tmp_path_factory
+    get_fa_config_file, get_system, get_rte_file, get_nam_path, conf_proj_2x3_file, tmp_path_factory
 ):
     # CANARI
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -413,19 +341,19 @@ def test_masterodb_canari(
         "-m",
         "canari",
         "--domain",
-        domain_file,
+        conf_proj_2x3_file,
         "--pgd",
         pgd.as_posix(),
         "--prep",
         prep.as_posix(),
         "--dtg",
-        "2020022003",
+        "2020022006",
         "-c",
         get_fa_config_file,
         "-s",
         get_system,
         "-n",
-        get_nam,
+        get_nam_path,
         "-r",
         get_rte_file,
         "-f",

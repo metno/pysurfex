@@ -273,11 +273,12 @@ class NetatmoObservationSet(ObservationSet):
                 text = text.replace("}]{", "}{")
                 text = text.replace("}][{", "},{")
                 text = text.replace("}{", "},{")
-                text = f'{"data": {text}}'
+                print(text)
+                text = '{"data": %s}' % text
                 raw = json.loads(text)
                 raw = raw["data"]
                 logging.debug("Parsing %d stations in %s", len(raw), ifilename)
-            except Exception:
+            except RuntimeError:
                 logging.error("Could not parse %s.", ifilename)
                 continue
 
@@ -357,11 +358,11 @@ class NetatmoObservationSet(ObservationSet):
         else:
             num_valid_stations = len(data)
 
-        logging.debug("Found %d valid observations:", num_valid_stations)
-        logging.debug("   %d missing obs", num_missing_obs)
-        logging.debug("   %d missing metadata", num_missing_metadata)
-        logging.debug("   %d missing timestamp", num_missing_time)
-        logging.debug("   %d wrong timestamp", num_wrong_time)
+        logging.info("Found %d valid observations:", num_valid_stations)
+        logging.info("   %d missing obs", num_missing_obs)
+        logging.info("   %d missing metadata", num_missing_metadata)
+        logging.info("   %d missing timestamp", num_missing_time)
+        logging.info("   %d wrong timestamp", num_wrong_time)
         if not re:
             extra = " (not removed)"
         else:

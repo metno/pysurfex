@@ -2,8 +2,6 @@
 import numpy as np
 import pytest
 
-from surfex.datetime_utils import as_datetime_args
-from surfex.geo import ConfProj
 from surfex.titan import (
     Blacklist,
     Buddy,
@@ -13,39 +11,18 @@ from surfex.titan import (
     Plausibility,
     Redundancy,
     Sct,
+    FirstGuess,
+    Fraction,
     dataset_from_json,
 )
 
 
-def an_time():
-    return as_datetime_args(year=2020, month=11, day=13, hour=6)
-
-
-@pytest.fixture(scope="module")
-def domain():
-    domain_dict = {
-        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
-        "nam_conf_proj": {"xlat0": 59.5, "xlon0": 9},
-        "nam_conf_proj_grid": {
-            "ilone": 1,
-            "ilate": 1,
-            "xlatcen": 60,
-            "xloncen": 10,
-            "nimax": 9,
-            "njmax": 19,
-            "xdx": 10000.0,
-            "xdy": 10000.0,
-        },
-    }
-    return ConfProj(domain_dict)
-
-
-def obs_set():
+def obs_set(an_time):
 
     obs_set = {
         "0": {
             "varname": "airTemperatureAt2M",
-            "obstime": "20201113060000",
+            "obstime": "20200220060000",
             "lon": 6.9933000000000005,
             "lat": 62.191,
             "stid": "1111",
@@ -61,7 +38,7 @@ def obs_set():
         },
         "1": {
             "varname": "airTemperatureAt2M",
-            "obstime": "20201113060000",
+            "obstime": "20200220060000",
             "lon": 7.8173,
             "lat": 59.767500000000005,
             "stid": "NA",
@@ -77,71 +54,87 @@ def obs_set():
         },
     }
     obs_set = obs_set.copy()
-    return dataset_from_json(an_time(), obs_set)
+    return dataset_from_json(an_time, obs_set)
 
 
-def test_plausibility1():
+def test_plausibility1(an_time):
     mask = [0, 1]
     test = Plausibility(minval=272, maxval=273.5)
     test.set_input(2)
-    flags = test.test(obs_set(), mask)
+    flags = test.test(obs_set(an_time), mask)
     assert flags == [0.0, 102]
 
 
-def test_plausibility2():
+def test_plausibility2(an_time):
     mask = [1]
     test = Plausibility(minval=273.5, maxval=274.5)
     test.set_input(1)
-    flags = test.test(obs_set(), mask)
+    flags = test.test(obs_set(an_time), mask)
     assert flags == [0.0, 0.0]
 
 
-def test_blacklist():
+def test_blacklist(an_time):
     mask = [0, 1]
     blacklist = {"lons": [6.9933], "lats": [62.191]}
     qc = Blacklist(blacklist)
     qc.set_input(2)
-    qc.test(obs_set(), mask)
+    qc.test(obs_set(an_time), mask)
 
 
-def test_buddy():
+def test_buddy(an_time):
     mask = [0, 1]
     buddy = Buddy()
     buddy.set_input(2)
     with pytest.raises(TypeError):
-        buddy.test(obs_set(), mask)
+        buddy.test(obs_set(an_time), mask)
 
 
-def test_domain(domain):
+def test_domain(conf_proj_2x3, an_time):
     mask = [0, 1]
-    qc = DomainCheck(domain)
+    qc = DomainCheck(conf_proj_2x3)
     qc.set_input(2)
-    qc.test(obs_set(), mask)
+    qc.test(obs_set(an_time), mask)
 
 
-def test_sct():
+def test_first_guess(conf_proj_2x3, an_time):
+    mask = [0, 1]
+    first_guess = np.ndarray(shape=(2,3), dtype=float)
+    qc = FirstGuess(conf_proj_2x3, first_guess, negdiff=0.1, posdiff=0.2)
+    qc.set_input(2)
+    qc.test(obs_set(an_time), mask)
+
+
+def test_fraction(conf_proj_2x3, an_time):
+    mask = [0, 1]
+    lsm = np.ndarray(shape=(2,3), dtype=float)
+    qc = Fraction(conf_proj_2x3, lsm, minval=0, maxval=1)
+    qc.set_input(2)
+    qc.test(obs_set(an_time), mask)
+
+
+def test_sct(an_time):
     mask = [0, 1]
     sct = Sct()
     sct.set_input(2)
-    sct.test(obs_set(), mask)
+    sct.test(obs_set(an_time), mask)
 
 
-def test_no_meta():
+def test_no_meta(an_time):
     mask = [0, 1]
     qc = NoMeta()
     qc.set_input(2)
-    qc.test(obs_set(), mask)
+    qc.test(obs_set(an_time), mask)
 
 
-def test_redundancy():
+def test_redundancy(an_time):
     mask = [0, 1]
-    qc = Redundancy(an_time())
+    qc = Redundancy(an_time)
     qc.set_input(2)
-    qc.test(obs_set(), mask)
+    qc.test(obs_set(an_time), mask)
 
 
-def test_climatology():
+def test_climatology(an_time):
     mask = [0, 1]
-    clim = Climatology(an_time(), minval=270, maxval=280)
+    clim = Climatology(an_time, minval=270, maxval=280)
     clim.set_input(2)
-    clim.test(obs_set(), mask)
+    clim.test(obs_set(an_time), mask)

@@ -1,36 +1,15 @@
 """Test grib."""
-import pytest
 import json
+import pytest
 
 from surfex.cache import Cache
 from surfex.datetime_utils import as_datetime
-from surfex.geo import ConfProj
 from surfex.read import ConvertedInput, Converter
 from surfex.grib import Grib1Variable, Grib2Variable, Grib
 
 
-@pytest.fixture(scope="module")
-def domain_dict():
-    domain = {
-        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
-        "nam_conf_proj": {"xlat0": 59.5, "xlon0": 9},
-        "nam_conf_proj_grid": {
-            "ilone": 1,
-            "ilate": 1,
-            "xlatcen": 60,
-            "xloncen": 10,
-            "nimax": 9,
-            "njmax": 19,
-            "xdx": 10000.0,
-            "xdy": 10000.0,
-        },
-    }
-    return domain
-
-
-
 @pytest.fixture()
-def config(lambert_t2m_grib1, lambert_t1_grib2):
+def converter_config(lambert_t2m_grib1, lambert_t1_grib2):
     config = {
         "grib1": {"fcint": 10800, "file_inc": 3600, "offset": 0},
         "grib2": {"fcint": 10800, "file_inc": 3600, "offset": 0},
@@ -94,14 +73,14 @@ def write_json_file(fname, keys):
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_grib1_from_converter(config, conf_proj_domain):
+def test_grib1_from_converter(converter_config, conf_proj_domain):
     """Test grib1 from converter."""
     # Grib 1
     fileformat = "grib1"
     var = "t2m"
     print(var, fileformat)
-    defs = config[fileformat]
-    converter_conf = config[var][fileformat]["converter"]
+    defs = converter_config[fileformat]
+    converter_conf = converter_config[var][fileformat]["converter"]
     
     var = get_var(1, converter_conf)
     validtime = as_datetime("2020111306")
@@ -112,13 +91,13 @@ def test_grib1_from_converter(config, conf_proj_domain):
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_grib2_from_converter(config, conf_proj_domain):
+def test_grib2_from_converter(converter_config, conf_proj_domain):
     """Test grib2 from converter."""
     fileformat = "grib2"
     var = "t1"
     print(var, fileformat)
-    defs = config[fileformat]
-    converter_conf = config[var][fileformat]["converter"]
+    defs = converter_config[fileformat]
+    converter_conf = converter_config[var][fileformat]["converter"]
 
     var = get_var(2, converter_conf)
     validtime = as_datetime("2020111306")
@@ -129,50 +108,50 @@ def test_grib2_from_converter(config, conf_proj_domain):
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_read_rotated_ll_grib1(config, rotated_ll_t2m_grib1):
+def test_read_rotated_ll_grib1(converter_config, rotated_ll_t2m_grib1):
 
-    converter_conf = config["t2m"]["grib1"]["converter"]
+    converter_conf = converter_config["t2m"]["grib1"]["converter"]
     var = get_var(1, converter_conf)
     grib_file = Grib(rotated_ll_t2m_grib1)
-    assert var.is_accumulated() == False
+    assert not var.is_accumulated()
     var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_read_rotated_ll_grib2(config, rotated_ll_t1_grib2):
+def test_read_rotated_ll_grib2(converter_config, rotated_ll_t1_grib2):
     
-    converter_conf = config["t1"]["grib2"]["converter"]
+    converter_conf = converter_config["t1"]["grib2"]["converter"]
     var = get_var(2, converter_conf)
     grib_file = Grib(rotated_ll_t1_grib2)
-    assert var.is_accumulated() == False
+    assert not var.is_accumulated()
     var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_read_regular_ll_grib1(config, regular_ll_t2m_grib1):
+def test_read_regular_ll_grib1(converter_config, regular_ll_t2m_grib1):
 
-    converter_conf = config["t2m"]["grib1"]["converter"]
+    converter_conf = converter_config["t2m"]["grib1"]["converter"]
     var = get_var(1, converter_conf)
 
     grib_file = Grib(regular_ll_t2m_grib1)
-    assert var.is_accumulated() == False
+    assert not var.is_accumulated()
     var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
 
 @pytest.mark.usefixtures("_mockers")
-def test_read_regular_ll_grib2(config, regular_ll_t1_grib2):
+def test_read_regular_ll_grib2(converter_config, regular_ll_t1_grib2):
     
-    converter_conf = config["t1"]["grib2"]["converter"]
+    converter_conf = converter_config["t1"]["grib2"]["converter"]
     var = get_var(2, converter_conf)
 
     grib_file = Grib(regular_ll_t1_grib2)
-    assert var.is_accumulated() == False
+    assert not var.is_accumulated()
     var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)

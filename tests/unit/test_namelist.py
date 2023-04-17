@@ -9,41 +9,8 @@ from surfex.datetime_utils import as_datetime
 from surfex.namelist import BaseNamelist, Namelist
 
 
-@pytest.fixture(scope="module")
-def config_file():
-    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../../surfex//cfg/config_exp_surfex.toml"
-    return fname
 
-
-@pytest.fixture(scope="module")
-def get_nam_path(tmp_path_factory):
-    nam_dir = f"{tmp_path_factory.getbasetemp().as_posix()}/nam"
-    if not os.path.exists(nam_dir):
-        os.makedirs(nam_dir, exist_ok=True)
-    files = [
-        "io",
-        "constants",
-        "rsmin",
-        "rsmin_mod",
-        "cv",
-        "sea",
-        "treedrag",
-        "flake",
-        "prep_from_namelist_values",
-        "prep",
-        "prep_snow",
-        "offline",
-        "soda",
-        "selected_output",
-        "override"
-    ]
-    for fff in files:
-        with open(f"{nam_dir}/{fff}.json", mode="w", encoding="utf-8") as nam:
-            json.dump({}, nam)
-    return nam_dir
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def namelist_dict():
     dict_data = {
         "nam_block": {
@@ -56,7 +23,7 @@ def namelist_dict():
     return dict_data
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def namelist_file(namelist_dict, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_dict.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -64,7 +31,7 @@ def namelist_file(namelist_dict, tmp_path_factory):
     return fname
 
 
-def test_namelist(config_file, get_nam_path, namelist_dict, namelist_file, tmp_path_factory):
+def test_namelist(config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_file, tmp_path_factory):
     nml = BaseNamelist.ascii_file2nml(namelist_file)
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_output_testjson"
     prep_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_prep_input.json"
@@ -98,7 +65,7 @@ def test_namelist(config_file, get_nam_path, namelist_dict, namelist_file, tmp_p
             kwargs.update({
                 "dtg": as_datetime("2020022000")
             })  
-        config = ConfigurationFromTomlFile(config_file)
+        config = ConfigurationFromTomlFile(config_exp_surfex_toml)
         config.update_setting("SURFEX#COVER#SG", True)
         config.update_setting("SURFEX#ISBA#SCHEME", "DIF")
         BaseNamelist(program, config, get_nam_path, **kwargs)

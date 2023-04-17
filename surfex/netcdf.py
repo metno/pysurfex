@@ -381,7 +381,7 @@ class NetCDFFileVariable(object):
         """Get axis_types."""
         types = []
         if self.var_name not in self.file.variables:
-            raise Exception(self.var_name + " is missing in file!")
+            raise RuntimeError(self.var_name + " is missing in file!")
 
         if self.file.variables[self.var_name]:
             for dim_name in self.file.variables[self.var_name].dimensions:

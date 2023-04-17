@@ -6,11 +6,15 @@ from datetime import date, datetime, timedelta
 # TODO use ISO times
 def as_datetime(dtg):
     """Convert string to datetime."""
-    fmt = "%Y%m%d%H"
-    if len(dtg) == 12:
+    if len(dtg) == 10:
+        fmt = "%Y%m%d%H"
+    elif len(dtg) == 12:
         fmt = "%Y%m%d%H%M"
-    if len(dtg) == 14:
+    elif len(dtg) == 14:
         fmt = "%Y%m%d%H%M%S"
+    else:
+        raise RuntimeError(f"dtg={dtg} len(dtg) is {len(dtg)}")
+    
     return datetime.strptime(dtg, fmt)
 
 

@@ -5,7 +5,7 @@ from surfex.datetime_utils import as_datetime_args, as_timedelta
 from surfex.variable import Variable
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def fixture():
     cfg = {
         "grib1": {
