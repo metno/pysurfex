@@ -6,26 +6,6 @@ from surfex.obsoul import ObservationDataSetFromObsoulFile
 
 
 @pytest.fixture()
-def obsoul_cryoclim_cy43(tmp_path_factory):
-    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim.obsoul"
-    with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
-            1           2
-  15  1        17  80.47041   24.15402  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
-         92  999999.00  -2147483647.00  0.100  2048
-  15  1        17  80.45985   22.95117  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
-         92  999999.00  -2147483647.00  0.100  2048
-  15  1        17  80.44224   23.19859  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
-         92  999999.00  -2147483647.00  0.100  2048
-  15  1        17  80.21594   25.50849  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
-         92  999999.00  -2147483647.00  0.000  2048
-"""
-        )
-    return fname
-
-
-@pytest.fixture()
 def obsoul_carra1(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/carra1.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:

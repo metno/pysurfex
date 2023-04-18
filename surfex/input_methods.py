@@ -22,6 +22,7 @@ def get_datasources(obs_time, settings):
 
     Raises:
         NotImplementedError: Unknown observation file format
+        NotImplementedError: Only one file reading implemented
         RuntimeError: No filenames or filepattern found
         RuntimeError: You must set variable name
         RuntimeError: You must set varname to read NETATMO JSON files
@@ -44,6 +45,10 @@ def get_datasources(obs_time, settings):
 
             validtime = obs_time
             if filetype.lower() == "bufr":
+                if isinstance(filepattern, list):
+                    if len(filepattern) > 1:
+                        raise NotImplementedError("Only one file reading implemented")
+                    filepattern = filepattern[0]
                 filename = parse_filepattern(filepattern, obs_time, validtime)
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
@@ -63,7 +68,7 @@ def get_datasources(obs_time, settings):
                 if os.path.exists(filename):
                     datasources.append(
                         BufrObservationSet(
-                            filename, [varname], obs_time, valid_range, **kwargs
+                            filename, varname, obs_time, valid_range, **kwargs
                         )
                     )
                 else:
@@ -135,6 +140,10 @@ def get_datasources(obs_time, settings):
                 kwargs.update({"validtime": obs_time})
                 datasources.append(MetFrostObservations(varname, **kwargs))
             elif filetype.lower() == "obsoul":
+                if isinstance(filepattern, list):
+                    if len(filepattern) > 1:
+                        raise NotImplementedError("Only one file reading implemented")
+                    filepattern = filepattern[0]
                 filename = parse_filepattern(filepattern, obs_time, validtime)
                 obnumber = None
                 neg_dt = None
@@ -166,6 +175,10 @@ def get_datasources(obs_time, settings):
                 else:
                     print("WARNING: filename " + filename + " not existing. Not added.")
             elif filetype.lower() == "json":
+                if isinstance(filepattern, list):
+                    if len(filepattern) > 1:
+                        raise NotImplementedError("Only one file reading implemented")
+                    filepattern = filepattern[0]
                 filename = parse_filepattern(filepattern, obs_time, validtime)
                 varname = None
                 if "varname" in settings[obs_set]:
@@ -191,15 +204,15 @@ def set_geo_from_obs_set(
     """Set geometry from obs file.
 
     Args:
-        obs_time (_type_): _description_
-        obs_type (_type_): _description_
-        varname (_type_): _description_
-        inputfile (_type_): _description_
-        lonrange (_type_, optional): _description_. Defaults to None.
-        latrange (_type_, optional): _description_. Defaults to None.
+        obs_time (as_datetime): Observation time
+        obs_type (str): Observation file type
+        varname (str): _Observation variable
+        inputfile (str): Input file with obs set
+        lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
+        latrange (tuple, optional): Latitude range (min, max). Defaults to None.
 
     Returns:
-        _type_: _description_
+        geo (Geo): Surfex geometry
 
     """
     settings = {
@@ -242,3 +255,111 @@ def set_geo_from_obs_set(
     }
     geo = LonLatVal(geo_json)
     return geo
+
+
+def get_obsset(obs_time, obs_type, varname, inputfile,
+               lonrange=None, latrange=None, label=None,
+               neg_t_range=None, pos_t_range=None,
+               unit=None, level=None, obtypes=None,
+               subtypes=None):
+    """Create an observation set from an input data set.
+
+    Args:
+        obs_time (as_datetime): Observation time
+        obs_type (str): Observation file type
+        varname (list): _Observation variable(s)
+        inputfile (list): Input file(s) with obs set
+        pos_t_range (int, optional): Time window duration after obs_time in seconds
+        neg_t_range (int, optional): Time window duration after obs_time in seconds
+        lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
+        latrange (tuple, optional): Latitude range (min, max). Defaults to None.
+        label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
+        unit (str, optional): Unit (FROST)
+        level (str, optional): Level (FROST)
+        obtypes (list, optional): Obstypes (obsoul)
+        subtypes (list, optional): Subtypes (obsoul)
+
+    Return:
+        obsset (ObservationSet): Observation set
+
+    """
+    if label is None:
+        label = obs_type
+    if isinstance(varname, str):
+        varname = [varname]
+    if isinstance(inputfile, str):
+        inputfile = [inputfile]
+    if lonrange is None:
+        lonrange = [-180, 180]
+    if latrange is None:
+        latrange = [-90, 90]
+    dt = None
+    if dt is None and pos_t_range is not None:
+        dt = pos_t_range
+    if dt is None and neg_t_range is not None:
+        dt = neg_t_range
+    dt_seconds = dt
+    if dt is not None:
+        dt_seconds = int(dt.total_seconds())
+    pos_t_range_seconds = pos_t_range
+    if pos_t_range is not None:
+        pos_t_range_seconds = int(pos_t_range.total_seconds())
+    neg_t_range_seconds = neg_t_range
+    if neg_t_range is not None:
+        neg_t_range_seconds = int(neg_t_range.total_seconds())
+    settings = {
+        label: {
+            "varname": varname,
+            "filetype": obs_type,
+            "inputfile": inputfile,
+            "filepattern": inputfile,
+            "dt": dt_seconds,
+            "label": label,
+            "lonrange": lonrange,
+            "latrange": latrange,
+            "unit": unit,
+            "level": level,
+            "obtypes": obtypes,
+            "subtypes": subtypes,
+            "pos_t_range": pos_t_range_seconds,
+            "neg_t_range": neg_t_range_seconds
+        }
+    }
+
+    logging.debug("%s", settings)
+    logging.debug("Get data source")
+    return get_datasources(obs_time, settings)[0]
+
+
+def create_obsset_file(obs_time, obs_type, varname, inputfile, output,
+                       lonrange=None, latrange=None, label=None, indent=None,
+                       neg_t_range=None, pos_t_range=None,
+                       unit=None, level=None, obtypes=None,
+                       subtypes=None):
+    """Create an observation set from an input data set.
+
+    Args:
+        obs_time (as_datetime): Observation time
+        obs_type (str): Observation file type
+        varname (list): _Observation variable(s)
+        inputfile (list): Input file(s) with obs set
+        output (str): Output file
+        pos_t_range (int, optional): Time window duration after obs_time in seconds
+        neg_t_range (int, optional): Time window duration after obs_time in seconds
+        lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
+        latrange (tuple, optional): Latitude range (min, max). Defaults to None.
+        label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
+        indent (int, optional): File indentation. Default to None.
+        unit (str, optional): Unit (FROST)
+        level (str, optional): Level (FROST)
+        obtypes (list, optional): Obstypes (obsoul)
+        subtypes (list, optional): Subtypes (obsoul)
+
+    """
+    logging.debug("Get data source")
+    obsset = get_obsset(obs_time, obs_type, varname, inputfile,
+                        lonrange=lonrange, latrange=latrange, label=label,
+                        neg_t_range=neg_t_range, pos_t_range=pos_t_range,
+                        unit=unit, level=level, obtypes=obtypes,
+                        subtypes=subtypes)
+    obsset.write_json_file(output, indent=indent)

@@ -22,7 +22,6 @@ from .binary_input import (
     PrepInputData,
     SodaInputData,
 )
-from .bufr import BufrObservationSet
 from .cache import Cache
 from .cmd_parsing import (
     parse_args_bufr2json,
@@ -35,6 +34,7 @@ from .cmd_parsing import (
     parse_args_masterodb,
     parse_args_merge_qc_data,
     parse_args_modify_forcing,
+    parse_args_obs2json,
     parse_args_oi2soda,
     parse_args_plot_points,
     parse_args_qc2obsmon,
@@ -56,7 +56,7 @@ from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
-from .input_methods import get_datasources, set_geo_from_obs_set
+from .input_methods import get_datasources, set_geo_from_obs_set, create_obsset_file
 from .interpolation import horizontal_oi
 from .namelist import BaseNamelist, Namelist
 from .netcdf import (
@@ -930,38 +930,6 @@ def run_hm2pysurfex(**kwargs):
             toml.dump(config.settings, fhandler)
 
 
-def run_bufr2json(**kwargs):
-    """Run bufr to a json file."""
-    variables = kwargs["vars"]
-    bufrfile = kwargs["bufr"]
-    output = kwargs["output"]
-    valid_dtg = kwargs["dtg"]
-    valid_range = kwargs["valid_range"]
-    indent = None
-    if "indent" in kwargs:
-        indent = kwargs["indent"]
-    lonrange = None
-    if "lonrange" in kwargs:
-        lonrange = kwargs["lonrange"]
-    latrange = None
-    if "latrange" in kwargs:
-        latrange = kwargs["latrange"]
-
-    valid_dtg = as_datetime(valid_dtg)
-    valid_range = as_timedelta(seconds=int(valid_range))
-    bufr_set = BufrObservationSet(
-        bufrfile,
-        variables,
-        valid_dtg,
-        valid_range,
-        lonrange=lonrange,
-        latrange=latrange,
-        label="bufr",
-    )
-
-    bufr_set.write_json_file(output, indent=indent)
-
-
 def run_plot_points(**kwargs):
     """Point plots."""
     geo_file = None
@@ -1782,7 +1750,68 @@ def bufr2json(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ bufr2json ******************")
-    run_bufr2json(**kwargs)
+    logging.warning("This method is depreciated. Please use create_obsset_file")
+    variables = kwargs.get("vars")
+    bufrfile = kwargs.get("bufr")
+    output = kwargs.get("output")
+    valid_dtg = as_datetime(kwargs.get("dtg"))
+    valid_range = as_timedelta(seconds=kwargs.get("valid_range"))
+    label = kwargs.get("label")
+    indent = kwargs.get("indent")
+    lonrange = kwargs.get("lonrange")
+    latrange = kwargs.get("latrange")
+
+    create_obsset_file(valid_dtg, "bufr", variables, bufrfile, output,
+                       pos_t_range=valid_range,
+                       lonrange=lonrange, latrange=latrange, label=label, indent=indent)
+
+
+def obs2json(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+    kwargs = parse_args_obs2json(argv)
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
+            level=logging.DEBUG,
+        )
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+        )
+    logging.info("************ obs2json ******************")
+    obs_type = kwargs.get("obs_type")
+    variables = kwargs.get("vars")
+    inputfile = kwargs.get("inputfile")
+    output = kwargs.get("output")
+    obs_time = as_datetime(kwargs.get("obs_time"))
+    label = kwargs.get("label")
+    unit = kwargs.get("unit")
+    level = kwargs.get("level")
+    obtypes = kwargs.get("obtypes")
+    subtypes = kwargs.get("subtypes")
+    pos_t_range = kwargs.get("pos_t_range")
+    neg_t_range = kwargs.get("neg_t_range")
+    indent = kwargs.get("indent")
+    lonrange = kwargs.get("lonrange")
+    latrange = kwargs.get("latrange")
+    if pos_t_range is not None:
+        pos_t_range = as_timedelta(seconds=pos_t_range)
+    if neg_t_range is not None:
+        neg_t_range = as_timedelta(seconds=neg_t_range)
+
+    create_obsset_file(obs_time, obs_type, variables, inputfile, output,
+                       pos_t_range=pos_t_range, neg_t_range=neg_t_range,
+                       lonrange=lonrange, latrange=latrange, label=label,
+                       unit=unit, level=level,
+                       indent=indent, obtypes=obtypes, subtypes=subtypes)
 
 
 def cli_set_domain(argv=None):

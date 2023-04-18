@@ -1366,9 +1366,85 @@ def parse_args_bufr2json(argv):
     parser.add_argument(
         "-range",
         dest="valid_range",
-        type=str,
+        type=int,
         help="Valid range in seconds",
         default=3600,
+    )
+    parser.add_argument(
+        "--debug", action="store_true", help="Debug", required=False, default=False
+    )
+    parser.add_argument("--version", action="version", version=__version__)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def parse_args_obs2json(argv):
+    """Parse the command line input arguments for obs2json.
+
+    Args:
+        argv (list): List with arguments.
+
+    Returns:
+        dict: Parsed arguments.
+
+    """
+    parser = ArgumentParser("obs2json")
+    parser.add_argument(
+        "--options", type=open, action=LoadFromFile, help="Load options from file"
+    )
+    parser.add_argument(
+        "-t", dest="obs_type", type=str, required=True, help="Observations type",
+        choices=["bufr", "netatmo", "frost", "obsoul", "json"]
+    )
+    parser.add_argument("-i", dest="inputfile", type=str, nargs="+", required=True, help="inputfile(s)")
+    parser.add_argument(
+        "-v", dest="vars", nargs="+", type=str, required=True, help="Variables"
+    )
+    parser.add_argument(
+        "-o", dest="output", type=str, required=True, help="Output JSON file"
+    )
+    parser.add_argument(
+        "-dtg", dest="obs_time", type=str, required=True, help="DTG (YYYYMMDHH)"
+    )
+    parser.add_argument(
+        "--indent", dest="indent", type=int, required=False, default=None, help="Indent"
+    )
+    parser.add_argument(
+        "--pos_t_range",
+        dest="pos_t_range",
+        type=int,
+        help="Valid range in seconds after obs_time",
+        default=3600,
+    )
+    parser.add_argument(
+        "--neg_t_range",
+        dest="neg_t_range",
+        type=int,
+        help="Valid range in seconds before obs_time",
+        default=3600,
+    )
+    parser.add_argument(
+        "--label", dest="label", type=str, required=False, default=None, help="Label"
+    )
+    parser.add_argument(
+        "--unit", dest="unit", type=str, required=False, default=None, help="Unit (FROST)"
+    )
+    parser.add_argument(
+        "--level", dest="level", type=str, required=False, default=None, help="Level (FROST)"
+    )
+    parser.add_argument(
+        "--obtypes", dest="obtypes", type=str, required=False, default=None, help="Obtypes (obsoul)"
+    )
+    parser.add_argument(
+        "--subtypes", dest="subtypes", type=str, required=False, default=None, help="Subtypes (obsoul)"
     )
     parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False

@@ -21,6 +21,7 @@
     masterodb = "surfex.cli:masterodb"
     merge_qc_data = "surfex.cli:cli_merge_qc_data"
     modify_forcing = "surfex.cli:cli_modify_forcing"
+    obs2json = "surfex.cli:obs2json"
     oi2soda = "surfex.cli:cli_oi2soda"
     offline = "surfex.cli:offline"
     perturbed_offline = "surfex.cli:perturbed_offline"
