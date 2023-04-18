@@ -257,11 +257,21 @@ def set_geo_from_obs_set(
     return geo
 
 
-def get_obsset(obs_time, obs_type, varname, inputfile,
-               lonrange=None, latrange=None, label=None,
-               neg_t_range=None, pos_t_range=None,
-               unit=None, level=None, obtypes=None,
-               subtypes=None):
+def get_obsset(
+    obs_time,
+    obs_type,
+    varname,
+    inputfile,
+    lonrange=None,
+    latrange=None,
+    label=None,
+    neg_t_range=None,
+    pos_t_range=None,
+    unit=None,
+    level=None,
+    obtypes=None,
+    subtypes=None,
+):
     """Create an observation set from an input data set.
 
     Args:
@@ -279,7 +289,7 @@ def get_obsset(obs_time, obs_type, varname, inputfile,
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
 
-    Return:
+    Returns:
         obsset (ObservationSet): Observation set
 
     """
@@ -322,7 +332,7 @@ def get_obsset(obs_time, obs_type, varname, inputfile,
             "obtypes": obtypes,
             "subtypes": subtypes,
             "pos_t_range": pos_t_range_seconds,
-            "neg_t_range": neg_t_range_seconds
+            "neg_t_range": neg_t_range_seconds,
         }
     }
 
@@ -331,11 +341,23 @@ def get_obsset(obs_time, obs_type, varname, inputfile,
     return get_datasources(obs_time, settings)[0]
 
 
-def create_obsset_file(obs_time, obs_type, varname, inputfile, output,
-                       lonrange=None, latrange=None, label=None, indent=None,
-                       neg_t_range=None, pos_t_range=None,
-                       unit=None, level=None, obtypes=None,
-                       subtypes=None):
+def create_obsset_file(
+    obs_time,
+    obs_type,
+    varname,
+    inputfile,
+    output,
+    lonrange=None,
+    latrange=None,
+    label=None,
+    indent=None,
+    neg_t_range=None,
+    pos_t_range=None,
+    unit=None,
+    level=None,
+    obtypes=None,
+    subtypes=None,
+):
     """Create an observation set from an input data set.
 
     Args:
@@ -357,9 +379,19 @@ def create_obsset_file(obs_time, obs_type, varname, inputfile, output,
 
     """
     logging.debug("Get data source")
-    obsset = get_obsset(obs_time, obs_type, varname, inputfile,
-                        lonrange=lonrange, latrange=latrange, label=label,
-                        neg_t_range=neg_t_range, pos_t_range=pos_t_range,
-                        unit=unit, level=level, obtypes=obtypes,
-                        subtypes=subtypes)
+    obsset = get_obsset(
+        obs_time,
+        obs_type,
+        varname,
+        inputfile,
+        lonrange=lonrange,
+        latrange=latrange,
+        label=label,
+        neg_t_range=neg_t_range,
+        pos_t_range=pos_t_range,
+        unit=unit,
+        level=level,
+        obtypes=obtypes,
+        subtypes=subtypes,
+    )
     obsset.write_json_file(output, indent=indent)

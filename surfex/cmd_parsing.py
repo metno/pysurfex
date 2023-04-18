@@ -1401,10 +1401,16 @@ def parse_args_obs2json(argv):
         "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
     parser.add_argument(
-        "-t", dest="obs_type", type=str, required=True, help="Observations type",
-        choices=["bufr", "netatmo", "frost", "obsoul", "json"]
+        "-t",
+        dest="obs_type",
+        type=str,
+        required=True,
+        help="Observations type",
+        choices=["bufr", "netatmo", "frost", "obsoul", "json"],
     )
-    parser.add_argument("-i", dest="inputfile", type=str, nargs="+", required=True, help="inputfile(s)")
+    parser.add_argument(
+        "-i", dest="inputfile", type=str, nargs="+", required=True, help="inputfile(s)"
+    )
     parser.add_argument(
         "-v", dest="vars", nargs="+", type=str, required=True, help="Variables"
     )
@@ -1438,13 +1444,28 @@ def parse_args_obs2json(argv):
         "--unit", dest="unit", type=str, required=False, default=None, help="Unit (FROST)"
     )
     parser.add_argument(
-        "--level", dest="level", type=str, required=False, default=None, help="Level (FROST)"
+        "--level",
+        dest="level",
+        type=str,
+        required=False,
+        default=None,
+        help="Level (FROST)",
     )
     parser.add_argument(
-        "--obtypes", dest="obtypes", type=str, required=False, default=None, help="Obtypes (obsoul)"
+        "--obtypes",
+        dest="obtypes",
+        type=str,
+        required=False,
+        default=None,
+        help="Obtypes (obsoul)",
     )
     parser.add_argument(
-        "--subtypes", dest="subtypes", type=str, required=False, default=None, help="Subtypes (obsoul)"
+        "--subtypes",
+        dest="subtypes",
+        type=str,
+        required=False,
+        default=None,
+        help="Subtypes (obsoul)",
     )
     parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False
