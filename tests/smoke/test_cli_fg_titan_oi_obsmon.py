@@ -580,8 +580,9 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
     qc2obsmon(argv=argv)
 
 
+@pytest.mark.usefixtures("_qc_gridpp_obsmon")
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
-def test_qc_gridpp_obsmon(_qc_gridpp_obsmon):
+def test_qc_gridpp_obsmon():
     _qc_gridpp_obsmon
 
 

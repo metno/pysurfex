@@ -56,7 +56,7 @@ from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
-from .input_methods import get_datasources, set_geo_from_obs_set, create_obsset_file
+from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
 from .namelist import BaseNamelist, Namelist
 from .netcdf import (
@@ -1761,9 +1761,18 @@ def bufr2json(argv=None):
     lonrange = kwargs.get("lonrange")
     latrange = kwargs.get("latrange")
 
-    create_obsset_file(valid_dtg, "bufr", variables, bufrfile, output,
-                       pos_t_range=valid_range,
-                       lonrange=lonrange, latrange=latrange, label=label, indent=indent)
+    create_obsset_file(
+        valid_dtg,
+        "bufr",
+        variables,
+        bufrfile,
+        output,
+        pos_t_range=valid_range,
+        lonrange=lonrange,
+        latrange=latrange,
+        label=label,
+        indent=indent,
+    )
 
 
 def obs2json(argv=None):
@@ -1807,11 +1816,23 @@ def obs2json(argv=None):
     if neg_t_range is not None:
         neg_t_range = as_timedelta(seconds=neg_t_range)
 
-    create_obsset_file(obs_time, obs_type, variables, inputfile, output,
-                       pos_t_range=pos_t_range, neg_t_range=neg_t_range,
-                       lonrange=lonrange, latrange=latrange, label=label,
-                       unit=unit, level=level,
-                       indent=indent, obtypes=obtypes, subtypes=subtypes)
+    create_obsset_file(
+        obs_time,
+        obs_type,
+        variables,
+        inputfile,
+        output,
+        pos_t_range=pos_t_range,
+        neg_t_range=neg_t_range,
+        lonrange=lonrange,
+        latrange=latrange,
+        label=label,
+        unit=unit,
+        level=level,
+        indent=indent,
+        obtypes=obtypes,
+        subtypes=subtypes,
+    )
 
 
 def cli_set_domain(argv=None):

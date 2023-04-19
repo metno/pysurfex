@@ -501,7 +501,7 @@ variables:
         float specific_humidity_ml(time, hybrid, y, x) ;
         float relative_humidity_2m(time, height1, y, x) ;
         float surface_geopotential(time, y, x);
-        float land_area_fraction(time, height0, y, x) ;
+        float land_area_fraction(y, x) ;
         float liquid_water_content_of_surface_snow(time, height0, y, x);
         float height0(height0) ;
         float height1(height1) ;
@@ -529,25 +529,27 @@ latitude = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5, 60.6;
 
 land_area_fraction = 0, 0, 1, 1, 1, 0;
 
-surface_geopotential = 100, 100, 100, 100, 100, 100;
+surface_geopotential =
+100, 200, 300, 400, 500, 600,
+200, 300, 400, 500, 600, 700;
 
 air_temperature_ml =
-271.0, 272.0,
-273.0, 274.0,
-275.0, 276.0,
-271.0, 272.0,
-273.0, 274.0,
-275.0, 276.0;
+271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
+271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
+271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
+271.0, 272.0, 273.0, 274.0, 275.0, 276.0;
 
 air_temperature_2m =
-271.0, 272.0,
-273.0, 274.0,
-275.0, 276.0;
+271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
+272.0, 273.0, 274.0, 275.0, 276.0, 277.0;
 
-relative_humidity_2m = 0.1, 0.2, 0.3, 0.4, 0.5, 0.6;
+relative_humidity_2m =
+0.1, 0.2, 0.3, 0.4, 0.5, 1.0,
+0.2, 0.3, 0.4, 0.5, 0.6, 1.0;
 
 liquid_water_content_of_surface_snow =
-200, 0, 230, 20, 0, 1000;
+200, 0, 230, 20, 0, 1000,
+300, 0, 330, 30, 0, 3000;
 }
 """
         )

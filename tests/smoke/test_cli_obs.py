@@ -1,6 +1,7 @@
 """Observation tests."""
-import pytest
 import json
+
+import pytest
 
 from surfex.cli import bufr2json, obs2json
 from surfex.obs import ObservationSet
@@ -29,11 +30,16 @@ def test_obs2json_obsoul(obstime_str, obsoul_cryoclim_cy43, tmp_path_factory):
     """Test obs2json for obsoul."""
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/obs2json_obsoul.json"
     argv = [
-        "-t", "obsoul",
-        "-v", "92",
-        "-dtg", obstime_str,
-        "-i", obsoul_cryoclim_cy43,
-        "-o", output
+        "-t",
+        "obsoul",
+        "-v",
+        "92",
+        "-dtg",
+        obstime_str,
+        "-i",
+        obsoul_cryoclim_cy43,
+        "-o",
+        output,
     ]
     obs2json(argv=argv)
 
