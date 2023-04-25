@@ -31,8 +31,8 @@ jobs:
       - name: Install the project itself
         run: poetry install --no-interaction --only-root
 
-    - name: Build and publish
-      run: |
-        poetry build
-        poetry config http-basic.pypi ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
-        poetry publish
+      - name: Build and publish
+        run: |
+          poetry build
+          poetry config http-basic.pypi ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
+          poetry publish
