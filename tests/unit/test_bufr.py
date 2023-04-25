@@ -1,9 +1,9 @@
 """Bufr testing."""
 import pytest
 
-from surfex.bufr import BufrObservationSet
-from surfex.datetime_utils import as_timedelta
-from surfex.input_methods import get_datasources
+from pysurfex.bufr import BufrObservationSet
+from pysurfex.datetime_utils import as_timedelta
+from pysurfex.input_methods import get_datasources
 
 
 @pytest.fixture()

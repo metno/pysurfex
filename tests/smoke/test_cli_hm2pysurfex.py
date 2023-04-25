@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from surfex.cli import hm2pysurfex
+from pysurfex.cli import hm2pysurfex
 
 
 @pytest.fixture()
@@ -246,5 +246,5 @@ def test_hm2pysurfex_client(tmp_path_factory, hm_env):
     hm_env_file = f"{tmp_path_factory.getbasetemp().as_posix()}/hm_env.json"
     with open(hm_env_file, mode="w", encoding="utf8") as hm_file:
         json.dump(hm_env, hm_file)
-    argv = ["-c", "surfex/cfg/config_exp_surfex.toml", "-o", output, "-e", hm_env_file]
+    argv = ["-c", "pysurfex/cfg/config_exp_surfex.toml", "-o", output, "-e", hm_env_file]
     hm2pysurfex(argv=argv)

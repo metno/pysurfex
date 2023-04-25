@@ -3,10 +3,10 @@ import json
 
 import pytest
 
-from surfex.datetime_utils import as_datetime
-from surfex.geo import LonLatVal
-from surfex.read import Converter
-from surfex.timeseries import TimeSeriesFromConverter
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.geo import LonLatVal
+from pysurfex.read import Converter
+from pysurfex.timeseries import TimeSeriesFromConverter
 
 
 @pytest.fixture()

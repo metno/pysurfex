@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from surfex.cli import cli_modify_forcing, create_forcing
+from pysurfex.cli import cli_modify_forcing, create_forcing
 
 
 @contextlib.contextmanager

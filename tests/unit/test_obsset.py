@@ -3,8 +3,8 @@ import json
 
 import pytest
 
-from surfex.datetime_utils import as_datetime
-from surfex.input_methods import get_datasources
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.input_methods import get_datasources
 
 
 @pytest.fixture()

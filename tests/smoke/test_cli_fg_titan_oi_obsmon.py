@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 import pytest
 
-from surfex.cli import (
+from pysurfex.cli import (
     cli_merge_qc_data,
     cli_oi2soda,
     first_guess_for_oi,
@@ -599,7 +599,7 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
 
     argv = [
         "-c",
-        "surfex/cfg/first_guess.yml",
+        "pysurfex/cfg/first_guess.yml",
         "-i",
         data_thredds_nc_file,
         "-if",

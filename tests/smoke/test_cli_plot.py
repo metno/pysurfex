@@ -1,7 +1,7 @@
 """Test plotting."""
 import pytest
 
-from surfex.cli import plot_points
+from pysurfex.cli import plot_points
 
 
 @pytest.mark.usefixtures("_mockers")

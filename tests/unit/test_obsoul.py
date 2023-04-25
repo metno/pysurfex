@@ -1,8 +1,8 @@
 """Obsoul unit testing."""
 import pytest
 
-from surfex.input_methods import get_datasources
-from surfex.obsoul import ObservationDataSetFromObsoulFile
+from pysurfex.input_methods import get_datasources
+from pysurfex.obsoul import ObservationDataSetFromObsoulFile
 
 
 @pytest.fixture()
