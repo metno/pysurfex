@@ -73,12 +73,12 @@ jobs:
         if: ${{ matrix.python-version == 3.8 }}
         run: |
           export COVERALLS_REPO_TOKEN=${{secrets.COVERALLS_REPO_TOKEN}}
-          git config --global --add safe.directory $PWD
           poetry run coveralls
 
       - name: Create documentation
         if: ${{ matrix.python-version == 3.8 && github.event_name == 'pull_request' }}
         run: |
+          pip install .
           cd docs
           make html
       - name: Commit documentation changes
