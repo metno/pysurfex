@@ -80,7 +80,7 @@
     pytest-profiling = "^1.7.0"
     pytest-timeout = "^2.1.0"
     pytest-xdist = "^3.2.0"
-    python-coveralls = "^2.9.3"
+    coveralls = "^3.3.1"
 
 [tool.poetry.group.linting.dependencies]
     black = "^22.1.0"
