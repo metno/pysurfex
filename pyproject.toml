@@ -1,6 +1,6 @@
 [tool.poetry]
     name = "surfex"
-    version = "0.0.2"
+    version = "0.0.3"
     description = "Python API to SURFEX"
     authors = ["Trygve Aspelien"]
     license = "MIT"
@@ -54,12 +54,17 @@
     pyyaml = "^6.0"
     tomlkit = "^0.11.6"
 
+#[tool.poetry.group.formats.dependencies]
     netcdf4 = "^1.6.3"
+    cfunits = "^3.3.5"
+    eccodes = "^1.5.1"
+
+#[tool.poetry.group.points.dependencies]
     gridpp = "^0.6.0"
     titanlib = "^0.3.3"
-    cfunits = "^3.3.5"
+
+#[tool.poetry.group.plot.dependencies]
     matplotlib = "^3.7.1"
-    eccodes = "^1.5.1"
 
 [tool.poetry.group.dev.dependencies]
     jupyterlab = "^3.6.1"
