@@ -808,7 +808,9 @@ def _mockers(session_mocker):
     session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
-    session_mocker.patch("pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values)
+    session_mocker.patch(
+        "pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values
+    )
     session_mocker.patch("pysurfex.grib.eccodes.codes_release")
     session_mocker.patch(
         "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file
