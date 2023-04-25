@@ -79,7 +79,7 @@ jobs:
         if: ${{ matrix.python-version == 3.8 }}
         run: |
           cd docs
-          make html
+          poetry make html
       - name: Commit documentation changes
         if: ${{ matrix.python-version == 3.8 }}
         run: |
