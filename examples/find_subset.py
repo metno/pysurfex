@@ -12,7 +12,7 @@ from_json = json.load(
         "/home/trygveasp/revision_control/pysurfex/examples/domains/met_nordic.json", "r"
     )
 )
-geo = surfex.get_geo_object(from_json)
+geo = pysurfex.get_geo_object(from_json)
 
 wanted_lon = 10.0
 nx = 120
