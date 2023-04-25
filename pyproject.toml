@@ -52,7 +52,7 @@
     pandas = "^1.4.0"
     pyproj = "^3.3.0"
     pyyaml = "^6.0"
-    tomlkit = "^0.11.6"
+    toml = "^0.10.2"
 
 #[tool.poetry.group.formats.dependencies]
     netcdf4 = "^1.6.3"
@@ -60,6 +60,7 @@
     eccodes = "^1.5.1"
 
 #[tool.poetry.group.points.dependencies]
+    requests = "^2.28.2"
     gridpp = "^0.6.0"
     titanlib = "^0.3.3"
 
