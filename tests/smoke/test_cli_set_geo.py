@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from surfex.cli import cli_set_domain, cli_shape2ign
+from pysurfex.cli import cli_set_domain, cli_shape2ign
 
 
 @pytest.fixture()
@@ -98,6 +98,6 @@ def test_shape2ign(tmp_path_factory, ref_domain_file, mocker):
         "--indent",
         "2",
     ]
-    mocker.patch("surfex.geo.ogr")
+    mocker.patch("pysurfex.geo.ogr")
     with pytest.raises(TypeError):
         cli_shape2ign(argv=argv)

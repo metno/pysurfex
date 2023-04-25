@@ -3,7 +3,7 @@ from datetime import datetime
 
 from netCDF4 import Dataset
 
-from surfex.netcdf import oi2soda
+from pysurfex.netcdf import oi2soda
 
 
 def test_oi2soda_only_rh(tmp_path_factory):

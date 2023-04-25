@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pyproj
 
-import surfex
+import pysurfex
 
 from_json = json.load(
     open(

@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from surfex.binary_input import JsonOutputData, SodaInputData
-from surfex.configuration import ConfigurationFromTomlFile
-from surfex.platform import SystemFilePaths
+from pysurfex.binary_input import JsonOutputData, SodaInputData
+from pysurfex.configuration import ConfigurationFromTomlFile
+from pysurfex.platform import SystemFilePaths
 
 
 @pytest.fixture()

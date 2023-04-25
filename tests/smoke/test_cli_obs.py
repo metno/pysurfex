@@ -3,8 +3,8 @@ import json
 
 import pytest
 
-from surfex.cli import bufr2json, obs2json
-from surfex.obs import ObservationSet
+from pysurfex.cli import bufr2json, obs2json
+from pysurfex.obs import ObservationSet
 
 
 @pytest.mark.usefixtures("_mockers")

@@ -4,7 +4,7 @@ import json
 import pytest
 from netCDF4 import Dataset
 
-from surfex.cli import (
+from pysurfex.cli import (
     cli_set_geo_from_obs_set,
     cli_set_geo_from_stationlist,
     create_lsm_file_assim,
@@ -12,7 +12,7 @@ from surfex.cli import (
     dump_environ,
     sentinel_obs,
 )
-from surfex.geo import get_geo_object
+from pysurfex.geo import get_geo_object
 
 
 def test_dump_environ():

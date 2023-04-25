@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from surfex.configuration import ConfigurationFromTomlFile
-from surfex.datetime_utils import as_datetime
-from surfex.namelist import BaseNamelist, Namelist
+from pysurfex.configuration import ConfigurationFromTomlFile
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.namelist import BaseNamelist, Namelist
 
 
 @pytest.fixture()

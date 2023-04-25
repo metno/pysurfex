@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from surfex.titan import (
+from pysurfex.titan import (
     Blacklist,
     Buddy,
     Climatology,

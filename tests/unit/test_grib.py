@@ -3,10 +3,10 @@ import json
 
 import pytest
 
-from surfex.cache import Cache
-from surfex.datetime_utils import as_datetime
-from surfex.grib import Grib, Grib1Variable, Grib2Variable
-from surfex.read import ConvertedInput, Converter
+from pysurfex.cache import Cache
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.grib import Grib, Grib1Variable, Grib2Variable
+from pysurfex.read import ConvertedInput, Converter
 
 
 @pytest.fixture()

@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from surfex.input_methods import get_datasources
+from pysurfex.input_methods import get_datasources
 
 
 @pytest.mark.usefixtures("_mockers")
