@@ -81,7 +81,6 @@
     pytest-timeout = "^2.1.0"
     pytest-xdist = "^3.2.0"
     coveralls = "^3.3.1"
-    sphinx = "^6.2.1"
 
 [tool.poetry.group.linting.dependencies]
     black = "^22.1.0"
