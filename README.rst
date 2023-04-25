@@ -23,13 +23,13 @@ Installation of pregenerated packages from pypi (pip)
 
 .. code-block:: bash
 
-    pip3 install pysurfex --use-feature=2020-resolver
+    pip3 install pysurfex
 
 User installation:
 
 .. code-block:: bash
 
-    pip3 install pysurfex --user --use-feature=2020-resolver
+    pip3 install pysurfex --user
 
 
 
@@ -42,18 +42,7 @@ Install the required pacakges (some might be obsolete if the pip packages contai
 .. code-block:: bash
 
   sudo apt-get update
-  # Python tools
-  sudo apt-get install python3-setuptools python3-numpy python3-nose
-  # Cfunits
-  sudo apt-get install libudunits2-dev
-  # Projection
-  sudo apt-get install python3-pyproj
-  # Eccodes for bufr/grib1/grib2
-  sudo apt-get install libeccodes0 libeccodes-dev
-  # Ecflow for user experiements
-  sudo apt-get install ecflow-server ecflow-client python3-ecflow
-  # Titanlib
-  sudo apt-get install libboost-dev libproj-dev libarmadillo-dev libgsl-dev
+  sudo apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin
 
 The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.
 
@@ -63,20 +52,14 @@ General dependencies (from pypi)
 .. code-block:: bash
 
   numpy
-  scipy
   netCDF4
   cfunits
   pyproj
   pyyaml
   toml
   netCDF4
-  datetime
   f90nml
   requests
-  json; python_version < '3'
-  StringIO; python_version < '3'
-  eccodes
-  db-sqlite3
 
 To read NetCDF files:
 
@@ -97,7 +80,6 @@ To plot:
 .. code-block:: bash
 
   matplotlib
-  cartopy
 
 To get observations from frost.met.no API:
 
@@ -110,6 +92,7 @@ For Quality control of observations
 .. code-block:: bash
 
   titanlib
+  db-sqlite3
 
 For optimal interpolation and observation operators
 
@@ -121,9 +104,7 @@ For testing:
 
 .. code-block:: bash
 
-  unittest
-  nose
-  Testdata from https://docs.google.com/uc?export=download&id=1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
+  pytest
 
 Download the source code, then install ``pysurfex`` by executing the following inside the extracted
 folder:
@@ -132,13 +113,7 @@ Install pysurfex
 -------------------------------------------
 .. code-block:: bash
 
-  sudo pip install -e .
-
-or
-
-.. code-block:: bash
-
-  sudo pip install -e . --user
+  poetry install
 
 Create documentation
 ---------------------------------------------
@@ -148,10 +123,6 @@ Create documentation
   cd docs
   # Create html documentation
   make html
-  # Create latex documentation
-  make latex
-  # Create a pdf documentation
-  make latexpdf
 
 
 Examples
