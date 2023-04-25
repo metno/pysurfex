@@ -1,0 +1,69 @@
+#.github/workflows/linting.yaml
+name: Linting Checks
+
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+    paths:
+      - '**.py'
+  push:
+    branches:
+      - '**' # Every branch
+    paths:
+      - '**.py'
+
+jobs:
+  linting:
+    if: github.repository_owner == 'metno'
+    name: Run Linters
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      #----------------------------------------------
+      #  --- configure poetry & install project  ----
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv (if cache exists)
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Install dependencies (if venv cache is not found)
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root --only linting
+
+      - name: Install the project itself
+        run: poetry install --no-interaction --only-root
+
+      #----------------------------------------------
+      #         Run the linting checks
+      #----------------------------------------------
+      - name: isort
+        run: |
+          poetry run isort --check-only .
+      - name: black
+        run: |
+          poetry run black --check .
+      - name: flakeheaven
+        run: |
+          export FLAKEHEAVEN_CACHE="${TMPDIR:-${TEMP:-${TMP:-/tmp}}}/flakeheaven_cache.$(openssl rand -hex 12)"
+          poetry run flakeheaven lint .

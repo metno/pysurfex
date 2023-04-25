@@ -1,6 +1,7 @@
 """Cache."""
 import logging
-import datetime
+
+from .datetime_utils import as_datetime_args
 
 
 class Cache:
@@ -88,7 +89,9 @@ class Cache:
             logging.debug("identifier_out: %s", self.interpolators[inttype])
             if identifier_out in self.interpolators[inttype]:
                 logging.debug("identifier_out: %s", identifier_out)
-                logging.debug("interpolators: %s", self.interpolators[inttype][identifier_out])
+                logging.debug(
+                    "interpolators: %s", self.interpolators[inttype][identifier_out]
+                )
                 if identifier_in in self.interpolators[inttype][identifier_out]:
                     return True
                 else:
@@ -132,7 +135,9 @@ class Cache:
         identifier_in = geo_in.identifier()
         identifier_out = geo_out.identifier()
 
-        logging.debug("Update interpolator %s %s %s", inttype, identifier_in, identifier_out)
+        logging.debug(
+            "Update interpolator %s %s %s", inttype, identifier_in, identifier_out
+        )
         if inttype in self.interpolators:
             out_geos = {}
             if identifier_out in self.interpolators[inttype]:
@@ -140,13 +145,19 @@ class Cache:
                     in_geos = {}
                     for fint in self.interpolators[inttype][out_grid]:
                         logging.debug("Found %s for grid %s", fint, out_grid)
-                        in_geos.update({fint: self.interpolators[inttype][out_grid][fint]})
+                        in_geos.update(
+                            {fint: self.interpolators[inttype][out_grid][fint]}
+                        )
                     if identifier_out == out_grid:
-                        logging.debug("Update: %s for out geo %s", identifier_in, identifier_out)
+                        logging.debug(
+                            "Update: %s for out geo %s", identifier_in, identifier_out
+                        )
                         in_geos.update({identifier_in: value})
                     out_geos.update({out_grid: in_geos})
             else:
-                logging.debug("Setting new: %s for out geo %s", identifier_in, identifier_out)
+                logging.debug(
+                    "Setting new: %s for out geo %s", identifier_in, identifier_out
+                )
                 out_geos.update({identifier_out: {identifier_in: value}})
             self.interpolators.update({inttype: out_geos})
         else:
@@ -172,7 +183,7 @@ class Cache:
             month = int(key[-6:-4])
             day = int(key[-4:-2])
             hour = int(float(key[-2:]))
-            field_time = datetime.datetime(year, month, day, hour)
+            field_time = as_datetime_args(year=year, month=month, day=day, hour=hour)
             time_duration = (this_time - field_time).total_seconds()
             if time_duration > self.max_age:
                 del_keys.append(key)
@@ -258,8 +269,10 @@ class Cache:
             _type_: _description_
 
         """
-        return f"{varname}{patches}{layers}{filename.split('/')[-1]}"\
-               f"{validtime.strftime('%Y%m%d%H')}"
+        return (
+            f"{varname}{patches}{layers}{filename.split('/')[-1]}"
+            f"{validtime.strftime('%Y%m%d%H')}"
+        )
 
     @staticmethod
     def generate_obs_id(varname, filename, validtime):

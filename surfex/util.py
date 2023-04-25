@@ -1,78 +1,13 @@
 """Misc."""
-import os
-# from datetime import datetime
 import collections
+import logging
+import os
+
 import toml
-
-
-# def unixtime_to_datenum(time):
-#
-#    """ Converts unixtime into datenum
-#
-#    Arguments:
-#      time (int): unixtime in seconds since 1970
-#
-#    Returns:
-#      int: datenum value
-#
-#    """
-#    dt = datetime.utcfromtimestamp(time)
-#    try:
-#        from matplotlib import dates
-#        dt2 = dates.date2num(dt)
-#        return dt2
-#    except ImportError:
-#        raise Exception("You need to have dates installed")
-
-
-class YamlReaderError(Exception):
-    """Error."""
-
-
-def data_merge(aaa, bbb):
-    """Merge bbb into aaa and return merged result.
-
-    NOTE: tuples and arbitrary objects are not handled as it is
-    totally ambiguous what should happen
-
-    """
-    key = None
-    # ## debug output
-    # sys.stderr.write("DEBUG: %s to %s\n" %(b,a))
-    try:
-        if aaa is None or isinstance(aaa, str) or isinstance(aaa, int) or isinstance(aaa, float):
-            # border case for first run or if a is a primitive
-            aaa = bbb
-        elif isinstance(aaa, list):
-            # lists can be only appended
-            if isinstance(bbb, list):
-                # merge lists
-                aaa.extend(bbb)
-            else:
-                # append to list
-                aaa.append(bbb)
-        elif isinstance(aaa, dict):
-            # dicts must be merged
-            if isinstance(bbb, dict):
-                for key in bbb:
-                    if key in aaa:
-                        aaa[key] = data_merge(aaa[key], bbb[key])
-                    else:
-                        aaa[key] = bbb[key]
-            else:
-                raise YamlReaderError(f'Cannot merge non-dict "{bbb}" into dict "{aaa}"')
-        else:
-            raise YamlReaderError(f'NOT IMPLEMENTED "{bbb}" into "{aaa}"')
-    except TypeError as exc:
-        raise YamlReaderError(f'TypeError "{exc}" in key "{key}" when merging '
-                              f' "{bbb}" into "{aaa}"') \
-            from TypeError
-    return aaa
 
 
 def merge_toml_env(old_env, mods):
     """Merge."""
-    # print(mods)
     return deep_update(old_env, mods)
 
 
@@ -81,12 +16,9 @@ def merge_toml_env_from_files(toml_files):
     merged_env = {}
     for toml_file in toml_files:
         if os.path.exists(toml_file):
-            # print(toml_file)
             with open(toml_file, mode="r", encoding="utf-8") as file_handler:
                 modification = toml.load(file_handler)
-            # print(modification)
             merged_env = merge_toml_env(merged_env, modification)
-            # print(merged_env)
         else:
             print("WARNING: File not found " + toml_file)
     return merged_env
@@ -96,16 +28,92 @@ def deep_update(source, overrides):
     """Update a nested dictionary or similar mapping.
 
     Modify ``source`` in place.
+
+    Args:
+        source(dict): Source data
+        overrides(dict): Delta data to override
+
+    Returns:
+        source(dict): Updated dict
     """
     for key, value in overrides.items():
-        if isinstance(value, collections.Mapping) and value:
+        if isinstance(value, collections.abc.Mapping) and value:
             returned = deep_update(source.get(key, {}), value)
-            # print("Returned:", key, returned)
             source[key] = returned
         else:
             override = overrides[key]
-            # print("Override:", key, override)
-
             source[key] = override
-
     return source
+
+
+def remove_existing_file(f_in, f_out):
+    """Remove existing file.
+
+    Args:
+        f_in (_type_): _description_
+        f_out (_type_): _description_
+
+    Raises:
+        FileNotFoundError: _description_
+        IsADirectoryError: _description_
+
+    """
+    if f_in is None:
+        raise FileNotFoundError("Input file not set")
+    # If files are not the same file
+    if os.path.abspath(f_in) != os.path.abspath(f_out):
+        if os.path.isdir(f_out):
+            raise IsADirectoryError(
+                f_out + " is a directory! Please remove it if desired"
+            )
+        if os.path.islink(f_out):
+            os.unlink(f_out)
+        if os.path.isfile(f_out):
+            os.remove(f_out)
+    # files have the same path. Remove if it is a symlink
+    else:
+        if os.path.islink(f_out):
+            os.unlink(f_out)
+
+
+def parse_filepattern(file_pattern, basetime, validtime):
+    """Parse the file pattern.
+
+    Args:
+        file_pattern (str): File pattern.
+        basetime (datetime.datetime): Base time.
+        validtime (datetime.datetime): Valid time.
+
+    Returns:
+        str: File name
+
+    """
+    if basetime is None or validtime is None:
+        return file_pattern
+
+    logging.debug(
+        "file_pattern=%s basetime=%s validtime=%s", file_pattern, basetime, validtime
+    )
+    file_name = str(file_pattern)
+    year = basetime.strftime("%Y")
+    year2 = basetime.strftime("%y")
+    month = basetime.strftime("%m")
+    day = basetime.strftime("%d")
+    hour = basetime.strftime("%H")
+    mins = basetime.strftime("%M")
+    d_t = validtime - basetime
+    ll_d = f"{int(d_t.seconds / 3600):d}"
+    ll_2 = f"{int(d_t.seconds / 3600):02d}"
+    ll_3 = f"{int(d_t.seconds / 3600):03d}"
+    ll_4 = f"{int(d_t.seconds / 3600):04d}"
+    file_name = file_name.replace("@YYYY@", year)
+    file_name = file_name.replace("@YY@", year2)
+    file_name = file_name.replace("@MM@", month)
+    file_name = file_name.replace("@DD@", day)
+    file_name = file_name.replace("@HH@", hour)
+    file_name = file_name.replace("@mm@", mins)
+    file_name = file_name.replace("@L@", ll_d)
+    file_name = file_name.replace("@LL@", ll_2)
+    file_name = file_name.replace("@LLL@", ll_3)
+    file_name = file_name.replace("@LLLL@", ll_4)
+    return file_name

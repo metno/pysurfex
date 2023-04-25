@@ -1,25 +1,25 @@
 """FA support."""
-import numpy as np
 import logging
-import pyproj
-import surfex
+
 try:
-    import epygram  # type: ignore
+    from epygram.formats import resource
 except ImportError:
-    epygram = None
+    resource = None
+
+
+from .geo import ConfProj
+from .interpolation import Interpolation
 
 
 class Fa(object):
     """Fichier Arpege."""
 
-    def __init__(self, fname, debug=False):
+    def __init__(self, fname):
         """Construct a FA object.
 
         Args:
             fname (str): filename
-            debug (bool, optional): _description_. Defaults to False.
         """
-        self.debug = debug
         self.fname = fname
         self.projection = None
         self.lons = None
@@ -35,33 +35,37 @@ class Fa(object):
             validtime (_type_): _description_
 
         Raises:
-            Exception: _description_
-            NotImplementedError: _description_
+            ModuleNotFoundError: You need epygram to read FA files
+            NotImplementedError: Geometry not implemented
 
         Returns:
             tuple: np.field, surfex.Geometry
 
         """
-        if epygram is None:
-            raise Exception("You need epygram to read FA files")
+        if resource is None:
+            raise ModuleNotFoundError("You need epygram to read FA files")
         else:
-            resource = epygram.formats.resource(self.fname, openmode='r')
-            field = resource.readfield(varname)
+            fa_file = resource(self.fname, openmode="r")
+            field = fa_file.readfield(varname)
             # TODO this might not work with forcing...
             zone = "CI"
             crnrs = field.geometry.gimme_corners_ij(subzone=zone)
-            
-            range_x = slice(crnrs['ll'][0], crnrs['lr'][0] + 1)
-            range_y = slice(crnrs['lr'][1], crnrs['ur'][1] + 1)                
-            # TODO: check time
-            logging.info("Not checking validtime for FA variable at the moment: %s", str(validtime))
 
-            if field.geometry.name == "lambert" or field.geometry.name == "polar_stereographic":
+            range_x = slice(crnrs["ll"][0], crnrs["lr"][0] + 1)
+            range_y = slice(crnrs["lr"][1], crnrs["ur"][1] + 1)
+            # TODO: check time
+            logging.info(
+                "Not checking validtime for FA variable at the moment: %s", str(validtime)
+            )
+
+            if (
+                field.geometry.name == "lambert"
+                or field.geometry.name == "polar_stereographic"
+            ):
                 n_y = field.geometry.dimensions["Y_CIzone"]
                 n_x = field.geometry.dimensions["X_CIzone"]
-                ll_lon, ll_lat = field.geometry.gimme_corners_ll()["ll"]
-                lon0 = field.geometry.projection['reference_lon'].get('degrees')
-                lat0 = field.geometry.projection['reference_lat'].get('degrees')
+                lon0 = field.geometry.projection["reference_lon"].get("degrees")
+                lat0 = field.geometry.projection["reference_lat"].get("degrees")
                 c0, c1 = field.geometry.getcenter()
                 lonc = c0.get("degrees")
                 latc = c1.get("degrees")
@@ -71,10 +75,7 @@ class Fa(object):
                 ilate = field.geometry.dimensions["Y"] - n_y
 
                 domain = {
-                    "nam_conf_proj": {
-                        "xlon0": lon0,
-                        "xlat0": lat0
-                    },
+                    "nam_conf_proj": {"xlon0": lon0, "xlat0": lat0},
                     "nam_conf_proj_grid": {
                         "xloncen": lonc,
                         "xlatcen": latc,
@@ -83,10 +84,10 @@ class Fa(object):
                         "xdx": d_x,
                         "xdy": d_y,
                         "ilone": ilone,
-                        "ilate": ilate
-                    }
+                        "ilate": ilate,
+                    },
                 }
-                geo_out = surfex.geo.ConfProj(domain)
+                geo_out = ConfProj(domain)
                 if field.geometry.name == "polar_stereographic":
                     data = field.data[range_y, range_x].T
                 else:
@@ -100,15 +101,16 @@ class Fa(object):
 
         Args:
             varname (str): Variable name
-            geo (surfex.Geo): Geometry
-            validtime (datetime.datetime): Validtime
-            interpolation (str): Interpoaltion method
+            geo (surfex.geo.Geo): Geometry
+            validtime (as_datetime): Validtime
+            interpolation (str, optional): Interpoaltion method. Defaults to "nearest".
+
         Returns:
-            np.array: vector with inpterpolated values
+            tuple: field, interpolator
 
         """
         field, geo_in = self.field(varname, validtime)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
+        interpolator = Interpolation(interpolation, geo_in, geo)
 
         field = interpolator.interpolate(field)
         return field, interpolator

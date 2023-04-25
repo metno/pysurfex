@@ -1,0 +1,49 @@
+[tool.flakeheaven]
+    exclude = [".*/", "tmp/", "*/tmp/", "*.ipynb"]
+    # Group output by file. Colored.
+    format = "grouped"
+    # Show line of source code in output, with syntax highlighting
+    show_source = true
+    # flake8-darglint params
+    docstring_style = "google"
+    strictness = "short"
+
+    # list of plugins and rules for them
+    [tool.flakeheaven.plugins]
+        # Activate all rules for all plugins by default
+        "*" = ["+*"]
+        # Remove from flake8-bandit:
+        #    "S403": Consider possible security implications associated with pickle
+        #    "S404": Consider possible security implications associated with subprocess
+        #    "S603": To allow using subprocess.call/run
+        #    "S606": To allow using os.startfile
+        flake8-bandit = ["+*", "-S403", "-S404", "-S603", "-S606"]
+        # Remove C408 from flake8-comprehensions because I think sometimes the "dict" syntax
+        # looks cleaner than literal "{}". Dict creation performance is not an issue here.
+        flake8-comprehensions = ["+*", "-C408"]
+        flake8-docstrings = ["+*", "-D105"] # Remove "D105: Missing docstring in magic method"
+        # Exclude some errors from pycodestyle for compatibility with black.
+        # "E501" is for max_line_length violations. Leave this for black to handle.
+        # For the other excluded errors, see:
+        # <https://black.readthedocs.io/en/stable/the_black_code_style.html#slices>
+        # <https://black.readthedocs.io/en/stable/the_black_code_style.html#line-breaks-binary-operators>
+        pycodestyle = ["+*", "-W503", "-E203", "-E501"]
+        # Disable pylint plugin at the moment. pylint will be run separately.
+        pylint = ["-*"]
+
+    [tool.flakeheaven.exceptions."*/wsgi.py"]
+        # Ignore "F401 (imported but unused)" in this case
+        pyflakes = ["+*", "-F401"]
+
+    [tool.flakeheaven.exceptions."tests/*.py"]
+        # Disable some flake8-bandit checks in tests:
+        # "S101": To allow assert use
+        # "S301": To Allow testing pickle/unpickle
+        flake8-bandit = ["+*", "-S101", "-S301"]
+        # Ignore "-D105" and "-D102" (Missing docstring in public class/method) in unit tests.
+        # The unit tests class and method names are supposed to be self-explanatory.
+        flake8-docstrings = ["+*", "-D105", "-D101", "-D102", "-D103"]
+
+    [tool.flakeheaven.exceptions."deode/templates/*.py"]
+        # "E265" is for block comments starting with "# ". It may break ecflow envsubst.
+        pycodestyle = ["-E265"]

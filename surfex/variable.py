@@ -1,9 +1,17 @@
 """Variable."""
-import logging
 import copy
-from datetime import timedelta
+import logging
+
 import numpy as np
-import surfex
+
+from .datetime_utils import as_timedelta
+from .fa import Fa
+from .file import SurfexFileVariable, get_surfex_io_object
+from .geo import get_geo_object
+from .grib import Grib, Grib1Variable, Grib2Variable
+from .input_methods import get_datasources
+from .netcdf import Netcdf, NetCDFReadVariable
+from .util import parse_filepattern
 
 
 class Variable(object):
@@ -13,31 +21,45 @@ class Variable(object):
         """Construct variable.
 
         Args:
-            var_type (_type_): _description_
-            var_dict (_type_): _description_
-            initial_basetime (_type_): _description_
-            debug (bool, optional): _description_. Defaults to False.
-            prefer_forecast (bool, optional): _description_. Defaults to True.
+            var_type (str): Variable type.
+            var_dict (dict): Variable definitions
+            initial_basetime (datetime): Initial basetime
+            prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.
 
         Raises:
-            NotImplementedError: _description_
-            Exception: _description_
-            Exception: _description_
-            Exception: _description_
+            NotImplementedError: Variable not implemented
+            RuntimeError: No filepattern provided
+            RuntimeError: variable must have attribute
+            RuntimeError: You can not have larger offset than the frequency of forecasts
 
         """
         self.var_type = var_type
         if self.var_type == "netcdf":
             mandatory = ["name", "fcint", "offset", "filepattern"]
         elif self.var_type == "grib1":
-            mandatory = ["parameter", "type", "level", "tri", "fcint", "offset", "filepattern"]
+            mandatory = [
+                "parameter",
+                "type",
+                "level",
+                "tri",
+                "fcint",
+                "offset",
+                "filepattern",
+            ]
         elif self.var_type == "grib2":
-            mandatory = ["discipline", "parameterCategory", "parameterNumber", "levelType", "level",
-                         "typeOfStatisticalProcessing", "fcint", "offset", "filepattern"]
+            mandatory = [
+                "discipline",
+                "parameterCategory",
+                "parameterNumber",
+                "levelType",
+                "level",
+                "typeOfStatisticalProcessing",
+                "fcint",
+                "offset",
+                "filepattern",
+            ]
         elif self.var_type == "surfex":
             mandatory = ["varname", "fcint", "offset", "filepattern"]
-            # , "patches", "layers", "accumulated", "fcint", "offset", "file_inc", "filepattern",
-            #         "fileformat", "filetype"]
         elif self.var_type == "fa":
             mandatory = ["name", "fcint", "offset", "filepattern"]
         elif self.var_type == "obs":
@@ -47,8 +69,13 @@ class Variable(object):
 
         for mand_val in mandatory:
             if mand_val not in var_dict:
-                raise Exception(var_type + " variable must have attribute " + mand_val
-                                + " var_dict:" + str(var_dict))
+                raise RuntimeError(
+                    var_type
+                    + " variable must have attribute "
+                    + mand_val
+                    + " var_dict:"
+                    + str(var_dict)
+                )
 
         self.var_dict = copy.deepcopy(var_dict)
         interval = 3600
@@ -58,7 +85,7 @@ class Variable(object):
         if "filepattern" in var_dict:
             self.filepattern = var_dict["filepattern"]
         else:
-            raise Exception("No filepattern provided")
+            raise RuntimeError("No filepattern provided")
         self.initial_basetime = initial_basetime
         self.fcint = int(self.var_dict["fcint"])
         self.offset = int(self.var_dict["offset"])
@@ -67,10 +94,14 @@ class Variable(object):
             self.prefer_forecast = self.var_dict["prefer_forecast"]
 
         if self.offset > self.fcint:
-            raise Exception("You can not have larger offset than the frequency of forecasts "
-                            + str(self.offset) + " > " + str(self.fcint))
+            raise RuntimeError(
+                "You can not have larger offset than the frequency of forecasts "
+                + str(self.offset)
+                + " > "
+                + str(self.fcint)
+            )
 
-        logging.debug("Constructed %s for %s", self.__class__.__name__, str(self.var_dict))
+        logging.debug("Constructed variable for %s", str(self.var_dict))
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
@@ -87,7 +118,7 @@ class Variable(object):
         basetime = self.get_basetime(validtime, previoustime=previoustime)
         if previoustime is not None:
             validtime = previoustime
-        return surfex.file.parse_filepattern(self.filepattern, basetime, validtime)
+        return parse_filepattern(self.filepattern, basetime, validtime)
 
     def get_filehandler(self, validtime, cache=None, previoustime=None):
         """Get the file handler.
@@ -96,6 +127,9 @@ class Variable(object):
             validtime (datetime.datetime): Valid time.
             cache (surfex.Cache, optional): Cache. Defaults to None.
             previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+
+        Raises:
+            NotImplementedError: Variable type not implemented
 
         Returns:
             tuple: Filehandler and file name
@@ -106,11 +140,11 @@ class Variable(object):
             file_handler = cache.get_file_handler(filename)
         else:
             if self.var_type == "netcdf":
-                file_handler = surfex.netcdf.Netcdf(filename)
+                file_handler = Netcdf(filename)
             elif self.var_type == "grib1" or self.var_type == "grib2":
-                file_handler = surfex.grib.Grib(filename)
+                file_handler = Grib(filename)
             elif self.var_type == "fa":
-                file_handler = surfex.fa.Fa(filename)
+                file_handler = Fa(filename)
             elif self.var_type == "surfex":
                 fileformat = None
                 if "fileformat" in self.var_dict:
@@ -123,15 +157,16 @@ class Variable(object):
                     geo_in = self.var_dict["geo_input"]
                 elif "geo_input_file" in self.var_dict:
                     geo_in_file = self.var_dict["geo_input_file"]
-                    geo_in = surfex.get_geo_object(open(geo_in_file, "r", encoding="utf-8"))
+                    geo_in = get_geo_object(open(geo_in_file, "r", encoding="utf-8"))
 
-                file_handler = surfex.file.get_surfex_io_object(filename, fileformat=fileformat,
-                                                                filetype=filetype, geo=geo_in)
+                file_handler = get_surfex_io_object(
+                    filename, fileformat=fileformat, filetype=filetype, geo=geo_in
+                )
             elif self.var_type == "obs":
                 var_dict = self.var_dict
                 var_dict = {"set": var_dict}
                 basetime = self.get_basetime(validtime)
-                file_handler = surfex.get_datasources(basetime, var_dict)[0]
+                file_handler = get_datasources(basetime, var_dict)[0]
             else:
                 raise NotImplementedError
 
@@ -174,8 +209,9 @@ class Variable(object):
             if "units" in self.var_dict:
                 kwargs.update({"units": str([self.var_dict["units"]][0])})
 
-        filehandler, filename = self.get_filehandler(validtime, cache=cache,
-                                                     previoustime=previoustime)
+        filehandler, filename = self.get_filehandler(
+            validtime, cache=cache, previoustime=previoustime
+        )
         if previoustime is not None:
             validtime = previoustime
             logging.debug("new validtime to read previous time %s", validtime)
@@ -196,8 +232,9 @@ class Variable(object):
                 if self.var_type == "obs":
                     __, field, __ = filehandler.points(geo, validtime=validtime)
                 else:
-                    field, interpolator = filehandler.points(var, geo, interpolation=interpolation,
-                                                             validtime=validtime)
+                    field, interpolator = filehandler.points(
+                        var, geo, interpolation=interpolation, validtime=validtime
+                    )
 
                     field = self.rotate_geographic_wind(field, interpolator)
                 if field is not None:
@@ -214,8 +251,11 @@ class Variable(object):
         Args:
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
 
+        Raises:
+            NotImplementedError: Variable not implemented
+
         Returns:
-            _type_: _description_
+            tuple: accumulated, instant, var
 
         """
         accumulated = False
@@ -237,7 +277,7 @@ class Variable(object):
                 if member is not None:
                     if not isinstance(member, list):
                         member = [member]
-            var = surfex.NetCDFReadVariable(name, level=level, units=units, member=member)
+            var = NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
             typ = self.var_dict["type"]
@@ -245,7 +285,7 @@ class Variable(object):
             tri = self.var_dict["tri"]
             if tri == 4:
                 accumulated = True
-            var = surfex.grib.Grib1Variable(par, typ, level, tri)
+            var = Grib1Variable(par, typ, level, tri)
         elif self.var_type == "grib2":
             discipline = self.var_dict["discipline"]
             p_c = self.var_dict["parameterCategory"]
@@ -257,7 +297,7 @@ class Variable(object):
                 tsp = self.var_dict["typeOfStatisticalProcessing"]
             if tsp == 1:
                 accumulated = True
-            var = surfex.grib.Grib2Variable(discipline, p_c, p_n, l_t, lev, tsp=tsp)
+            var = Grib2Variable(discipline, p_c, p_n, l_t, lev, tsp=tsp)
         elif self.var_type == "surfex":
             varname = self.var_dict["varname"]
             layers = None
@@ -268,15 +308,24 @@ class Variable(object):
                 patches = self.var_dict["patches"]
             if "accumulated" in self.var_dict:
                 accumulated = self.var_dict["accumulated"]
-            datatype = None
+            datatype = "float"
             if "datatype" in self.var_dict:
                 datatype = self.var_dict["datatype"]
+            tiletype = "FULL"
+            if "tiletype" in self.var_dict:
+                tiletype = self.var_dict["tiletype"]
 
             basetime = self.get_basetime(validtime)
-            var = surfex.file.SurfexFileVariable(varname, validtime=validtime, patches=patches,
-                                                 layers=layers,
-                                                 basetime=basetime,
-                                                 interval=self.interval, datatype=datatype)
+            var = SurfexFileVariable(
+                varname,
+                validtime=validtime,
+                patches=patches,
+                layers=layers,
+                basetime=basetime,
+                interval=self.interval,
+                datatype=datatype,
+                tiletype=tiletype,
+            )
         elif self.var_type == "fa":
             var = self.var_dict["name"]
         elif self.var_type == "obs":
@@ -305,6 +354,9 @@ class Variable(object):
             validtime (datetime.datetime): Valid time.
             cache (surfex.cache): Cache. Defaults to None
 
+        Raises:
+            RuntimeError: Negative accumulated value found
+
         Returns:
             np.darray: Field read and interpolated.
 
@@ -314,13 +366,13 @@ class Variable(object):
         previous_field = None
         if accumulated:
             # Re-read field
-            previoustime = validtime - timedelta(seconds=self.interval)
+            previoustime = validtime - as_timedelta(seconds=self.interval)
             # Don't read if previous time is older than the very first basetime
             if previoustime >= self.initial_basetime:
                 logging.debug("Re-read %s", previoustime)
-                previous_field = self.read_var_points(var, geo, validtime=validtime,
-                                                      previoustime=previoustime,
-                                                      cache=cache)
+                previous_field = self.read_var_points(
+                    var, geo, validtime=validtime, previoustime=previoustime, cache=cache
+                )
             else:
                 previous_field = np.zeros([geo.npoints])
         elif instant > 0:
@@ -331,8 +383,8 @@ class Variable(object):
         # Deaccumulate if either two files are read or if instant is > 0.
         if accumulated or instant > 0:
             field = self.deaccumulate(field, previous_field, instant)
-            if any(field[field < 0.]):
-                raise Exception("Negative accumulated value found for " + var)
+            if any(field[field < 0.0]):
+                raise RuntimeError("Negative accumulated value found for " + var)
         return field
 
     def print_variable_info(self):
@@ -360,18 +412,22 @@ class Variable(object):
             return None
         else:
             field = np.subtract(field, previous_field)
-            if any(field[field < 0.]):
+            if any(field[field < 0.0]):
                 neg = []
                 for i in range(0, field.shape[0]):
-                    if field[i] < 0.:
+                    if field[i] < 0.0:
                         neg.append(field[i])
                 neg = np.asarray(neg)
-                logging.warning("Deaccumulated field has %s negative values. lowest: %s mean: %s",
-                                str(neg.shape[0]), str(np.nanmin(neg)), str(np.nanmean(neg)))
-            field[field < 0.] = 0
-            if any(field[field < 0.]):
+                logging.warning(
+                    "Deaccumulated field has %s negative values. lowest: %s mean: %s",
+                    str(neg.shape[0]),
+                    str(np.nanmin(neg)),
+                    str(np.nanmean(neg)),
+                )
+            field[field < 0.0] = 0
+            if any(field[field < 0.0]):
                 raise Exception("Should not be negative values")
-            if float(instant) != 0.:
+            if float(instant) != 0.0:
                 field = np.divide(field, float(instant))
 
             return field
@@ -400,7 +456,7 @@ class Variable(object):
         first = False
         offset = self.offset
 
-        basetime = validtime - timedelta(seconds=offset)
+        basetime = validtime - as_timedelta(seconds=offset)
         if basetime <= self.initial_basetime:
             first = True
             basetime = self.initial_basetime
@@ -414,35 +470,46 @@ class Variable(object):
         logging.debug("  Basetime with offset: %s", basetime)
 
         # Modify based on fcint
-        seconds_since_midnight = \
-            int((basetime - basetime.replace(hour=0, minute=0,
-                 second=0, microsecond=0)).total_seconds())
+        seconds_since_midnight = int(
+            (
+                basetime - basetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            ).total_seconds()
+        )
         if seconds_since_midnight == 86400:
             seconds_since_midnight = 0
-        basetime_inc = int(seconds_since_midnight / int(timedelta(seconds=self.fcint).total_seconds()))
+        basetime_inc = int(
+            seconds_since_midnight / int(as_timedelta(seconds=self.fcint).total_seconds())
+        )
 
-        prefer_forecast = timedelta(seconds=0)
-        if seconds_since_midnight == basetime_inc * int(timedelta(seconds=self.fcint).seconds):
+        prefer_forecast = as_timedelta(seconds=0)
+        if seconds_since_midnight == basetime_inc * int(
+            as_timedelta(seconds=self.fcint).seconds
+        ):
             if first:
                 logging.debug("First basetime")
             else:
                 if self.prefer_forecast:
                     logging.debug("Prefer forecasts instead of analyis")
-                    prefer_forecast = timedelta(seconds=self.fcint)
+                    prefer_forecast = as_timedelta(seconds=self.fcint)
                 else:
                     logging.debug("Prefer analysis instead of forecast")
 
-        fcint = timedelta(seconds=self.fcint)
-        basetime = basetime.replace(hour=0, minute=0, second=0, microsecond=0) + \
-                                   (basetime_inc * fcint) - prefer_forecast
+        fcint = as_timedelta(seconds=self.fcint)
+        basetime = (
+            basetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            + (basetime_inc * fcint)
+            - prefer_forecast
+        )
 
         if previoustime is not None:
             if allow_different_basetime:
                 raise NotImplementedError
 
         logging.debug("seconds_since_midnight: %s", seconds_since_midnight)
-        logging.debug("         cycle seconds: %s", basetime_inc
-                      * int(timedelta(seconds=self.fcint).seconds))
+        logging.debug(
+            "         cycle seconds: %s",
+            basetime_inc * int(as_timedelta(seconds=self.fcint).seconds),
+        )
         logging.debug("       prefer_forecast: %s", self.prefer_forecast)
         logging.debug("   prefer_forecast_inc: %s", prefer_forecast)
         logging.debug("          basetime_inc: %s", basetime_inc)

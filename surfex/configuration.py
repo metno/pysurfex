@@ -1,9 +1,13 @@
 """Configuration."""
-import os
-import logging
 import json
+import logging
+import os
+
 import toml
-import surfex
+
+from .geo import ConfProj
+from .platform import SystemFilePaths
+from .util import merge_toml_env
 
 
 class Configuration(object):
@@ -34,22 +38,29 @@ class Configuration(object):
         """Dump configuration to json file.
 
         Args:
-            filename (_type_): _description_
-            indent (_type_, optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
+            filename (str): Filename
+            indent (int, optional): Indentation. Defaults to None.
 
         """
-        if json is None:
-            raise Exception("json module not loaded")
-
         logging.debug("settings %s", self.settings)
         json.dump(self.settings, open(filename, "w", encoding="utf-8"), indent=indent)
 
-    def setting_is(self, setting, value, sep="#", abort=True, default=None,
-                   system_variables=None, check_parsing=True, validtime=None, basedtg=None,
-                   mbr=None, tstep=None, pert=None, var=None):
+    def setting_is(
+        self,
+        setting,
+        value,
+        sep="#",
+        abort=True,
+        default=None,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if setting is value.
 
         Args:
@@ -68,19 +79,45 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            bool: True if found
         """
-        if self.get_setting(setting, sep=sep, abort=abort, default=default,
-                            system_variables=system_variables, check_parsing=check_parsing,
-                            validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert,
-                            var=var) == value:
+        if (
+            self.get_setting(
+                setting,
+                sep=sep,
+                abort=abort,
+                default=default,
+                system_variables=system_variables,
+                check_parsing=check_parsing,
+                validtime=validtime,
+                basedtg=basedtg,
+                mbr=mbr,
+                tstep=tstep,
+                pert=pert,
+                var=var,
+            )
+            == value
+        ):
             return True
         else:
             return False
 
-    def setting_is_not(self, setting, value, sep="#", abort=True, default=None,
-                       system_variables=None, check_parsing=True, validtime=None, basedtg=None,
-                       mbr=None, tstep=None, pert=None, var=None):
+    def setting_is_not(
+        self,
+        setting,
+        value,
+        sep="#",
+        abort=True,
+        default=None,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if setting is not value.
 
         Args:
@@ -102,10 +139,23 @@ class Configuration(object):
             _type_: _description_
         """
         found = False
-        if self.get_setting(setting, sep=sep, abort=abort, default=default,
-                            system_variables=system_variables, check_parsing=check_parsing,
-                            validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert,
-                            var=var) == value:
+        if (
+            self.get_setting(
+                setting,
+                sep=sep,
+                abort=abort,
+                default=default,
+                system_variables=system_variables,
+                check_parsing=check_parsing,
+                validtime=validtime,
+                basedtg=basedtg,
+                mbr=mbr,
+                tstep=tstep,
+                pert=pert,
+                var=var,
+            )
+            == value
+        ):
             found = True
 
         if found:
@@ -113,21 +163,33 @@ class Configuration(object):
         else:
             return True
 
-    def value_is_one_of(self, settings, value, sep="#", abort=True,
-                        system_variables=None, check_parsing=True, validtime=None, basedtg=None,
-                        mbr=None, tstep=None, pert=None, var=None):
+    def value_is_one_of(
+        self,
+        settings,
+        value,
+        sep="#",
+        abort=True,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if value is one of the settings.
 
         Args:
-            settings (list):
-            value:
-            sep (str):
-            abort (bool):
+            settings (list): Settings
+            value(any): Value
+            sep (str, optional): Separator. Defaults to "#"
+            abort (bool, optional): Abort. Defaults to True
             system_variables (dict): Arbitrary settings to substitute
                                      @NAME@ = system_variables={"NAME": "Value"}
             check_parsing (bool): Check if all @@ pairs were parsed
-            validtime (datetime.daetime): Parse setting with this as validtime
-            basedtg (datetime.datetime): Parse setting with this as base time
+            validtime (as_datetime): Parse setting with this as validtime
+            basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
             tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
             pert (int): Parse setting with this as perturbation number @PERT@
@@ -136,6 +198,9 @@ class Configuration(object):
         Returns:
             found (bool): True if value is found in any of the settings
 
+        Raises:
+            ValueError: Expected a list as input
+
         See Also:
             self.get_setting()
             surfex.SystemFilePaths.parse_setting()
@@ -143,22 +208,43 @@ class Configuration(object):
 
         """
         if not isinstance(settings, list):
-            raise Exception("Expected a list as input, got ", type(settings))
+            raise ValueError("Expected a list as input, got ", type(settings))
+
         found = False
         for check_s in settings:
-            setting = self.get_setting(check_s, sep=sep, abort=abort,
-                                       system_variables=system_variables,
-                                       check_parsing=check_parsing,
-                                       validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep,
-                                       pert=pert, var=var)
+            setting = self.get_setting(
+                check_s,
+                sep=sep,
+                abort=abort,
+                system_variables=system_variables,
+                check_parsing=check_parsing,
+                validtime=validtime,
+                basedtg=basedtg,
+                mbr=mbr,
+                tstep=tstep,
+                pert=pert,
+                var=var,
+            )
             if setting == value:
                 return True
 
         return found
 
-    def value_is_not_one_of(self, setting, value, sep="#", abort=True,
-                            system_variables=None, check_parsing=True, validtime=None,
-                            basedtg=None, mbr=None, tstep=None, pert=None, var=None):
+    def value_is_not_one_of(
+        self,
+        setting,
+        value,
+        sep="#",
+        abort=True,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if value is not one of.
 
         Args:
@@ -179,20 +265,40 @@ class Configuration(object):
             _type_: _description_
 
         """
-        found = self.value_is_one_of(setting, value, sep=sep, abort=abort,
-                                     system_variables=system_variables,
-                                     check_parsing=check_parsing,
-                                     validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep,
-                                     pert=pert, var=var)
+        found = self.value_is_one_of(
+            setting,
+            value,
+            sep=sep,
+            abort=abort,
+            system_variables=system_variables,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         if found:
             return False
         else:
             return True
 
-    def setting_is_one_of(self, setting, values, sep="#", abort=True,
-                          system_variables=None,
-                          check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None,
-                          pert=None, var=None):
+    def setting_is_one_of(
+        self,
+        setting,
+        values,
+        sep="#",
+        abort=True,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if setting is one of values.
 
         Args:
@@ -210,28 +316,49 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Raises:
-            Exception: _description_
+            ValueError: Excpected a list as input
 
         Returns:
-            _type_: _description_
+            bool: True if found
 
         """
         found = False
-        setting = self.get_setting(setting, sep=sep, abort=abort,
-                                   system_variables=system_variables, check_parsing=check_parsing,
-                                   validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep,
-                                   pert=pert, var=var)
+        setting = self.get_setting(
+            setting,
+            sep=sep,
+            abort=abort,
+            system_variables=system_variables,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         if not isinstance(values, list):
-            raise Exception("Excpected a list as input, got ", type(values))
+            raise ValueError("Excpected a list as input, got ", type(values))
+
         for val in values:
             if setting == val:
                 found = True
         return found
 
-    def setting_is_not_one_of(self, setting, values, sep="#", abort=True,
-                              system_variables=None, check_parsing=True, validtime=None,
-                              basedtg=None, mbr=None,
-                              tstep=None, pert=None, var=None):
+    def setting_is_not_one_of(
+        self,
+        setting,
+        values,
+        sep="#",
+        abort=True,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Check if setting is not one of values.
 
         Args:
@@ -249,22 +376,43 @@ class Configuration(object):
             var (_type_, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            bool: _description_
 
         """
-        found = self.setting_is_one_of(setting, values, sep=sep, abort=abort,
-                                       system_variables=system_variables,
-                                       check_parsing=check_parsing,
-                                       validtime=validtime, basedtg=basedtg, mbr=mbr, tstep=tstep,
-                                       pert=pert, var=var)
+        found = self.setting_is_one_of(
+            setting,
+            values,
+            sep=sep,
+            abort=abort,
+            system_variables=system_variables,
+            check_parsing=check_parsing,
+            validtime=validtime,
+            basedtg=basedtg,
+            mbr=mbr,
+            tstep=tstep,
+            pert=pert,
+            var=var,
+        )
         if found:
             return False
         else:
             return True
 
-    def get_setting(self, setting, sep="#", abort=True, default=None, system_variables=None,
-                    check_parsing=True, validtime=None, basedtg=None, mbr=None, tstep=None,
-                    pert=None, var=None):
+    def get_setting(
+        self,
+        setting,
+        sep="#",
+        abort=True,
+        default=None,
+        system_variables=None,
+        check_parsing=True,
+        validtime=None,
+        basedtg=None,
+        mbr=None,
+        tstep=None,
+        pert=None,
+        var=None,
+    ):
         """Get configurations setting.
 
         Settings are nested in blocks.
@@ -273,8 +421,8 @@ class Configuration(object):
         E.g setting = "SURFEX#ASSIM#ASSIM_SCHEMES"
 
         Args:
-            setting: The requested setting
-            default: A fallback setting in case setting is not found
+            setting (str): The requested setting
+            default (any): A fallback setting in case setting is not found
             sep (str): A separation character between different configuration blocks
             abort (bool): Abort if setting is not found and default not set
             system_variables (dict): Arbitrary settings to substitute
@@ -295,8 +443,8 @@ class Configuration(object):
             surfex.SystemFilePaths.parse_setting()
             surfex.SystemFilePaths.substitute_string()
 
-        Raise:
-            KeyError
+        Raises:
+            KeyError: Key not found
 
         """
         settings = self.settings
@@ -314,11 +462,19 @@ class Configuration(object):
                     if key in this_setting:
                         this_setting = this_setting[key]
                         # Time information
-                        this_setting = surfex.SystemFilePaths.substitute_string(
-                            this_setting, system_variables=system_variables)
-                        this_setting = surfex.SystemFilePaths.parse_setting(
-                            this_setting, check_parsing=check_parsing, validtime=validtime,
-                            basedtg=basedtg, mbr=mbr, tstep=tstep, pert=pert, var=var)
+                        this_setting = SystemFilePaths.substitute_string(
+                            this_setting, system_variables=system_variables
+                        )
+                        this_setting = SystemFilePaths.parse_setting(
+                            this_setting,
+                            check_parsing=check_parsing,
+                            validtime=validtime,
+                            basedtg=basedtg,
+                            mbr=mbr,
+                            tstep=tstep,
+                            pert=pert,
+                            var=var,
+                        )
                     else:
                         if default is not None:
                             this_setting = default
@@ -355,7 +511,7 @@ class Configuration(object):
             for key in reversed(keys[0:-1]):
                 dsetting = {key: dsetting}
 
-        self.settings = surfex.merge_toml_env(self.settings, dsetting)
+        self.settings = merge_toml_env(self.settings, dsetting)
 
 
 class ConfigurationFromHarmonie(Configuration):
@@ -375,6 +531,9 @@ class ConfigurationFromHarmonie(Configuration):
             env (dict): System environment e.g. os.environ
             conf (dict): The default configuration for this deterministic run/ensemble member
 
+        Raises:
+            NotImplementedError: soil_texture not implemented
+
         """
         Configuration.__init__(self, conf)
 
@@ -389,13 +548,11 @@ class ConfigurationFromHarmonie(Configuration):
         gsize = float(env["GSIZE"])
         if "LGSIZE" in env:
             gsize = float(env["LGSIZE"])
-        trunc = 2 # linear
+        trunc = 2  # linear
         if "TRUNC" in env:
             trunc = int(env["TRUNC"])
         domain_dict = {
-            "nam_pgd_grid": {
-                "cgrid": "CONF PROJ"
-            },
+            "nam_pgd_grid": {"cgrid": "CONF PROJ"},
             "nam_conf_proj": {
                 "xlat0": float(env["LAT0"]),
                 "xlon0": float(env["LON0"]),
@@ -410,9 +567,9 @@ class ConfigurationFromHarmonie(Configuration):
                 "xdx": gsize,
                 "xdy": gsize,
                 "xtrunc": trunc,
-            }
+            },
         }
-        geo = surfex.ConfProj(domain_dict)
+        geo = ConfProj(domain_dict)
         self.geo = geo
 
         logging.debug("GEO: %s", self.geo)
@@ -451,7 +608,7 @@ class ConfigurationFromHarmonie(Configuration):
 
         # LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX
         # (must be .FALSE. for NPATCH>1)
-        canopy = env["LISBA_CANOPY"].replace('.','')
+        canopy = env["LISBA_CANOPY"].replace(".", "")
         if canopy.strip().lower()[0] == "t":
             canopy = True
         else:
@@ -508,7 +665,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ISBA#YSAND", ysand + ".dir")
         self.update_setting("SURFEX#ISBA#YCLAY", yclay + ".dir")
 
-        # LDB_VERSION = 3.0  # Lake database version.
+        # Lake database version.
         self.update_setting("SURFEX#FLAKE#LDB_VERSION", env["LDB_VERSION"])
 
         # Treeheight
@@ -521,7 +678,7 @@ class ConfigurationFromHarmonie(Configuration):
         # XSCALE_H_TREE  Scale the tree height with this factor
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
         if "LFAKETREE" in env:
-            if env["LFAKETREE"].replace('.','').strip().lower()[0] == "t":
+            if env["LFAKETREE"].replace(".", "").strip().lower()[0] == "t":
                 lfaketree = True
             else:
                 lfaketree = False
@@ -547,7 +704,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ASSIM#SCHEMES#SEA", ana_sea)
 
         if "LECSST" in env:
-            if env["LECSST"].replace('.','').strip().lower()[0] == "t":
+            if env["LECSST"].replace(".", "").strip().lower()[0] == "t":
                 lecsst = True
             else:
                 lecsst = False
@@ -664,12 +821,12 @@ class ConfigurationFromHarmonie(Configuration):
             if (env["SNOW_CYCLES"]) == "":
                 snow_cycles = []
             else:
-                snow_cycles = (str(env["SNOW_CYCLES"]).split(" "))
+                snow_cycles = str(env["SNOW_CYCLES"]).split(" ")
         self.update_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES", snow_cycles)
 
         lswepsini = False
         if "LSWEPSINI" in env:
-            if env["LSWEPSINI"].replace('.','').strip().lower()[0] == "t":
+            if env["LSWEPSINI"].replace(".", "").strip().lower()[0] == "t":
                 lswepsini = True
             else:
                 lswepsini = False
@@ -680,7 +837,7 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#ASSIM#ISBA#XSWEPSINI", xswepsini)
         lswepsmin = False
         if "LSWEPSMIN" in env:
-            if env["LSWEPSMIN"].replace('.','').strip().lower()[0] == "t":
+            if env["LSWEPSMIN"].replace(".", "").strip().lower()[0] == "t":
                 lswepsmin = True
             else:
                 lswepsmin = False
@@ -692,7 +849,7 @@ class ConfigurationFromHarmonie(Configuration):
 
         lpatch1 = False
         if "LPATCH1" in env:
-            if env["LPATCH1"].replace('.','').strip().lower()[0] == "t":
+            if env["LPATCH1"].replace(".", "").strip().lower()[0] == "t":
                 lpatch1 = True
             else:
                 lpatch1 = False
@@ -707,13 +864,13 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#SEA#PERTFLUX", False)
         if env["PERTSURF"] == "model":
             if "LPERTSURF" in env:
-                if env["LPERTSURF"].replace('.','').strip().lower()[0] == "t":
+                if env["LPERTSURF"].replace(".", "").strip().lower()[0] == "t":
                     self.update_setting("SURFEX#ISBA#PERTSURF", True)
                     self.update_setting("SURFEX#SEA#PERTFLUX", True)
 
         # Volatile sea ice (climate mode)
         if "LVOLATILE_SIC" in env:
-            if env["LVOLATILE_SIC"].replace('.','').strip().lower()[0] == "t":
+            if env["LVOLATILE_SIC"].replace(".", "").strip().lower()[0] == "t":
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", True)
             else:
                 self.update_setting("SURFEX.SEA.LVOLATILE_SIC", False)
@@ -730,12 +887,13 @@ class ConfigurationFromHarmonieAndConfigFile(ConfigurationFromHarmonie):
             conf_file (str): Filename with configuration
 
         """
-        conf = toml.load(open(conf_file, "r", encoding="utf-8"))
+        with open(conf_file, "r", encoding="utf-8") as fhandler:
+            conf = toml.load(fhandler)
         ConfigurationFromHarmonie.__init__(self, env, conf)
 
 
-class ConfigurationFromJsonFile(Configuration):
-    """Configuration from a json file."""
+class ConfigurationFromTomlFile(Configuration):
+    """Configuration from a TOML file."""
 
     def __init__(self, filename):
         """Construct the configuration.
@@ -744,5 +902,6 @@ class ConfigurationFromJsonFile(Configuration):
             filename (str): File name
 
         """
-        settings = json.load(open(filename, "r", encoding="utf-8"))
+        with open(filename, mode="r", encoding="utf-8") as fhandler:
+            settings = toml.load(fhandler)
         Configuration.__init__(self, settings)

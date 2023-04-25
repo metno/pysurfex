@@ -1,12 +1,11 @@
 """Run time methods."""
-import os
 import logging
-import sys
-import subprocess
-from abc import ABC, abstractmethod
-import json
+import os
 import shutil
-import surfex
+import sys
+from subprocess import PIPE, STDOUT, CalledProcessError, Popen
+
+from .util import remove_existing_file
 
 
 class BatchJob(object):
@@ -30,29 +29,39 @@ class BatchJob(object):
         Args:
             cmd (str): Command to run.
 
+        Raises:
+            CalledProcessError: Command failed.
+            RuntimeError: No command provided!
+
         """
         if cmd is None:
-            raise Exception("No command provided!")
+            raise RuntimeError("No command provided!")
         cmd = self.wrapper + " " + cmd
 
         if "OMP_NUM_THREADS" in self.rte:
             logging.info("BATCH: %s", self.rte["OMP_NUM_THREADS"])
         logging.info("Batch running %s", cmd)
 
-        process = subprocess.Popen(cmd, shell=True, env=self.rte, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT,
-                                   universal_newlines=True, bufsize=1)
+        process = Popen(  # noqaS602
+            cmd,
+            shell=True,  # noqaS602
+            env=self.rte,
+            stdout=PIPE,
+            stderr=STDOUT,
+            universal_newlines=True,
+            bufsize=1,
+        )
         # Poll process for new output until finished
         while True:
             nextline = process.stdout.readline()
-            if nextline == '' and process.poll() is not None:
+            if nextline == "" and process.poll() is not None:
                 break
             sys.stdout.write(nextline)
             sys.stdout.flush()
 
         return_code = process.wait()
         if return_code != 0:
-            raise subprocess.CalledProcessError(return_code, cmd)
+            raise CalledProcessError(return_code, cmd)
 
 
 class SURFEXBinary(object):
@@ -67,6 +76,11 @@ class SURFEXBinary(object):
             iofile (surfex.SurfexIO): Input file to command.
             settings (f90nml.Namelist): Fortran namelist namelist
             input_data (surfex.InputDataToSurfexBinaries): Input to binary
+            kwargs (dict): Key word arguments.
+
+        Raises:
+            FileNotFoundError: Input file not found
+            RuntimeError: Execution failed
 
         """
         self.binary = binary
@@ -87,10 +101,10 @@ class SURFEXBinary(object):
         self.input_data = input_data
         self.input_data.prepare_input()
 
-        if os.path.exists('OPTIONS.nam'):
-            os.remove('OPTIONS.nam')
-        self.settings.write('OPTIONS.nam')
-        with open('OPTIONS.nam', mode="r", encoding="utf-8") as file_handler:
+        if os.path.exists("OPTIONS.nam"):
+            os.remove("OPTIONS.nam")
+        self.settings.write("OPTIONS.nam")
+        with open("OPTIONS.nam", mode="r", encoding="utf-8") as file_handler:
             content = file_handler.read()
         if self.print_namelist:
             logging.info(content)
@@ -99,10 +113,10 @@ class SURFEXBinary(object):
             logging.debug(self.pgdfile.filename)
             try:
                 logging.info("PGD is %s", self.pgdfile.filename)
-                if self.pgdfile.input_file is not None and \
-                        os.path.abspath(self.pgdfile.filename) \
-                        != os.path.abspath(self.pgdfile.input_file):
-                    surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+                if self.pgdfile.input_file is not None and os.path.abspath(
+                    self.pgdfile.filename
+                ) != os.path.abspath(self.pgdfile.input_file):
+                    remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
                     os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
                 if not os.path.exists(self.pgdfile.filename):
                     raise FileNotFoundError(f"PGD {self.pgdfile.filename} not found!")
@@ -111,11 +125,10 @@ class SURFEXBinary(object):
             if self.surfout is not None:
                 try:
                     logging.info("PREP is %s", self.iofile.filename)
-                    if self.iofile.input_file is not None and \
-                            os.path.abspath(self.iofile.filename) \
-                            != os.path.abspath(self.iofile.input_file):
-                        surfex.read.remove_existing_file(self.iofile.input_file,
-                                                         self.iofile.filename)
+                    if self.iofile.input_file is not None and os.path.abspath(
+                        self.iofile.filename
+                    ) != os.path.abspath(self.iofile.input_file):
+                        remove_existing_file(self.iofile.input_file, self.iofile.filename)
                         os.symlink(self.iofile.input_file, self.iofile.filename)
                     if not os.path.exists(self.iofile.filename):
                         raise FileNotFoundError(f"PREP {self.iofile.filename} not found!")
@@ -129,8 +142,12 @@ class SURFEXBinary(object):
         except Exception as exc:
             raise RuntimeError(repr(exc)) from Exception
 
-        listings = ["LISTING_PGD0.txt", "LISTING_PREP0.txt", "LISTING_OFFLINE0.txt",
-                    "LISTING_SODA0.txt"]
+        listings = [
+            "LISTING_PGD0.txt",
+            "LISTING_PREP0.txt",
+            "LISTING_OFFLINE0.txt",
+            "LISTING_SODA0.txt",
+        ]
         for listing in listings:
             if os.path.exists(listing):
                 with open(listing, mode="r", encoding="utf-8") as file_handler:
@@ -149,8 +166,20 @@ class SURFEXBinary(object):
 class PerturbedOffline(SURFEXBinary):
     """Pertubed offline."""
 
-    def __init__(self, binary, batch, io, pert_number, settings, input_data, surfout=None,
-                 archive_data=None, pgdfile=None, print_namelist=False, negpert=False):
+    def __init__(
+        self,
+        binary,
+        batch,
+        io,
+        pert_number,
+        settings,
+        input_data,
+        surfout=None,
+        archive_data=None,
+        pgdfile=None,
+        print_namelist=False,
+        negpert=False,
+    ):
         """Perturbed offline.
 
         Args:
@@ -168,16 +197,16 @@ class PerturbedOffline(SURFEXBinary):
 
         """
         self.pert_number = pert_number
-        settings['nam_io_varassim']['LPRT'] = True
-        settings['nam_var']['nivar'] = int(pert_number)
+        settings["nam_io_varassim"]["LPRT"] = True
+        settings["nam_var"]["nivar"] = int(pert_number)
         # Handle negative pertubations
         if negpert:
-            nvar = int(settings['nam_var']['nvar'])
+            nvar = int(settings["nam_var"]["nvar"])
             ipert = 0
             npert = 1
             for nvi in range(0, nvar):
-                key = 'nncv(' + str(nvi + 1) + ')'
-                val = int(settings['nam_var'][key])
+                key = "nncv(" + str(nvi + 1) + ")"
+                val = int(settings["nam_var"][key])
                 # Check if active
                 if val == 1:
                     npert = 1
@@ -185,19 +214,38 @@ class PerturbedOffline(SURFEXBinary):
                     npert = npert + 1
                 for __ in range(0, npert):
                     ipert = ipert + 1
-                    key = 'xtprt_m(' + str(ipert) + ')'
-                    val = settings['nam_var'][key]
-                    settings['nam_var'][key] = -val
-        SURFEXBinary.__init__(self, binary, batch, io, settings, input_data, surfout=surfout,
-                              archive_data=archive_data, pgdfile=pgdfile,
-                              print_namelist=print_namelist)
+                    key = "xtprt_m(" + str(ipert) + ")"
+                    val = settings["nam_var"][key]
+                    settings["nam_var"][key] = -val
+        SURFEXBinary.__init__(
+            self,
+            binary,
+            batch,
+            io,
+            settings,
+            input_data,
+            surfout=surfout,
+            archive_data=archive_data,
+            pgdfile=pgdfile,
+            print_namelist=print_namelist,
+        )
 
 
 class Masterodb(object):
     """Masterodb."""
 
-    def __init__(self, pgdfile, prepfile, surffile, settings, input_data, binary=None,
-                 archive_data=None, print_namelist=True, batch=None):
+    def __init__(
+        self,
+        pgdfile,
+        prepfile,
+        surffile,
+        settings,
+        input_data,
+        binary=None,
+        archive_data=None,
+        print_namelist=True,
+        batch=None,
+    ):
         """Masterodb.
 
         Args:
@@ -230,20 +278,21 @@ class Masterodb(object):
         self.input.prepare_input()
 
         # Prepare namelist
-        if os.path.exists('EXSEG1.nam'):
-            os.remove('EXSEG1.nam')
+        if os.path.exists("EXSEG1.nam"):
+            os.remove("EXSEG1.nam")
 
-        self.settings.write('EXSEG1.nam')
-        with open('EXSEG1.nam', mode="r", encoding="utf-8") as file_handler:
+        self.settings.write("EXSEG1.nam")
+        with open("EXSEG1.nam", mode="r", encoding="utf-8") as file_handler:
             content = file_handler.read()
         if self.print_namelist:
             logging.info(content)
 
         logging.info("PGD file for MASTERODB %s", self.pgdfile.filename)
-        if self.pgdfile.input_file is not None and \
-                os.path.abspath(self.pgdfile.filename) != os.path.abspath(self.pgdfile.input_file):
+        if self.pgdfile.input_file is not None and os.path.abspath(
+            self.pgdfile.filename
+        ) != os.path.abspath(self.pgdfile.input_file):
             logging.info("Input PGD file is: %s", self.pgdfile.input_file)
-            surfex.read.remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
+            remove_existing_file(self.pgdfile.input_file, self.pgdfile.filename)
             os.symlink(self.pgdfile.input_file, self.pgdfile.filename)
 
         if not os.path.exists(self.pgdfile.filename):
@@ -251,12 +300,12 @@ class Masterodb(object):
             raise FileNotFoundError(self.pgdfile.filename)
 
         logging.info("PREP file for MASTERODB %s", self.prepfile.filename)
-        if self.prepfile.input_file is not None and \
-                os.path.abspath(self.prepfile.filename) \
-                != os.path.abspath(self.prepfile.input_file):
+        if self.prepfile.input_file is not None and os.path.abspath(
+            self.prepfile.filename
+        ) != os.path.abspath(self.prepfile.input_file):
 
             logging.info("Input PREP file is: %s", self.prepfile.input_file)
-            surfex.read.remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
+            remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
             os.symlink(self.prepfile.input_file, self.prepfile.filename)
 
         if not os.path.exists(self.prepfile.filename):
@@ -274,149 +323,6 @@ class Masterodb(object):
         self.surfout.archive_output_file()
         if self.archive is not None:
             self.archive.archive_files()
-
-
-class InputDataToSurfexBinaries(ABC):
-    """Abstract input data."""
-
-    def __init__(self):
-        """Construct."""
-
-    @abstractmethod
-    def prepare_input(self):
-        """Prepare input."""
-        return NotImplementedError
-
-
-class OutputDataFromSurfexBinaries(ABC):
-    """Abstract output data."""
-
-    def __init__(self):
-        """Construct."""
-
-    @abstractmethod
-    def archive_files(self):
-        """Archive files."""
-        return NotImplementedError
-
-
-class JsonOutputData(OutputDataFromSurfexBinaries):
-    """Output data."""
-
-    def __init__(self, data):
-        """Output data from dict.
-
-        Args:
-            data (dict): Output data.
-
-        """
-        OutputDataFromSurfexBinaries.__init__(self)
-        self.data = data
-
-    def archive_files(self):
-        """Archive files."""
-        for output_file, target in self.data.items():
-
-            logging.info("%s -> %s", output_file, target)
-            command = "mv"
-            if isinstance(target, dict):
-                for key in target:
-                    logging.debug("%s %s %s", output_file, key, target[key])
-                    command = target[key]
-                    target = key
-
-            cmd = command + " " + output_file + " " + target
-            try:
-                logging.info(cmd)
-                subprocess.check_call(cmd, shell=True)
-            except IOError:
-                logging.error("%s failed", cmd)
-                raise Exception(cmd + " failed") from IOError
-
-
-class JsonOutputDataFromFile(JsonOutputData):
-    """JSON output data."""
-
-    def __init__(self, file):
-        """Construct from json file."""
-        with open(file, mode="r", encoding="utf-8") as file_handler:
-            data = json.load(file_handler)
-        JsonOutputData.__init__(self, data)
-
-    def archive_files(self):
-        """Archive files."""
-        JsonOutputData.archive_files(self)
-
-
-class JsonInputData(InputDataToSurfexBinaries):
-    """JSON input data."""
-
-    def __init__(self, data):
-        """Construct input data.
-
-        Args:
-            data (dict): Input data.
-        """
-        InputDataToSurfexBinaries.__init__(self)
-        self.data = data
-
-    def prepare_input(self):
-        """Prepare input."""
-        for target, input_file in self.data.items():
-
-            logging.info("%s -> %s", target, input_file)
-            logging.debug(os.path.realpath(target))
-            command = None
-            if isinstance(input_file, dict):
-                for key in input_file:
-                    logging.debug(key)
-                    logging.debug(input_file[key])
-                    command = str(input_file[key])
-                    input_file = str(key)
-                    command = command.replace("@INPUT@", input_file)
-                    command = command.replace("@TARGET@", target)
-
-            if os.path.realpath(target) == os.path.realpath(input_file):
-                logging.info("Target and input file is the same file")
-            else:
-                if command is None:
-                    cmd = "ln -sf " + input_file + " " + target
-                else:
-                    cmd = command
-                try:
-                    logging.info(cmd)
-                    subprocess.check_call(cmd, shell=True)
-                except IOError:
-                    raise(cmd + " failed") from IOError
-
-    def add_data(self, data):
-        """Add data.
-
-        Args:
-            data (_type_): _description_
-        """
-        for key in data:
-            value = data[key]
-            self.data.update({key: value})
-
-
-class JsonInputDataFromFile(JsonInputData):
-    """JSON input data."""
-
-    def __init__(self, file):
-        """Construct JSON input data.
-
-        Args:
-            file (_type_): _description_
-
-        """
-        with open(file, mode="r", encoding="utf-8") as file_handler:
-            data = json.load(file_handler)
-        JsonInputData.__init__(self, data)
-
-    def prepare_input(self):
-        """Prepare input."""
-        JsonInputData.prepare_input(self)
 
 
 # TODO is it used?

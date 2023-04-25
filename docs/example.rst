@@ -2,7 +2,7 @@
 Examples
 =======================================================
 
-First you must install pysurfex and make sure you have it in PYTHONPATH and the bin directory in your path
+First you must install pysurfex for example with poetry
 
 Create forcing from MET-Nordic analysis
 
@@ -190,6 +190,11 @@ Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)
 
 
 
+Plot MEPS data from thredds
+=======================================================
 
 
+.. code-block:: bash
 
+
+   plot_points -v air_temperature_2m -g examples/domains/drammen.json -it netcdf -i https://thredds.met.no/thredds/dodsC/meps25epsarchive/2023/04/13/meps_det_2_5km_20230413T06Z.nc -t 2023041307

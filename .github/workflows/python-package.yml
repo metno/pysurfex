@@ -11,104 +11,92 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    if: github.repository_owner == 'metno'
     strategy:
+      fail-fast: true
       matrix:
-        python-version: [3.8]
+        os: [ "ubuntu-latest" ]
+        env: [ "pytest" ]
+        python-version: [ "3.8" ]
+
+    name: "${{ matrix.os }}, python=${{ matrix.python-version }}"
+    runs-on: ${{ matrix.os }}
+
+    container:
+      image: python:${{ matrix.python-version }}-bullseye
+      env:
+        COVERAGE_FILE: ".coverage.${{ matrix.env }}.${{ matrix.python-version }}"
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Check config
-      run: |
-        cat > sshd_config <<EOF
-          SyslogFacility AUTHPRIV
-          PermitRootLogin yes
-          AuthorizedKeysFile	.ssh/authorized_keys
-          PasswordAuthentication yes
-          ChallengeResponseAuthentication no
-          UsePAM yes
-          UseDNS no
-          X11Forwarding no
-          PrintMotd no
-        EOF
-        sudo mv sshd_config /etc/ssh/sshd_config
-        sudo systemctl restart ssh
-    - name: Create ssh key
-      run: >
-        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa
-    - name: Add key to auth file
-      run: >
-        cat ~/.ssh/id_rsa.pub | tee -a ~/.ssh/authorized_keys
-    - name: Ensure the owner of the key is correct
-      run: |
-        chmod 600 ~/.ssh/authorized_keys
-        chmod 700 ~/.ssh
-        sudo chmod -c 0755 ~/
-        ls -la ~/.ssh
-    - name: Test SSH connection to localhost
-      run: >
-        ssh -vvv -i ~/.ssh/id_rsa -o BatchMode=yes -o StrictHostKeyChecking=no $(whoami)@localhost
-    - name: Install dependencies
-      run: |
-        sudo apt update && sudo apt install libudunits2-dev libboost-dev libproj-dev libeccodes0 libeccodes-dev \
-        libarmadillo-dev libgsl-dev python3-setuptools python3-nose python3-numpy python3-pyproj
+      #----------------------------------------------
+      #           check-out repo
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-        python -m pip install --upgrade pip
-        python --version
-        pip install numpy
-        python -c "import numpy"
-        pip install flake8 pytest
-        pip install sphinx
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #   flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Install package
-      run: |
-        pip install -e .[test,plot]
-    - name: Test and create coverage
-      run: |
-        wget --no-check-certificate --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16XcmpkaIRki2-F5D16j133kbYdZo_Ws9" -O testdata.zip && rm -rf /tmp/cookies.txt
-        unzip -o testdata.zip
-        echo "Testdata"
-        ./prepare_testdata.sh
-        export PATH=$PWD/test/bin:/usr/bin/:$PATH
-        export CLIENTID=${{secrets.CLIENTID}}
-        coverage run --source=. -m unittest discover
-    - name: Coveralls
-      if: ${{ matrix.python-version == 3.8 }}
-      run: |
-        export CLIENTID=${{ secrets.CLIENTID }}
-        # coverage html -d coverage
-        COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
-    - name: Create documentation
-      if: ${{ matrix.python-version == 3.8 }}
-      run: |
-        cd docs
-        make html
-    - name: Commit documentation changes
-      if: ${{ matrix.python-version == 3.8 }}
-      run: |
-        git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
-        cp -r docs/build/html/* gh-pages/
-        cd gh-pages
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "Update documentation" -a || true
-        # The above command will fail if no changes were present, so we ignore
-        # the return code.
-    - name: Push changes
-      if: ${{ matrix.python-version == 3.8 }} && github.repository == 'metno/pysurfex'
-      uses: ad-m/github-push-action@master
-      with:
-        branch: gh-pages
-        directory: gh-pages
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin
+
+      #----------------------------------------------
+      #  --- configure poetry & install project  ----
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv (if cache exists)
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Install dependencies (if venv cache is not found)
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root --only main,test
+
+      - name: Install the project itself
+        run: poetry install --no-interaction --only-root
+
+      #----------------------------------------------
+      #      run test suite and report coverage
+      #----------------------------------------------
+      - name: Run tests
+        run: |
+          poetry run pytest
+
+      - name: Coveralls
+        if: ${{ matrix.python-version == 3.8 }}
+        run: |
+          export COVERALLS_REPO_TOKEN=${{secrets.COVERALLS_REPO_TOKEN}}
+          git config --global --add safe.directory $PWD
+          poetry run coveralls
+
+      - name: Create documentation
+        if: ${{ matrix.python-version == 3.8 }}
+        run: |
+          cd docs
+          make html
+      - name: Commit documentation changes
+        if: ${{ matrix.python-version == 3.8 }}
+        run: |
+          git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
+          cp -r docs/build/html/* gh-pages/
+          cd gh-pages
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update documentation" -a || true
+          # The above command will fail if no changes were present, so we ignore
+          # the return code.
+      - name: Push changes
+        if: ${{ matrix.python-version == 3.8 && github.event_name != 'pull_request' }}
+        uses: ad-m/github-push-action@master
+        with:
+          branch: gh-pages
+          directory: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}

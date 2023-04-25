@@ -1,11 +1,12 @@
 """Netcdf."""
+import logging
 import os
 import re
-import logging
-from datetime import datetime, date
 from enum import Enum
-import numpy as np
+
 import netCDF4
+import numpy as np
+
 try:
     import cfunits
 except ModuleNotFoundError:
@@ -14,7 +15,11 @@ except AssertionError:
     cfunits = None
 except:  # noqa
     cfunits = None
-import surfex
+
+
+from .datetime_utils import fromtimestamp, isdatetime, utcfromtimestamp
+from .geo import ConfProj, Geo
+from .interpolation import Interpolation
 
 
 class Netcdf(object):
@@ -24,21 +29,26 @@ class Netcdf(object):
         """Construct NetCDF.
 
         Args:
-            filename (_type_): _description_
+            filename (str): Filename
 
         """
         self.filename = filename
         logging.debug("filename: %s", filename)
         self.file = netCDF4.Dataset(filename, "r")
 
-    def num_height(self, field):
-        """num_height."""
-
-    def num_time(self, field):
-        """num_time."""
-
-    def slice(self, var_name, levels=None, members=None, times=None, xcoords=None, ycoords=None,
-              deaccumulate=False, instantanious=0., units=None, lev_from_ind=False):
+    def nc_slice(
+        self,
+        var_name,
+        levels=None,
+        members=None,
+        times=None,
+        xcoords=None,
+        ycoords=None,
+        deaccumulate=False,
+        instantanious=0.0,
+        units=None,
+        lev_from_ind=False,
+    ):
         """Assembles a 5D field in order lon,lat,time,height,ensemble.
 
         Arguments:
@@ -53,13 +63,24 @@ class Netcdf(object):
             units (str): CF unit for the variable to be read
             lev_from_ind (bool): level list are indices and not values
 
+        Raises:
+            NotImplementedError: Subsetting of the input dimensions not implemented yet!
+            ValueError: Times must be a list!
+            ValueError: Levels must be a list!
+            ValueError: Members must be a list!
+            RuntimeError: No ensemble members found
+            RuntimeError: cfunits not loaded!
+            ValueError: Axis is not defined!")
+
         Returns:
-         np.array: 5D array with values
+            np.array: 5D array with values
 
         """
         var = NetCDFFileVariable(self.file, var_name)
         if xcoords is not None or ycoords is not None:
-            raise Exception("Subsetting of the input dimensions not implemented yet!")
+            raise NotImplementedError(
+                "Subsetting of the input dimensions not implemented yet!"
+            )
 
         tinfo = ""
         if times is not None:
@@ -76,16 +97,19 @@ class Netcdf(object):
                     prev_time_steps.append(0)
         else:
             if not isinstance(times, (list, tuple)):
-                raise Exception("Times must be a list!")
-            if isinstance(times[0], date):
+                raise ValueError("Times must be a list!")
+            if isdatetime(times[0]):
                 logging.debug("Time provided in call as datetime objects")
                 times_in_var = var.datetimes
                 for i, times_in_var_val in enumerate(times_in_var):
-                    logging.debug("i %s times_in_var %s times %s", i, times_in_var_val, times)
+                    logging.debug(
+                        "i %s times_in_var %s times %s", i, times_in_var_val, times
+                    )
                     for tval in times:
                         # Time steps requested
-                        logging.debug("i=%s, times_in_var_val=%s tval=%s",
-                                      i, times_in_var_val, tval)
+                        logging.debug(
+                            "i=%s, times_in_var_val=%s tval=%s", i, times_in_var_val, tval
+                        )
                         if times_in_var[i] == tval:
                             times_to_read.append(i)
                             if i > 0:
@@ -113,7 +137,7 @@ class Netcdf(object):
         else:
             logging.debug("Level provided in call. lev_from_ind=%s", str(lev_from_ind))
             if not isinstance(levels, (list, tuple)):
-                raise Exception("Levels must be a list!")
+                raise ValueError("Levels must be a list!")
             levels_in_var = var.levels
             for i in range(0, levels_in_var.shape[0]):
                 for level_ind in levels:
@@ -122,7 +146,9 @@ class Netcdf(object):
                             levels_to_read.append(i)
                     else:
                         # NB! Round number to avoid round off when matching
-                        if round(float(levels_in_var[i]), 5) == round(float(level_ind), 5):
+                        if round(float(levels_in_var[i]), 5) == round(
+                            float(level_ind), 5
+                        ):
                             levels_to_read.append(i)
 
         members_to_read = []
@@ -131,7 +157,7 @@ class Netcdf(object):
                 members_to_read.append(i)
         else:
             if not isinstance(members, (list, tuple)):
-                raise Exception("Members must be a list!")
+                raise ValueError("Members must be a list!")
             logging.debug("Ensemble members provided in call")
             members_in_var = var.members
             for i in range(0, members_in_var.shape[0]):
@@ -140,7 +166,7 @@ class Netcdf(object):
                         members_to_read.append(i)
 
             if len(members_to_read) == 0:
-                raise Exception("No ensemble members found for " + var.var_name)
+                raise RuntimeError("No ensemble members found for " + var.var_name)
 
         lons = var.lons
         lats = var.lats
@@ -150,15 +176,21 @@ class Netcdf(object):
         dim_y = lats.shape[1]
 
         logging.debug("lons.shape=%s lats.shape=%s", lons.shape, lats.shape)
-        geo = surfex.geo.Geo(lons, lats)
+        geo = Geo(lons, lats)
 
         dim_t = max(len(times_to_read), 1)
         dim_levels = max(len(levels_to_read), 1)
         dim_members = max(len(members_to_read), 1)
 
         logging.debug("Dimensions in output")
-        logging.debug("%s %s %s %s %s", str(dim_x), str(dim_y), str(dim_t), str(dim_levels),
-                      str(dim_members))
+        logging.debug(
+            "%s %s %s %s %s",
+            str(dim_x),
+            str(dim_y),
+            str(dim_t),
+            str(dim_levels),
+            str(dim_members),
+        )
 
         lon_ind = slice(0, dim_x, 1)
         lat_ind = slice(0, dim_y, 1)
@@ -188,7 +220,7 @@ class Netcdf(object):
                 prev_dims.append(members_to_read)
                 mapping[4] = i
             else:
-                raise Exception(str(types[i]) + " is not defined!")
+                raise ValueError(str(types[i]) + " is not defined!")
 
         logging.debug("Read %s with dimensions: %s", var.var_name, str(dims))
         if deaccumulate:
@@ -200,8 +232,10 @@ class Netcdf(object):
         field = self.file[var.var_name][dims]
         if units is not None:
             if cfunits is None:
-                raise Exception("cfunits not loaded!")
-            field = cfunits.Units.conform(field, cfunits.Units(var.units), cfunits.Units(units))
+                raise RuntimeError("cfunits not loaded!")
+            field = cfunits.Units.conform(
+                field, cfunits.Units(var.units), cfunits.Units(units)
+            )
 
         # Deaccumulation
         if deaccumulate:
@@ -209,9 +243,10 @@ class Netcdf(object):
             previous_field = self.file[var.var_name][prev_dims]
             if units is not None:
                 if cfunits is None:
-                    raise Exception("cfunits not loaded!")
-                previous_field = cfunits.Units.conform(previous_field, cfunits.Units(var.units),
-                                                       cfunits.Units(units))
+                    raise RuntimeError("cfunits not loaded!")
+                previous_field = cfunits.Units.conform(
+                    previous_field, cfunits.Units(var.units), cfunits.Units(units)
+                )
             field = np.subtract(original_field, previous_field)
 
         # Create instantanious values
@@ -242,29 +277,25 @@ class Netcdf(object):
         """Read field.
 
         Args:
-            var_name (_type_): _description_
-            level (_type_, optional): _description_. Defaults to None.
-            member (_type_, optional): _description_. Defaults to None.
-            validtime (_type_, optional): _description_. Defaults to None.
-            units (_type_, optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
+            var_name (str): Variable name
+            level (int, optional): Level. Defaults to None.
+            member (int, optional): Realization. Defaults to None.
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            units (str, optional): Units. Defaults to None.
 
         Returns:
-            _type_: _description_
+            tuple: Field, Geo
 
         """
         if validtime is None:
             validtime = []
-        elif not isinstance(validtime, datetime):
-            raise Exception("validime must be a datetime object")
         else:
             validtime = [validtime]
 
         logging.debug("level %s member %s validtime %s", level, member, validtime)
-        field, geo_in = self.slice(var_name, levels=level, members=member, times=validtime,
-                                   units=units)
+        field, geo_in = self.nc_slice(
+            var_name, levels=level, members=member, times=validtime, units=units
+        )
         # Reshape to fortran 2D style
         field = np.reshape(field, [geo_in.nlons, geo_in.nlats], order="F")
         return field, geo_in
@@ -273,26 +304,24 @@ class Netcdf(object):
         """Read a field and interpolate it to requested positions.
 
         Args:
-            var (_type_): _description_
-            geo (_type_): _description_
-            validtime (_type_, optional): _description_. Defaults to None.
-            interpolation (str, optional): _description_. Defaults to "bilinear".
+            var (NetCDFReadVariable): NetCDF variable
+            geo (surfx.geo.Geo): Geometry
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            interpolation (str, optional): Interpolation. Defaults to "bilinear".
 
         Returns:
-            _type_: _description_
+            tuple: Field, Interpolator
 
         """
-        # field4d, geo_in = self.slice(var_name, levels=level, members=member, times=validtime,
-        #                              units=units)
-        # field2d = np.transpose(np.reshape(field4d, [geo_in.nlons, geo_in.nlats], order="F"))
         var_name = var.name
         level = var.level
         member = var.member
         units = var.units
         logging.debug("level %s member %s validtime %s", level, member, validtime)
-        field, geo_in = self.field(var_name, level=level, member=member, validtime=validtime,
-                                   units=units)
-        interpolator = surfex.interpolation.Interpolation(interpolation, geo_in, geo)
+        field, geo_in = self.field(
+            var_name, level=level, member=member, validtime=validtime, units=units
+        )
+        interpolator = Interpolation(interpolation, geo_in, geo)
         field = interpolator.interpolate(field)
         return field, interpolator
 
@@ -352,11 +381,10 @@ class NetCDFFileVariable(object):
         """Get axis_types."""
         types = []
         if self.var_name not in self.file.variables:
-            raise Exception(self.var_name + " is missing in file!")
+            raise RuntimeError(self.var_name + " is missing in file!")
 
         if self.file.variables[self.var_name]:
             for dim_name in self.file.variables[self.var_name].dimensions:
-                # dim_name = self.file.variables[self.var_name].dimensions[i]
                 if dim_name == "longitude" or dim_name == "lon":
                     types.append(Axis.LON)
                 elif dim_name == "x":
@@ -401,8 +429,11 @@ class NetCDFFileVariable(object):
     def lats(self):
         """Get lats.
 
+        Raises:
+            RuntimeError: No latitude found
+
         Returns:
-           np.array: 2D array of latitudes
+            np.array: 2D array of latitudes
 
         """
         latvals = np.array([])
@@ -418,15 +449,18 @@ class NetCDFFileVariable(object):
                 latvals = np.transpose(latvals, (1, 0))
 
         if latvals.shape[0] == 0:
-            raise Exception("No latitude found for " + self.var_name)
+            raise RuntimeError("No latitude found for " + self.var_name)
         return latvals
 
     @property
     def lons(self):
         """Get lons.
 
+        Raises:
+            RuntimeError: No longitude found
+
         Returns:
-           np.array: 2D array of longitudes
+            np.array: 2D array of longitudes
 
         """
         lonvals = np.array([])
@@ -441,12 +475,15 @@ class NetCDFFileVariable(object):
                 lonvals = np.transpose(lonvals, (1, 0))
 
         if lonvals.shape[0] == 0:
-            raise Exception("No longitude found for " + self.var_name)
+            raise RuntimeError("No longitude found for " + self.var_name)
         return lonvals
 
     @property
     def datetimes(self):
         """Get datetimes.
+
+        Raises:
+            RuntimeError: cfunits not loaded!
 
         Returns:
             list()
@@ -459,12 +496,16 @@ class NetCDFFileVariable(object):
                 val = self.file.variables[self.dim_names[i]]
                 for tval in val:
                     if cfunits is None:
-                        raise Exception("cfunits not loaded!")
-                    epochtime = int(cfunits.Units.conform(
-                        tval, cfunits.Units(val.units),
-                        cfunits.Units("seconds since 1970-01-01 00:00:00")))
+                        raise RuntimeError("cfunits not loaded!")
+                    epochtime = int(
+                        cfunits.Units.conform(
+                            tval,
+                            cfunits.Units(val.units),
+                            cfunits.Units("seconds since 1970-01-01 00:00:00"),
+                        )
+                    )
                     logging.debug("epoctime %s", epochtime)
-                    d_t = datetime.utcfromtimestamp(epochtime)
+                    d_t = utcfromtimestamp(epochtime)
                     logging.debug("dt %s", d_t)
                     times.append(d_t)
 
@@ -531,20 +572,26 @@ class NetCDFFileVariable(object):
         """Check if is level.
 
         Args:
-            axis_type (_type_): _description_
+            axis_type (Axis): Acis type
 
         Returns:
-            _type_: _description_
+            bool: If axis is a level type
 
         """
-        if axis_type == Axis.HEIGHT or axis_type == Axis.PESSURE or axis_type == Axis.GEOZ or \
-                axis_type == Axis.HYBRID:
+        if (
+            axis_type == Axis.HEIGHT
+            or axis_type == Axis.PESSURE
+            or axis_type == Axis.GEOZ
+            or axis_type == Axis.HYBRID
+        ):
             return True
         else:
             return False
 
 
-def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc", geo=None):
+def create_netcdf_first_guess_template(
+    my_variables, my_nx, my_ny, fname="raw.nc", geo=None
+):
     """Create netCDF template file for first guess.
 
     Args:
@@ -586,34 +633,42 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
     my_fg.variables["y"].standard_name = "projection_y_coordinate"
     my_fg.variables["y"].units = "m"
 
-    standard_name = {"air_temperature_2m": "air_temperature",
-                     "relative_humidity_2m": "relative_humidity",
-                     "altitude": "altitude",
-                     "surface_snow_thickness": "surface_snow_thickness",
-                     "surface_soil_moisture": "surface_soil_moisture",
-                     "cloud_base": "cloud_base",
-                     "land_area_fraction": "land_area_fraction"}
-    long_name = {"air_temperature_2m": "Screen level temperature (T2M)",
-                 "relative_humidity_2m": "Screen level relative humidity (RH2M)",
-                 "altitude": "Altitude",
-                 "surface_snow_thickness": "Surface snow thickness",
-                 "surface_soil_moisture": "Surface soil moisture",
-                 "cloud_base": "Cloud base",
-                 "land_area_fraction": "Land Area Fraction"}
-    units = {"air_temperature_2m": "K",
-             "relative_humidity_2m": "1",
-             "altitude": "m",
-             "surface_snow_thickness": "m",
-             "surface_soil_moisture": "m3/m3",
-             "cloud_base": "m",
-             "land_area_fraction": "1"}
-    fillvalue = {"air_temperature_2m": "9.96921e+36",
-                 "relative_humidity_2m": "9.96921e+36",
-                 "altitude": "9.96921e+36",
-                 "surface_snow_thickness": "9.96921e+36",
-                 "surface_soil_moisture": "9.96921e+36",
-                 "cloud_base": "9.96921e+36",
-                 "land_area_fraction": "9.96921e+36"}
+    standard_name = {
+        "air_temperature_2m": "air_temperature",
+        "relative_humidity_2m": "relative_humidity",
+        "altitude": "altitude",
+        "surface_snow_thickness": "surface_snow_thickness",
+        "surface_soil_moisture": "surface_soil_moisture",
+        "cloud_base": "cloud_base",
+        "land_area_fraction": "land_area_fraction",
+    }
+    long_name = {
+        "air_temperature_2m": "Screen level temperature (T2M)",
+        "relative_humidity_2m": "Screen level relative humidity (RH2M)",
+        "altitude": "Altitude",
+        "surface_snow_thickness": "Surface snow thickness",
+        "surface_soil_moisture": "Surface soil moisture",
+        "cloud_base": "Cloud base",
+        "land_area_fraction": "Land Area Fraction",
+    }
+    units = {
+        "air_temperature_2m": "K",
+        "relative_humidity_2m": "1",
+        "altitude": "m",
+        "surface_snow_thickness": "m",
+        "surface_soil_moisture": "m3/m3",
+        "cloud_base": "m",
+        "land_area_fraction": "1",
+    }
+    fillvalue = {
+        "air_temperature_2m": "9.96921e+36",
+        "relative_humidity_2m": "9.96921e+36",
+        "altitude": "9.96921e+36",
+        "surface_snow_thickness": "9.96921e+36",
+        "surface_soil_moisture": "9.96921e+36",
+        "cloud_base": "9.96921e+36",
+        "land_area_fraction": "9.96921e+36",
+    }
 
     for my_var in my_variables:
         my_fg.createVariable(my_var, "f4", ("y", "x"), fill_value=fillvalue[my_var])
@@ -623,7 +678,7 @@ def create_netcdf_first_guess_template(my_variables, my_nx, my_ny, fname="raw.nc
 
     # Global attributes
     if geo is not None:
-        if isinstance(geo, surfex.ConfProj):
+        if isinstance(geo, ConfProj):
             my_fg.setncattr("gridtype", "lambert")
             my_fg.setncattr("dlon", float(geo.xdx))
             my_fg.setncattr("dlat", float(geo.xdy))
@@ -644,10 +699,11 @@ def read_first_guess_netcdf_file(input_file, var):
         var (_type_): _description_
 
     Raises:
-        NotImplementedError: _description_
+        NotImplementedError: Only conf proj implemented when reading geo from file
+        RuntimeError: cfunits not loaded!
 
     Returns:
-        _type_: _description_
+        tuple:  geo, validtime, background, glafs, gelevs
 
     """
     file_handler = netCDF4.Dataset(input_file)
@@ -655,11 +711,15 @@ def read_first_guess_netcdf_file(input_file, var):
     lats = file_handler["latitude"][:]
 
     if cfunits is None:
-        raise Exception("cfunits not loaded!")
-    validtime = int(cfunits.Units.conform(file_handler["time"][:],
-                    cfunits.Units(file_handler["time"].units),
-                    cfunits.Units("seconds since 1970-01-01 00:00:00")))
-    validtime = datetime.fromtimestamp(validtime)
+        raise RuntimeError("cfunits not loaded!")
+    validtime = int(
+        cfunits.Units.conform(
+            file_handler["time"][:],
+            cfunits.Units(file_handler["time"].units),
+            cfunits.Units("seconds since 1970-01-01 00:00:00"),
+        )
+    )
+    validtime = fromtimestamp(validtime)
 
     n_x = lons.shape[1]
     n_y = lons.shape[0]
@@ -678,16 +738,16 @@ def read_first_guess_netcdf_file(input_file, var):
                 },
                 "nam_conf_proj": {
                     "xlon0": file_handler.getncattr("projlon"),
-                    "xlat0": file_handler.getncattr("projlat")
-                }
+                    "xlat0": file_handler.getncattr("projlat"),
+                },
             }
-            geo = surfex.ConfProj(from_json)
+            geo = ConfProj(from_json)
         else:
             raise NotImplementedError
     else:
         lons = np.array(np.transpose(np.reshape(lons, [n_y, n_x], order="F")))
         lats = np.array(np.transpose(np.reshape(lats, [n_y, n_x], order="F")))
-        geo = surfex.Geo(lons, lats)
+        geo = Geo(lons, lats)
 
     background = file_handler[var][:]
     background = np.array(np.reshape(background, [n_x * n_y]))
@@ -710,8 +770,9 @@ def read_first_guess_netcdf_file(input_file, var):
     return geo, validtime, background, glafs, gelevs
 
 
-def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new_file=True,
-                               geo=None):
+def write_analysis_netcdf_file(
+    filename, field, var, validtime, elevs, lafs, new_file=True, geo=None
+):
     """Write analysis NetCDF file.
 
     Args:
@@ -737,13 +798,17 @@ def write_analysis_netcdf_file(filename, field, var, validtime, elevs, lafs, new
     if new_file:
         if geo is None:
             raise Exception("You need to provide geo to write a new file")
-        file_handler = create_netcdf_first_guess_template([var, "altitude", "land_area_fraction"],
-                                                          geo.nlons, geo.nlats, fname=filename,
-                                                          geo=geo)
+        file_handler = create_netcdf_first_guess_template(
+            [var, "altitude", "land_area_fraction"],
+            geo.nlons,
+            geo.nlats,
+            fname=filename,
+            geo=geo,
+        )
         file_handler.variables["longitude"][:] = np.transpose(geo.lons)
         file_handler.variables["latitude"][:] = np.transpose(geo.lats)
-        file_handler.variables["x"][:] = [i for i in range(0, geo.nlons)]
-        file_handler.variables["y"][:] = [i for i in range(0, geo.nlats)]
+        file_handler.variables["x"][:] = list(range(0, geo.nlons))
+        file_handler.variables["y"][:] = list(range(0, geo.nlats))
         file_handler.variables["altitude"][:] = np.transpose(elevs)
         file_handler.variables["land_area_fraction"][:] = np.transpose(lafs)
 
@@ -760,14 +825,19 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
     """Convert analysis to ASCII obs file for SODA.
 
     Args:
-        dtg (_type_): _description_
-        t2m (_type_, optional): _description_. Defaults to None.
-        rh2m (_type_, optional): _description_. Defaults to None.
-        s_d (_type_, optional): _description_. Defaults to None.
-        s:m (_type_, optional): _description_. Defaults to None.
-        output (_type_, optional): _description_. Defaults to None.
+        dtg (surfex.datetime_utils): Analysis time
+        t2m (dict, optional): Screen level temperature var and file name. Defaults to None.
+        rh2m (dict, optional): Screen level relative humidiy var and file name. Defaults to None.
+        s_d (dict, optional): Snow depth var and file name. Defaults to None.
+        s_m (dict, optional): Soil moisture var and file name. Defaults to None.
+        output (str, optional): Output file name. Defaults to None.
+
+    Raises:
+        RuntimeError: You must specify at least one file to read from
+        RuntimeError: Mismatch in ?? dimension
 
     """
+
     def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
 
         if my_nx < 0:
@@ -775,9 +845,13 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         if my_ny < 0:
             my_ny = ny1
         if my_nx != nx1:
-            raise Exception("Mismatch in nx dimension " + str(my_nx) + " != " + str(nx1))
+            raise RuntimeError(
+                "Mismatch in nx dimension " + str(my_nx) + " != " + str(nx1)
+            )
         if my_ny != ny1:
-            raise Exception("Mismatch in ny dimension " + str(my_ny) + " != " + str(ny1))
+            raise RuntimeError(
+                "Mismatch in ny dimension " + str(my_ny) + " != " + str(ny1)
+            )
 
         return my_nx, my_ny
 
@@ -798,12 +872,16 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         logging.debug("T2m %s %s", t2m["var"], t2m_fh.variables[t2m["var"]].shape)
 
         i = i + 1
-        n_x, n_y = check_input_to_soda_dimensions(n_x, n_y, t2m_fh.variables[t2m["var"]].shape[1],
-                                                  t2m_fh.variables[t2m["var"]].shape[0])
+        n_x, n_y = check_input_to_soda_dimensions(
+            n_x,
+            n_y,
+            t2m_fh.variables[t2m["var"]].shape[1],
+            t2m_fh.variables[t2m["var"]].shape[0],
+        )
         t2m_var = t2m_fh.variables[t2m["var"]][:]
         logging.debug("%s %s", t2m_var.shape, n_x * n_y)
         t2m_var = t2m_var.reshape([n_y * n_x], order="C")
-        t2m_var = t2m_var.filled(fill_value=999.)
+        t2m_var = t2m_var.filled(fill_value=999.0)
         t2m_var = t2m_var.tolist()
 
     if rh2m is not None:
@@ -811,11 +889,15 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         logging.debug("RH2m %s %s", rh2m["var"], rh2m_fh.variables[rh2m["var"]].shape)
 
         i = i + 1
-        n_x, n_y = check_input_to_soda_dimensions(n_x, n_y, rh2m_fh.variables[rh2m["var"]].shape[1],
-                                                  rh2m_fh.variables[rh2m["var"]].shape[0])
+        n_x, n_y = check_input_to_soda_dimensions(
+            n_x,
+            n_y,
+            rh2m_fh.variables[rh2m["var"]].shape[1],
+            rh2m_fh.variables[rh2m["var"]].shape[0],
+        )
         rh2m_var = rh2m_fh.variables[rh2m["var"]][:]
         rh2m_var = rh2m_var.reshape([n_y * n_x], order="C")
-        rh2m_var = rh2m_var.filled(fill_value=999.)
+        rh2m_var = rh2m_var.filled(fill_value=999.0)
         rh2m_var = rh2m_var.tolist()
 
     if s_d is not None:
@@ -823,12 +905,16 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         logging.debug("SD %s %s", s_d["var"], sd_fh.variables[s_d["var"]].shape)
 
         i = i + 1
-        n_x, n_y = check_input_to_soda_dimensions(n_x, n_y, sd_fh.variables[s_d["var"]].shape[1],
-                                                  sd_fh.variables[s_d["var"]].shape[0])
+        n_x, n_y = check_input_to_soda_dimensions(
+            n_x,
+            n_y,
+            sd_fh.variables[s_d["var"]].shape[1],
+            sd_fh.variables[s_d["var"]].shape[0],
+        )
 
         sd_var = sd_fh.variables[s_d["var"]][:]
         sd_var = sd_var.reshape([n_y * n_x], order="C")
-        sd_var = sd_var.filled(fill_value=999.)
+        sd_var = sd_var.filled(fill_value=999.0)
         sd_var = sd_var.tolist()
 
     if s_m is not None:
@@ -836,19 +922,25 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         logging.debug("SM %s %s", s_m["var"], sm_fh.variables[s_m["var"]].shape)
 
         i = i + 1
-        n_x, n_y = check_input_to_soda_dimensions(n_x, n_y, sm_fh.variables[s_m["var"]].shape[1],
-                                                  sm_fh.variables[s_m["var"]].shape[0])
+        n_x, n_y = check_input_to_soda_dimensions(
+            n_x,
+            n_y,
+            sm_fh.variables[s_m["var"]].shape[1],
+            sm_fh.variables[s_m["var"]].shape[0],
+        )
 
         sm_var = sm_fh.variables[s_m["var"]][:]
         sm_var = sm_var.reshape([n_y * n_x], order="C")
-        sm_var = sm_var.filled(fill_value=999.)
+        sm_var = sm_var.filled(fill_value=999.0)
         sm_var = sm_var.tolist()
 
     if i == 0:
-        raise Exception("You must specify at least one file to read from!")
+        raise RuntimeError("You must specify at least one file to read from!")
 
     if output is None:
-        output = "OBSERVATIONS_" + str(cyy) + str(cmm) + str(cdd) + "H" + str(chh) + ".DAT"
+        output = (
+            "OBSERVATIONS_" + str(cyy) + str(cmm) + str(cdd) + "H" + str(chh) + ".DAT"
+        )
 
     with open(output, mode="w", encoding="utf-8") as out:
         for i in range(0, n_x * n_y):
@@ -872,6 +964,9 @@ def read_cryoclim_nc(infiles):
     Args:
         infiles (list): Input files.
 
+    Raises:
+        RuntimeError: "No files were read properly"
+
     Returns:
         tuple: grid_lons, grid_lats, grid_snow_class
 
@@ -881,7 +976,7 @@ def read_cryoclim_nc(infiles):
     grid_snow_class = None
     for filename in infiles:
         if os.path.exists(filename):
-            surfex.info("Reading: " + filename)
+            logging.info("Reading: %s", filename)
             ncf = netCDF4.Dataset(filename, "r")
             grid_lons = ncf["lon"][:]
             grid_lats = ncf["lat"][:]
@@ -895,7 +990,7 @@ def read_cryoclim_nc(infiles):
             logging.warning("Warning file %s does not exists", filename)
 
     if grid_lons is None or grid_lats is None or grid_snow_class is None:
-        raise Exception("No files were read properly")
+        raise RuntimeError("No files were read properly")
 
     return grid_lons, grid_lats, grid_snow_class
 
@@ -906,24 +1001,27 @@ def read_sentinel_nc(infiles):
     Args:
         infiles (list): Input files.
 
+    Raises:
+        RuntimeError: "No files were read properly"
+
+    Returns:
+        tuple: longitudes, latitudes, soil moisture
     """
     grid_lons = None
     grid_lats = None
     grid_sm = None
     for filename in infiles:
         if os.path.exists(filename):
-            surfex.info("Reading: " + filename)
+            logging.info("Reading: %s", filename)
             nch = netCDF4.Dataset(filename, "r")
             grid_lons = nch["LON"][:]
             grid_lats = nch["LAT"][:]
             grid_sm = nch["surface_soil_moisture"][:]
-#            grid_sm[grid_snow_class_read == 1] = 1
-#            grid_snow_class[grid_snow_class_read == 0] = 0
             nch.close()
         else:
             logging.warning("Warning file %s does not exists", filename)
 
     if grid_lons is None or grid_lats is None or grid_sm is None:
-        raise Exception("No files were read properly")
+        raise RuntimeError("No files were read properly")
 
     return grid_lons, grid_lats, grid_sm
