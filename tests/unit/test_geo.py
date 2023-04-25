@@ -1,7 +1,7 @@
 """Test geometry."""
 import pytest
 
-from surfex.geo import (
+from pysurfex.geo import (
     IGN,
     Cartesian,
     ConfProj,
@@ -10,7 +10,7 @@ from surfex.geo import (
     get_geo_object,
     set_domain,
 )
-from surfex.namelist import BaseNamelist
+from pysurfex.namelist import BaseNamelist
 
 
 def test_geo_not_defined():

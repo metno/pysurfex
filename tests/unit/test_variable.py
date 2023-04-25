@@ -1,8 +1,8 @@
 """Test variable."""
 import pytest
 
-from surfex.datetime_utils import as_datetime_args, as_timedelta
-from surfex.variable import Variable
+from pysurfex.datetime_utils import as_datetime_args, as_timedelta
+from pysurfex.variable import Variable
 
 
 @pytest.fixture()

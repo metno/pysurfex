@@ -1,7 +1,7 @@
 """Test netCDF features."""
 
-from surfex.datetime_utils import as_datetime
-from surfex.netcdf import Netcdf
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.netcdf import Netcdf
 
 
 def test_read_thredds_nc(data_thredds_nc_file):

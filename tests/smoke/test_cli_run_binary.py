@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import toml
 
-from surfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda
-from surfex.util import merge_toml_env_from_files
+from pysurfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda
+from pysurfex.util import merge_toml_env_from_files
 
 
 @contextlib.contextmanager

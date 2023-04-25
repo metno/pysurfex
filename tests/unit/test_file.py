@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from netCDF4 import Dataset
 
-from surfex.cache import Cache
-from surfex.datetime_utils import as_datetime
-from surfex.file import (
+from pysurfex.cache import Cache
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.file import (
     AsciiSurfexFile,
     FaSurfexFile,
     ForcingFileNetCDF,
@@ -19,7 +19,7 @@ from surfex.file import (
     read_surfex_field,
     read_surfex_points,
 )
-from surfex.read import ConvertedInput, Converter
+from pysurfex.read import ConvertedInput, Converter
 
 
 @pytest.fixture()

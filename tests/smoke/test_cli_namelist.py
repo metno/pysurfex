@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from surfex.cli import create_namelist
+from pysurfex.cli import create_namelist
 
 
 @pytest.fixture()

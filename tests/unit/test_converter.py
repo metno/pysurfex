@@ -3,9 +3,9 @@ from datetime import datetime
 
 import numpy as np
 
-from surfex.cache import Cache
-from surfex.geo import get_geo_object
-from surfex.read import ConvertedInput, Converter
+from pysurfex.cache import Cache
+from pysurfex.geo import get_geo_object
+from pysurfex.read import ConvertedInput, Converter
 
 
 def test_converter_meps_nc(conf_proj_2x3_dict, data_thredds_nc_file):

@@ -34,5 +34,5 @@ jobs:
     - name: Build and publish
       run: |
         poetry build
-        poetry config http-basic.pypi ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
+        poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         poetry publish

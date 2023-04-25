@@ -6,13 +6,13 @@ import numpy as np
 import pytest
 from netCDF4 import Dataset
 
-from surfex.datetime_utils import as_datetime
-from surfex.geo import ConfProj
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.geo import ConfProj
 
 
 @pytest.fixture(scope="module")
 def config_exp_surfex_toml():
-    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../surfex//cfg/config_exp_surfex.toml"
+    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
     return fname
 
 
@@ -801,17 +801,17 @@ def _mockers(session_mocker):
         return np.zeros_like([np.arange(nx * ny)])
 
     # Do the actual mocking
-    session_mocker.patch("surfex.obs.requests.get", new=dummy_frost_data)
+    session_mocker.patch("pysurfex.obs.requests.get", new=dummy_frost_data)
     session_mocker.patch(
-        "surfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_grib_new_from_file
+        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_grib_new_from_file
     )
-    session_mocker.patch("surfex.grib.eccodes.codes_get", new=my_codes_get)
-    session_mocker.patch("surfex.grib.eccodes.codes_get_long", new=my_codes_get)
-    session_mocker.patch("surfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
-    session_mocker.patch("surfex.grib.eccodes.codes_get_values", new=my_codes_get_values)
-    session_mocker.patch("surfex.grib.eccodes.codes_release")
+    session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
+    session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
+    session_mocker.patch("pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
+    session_mocker.patch("pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values)
+    session_mocker.patch("pysurfex.grib.eccodes.codes_release")
     session_mocker.patch(
-        "surfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file
+        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file
     )
-    session_mocker.patch("surfex.bufr.eccodes.codes_set")
-    session_mocker.patch("surfex.fa.resource", new=MyFaResource)
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_set")
+    session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)
