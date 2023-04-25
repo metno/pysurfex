@@ -36,42 +36,49 @@
   <h1>Source code for surfex.forcing</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Forcing.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">import</span> <span class="nn">netCDF4</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">toml</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
+
+<span class="kn">from</span> <span class="nn">.cache</span> <span class="kn">import</span> <span class="n">Cache</span>
+<span class="kn">from</span> <span class="nn">.configuration</span> <span class="kn">import</span> <span class="n">ConfigurationFromHarmonie</span>
+<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">ForcingFileNetCDF</span>
+<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">get_geo_object</span>
+<span class="kn">from</span> <span class="nn">.read</span> <span class="kn">import</span> <span class="n">ConstantValue</span><span class="p">,</span> <span class="n">ConvertedInput</span><span class="p">,</span> <span class="n">Converter</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">deep_update</span>
 
 
 <span class="c1"># TODO: should be abstract?</span>
-<div class="viewcode-block" id="SurfexForcing"><a class="viewcode-back" href="../../index.html#surfex.SurfexForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexForcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Surfex forcing class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SurfexForcing.__init__"><a class="viewcode-back" href="../../index.html#surfex.SurfexForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexForcing.__init__"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.&quot;&quot;&quot;</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">SurfexNetCDFForcing</span><span class="p">(</span><span class="n">SurfexForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexNetCDFForcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexNetCDFForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexNetCDFForcing</span><span class="p">(</span><span class="n">SurfexForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NetCDF surfex forcing.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexNetCDFForcing.__init__"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexNetCDFForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct netcdf forcing.&quot;&quot;&quot;</span>
         <span class="n">SurfexForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">io_object</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ForcingFileNetCDF</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_object</span> <span class="o">=</span> <span class="n">ForcingFileNetCDF</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">SurfexOutputForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexOutputForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexOutputForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main output class for SURFEX forcing.&quot;&quot;&quot;</span>
 
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step_intervall</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing.__init__"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexOutputForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step_intervall</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct output forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -89,12 +96,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_step_value</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span> <span class="o">=</span> <span class="n">var_objs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_sanity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_sanity</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing._check_sanity"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexOutputForcing._check_sanity">[docs]</a>    <span class="k">def</span> <span class="nf">_check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nparameters</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent number of parameter. </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">))</span><span class="si">}</span><span class="s2"> != &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nparameters</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Inconsistent number of parameter. </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">))</span><span class="si">}</span><span class="s2"> != &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nparameters</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Check if all parameters are present</span>
         <span class="k">for</span> <span class="n">var_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">:</span>
@@ -102,7 +111,7 @@
 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required parameter </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing!&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required parameter </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing!&quot;</span><span class="p">)</span></div>
 
     <span class="c1"># Time dependent parameter</span>
     <span class="n">nparameters</span> <span class="o">=</span> <span class="mi">11</span>
@@ -120,13 +129,13 @@
         <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="SurfexOutputForcing.write_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.SurfexOutputForcing.write_forcing">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;users must define writeForcing to use this base class&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;users must define writeForcing to use this base class&quot;</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="NetCDFOutput"><a class="viewcode-back" href="../../index.html#surfex.NetCDFOutput">[docs]</a><span class="k">class</span> <span class="nc">NetCDFOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput"><a class="viewcode-back" href="../../index.html#surfex.forcing.NetCDFOutput">[docs]</a><span class="k">class</span> <span class="nc">NetCDFOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Forcing in NetCDF format.&quot;&quot;&quot;</span>
 
     <span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
@@ -145,8 +154,19 @@
         <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="s2">&quot;CO2air&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
-<div class="viewcode-block" id="NetCDFOutput.__init__"><a class="viewcode-back" href="../../index.html#surfex.NetCDFOutput.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span>
-                 <span class="n">time_step</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;netcdf&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_time</span><span class="p">,</span>
+        <span class="n">geo</span><span class="p">,</span>
+        <span class="n">fname</span><span class="p">,</span>
+        <span class="n">ntimes</span><span class="p">,</span>
+        <span class="n">var_objs</span><span class="p">,</span>
+        <span class="n">att_objs</span><span class="p">,</span>
+        <span class="n">att_time</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">,</span>
+        <span class="n">time_step</span><span class="p">,</span>
+        <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct netcdf forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -160,6 +180,9 @@
 <span class="sd">            cache (_type_): _description_</span>
 <span class="sd">            time_step (_type_): _description_</span>
 <span class="sd">            fmt (str, optional): _description_. Defaults to &quot;netcdf&quot;.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: NotImplementedError</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
@@ -175,10 +198,12 @@
             <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;FORCING.nc&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tmp_fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">+</span> <span class="s2">&quot;.tmp&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_format</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_format</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NetCDFOutput.write_forcing"><a class="viewcode-back" href="../../index.html#surfex.NetCDFOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput.write_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.NetCDFOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -198,9 +223,9 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Preparation took </span><span class="si">%s</span><span class="s2"> seconds&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">[</span><span class="n">this_var</span><span class="p">]][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">field</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_value</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_value</span></div>
 
-<div class="viewcode-block" id="NetCDFOutput._define_forcing"><a class="viewcode-back" href="../../index.html#surfex.NetCDFOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput._define_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.NetCDFOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Define netcdf forcing&quot;</span><span class="p">)</span>
 
         <span class="n">zs_oro</span> <span class="o">=</span> <span class="kc">None</span>
@@ -211,7 +236,9 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Define: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;ZS&quot;</span><span class="p">:</span>
                 <span class="n">zs_oro</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-                <span class="n">zs_oro</span> <span class="o">=</span> <span class="n">zs_oro</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                <span class="n">zs_oro</span> <span class="o">=</span> <span class="n">zs_oro</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;ZREF&quot;</span><span class="p">:</span>
                 <span class="n">zref</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
                 <span class="n">zref</span> <span class="o">=</span> <span class="n">zref</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
@@ -220,115 +247,210 @@
                 <span class="n">uref</span> <span class="o">=</span> <span class="n">uref</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
         <span class="c1"># DIMS</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;NPOINTS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
-                                                                         <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;NTIMES&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntimes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;NPOINTS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span>
+            <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">npoints</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;NTIMES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntimes</span>
+        <span class="p">)</span>
 
         <span class="c1"># DEFINE VARS</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;hours since &quot;</span> \
-                                          <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">:00:00 0:00&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TSTEP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;FRC_TIME_STP&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TSTEP&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Forcing_Time_Step&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;TSTEP&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_intervall</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LON&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-            <span class="s2">&quot;LON&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LON&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Longitude&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LON&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">lonlist</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LAT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-            <span class="s2">&quot;LAT&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LAT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Latitude&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LAT&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">latlist</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-            <span class="s2">&quot;ZS&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Orography&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZS&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">zs_oro</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZREF&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-            <span class="s2">&quot;ZREF&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZREF&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Reference_Height&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZREF&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;ZREF&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">zref</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;UREF&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-            <span class="s2">&quot;UREF&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;UREF&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Reference_Height_for_Wind&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;UREF&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;UREF&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">uref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;hours since &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">:00:00 0:00&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TSTEP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;FRC_TIME_STP&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TSTEP&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Forcing_Time_Step&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TSTEP&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_intervall</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LON&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;LON&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LON&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Longitude&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LON&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">lonlist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LAT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;LAT&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LAT&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Latitude&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LAT&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">latlist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;ZS&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZS&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Orography&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZS&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">zs_oro</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZREF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;ZREF&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZREF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Reference_Height&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZREF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;ZREF&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">zref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;UREF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+            <span class="s2">&quot;UREF&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Number_of_points&quot;</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;UREF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Reference_Height_for_Wind&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;UREF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;UREF&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">uref</span>
 
         <span class="c1"># Define time dependent variables</span>
         <span class="k">for</span> <span class="n">this_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">:</span>
             <span class="n">this_var</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">var_name</span>
 
             <span class="k">if</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;TA&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Tair&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Tair&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Tair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_Air_Temperature&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Tair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;K&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Tair&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Tair&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Tair&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_Air_Temperature&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Tair&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;K&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;QA&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Qair&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Qair&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Qair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_Specific_Humidity&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Qair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/kg&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Qair&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Qair&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Qair&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_Specific_Humidity&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Qair&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/kg&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;PS&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;PSurf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;PSurf&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;PSurf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Pressure&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;PSurf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;Pa&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;PSurf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;PSurf&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;PSurf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Pressure&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;PSurf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;Pa&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;DIR_SW&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;DIR_SWdown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;DIR_SWdown&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;DIR_SWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> \
-                    <span class="s2">&quot;Surface_Incident_Downwelling_Shortwave_Radiation&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;DIR_SWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;DIR_SWdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;DIR_SWdown&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span>
+                    <span class="s2">&quot;DIR_SWdown&quot;</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Incident_Downwelling_Shortwave_Radiation&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;DIR_SWdown&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;SCA_SW&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;SCA_SWdown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;SCA_SWdown&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;SCA_SWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> \
-                    <span class="s2">&quot;Surface_Incident_Diffuse_Shortwave_Radiation&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;SCA_SWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;SCA_SWdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;SCA_SWdown&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span>
+                    <span class="s2">&quot;SCA_SWdown&quot;</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Incident_Diffuse_Shortwave_Radiation&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;SCA_SWdown&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;LW&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LWdown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;LWdown&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Incident_Diffuse_Longwave_Radiation&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;LWdown&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LWdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;LWdown&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span>
+                    <span class="s2">&quot;LWdown&quot;</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Surface_Incident_Diffuse_Longwave_Radiation&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;LWdown&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;W/m2&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;RAIN&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Rainf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Rainf&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Rainf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Rainfall_Rate&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Rainf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m2/s&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Rainf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Rainf&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Rainf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Rainfall_Rate&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Rainf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m2/s&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;SNOW&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Snowf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Snowf&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Snowf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Snowfall_Rate&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Snowf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m2/s&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Snowf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Snowf&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Snowf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Snowfall_Rate&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Snowf&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m2/s&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;WIND&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Wind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Wind&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Wind&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Wind_Speed&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Wind&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m/s&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Wind&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Wind_Speed&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m/s&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;WIND_DIR&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Wind_DIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;Wind_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;Wind_DIR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Wind_Direction&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Wind_DIR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;Wind_DIR&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;Wind_DIR&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Wind_Direction&quot;</span>
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;CO2&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;CO2air&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
-                    <span class="s2">&quot;CO2air&quot;</span><span class="p">,</span> <span class="s2">&quot;f4&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;CO2air&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_CO2_Concentration&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s1">&#39;CO2air&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m3&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;CO2air&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                    <span class="s2">&quot;CO2air&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;f4&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;Number_of_points&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;CO2air&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s2">&quot;Near_Surface_CO2_Concentration&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;CO2air&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;kg/m3&quot;</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This should never happen! </span><span class="si">{</span><span class="n">this_var</span><span class="si">}</span><span class="s2"> is not defined!&quot;</span><span class="p">)</span></div>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;This should never happen! </span><span class="si">{</span><span class="n">this_var</span><span class="si">}</span><span class="s2"> is not defined!&quot;</span>
+                <span class="p">)</span></div>
 
-<div class="viewcode-block" id="NetCDFOutput.finalize"><a class="viewcode-back" href="../../index.html#surfex.NetCDFOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput.finalize"><a class="viewcode-back" href="../../index.html#surfex.forcing.NetCDFOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Finalize the forcing. Close the file.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Close file&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AsciiOutput"><a class="viewcode-back" href="../../index.html#surfex.AsciiOutput">[docs]</a><span class="k">class</span> <span class="nc">AsciiOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput"><a class="viewcode-back" href="../../index.html#surfex.forcing.AsciiOutput">[docs]</a><span class="k">class</span> <span class="nc">AsciiOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Forcing in ASCII format.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="AsciiOutput.__init__"><a class="viewcode-back" href="../../index.html#surfex.AsciiOutput.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span>
-                 <span class="n">time_step</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_time</span><span class="p">,</span>
+        <span class="n">geo</span><span class="p">,</span>
+        <span class="n">fname</span><span class="p">,</span>
+        <span class="n">ntimes</span><span class="p">,</span>
+        <span class="n">var_objs</span><span class="p">,</span>
+        <span class="n">att_objs</span><span class="p">,</span>
+        <span class="n">att_time</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">,</span>
+        <span class="n">time_step</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ASCII forcing output.&quot;&quot;&quot;</span>
         <span class="n">SurfexOutputForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span>
@@ -338,9 +460,9 @@
         <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;Params_config.txt&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AsciiOutput.write_forcing"><a class="viewcode-back" href="../../index.html#surfex.AsciiOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput.write_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.AsciiOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -357,7 +479,7 @@
             <span class="n">cols</span> <span class="o">=</span> <span class="mi">50</span>
             <span class="n">write_formatted_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">this_var</span><span class="p">],</span> <span class="n">field</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AsciiOutput._define_forcing"><a class="viewcode-back" href="../../index.html#surfex.AsciiOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput._define_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.AsciiOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">zs_oro</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">zref</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">uref</span> <span class="o">=</span> <span class="kc">None</span>
@@ -370,20 +492,20 @@
             <span class="k">elif</span> <span class="n">this_var</span> <span class="o">==</span> <span class="s2">&quot;UREF&quot;</span><span class="p">:</span>
                 <span class="n">uref</span> <span class="o">=</span> <span class="n">this_obj</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-        <span class="n">second</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                                          <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                                          <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                                          <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="n">second</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base_time</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
         <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%15.8f</span><span class="s2">&quot;</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntimes</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step_intervall</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntimes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step_intervall</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">write_formatted_array</span><span class="p">(</span><span class="n">file_handler</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
         <span class="n">write_formatted_array</span><span class="p">(</span><span class="n">file_handler</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
         <span class="n">write_formatted_array</span><span class="p">(</span><span class="n">file_handler</span><span class="p">,</span> <span class="n">zs_oro</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
@@ -395,47 +517,46 @@
             <span class="n">nam</span> <span class="o">=</span> <span class="n">key</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;WIND_DIR&quot;</span><span class="p">:</span>
                 <span class="n">nam</span> <span class="o">=</span> <span class="s2">&quot;DIR&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Forc_&quot;</span> <span class="o">+</span> <span class="n">nam</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Forc_&quot;</span> <span class="o">+</span> <span class="n">nam</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AsciiOutput.finalize"><a class="viewcode-back" href="../../index.html#surfex.AsciiOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput.finalize"><a class="viewcode-back" href="../../index.html#surfex.forcing.AsciiOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Finalize forcing.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Close file&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="write_formatted_array"><a class="viewcode-back" href="../../index.html#surfex.write_formatted_array">[docs]</a><span class="k">def</span> <span class="nf">write_formatted_array</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
+<div class="viewcode-block" id="write_formatted_array"><a class="viewcode-back" href="../../index.html#surfex.forcing.write_formatted_array">[docs]</a><span class="k">def</span> <span class="nf">write_formatted_array</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a formatted array.&quot;&quot;&quot;</span>
     <span class="n">astr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">%</span> <span class="n">columns</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
-    <span class="n">astr</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">astr</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
-    <span class="n">astr</span> <span class="o">=</span> <span class="n">astr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">columns</span><span class="p">,</span> <span class="n">astr</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">columns</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+    <span class="n">astr</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">astr</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+    <span class="n">astr</span> <span class="o">=</span> <span class="n">astr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">columns</span><span class="p">,</span> <span class="n">astr</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">columns</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
     <span class="n">mlw</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fileformat</span> <span class="o">%</span> <span class="mi">0</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">columns</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">formatter</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">fileformat</span> <span class="o">%</span> <span class="n">x</span><span class="p">}</span>
-    <span class="n">astr_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">astr</span><span class="o">.</span><span class="n">size</span><span class="p">:],</span>
-                               <span class="n">separator</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-                               <span class="n">max_line_width</span><span class="o">=</span><span class="n">mlw</span><span class="p">,</span>
-                               <span class="n">formatter</span><span class="o">=</span><span class="n">formatter</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">astr</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">astr_end</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;float_kind&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">fileformat</span> <span class="o">%</span> <span class="n">x</span><span class="p">}</span>
+    <span class="n">astr_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">[</span><span class="n">astr</span><span class="o">.</span><span class="n">size</span> <span class="p">:],</span> <span class="n">separator</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">max_line_width</span><span class="o">=</span><span class="n">mlw</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">formatter</span>
+    <span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">astr</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">astr_end</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_time_loop"><a class="viewcode-back" href="../../index.html#surfex.run_time_loop">[docs]</a><span class="k">def</span> <span class="nf">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_time_loop"><a class="viewcode-back" href="../../index.html#surfex.forcing.run_time_loop">[docs]</a><span class="k">def</span> <span class="nf">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run time loop.&quot;&quot;&quot;</span>
     <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">this_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+    <span class="n">this_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
 
-    <span class="n">cache</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">])</span>
-    <span class="n">time_step</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">Cache</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cache_interval&quot;</span><span class="p">])</span>
+    <span class="n">time_step</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span>
     <span class="n">single</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="s2">&quot;single&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
         <span class="n">single</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
 
     <span class="c1"># Find how many time steps we want to write</span>
     <span class="n">ntimes</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">]:</span>
+    <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]:</span>
         <span class="n">ntimes</span> <span class="o">=</span> <span class="n">ntimes</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+        <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
         <span class="n">time_step</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">ntimes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -445,40 +566,61 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Option single should be used with one time step&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create output object</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span> <span class="ow">or</span> \
-            <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;nc4&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span>
+        <span class="ow">or</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;nc4&quot;</span>
+    <span class="p">):</span>
         <span class="c1"># Set att_time the same as start</span>
-        <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">NetCDFOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span>
-                                             <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
-                                             <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">time_step</span><span class="p">,</span>
-                                             <span class="n">fmt</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">]))</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
-        <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">forcing</span><span class="o">.</span><span class="n">AsciiOutput</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">],</span>
-                                            <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">],</span> <span class="n">ntimes</span><span class="p">,</span>
-                                            <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+        <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">NetCDFOutput</span><span class="p">(</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;geo_out&quot;</span><span class="p">],</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">],</span>
+            <span class="n">ntimes</span><span class="p">,</span>
+            <span class="n">var_objs</span><span class="p">,</span>
+            <span class="n">att_objs</span><span class="p">,</span>
+            <span class="n">att_time</span><span class="p">,</span>
+            <span class="n">cache</span><span class="p">,</span>
+            <span class="n">time_step</span><span class="p">,</span>
+            <span class="n">fmt</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
+        <span class="n">att_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">AsciiOutput</span><span class="p">(</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;geo_out&quot;</span><span class="p">],</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">],</span>
+            <span class="n">ntimes</span><span class="p">,</span>
+            <span class="n">var_objs</span><span class="p">,</span>
+            <span class="n">att_objs</span><span class="p">,</span>
+            <span class="n">att_time</span><span class="p">,</span>
+            <span class="n">cache</span><span class="p">,</span>
+            <span class="n">time_step</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Invalid output format &quot;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Invalid output format &quot;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">])</span>
 
     <span class="c1"># Loop output time steps</span>
-    <span class="n">this_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
-    <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">]:</span>
+    <span class="n">this_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">this_time</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]:</span>
 
         <span class="c1"># Write for each time step</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating forcing for: </span><span class="si">%s</span><span class="s2">  time_step: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                     <span class="n">this_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">time_step</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Creating forcing for: </span><span class="si">%s</span><span class="s2">  time_step: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">this_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">),</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">time_step</span><span class="p">),</span>
+        <span class="p">)</span>
         <span class="n">output</span><span class="o">.</span><span class="n">write_forcing</span><span class="p">(</span><span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">single</span><span class="p">:</span>
             <span class="n">output</span><span class="o">.</span><span class="n">time_step_value</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span>
-            <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+            <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">cache</span><span class="o">.</span><span class="n">clean_fields</span><span class="p">(</span><span class="n">this_time</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">output</span><span class="o">.</span><span class="n">time_step_value</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">time_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+                <span class="n">this_time</span> <span class="o">=</span> <span class="n">this_time</span> <span class="o">+</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
 
     <span class="c1"># Finalize forcing</span>
     <span class="n">output</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
@@ -486,8 +628,16 @@
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing generation took </span><span class="si">%s</span><span class="s2"> seconds&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span><span class="p">))</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_input_object</span><span class="p">(</span><span class="n">sfx_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">forcingformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span> <span class="n">ref_height</span><span class="p">,</span>
-                     <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">set_input_object</span><span class="p">(</span>
+    <span class="n">sfx_var</span><span class="p">,</span>
+    <span class="n">merged_conf</span><span class="p">,</span>
+    <span class="n">geo</span><span class="p">,</span>
+    <span class="n">forcingformat</span><span class="p">,</span>
+    <span class="n">selected_converter</span><span class="p">,</span>
+    <span class="n">ref_height</span><span class="p">,</span>
+    <span class="n">first_base_time</span><span class="p">,</span>
+    <span class="n">timestep</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the input parameter for a specific SURFEX forcing variable based on input.</span>
 
 <span class="sd">    Args:</span>
@@ -502,6 +652,9 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        _type_: _description_</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: KeyError</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#########################################</span>
@@ -534,17 +687,25 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">ref_height</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">forcingformat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">][</span><span class="n">ref_height</span><span class="p">]:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">])</span><span class="si">}</span><span class="s2">: &quot;</span> \
-                          <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Missing definitions for </span><span class="si">{</span><span class="n">sfx_var</span><span class="si">}</span><span class="s2"> and format: </span><span class="si">{</span><span class="n">forcingformat</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">])</span><span class="si">}</span><span class="s2">: &quot;</span>
+                        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Missing definitions for </span><span class="si">{</span><span class="n">sfx_var</span><span class="si">}</span><span class="s2"> and format: </span><span class="si">{</span><span class="n">forcingformat</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">][</span><span class="n">ref_height</span><span class="p">][</span><span class="n">forcingformat</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">])</span><span class="si">}</span><span class="s2">: Missing definitions for </span><span class="si">{</span><span class="n">sfx_var</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">])</span><span class="si">}</span><span class="s2">: Missing definitions for </span><span class="si">{</span><span class="n">sfx_var</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
                 <span class="k">if</span> <span class="s2">&quot;converter&quot;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">][</span><span class="n">ref_height</span><span class="p">][</span><span class="n">forcingformat</span><span class="p">]:</span>
-                    <span class="n">conf_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">][</span><span class="n">ref_height</span><span class="p">][</span><span class="n">forcingformat</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">])</span>
+                    <span class="n">conf_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
+                        <span class="n">conf</span><span class="p">[</span><span class="n">sfx_var</span><span class="p">][</span><span class="n">ref_height</span><span class="p">][</span><span class="n">forcingformat</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No converter defined for &quot;</span> <span class="o">+</span> <span class="n">sfx_var</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No ref height </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">ref_height</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> defined for &quot;</span> <span class="o">+</span> <span class="n">sfx_var</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="s1">&#39;No ref height &quot;&#39;</span> <span class="o">+</span> <span class="n">ref_height</span> <span class="o">+</span> <span class="s1">&#39;&quot; defined for &#39;</span> <span class="o">+</span> <span class="n">sfx_var</span>
+                <span class="p">)</span>
 
     <span class="c1">##############################################################</span>
     <span class="c1">##############################################################</span>
@@ -563,21 +724,24 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No constant defined for &quot;</span> <span class="o">+</span> <span class="n">sfx_var</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No ref height </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">ref_height</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> defined for &quot;</span> <span class="o">+</span> <span class="n">sfx_var</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="s1">&#39;No ref height &quot;&#39;</span> <span class="o">+</span> <span class="n">ref_height</span> <span class="o">+</span> <span class="s1">&#39;&quot; defined for &#39;</span> <span class="o">+</span> <span class="n">sfx_var</span>
+                <span class="p">)</span>
 
-        <span class="n">obj</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">ConstantValue</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">sfx_var</span><span class="p">,</span> <span class="n">const_dict</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">ConstantValue</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">sfx_var</span><span class="p">,</span> <span class="n">const_dict</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
 
         <span class="c1"># Construct the converter</span>
-        <span class="n">converter</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">Converter</span><span class="p">(</span><span class="n">selected_converter</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span>
-                                          <span class="n">forcingformat</span><span class="p">)</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span>
+            <span class="n">selected_converter</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">,</span> <span class="n">forcingformat</span>
+        <span class="p">)</span>
 
         <span class="c1"># Construct the input object</span>
-        <span class="n">obj</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">sfx_var</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">sfx_var</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">obj</span>
 
 
-<div class="viewcode-block" id="set_forcing_config"><a class="viewcode-back" href="../../index.html#surfex.set_forcing_config">[docs]</a><span class="k">def</span> <span class="nf">set_forcing_config</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="set_forcing_config"><a class="viewcode-back" href="../../index.html#surfex.forcing.set_forcing_config">[docs]</a><span class="k">def</span> <span class="nf">set_forcing_config</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the forcing config.&quot;&quot;&quot;</span>
     <span class="n">file_base</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
@@ -586,13 +750,15 @@
             <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config_exp_surfex&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">config_exp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config_exp_surfex&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">config_exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">config_exp</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/cfg/config_exp_surfex.toml&quot;</span>
+            <span class="n">config_exp</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span><span class="si">}</span><span class="s2">/cfg/config_exp_surfex.toml&quot;</span>
+            <span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using default config from: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">config_exp</span><span class="p">)</span>
         <span class="n">input_data</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">config_exp</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">input_data</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">input_data</span><span class="p">)</span>
         <span class="n">geo_out</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">geo</span>
     <span class="k">elif</span> <span class="s2">&quot;domain&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">geo_out</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">get_geo_object</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">],</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)))</span>
+        <span class="n">geo_out</span> <span class="o">=</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">],</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No geometry is set&quot;</span><span class="p">)</span>
 
@@ -719,17 +885,19 @@
 
     <span class="c1"># Time information</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">1000010100</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid start and stop times! &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s2">&quot;Invalid start and stop times! &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">)</span>
+        <span class="p">)</span>
 
-    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)),</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
-    <span class="n">stop</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">)),</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)))</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">)))</span>
     <span class="k">if</span> <span class="n">file_base</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">first_base_time</span> <span class="o">=</span> <span class="n">start</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">first_base_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_base</span><span class="p">)),</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H&#39;</span><span class="p">)</span>
+        <span class="n">first_base_time</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_base</span><span class="p">)))</span>
 
     <span class="c1"># Merge all settings with user all settings</span>
-    <span class="n">merged_conf</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">deep_update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">user_config</span><span class="p">)</span>
+    <span class="n">merged_conf</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">user_config</span><span class="p">)</span>
 
     <span class="c1"># Replace global settings from</span>
     <span class="n">fileformat</span> <span class="o">=</span> <span class="n">input_format</span>
@@ -749,17 +917,18 @@
         <span class="n">geo_input</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;geo_input&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">geo_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">geo_input</span><span class="p">):</span>
-                <span class="n">geo_input</span> <span class="o">=</span> <span class="n">surfex</span><span class="o">.</span><span class="n">get_geo_object</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">geo_input</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)))</span>
+                <span class="n">geo_input</span> <span class="o">=</span> <span class="n">get_geo_object</span><span class="p">(</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">geo_input</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="p">)</span>
                 <span class="n">merged_conf</span><span class="p">[</span><span class="n">fileformat</span><span class="p">][</span><span class="s2">&quot;geo_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_input</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">surfex</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input geometry &quot;</span> <span class="o">+</span> <span class="n">geo_input</span> <span class="o">+</span> <span class="s2">&quot; does not exist&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input geometry </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">,</span> <span class="n">geo_input</span><span class="p">)</span>
 
     <span class="c1"># Set attributes</span>
     <span class="n">atts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ZS&quot;</span><span class="p">,</span> <span class="s2">&quot;ZREF&quot;</span><span class="p">,</span> <span class="s2">&quot;UREF&quot;</span><span class="p">]</span>
     <span class="n">att_objs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">att_var</span> <span class="ow">in</span> <span class="n">atts</span><span class="p">:</span>
 
-        <span class="c1"># att_var = atts[i]</span>
         <span class="c1"># Override with command line options for a given variable</span>
         <span class="n">ref_height</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">cformat</span> <span class="o">=</span> <span class="n">fileformat</span>
@@ -784,12 +953,33 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-        <span class="n">att_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_input_object</span><span class="p">(</span><span class="n">att_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span>
-                                         <span class="n">ref_height</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">att_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">set_input_object</span><span class="p">(</span>
+                <span class="n">att_var</span><span class="p">,</span>
+                <span class="n">merged_conf</span><span class="p">,</span>
+                <span class="n">geo_out</span><span class="p">,</span>
+                <span class="n">cformat</span><span class="p">,</span>
+                <span class="n">selected_converter</span><span class="p">,</span>
+                <span class="n">ref_height</span><span class="p">,</span>
+                <span class="n">first_base_time</span><span class="p">,</span>
+                <span class="n">timestep</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="c1"># Set forcing variables (time dependent)</span>
-    <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TA&quot;</span><span class="p">,</span> <span class="s2">&quot;QA&quot;</span><span class="p">,</span> <span class="s2">&quot;PS&quot;</span><span class="p">,</span> <span class="s2">&quot;DIR_SW&quot;</span><span class="p">,</span> <span class="s2">&quot;SCA_SW&quot;</span><span class="p">,</span> <span class="s2">&quot;LW&quot;</span><span class="p">,</span> <span class="s2">&quot;RAIN&quot;</span><span class="p">,</span> <span class="s2">&quot;SNOW&quot;</span><span class="p">,</span> <span class="s2">&quot;WIND&quot;</span><span class="p">,</span> <span class="s2">&quot;WIND_DIR&quot;</span><span class="p">,</span>
-                 <span class="s2">&quot;CO2&quot;</span><span class="p">]</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;TA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;QA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DIR_SW&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SCA_SW&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;LW&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAIN&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SNOW&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;WIND&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;WIND_DIR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CO2&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
     <span class="n">var_objs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># Search in config file for parameters to override</span>
     <span class="k">for</span> <span class="n">sfx_var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
@@ -846,44 +1036,56 @@
             <span class="n">selected_converter</span> <span class="o">=</span> <span class="n">co2_converter</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-        <span class="n">var_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">set_input_object</span><span class="p">(</span><span class="n">sfx_var</span><span class="p">,</span> <span class="n">merged_conf</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">,</span> <span class="n">cformat</span><span class="p">,</span> <span class="n">selected_converter</span><span class="p">,</span>
-                                         <span class="n">ref_height</span><span class="p">,</span> <span class="n">first_base_time</span><span class="p">,</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">var_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">set_input_object</span><span class="p">(</span>
+                <span class="n">sfx_var</span><span class="p">,</span>
+                <span class="n">merged_conf</span><span class="p">,</span>
+                <span class="n">geo_out</span><span class="p">,</span>
+                <span class="n">cformat</span><span class="p">,</span>
+                <span class="n">selected_converter</span><span class="p">,</span>
+                <span class="n">ref_height</span><span class="p">,</span>
+                <span class="n">first_base_time</span><span class="p">,</span>
+                <span class="n">timestep</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="c1"># Save options</span>
     <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_format</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outfile</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestep</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;geo_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_out</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_format</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outfile</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestep</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;geo_out&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_out</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="s2">&quot;single&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">options</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
-    <span class="n">options</span><span class="p">[</span><span class="s1">&#39;cache_interval&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_interval</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;cache_interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_interval</span>
 
     <span class="k">return</span> <span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span></div>
 
 
-<span class="k">def</span> <span class="nf">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="modify_forcing"><a class="viewcode-back" href="../../index.html#surfex.forcing.modify_forcing">[docs]</a><span class="k">def</span> <span class="nf">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify forcing.&quot;&quot;&quot;</span>
     <span class="n">infile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_file&quot;</span><span class="p">]</span>
     <span class="n">outfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">]</span>
     <span class="n">time_step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;time_step&quot;</span><span class="p">]</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span>
 
-    <span class="n">ifile</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">ifile</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
     <span class="n">ofile</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Modify variable &quot;</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">time_step</span>
+        <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">ofile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ifile</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">time_step</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">ofile</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
 
     <span class="n">ifile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="n">ofile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">ofile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -919,7 +1121,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>

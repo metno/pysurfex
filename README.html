@@ -52,11 +52,11 @@
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
 <h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex<span class="w"> </span>--use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex
 </pre></div>
 </div>
 <p>User installation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex<span class="w"> </span>--user<span class="w"> </span>--use-feature<span class="o">=</span><span class="m">2020</span>-resolver
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex<span class="w"> </span>--user
 </pre></div>
 </div>
 </section>
@@ -64,18 +64,7 @@
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-<span class="c1"># Python tools</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-numpy<span class="w"> </span>python3-nose
-<span class="c1"># Cfunits</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libudunits2-dev
-<span class="c1"># Projection</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3-pyproj
-<span class="c1"># Eccodes for bufr/grib1/grib2</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev
-<span class="c1"># Ecflow for user experiements</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>ecflow-server<span class="w"> </span>ecflow-client<span class="w"> </span>python3-ecflow
-<span class="c1"># Titanlib</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libboost-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libarmadillo-dev<span class="w"> </span>libgsl-dev
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libudunits2-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev<span class="w"> </span>libnetcdf-dev<span class="w"> </span>netcdf-bin
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
@@ -83,20 +72,14 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 <section id="general-dependencies-from-pypi">
 <h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
-scipy
 netCDF4
 cfunits
 pyproj
 pyyaml
 toml
 netCDF4
-datetime
 f90nml
 requests
-json<span class="p">;</span><span class="w"> </span>python_version<span class="w"> </span>&lt;<span class="w"> </span><span class="s1">&#39;3&#39;</span>
-StringIO<span class="p">;</span><span class="w"> </span>python_version<span class="w"> </span>&lt;<span class="w"> </span><span class="s1">&#39;3&#39;</span>
-eccodes
-db-sqlite3
 </pre></div>
 </div>
 <p>To read NetCDF files:</p>
@@ -110,7 +93,6 @@ db-sqlite3
 <p>from ECMWF <a class="reference external" href="https://software.ecmwf.int/wiki/display/ECC/Releases">https://software.ecmwf.int/wiki/display/ECC/Releases</a> installed with ENABLE_PYTHON=ON</p>
 <p>To plot:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>matplotlib
-cartopy
 </pre></div>
 </div>
 <p>To get observations from frost.met.no API:</p>
@@ -119,6 +101,7 @@ cartopy
 </div>
 <p>For Quality control of observations</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>titanlib
+db-sqlite3
 </pre></div>
 </div>
 <p>For optimal interpolation and observation operators</p>
@@ -126,9 +109,7 @@ cartopy
 </pre></div>
 </div>
 <p>For testing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unittest
-nose
-Testdata<span class="w"> </span>from<span class="w"> </span>https://docs.google.com/uc?export<span class="o">=</span>download<span class="p">&amp;</span><span class="nv">id</span><span class="o">=</span>1FSNRQE998-ulBq8GZ0zZ40cP-TLrQulV
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest
 </pre></div>
 </div>
 <p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
@@ -136,11 +117,7 @@ folder:</p>
 </section>
 <section id="install-pysurfex">
 <h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--user
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
 </pre></div>
 </div>
 </section>
@@ -149,10 +126,6 @@ folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
 <span class="c1"># Create html documentation</span>
 make<span class="w"> </span>html
-<span class="c1"># Create latex documentation</span>
-make<span class="w"> </span>latex
-<span class="c1"># Create a pdf documentation</span>
-make<span class="w"> </span>latexpdf
 </pre></div>
 </div>
 </section>
@@ -217,7 +190,7 @@ make<span class="w"> </span>latexpdf
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>

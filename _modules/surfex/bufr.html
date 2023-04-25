@@ -35,12 +35,12 @@
             
   <h1>Source code for surfex.bufr</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;bufr treatment.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">eccodes</span>  <span class="c1"># type: ignore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -50,16 +50,30 @@
     <span class="n">eccodes</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;ECCODES not found. Needed for bufr reading&quot;</span><span class="p">)</span>
 <span class="c1"># Needed in Python 3.5</span>
-<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not load eccodes </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not load eccodes&quot;</span><span class="p">)</span>
     <span class="n">eccodes</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="BufrObservationSet"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet">[docs]</a><span class="k">class</span> <span class="nc">BufrObservationSet</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">ObservationSet</span><span class="p">):</span>
+<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime_args</span>
+<span class="kn">from</span> <span class="nn">.obs</span> <span class="kn">import</span> <span class="n">ObservationSet</span>
+<span class="kn">from</span> <span class="nn">.observation</span> <span class="kn">import</span> <span class="n">Observation</span>
+
+
+<div class="viewcode-block" id="BufrObservationSet"><a class="viewcode-back" href="../../index.html#surfex.bufr.BufrObservationSet">[docs]</a><span class="k">class</span> <span class="nc">BufrObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create observation data set from bufr observations.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BufrObservationSet.__init__"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bufrfile</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">label</span><span class="o">=</span><span class="s2">&quot;bufr&quot;</span><span class="p">,</span> <span class="n">use_first</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bufrfile</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">,</span>
+        <span class="n">valid_dtg</span><span class="p">,</span>
+        <span class="n">valid_range</span><span class="p">,</span>
+        <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;bufr&quot;</span><span class="p">,</span>
+        <span class="n">use_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a bufr observation set.</span>
 
 <span class="sd">        Args:</span>
@@ -72,6 +86,10 @@
 <span class="sd">            label (str): A label for the resulting observations set</span>
 <span class="sd">            use_first (bool): Use only the first valid observation for a point if more are found</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: ECCODES not found. Needed for bufr reading</span>
+<span class="sd">            NotImplementedError: Not implemented</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">lonrange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">lonrange</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
@@ -79,7 +97,7 @@
             <span class="n">latrange</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">eccodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ECCODES not found. Needed for bufr reading&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ECCODES not found. Needed for bufr reading&quot;</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
 
         <span class="c1"># open bufr file</span>
@@ -87,19 +105,19 @@
 
         <span class="c1"># define the keys to be printed</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s1">&#39;latitude&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;localLatitude&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;longitude&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;localLongitude&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;year&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;month&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;day&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;hour&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;minute&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;heightOfStationGroundAboveMeanSeaLevel&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;heightOfStation&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;stationNumber&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;blockNumber&#39;</span>
+            <span class="s2">&quot;latitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;localLatitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;longitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;localLongitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;year&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;month&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;day&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hour&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;minute&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;heightOfStationGroundAboveMeanSeaLevel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;heightOfStation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;stationNumber&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blockNumber&quot;</span><span class="p">,</span>
         <span class="p">]</span>
         <span class="n">nerror</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">ntime</span> <span class="o">=</span> <span class="p">{}</span>
@@ -110,20 +128,32 @@
             <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;relativeHumidityAt2M&quot;</span><span class="p">:</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">)</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;dewpointTemperatureAt2M&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
-                            <span class="s2">&quot;/dewpointTemperature&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
-                            <span class="s2">&quot;/dewpointTemperature&quot;</span><span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                    <span class="s2">&quot;/airTemperature&quot;</span>
+                <span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                    <span class="s2">&quot;/airTemperature&quot;</span>
+                <span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                    <span class="s2">&quot;/dewpointTemperature&quot;</span>
+                <span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                    <span class="s2">&quot;/dewpointTemperature&quot;</span>
+                <span class="p">)</span>
             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span><span class="p">)</span>
-                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span><span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                    <span class="s2">&quot;/airTemperature&quot;</span>
+                <span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                    <span class="s2">&quot;/airTemperature&quot;</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
             <span class="n">nerror</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
@@ -132,18 +162,13 @@
             <span class="n">ndomain</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
             <span class="n">nobs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading &quot;</span> <span class="o">+</span> <span class="n">bufrfile</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looking for keys: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">keys</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bufrfile</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Looking for keys: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">keys</span><span class="p">))</span>
         <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="c1"># loop for the messages in the file</span>
-        <span class="c1"># nerror = 0</span>
-        <span class="c1"># ndomain = 0</span>
-        <span class="c1"># nundef = 0</span>
-        <span class="c1"># ntime = 0</span>
         <span class="n">not_decoded</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># removed = 0</span>
         <span class="n">registry</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># get handle for message</span>
@@ -151,12 +176,10 @@
             <span class="k">if</span> <span class="n">bufr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">break</span>
 
-            <span class="c1"># print(&quot;message: %s&quot; % cnt)</span>
-
             <span class="c1"># we need to instruct ecCodes to expand all the descriptors</span>
             <span class="c1"># i.e. unpack the data values</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_set</span><span class="p">(</span><span class="n">bufr</span><span class="p">,</span> <span class="s1">&#39;unpack&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_set</span><span class="p">(</span><span class="n">bufr</span><span class="p">,</span> <span class="s2">&quot;unpack&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">decoded</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="n">not_decoded</span> <span class="o">=</span> <span class="n">not_decoded</span> <span class="o">+</span> <span class="mi">1</span>
@@ -190,7 +213,10 @@
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Decode: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">bufr</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got: </span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_DOUBLE</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_LONG</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_DOUBLE</span>
+                            <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_LONG</span>
+                        <span class="p">):</span>
                             <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;latitude&quot;</span><span class="p">:</span>
                             <span class="n">lat</span> <span class="o">=</span> <span class="n">val</span>
@@ -230,17 +256,25 @@
                             <span class="n">block_number</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">t2m</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>\
-                                  <span class="s2">&quot;/airTemperature&quot;</span> <span class="ow">or</span> \
-                                <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>\
-                                       <span class="s2">&quot;/airTemperature&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">key</span>
+                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                            <span class="s2">&quot;/airTemperature&quot;</span>
+                            <span class="ow">or</span> <span class="n">key</span>
+                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                            <span class="s2">&quot;/airTemperature&quot;</span>
+                        <span class="p">):</span>
                             <span class="n">temp</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;dewpointTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">td2m</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>\
-                                  <span class="s2">&quot;/dewpointTemperature&quot;</span> <span class="ow">or</span> \
-                                <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>\
-                                       <span class="s2">&quot;/dewpointTemperature&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">key</span>
+                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                            <span class="s2">&quot;/dewpointTemperature&quot;</span>
+                            <span class="ow">or</span> <span class="n">key</span>
+                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                            <span class="s2">&quot;/dewpointTemperature&quot;</span>
+                        <span class="p">):</span>
                             <span class="n">t_d</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;totalSnowDepth&quot;</span><span class="p">:</span>
                             <span class="n">s_d</span> <span class="o">=</span> <span class="n">val</span>
@@ -249,8 +283,6 @@
 
                     <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span><span class="p">:</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Report does not contain key=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-                        <span class="c1"># all_found = False</span>
-                        <span class="c1"># print(&#39;Report does not contain key=&quot;%s&quot; : %s&#39; % (key, err.msg))</span>
 
                 <span class="n">got_pos</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lat</span><span class="p">):</span>
@@ -282,17 +314,19 @@
                                     <span class="k">try</span><span class="p">:</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">td2m</span><span class="p">,</span> <span class="n">t2m</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
-                                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">conv_ex</span><span class="p">:</span>
-                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">conv_ex</span><span class="p">))</span>
+                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                                 <span class="k">else</span><span class="p">:</span>
                                     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t_d</span><span class="p">):</span>
                                         <span class="k">try</span><span class="p">:</span>
                                             <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
                                             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
-                                        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">conv_ex</span><span class="p">:</span>
-                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
-                                                          <span class="nb">str</span><span class="p">(</span><span class="n">conv_ex</span><span class="p">))</span>
+                                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                                <span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                                <span class="n">var</span><span class="p">,</span>
+                                            <span class="p">)</span>
                                             <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t2m</span><span class="p">):</span>
@@ -305,7 +339,9 @@
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">c_b</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Var </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> is not coded! Please do it!&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                                    <span class="sa">f</span><span class="s2">&quot;Var </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> is not coded! Please do it!&quot;</span>
+                                <span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pos already exists </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
 
@@ -331,24 +367,48 @@
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">all_found</span><span class="p">:</span>
                             <span class="n">nerror</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="n">nerror</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">})</span>
 
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check on position in space and time </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                      <span class="n">lon</span><span class="p">,</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lat</span><span class="p">,</span>
-                                      <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                        <span class="k">if</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lon</span> <span class="o">&lt;=</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                            <span class="n">obs_dtg</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span>
-                                               <span class="n">minute</span><span class="o">=</span><span class="n">minute</span><span class="p">)</span>
-                            <span class="c1"># print(value)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s2">&quot;Check on position in space and time </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">lon</span><span class="p">,</span>
+                            <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">lat</span><span class="p">,</span>
+                            <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="ow">and</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lon</span> <span class="o">&lt;=</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">):</span>
+                            <span class="n">obs_dtg</span> <span class="o">=</span> <span class="n">as_datetime_args</span><span class="p">(</span>
+                                <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="n">minute</span>
+                            <span class="p">)</span>
                             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_window</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">):</span>
-                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Valid DTG for station </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                                  <span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span>
-                                                  <span class="n">value</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">stid</span><span class="p">)</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                        <span class="s2">&quot;Valid DTG for station </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                        <span class="n">obs_dtg</span><span class="p">,</span>
+                                        <span class="n">valid_dtg</span><span class="p">,</span>
+                                        <span class="n">valid_range</span><span class="p">,</span>
+                                        <span class="n">lon</span><span class="p">,</span>
+                                        <span class="n">lat</span><span class="p">,</span>
+                                        <span class="n">value</span><span class="p">,</span>
+                                        <span class="n">elev</span><span class="p">,</span>
+                                        <span class="n">stid</span><span class="p">,</span>
+                                    <span class="p">)</span>
                                     <span class="k">if</span> <span class="n">station_number</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">block_number</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                                         <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">block_number</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">+</span> <span class="n">station_number</span><span class="p">)</span>
-                                    <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surfex</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">Observation</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span>
-                                                                               <span class="n">value</span><span class="p">,</span>
-                                                                               <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span>
-                                                                               <span class="n">varname</span><span class="o">=</span><span class="n">var</span><span class="p">))</span>
+                                    <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                        <span class="n">Observation</span><span class="p">(</span>
+                                            <span class="n">obs_dtg</span><span class="p">,</span>
+                                            <span class="n">lon</span><span class="p">,</span>
+                                            <span class="n">lat</span><span class="p">,</span>
+                                            <span class="n">value</span><span class="p">,</span>
+                                            <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span>
+                                            <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span>
+                                            <span class="n">varname</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                                        <span class="p">)</span>
+                                    <span class="p">)</span>
                                     <span class="k">if</span> <span class="n">use_first</span><span class="p">:</span>
                                         <span class="n">registry</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
                                     <span class="n">nobs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="n">nobs</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">})</span>
@@ -362,37 +422,46 @@
                 <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
 
                 <span class="k">if</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">%</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
             <span class="c1"># delete handle</span>
             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">bufr</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Found &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cnt</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not decoded: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">not_decoded</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Found </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cnt</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not decoded: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">not_decoded</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Observations for var=&quot;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nobs</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Observations removed because of domain check: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ndomain</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Observations removed because of not being defined/found: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nundef</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Observations removed because of time window: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ntime</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Messages not containing information on all keys: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nerror</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Observations for var=</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nobs</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Observations removed because of domain check: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ndomain</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Observations removed because of not being defined/found: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">nundef</span><span class="p">[</span><span class="n">var</span><span class="p">]),</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Observations removed because of time window: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ntime</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Messages not containing information on all keys: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nerror</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="p">)</span>
         <span class="c1"># close the file</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-        <span class="n">surfex</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+        <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BufrObservationSet.td2rh"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.td2rh">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BufrObservationSet.td2rh"><a class="viewcode-back" href="../../index.html#surfex.bufr.BufrObservationSet.td2rh">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">kelvin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dew point to temperature.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            td (int): _description_</span>
-<span class="sd">            t (int): _description_</span>
-<span class="sd">            kelvin (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            t_d (float): Dew point temperature</span>
+<span class="sd">            temp (float): Temperature</span>
+<span class="sd">            kelvin (bool, optional): Kelvin. Defaults to True.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            Exception: _description_</span>
-<span class="sd">            Exception: _description_</span>
+<span class="sd">            RuntimeError: Dew point temperature is probably not Kelvin</span>
+<span class="sd">            RuntimeError: Temperature is probably not Kelvin</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: Relative humidity (percent)</span>
@@ -400,34 +469,44 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">kelvin</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">t_d</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Dew point temperature is probably not Kelvin&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Dew point temperature is probably not Kelvin&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Temperature is probably not Kelvin&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Temperature is probably not Kelvin&quot;</span><span class="p">)</span>
             <span class="n">t_d</span> <span class="o">=</span> <span class="n">t_d</span> <span class="o">-</span> <span class="mf">273.15</span>
             <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">-</span> <span class="mf">273.15</span>
 
-        <span class="n">r_h</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">exp</span><span class="p">((</span><span class="mf">17.625</span> <span class="o">*</span> <span class="n">t_d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">243.04</span> <span class="o">+</span> <span class="n">t_d</span><span class="p">))</span> <span class="o">/</span> <span class="n">exp</span><span class="p">((</span><span class="mf">17.625</span> <span class="o">*</span> <span class="n">temp</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">243.04</span> <span class="o">+</span> <span class="n">temp</span><span class="p">)))</span>
+        <span class="n">r_h</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">exp</span><span class="p">((</span><span class="mf">17.625</span> <span class="o">*</span> <span class="n">t_d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">243.04</span> <span class="o">+</span> <span class="n">t_d</span><span class="p">))</span> <span class="o">/</span> <span class="n">exp</span><span class="p">((</span><span class="mf">17.625</span> <span class="o">*</span> <span class="n">temp</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">243.04</span> <span class="o">+</span> <span class="n">temp</span><span class="p">))</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">r_h</span> <span class="o">&gt;</span> <span class="mi">110</span> <span class="ow">or</span> <span class="n">r_h</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Calculated rh to </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">. Set it to missing&quot;</span><span class="p">,</span>
-                            <span class="nb">str</span><span class="p">(</span><span class="n">r_h</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">t_d</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Calculated rh to </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">. Set it to missing&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">r_h</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">t_d</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">),</span>
+            <span class="p">)</span>
             <span class="n">r_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">elif</span> <span class="n">r_h</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Calculated rh to </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span>
-                            <span class="nb">str</span><span class="p">(</span><span class="n">r_h</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">t_d</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; Truncate to 100%&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Calculated rh to </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">r_h</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">t_d</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; Truncate to 100%&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">r_h</span> <span class="o">=</span> <span class="mi">100</span>
         <span class="k">return</span> <span class="n">r_h</span></div>
 
-<div class="viewcode-block" id="BufrObservationSet.inside_window"><a class="viewcode-back" href="../../index.html#surfex.BufrObservationSet.inside_window">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BufrObservationSet.inside_window"><a class="viewcode-back" href="../../index.html#surfex.bufr.BufrObservationSet.inside_window">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">inside_window</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if inside window.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            obs_dtg (_type_): _description_</span>
-<span class="sd">            valid_dtg (_type_): _description_</span>
-<span class="sd">            valid_range (_type_): _description_</span>
+<span class="sd">            obs_dtg (as_datetime): Observation datetime</span>
+<span class="sd">            valid_dtg (as_datetime): Valid datetime</span>
+<span class="sd">            valid_range (as_timedelta): Window</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            _type_: _description_</span>
+<span class="sd">            bool: True if inside window</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">valid_dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -472,7 +551,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>

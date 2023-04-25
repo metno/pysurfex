@@ -35,20 +35,19 @@
             
   <h1>Source code for surfex.run</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Run time methods.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">surfex</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">Popen</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">remove_existing_file</span>
 
 
-<div class="viewcode-block" id="BatchJob"><a class="viewcode-back" href="../../index.html#surfex.BatchJob">[docs]</a><span class="k">class</span> <span class="nc">BatchJob</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob"><a class="viewcode-back" href="../../index.html#surfex.run.BatchJob">[docs]</a><span class="k">class</span> <span class="nc">BatchJob</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch job.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BatchJob.__init__"><a class="viewcode-back" href="../../index.html#surfex.BatchJob.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.__init__"><a class="viewcode-back" href="../../index.html#surfex.run.BatchJob.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct batch job.</span>
 
 <span class="sd">        Args:</span>
@@ -60,41 +59,51 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span> <span class="o">=</span> <span class="n">wrapper</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed BatchJob&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BatchJob.run"><a class="viewcode-back" href="../../index.html#surfex.BatchJob.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.run"><a class="viewcode-back" href="../../index.html#surfex.run.BatchJob.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run command.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cmd (str): Command to run.</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            CalledProcessError: Command failed.</span>
+<span class="sd">            RuntimeError: No command provided!</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">cmd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No command provided!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No command provided!&quot;</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">cmd</span>
 
         <span class="k">if</span> <span class="s2">&quot;OMP_NUM_THREADS&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rte</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BATCH: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rte</span><span class="p">[</span><span class="s2">&quot;OMP_NUM_THREADS&quot;</span><span class="p">])</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Batch running </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rte</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
-                                   <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
-                                   <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span>  <span class="c1"># noqaS602</span>
+            <span class="n">cmd</span><span class="p">,</span>
+            <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># noqaS602</span>
+            <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rte</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">STDOUT</span><span class="p">,</span>
+            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="c1"># Poll process for new output until finished</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">nextline</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">nextline</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nextline</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">break</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nextline</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
         <span class="n">return_code</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">return_code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">(</span><span class="n">return_code</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="n">CalledProcessError</span><span class="p">(</span><span class="n">return_code</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SURFEXBinary"><a class="viewcode-back" href="../../index.html#surfex.SURFEXBinary">[docs]</a><span class="k">class</span> <span class="nc">SURFEXBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFEXBinary"><a class="viewcode-back" href="../../index.html#surfex.run.SURFEXBinary">[docs]</a><span class="k">class</span> <span class="nc">SURFEXBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SURFEX binary class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SURFEXBinary.__init__"><a class="viewcode-back" href="../../index.html#surfex.SURFEXBinary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFEXBinary.__init__"><a class="viewcode-back" href="../../index.html#surfex.run.SURFEXBinary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Surfex binary task.</span>
 
 <span class="sd">        Args:</span>
@@ -103,6 +112,11 @@
 <span class="sd">            iofile (surfex.SurfexIO): Input file to command.</span>
 <span class="sd">            settings (f90nml.Namelist): Fortran namelist namelist</span>
 <span class="sd">            input_data (surfex.InputDataToSurfexBinaries): Input to binary</span>
+<span class="sd">            kwargs (dict): Key word arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: Input file not found</span>
+<span class="sd">            RuntimeError: Execution failed</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">binary</span> <span class="o">=</span> <span class="n">binary</span>
@@ -123,10 +137,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_data</span> <span class="o">=</span> <span class="n">input_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;OPTIONS.nam&#39;</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;OPTIONS.nam&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;OPTIONS.nam&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;OPTIONS.nam&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;OPTIONS.nam&quot;</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;OPTIONS.nam&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;OPTIONS.nam&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;OPTIONS.nam&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_namelist</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
@@ -135,10 +149,10 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PGD is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
-                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> \
-                        <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
-                    <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span>
+                <span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+                    <span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PGD </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> not found!&quot;</span><span class="p">)</span>
@@ -147,11 +161,10 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PREP is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
-                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> \
-                            <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
-                        <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
-                                                         <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span>
+                    <span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+                        <span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
                         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PREP </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> not found!&quot;</span><span class="p">)</span>
@@ -165,8 +178,12 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">Exception</span>
 
-        <span class="n">listings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LISTING_PGD0.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;LISTING_PREP0.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;LISTING_OFFLINE0.txt&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;LISTING_SODA0.txt&quot;</span><span class="p">]</span>
+        <span class="n">listings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;LISTING_PGD0.txt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LISTING_PREP0.txt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LISTING_OFFLINE0.txt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LISTING_SODA0.txt&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
         <span class="k">for</span> <span class="n">listing</span> <span class="ow">in</span> <span class="n">listings</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">listing</span><span class="p">):</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">listing</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
@@ -182,11 +199,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">archive_data</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="PerturbedOffline"><a class="viewcode-back" href="../../index.html#surfex.PerturbedOffline">[docs]</a><span class="k">class</span> <span class="nc">PerturbedOffline</span><span class="p">(</span><span class="n">SURFEXBinary</span><span class="p">):</span>
+<div class="viewcode-block" id="PerturbedOffline"><a class="viewcode-back" href="../../index.html#surfex.run.PerturbedOffline">[docs]</a><span class="k">class</span> <span class="nc">PerturbedOffline</span><span class="p">(</span><span class="n">SURFEXBinary</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pertubed offline.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">pert_number</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">surfout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">archive_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">print_namelist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">negpert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">binary</span><span class="p">,</span>
+        <span class="n">batch</span><span class="p">,</span>
+        <span class="n">io</span><span class="p">,</span>
+        <span class="n">pert_number</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="p">,</span>
+        <span class="n">surfout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">archive_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">print_namelist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">negpert</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perturbed offline.</span>
 
 <span class="sd">        Args:</span>
@@ -204,16 +233,16 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pert_number</span> <span class="o">=</span> <span class="n">pert_number</span>
-        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_io_varassim&#39;</span><span class="p">][</span><span class="s1">&#39;LPRT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_var&#39;</span><span class="p">][</span><span class="s1">&#39;nivar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pert_number</span><span class="p">)</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_varassim&quot;</span><span class="p">][</span><span class="s2">&quot;LPRT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nivar&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pert_number</span><span class="p">)</span>
         <span class="c1"># Handle negative pertubations</span>
         <span class="k">if</span> <span class="n">negpert</span><span class="p">:</span>
-            <span class="n">nvar</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_var&#39;</span><span class="p">][</span><span class="s1">&#39;nvar&#39;</span><span class="p">])</span>
+            <span class="n">nvar</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nvar&quot;</span><span class="p">])</span>
             <span class="n">ipert</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">npert</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">for</span> <span class="n">nvi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nvar</span><span class="p">):</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;nncv(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nvi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_var&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;nncv(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nvi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
                 <span class="c1"># Check if active</span>
                 <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">npert</span> <span class="o">=</span> <span class="mi">1</span>
@@ -221,19 +250,38 @@
                     <span class="n">npert</span> <span class="o">=</span> <span class="n">npert</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">npert</span><span class="p">):</span>
                     <span class="n">ipert</span> <span class="o">=</span> <span class="n">ipert</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;xtprt_m(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ipert</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_var&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
-                    <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;nam_var&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
-        <span class="n">SURFEXBinary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">io</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">surfout</span><span class="o">=</span><span class="n">surfout</span><span class="p">,</span>
-                              <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span> <span class="n">pgdfile</span><span class="o">=</span><span class="n">pgdfile</span><span class="p">,</span>
-                              <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">)</span></div>
+                    <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;xtprt_m(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ipert</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
+        <span class="n">SURFEXBinary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">binary</span><span class="p">,</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">io</span><span class="p">,</span>
+            <span class="n">settings</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="p">,</span>
+            <span class="n">surfout</span><span class="o">=</span><span class="n">surfout</span><span class="p">,</span>
+            <span class="n">archive_data</span><span class="o">=</span><span class="n">archive_data</span><span class="p">,</span>
+            <span class="n">pgdfile</span><span class="o">=</span><span class="n">pgdfile</span><span class="p">,</span>
+            <span class="n">print_namelist</span><span class="o">=</span><span class="n">print_namelist</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Masterodb"><a class="viewcode-back" href="../../index.html#surfex.Masterodb">[docs]</a><span class="k">class</span> <span class="nc">Masterodb</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Masterodb"><a class="viewcode-back" href="../../index.html#surfex.run.Masterodb">[docs]</a><span class="k">class</span> <span class="nc">Masterodb</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Masterodb.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgdfile</span><span class="p">,</span> <span class="n">prepfile</span><span class="p">,</span> <span class="n">surffile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">archive_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">print_namelist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pgdfile</span><span class="p">,</span>
+        <span class="n">prepfile</span><span class="p">,</span>
+        <span class="n">surffile</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="p">,</span>
+        <span class="n">binary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">archive_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">print_namelist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">batch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Masterodb.</span>
 
 <span class="sd">        Args:</span>
@@ -266,20 +314,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">()</span>
 
         <span class="c1"># Prepare namelist</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;EXSEG1.nam&#39;</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;EXSEG1.nam&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;EXSEG1.nam&quot;</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;EXSEG1.nam&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;EXSEG1.nam&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;EXSEG1.nam&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;EXSEG1.nam&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;EXSEG1.nam&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_namelist</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PGD file for MASTERODB </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span>
+        <span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input PGD file is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
@@ -287,12 +336,12 @@
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PREP file for MASTERODB </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> \
-                <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span>
+        <span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
 
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input PREP file is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
-            <span class="n">surfex</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">remove_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepfile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
@@ -304,7 +353,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run binary with namelist EXSEG1.nam: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Masterodb.archive_output"><a class="viewcode-back" href="../../index.html#surfex.Masterodb.archive_output">[docs]</a>    <span class="k">def</span> <span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Masterodb.archive_output"><a class="viewcode-back" href="../../index.html#surfex.run.Masterodb.archive_output">[docs]</a>    <span class="k">def</span> <span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive output.&quot;&quot;&quot;</span>
         <span class="c1"># Archive output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span><span class="o">.</span><span class="n">archive_output_file</span><span class="p">()</span>
@@ -312,151 +361,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">archive</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="InputDataToSurfexBinaries"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">InputDataToSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract input data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="InputDataToSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.&quot;&quot;&quot;</span></div>
-
-<div class="viewcode-block" id="InputDataToSurfexBinaries.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.InputDataToSurfexBinaries.prepare_input">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare input.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
-
-
-<div class="viewcode-block" id="OutputDataFromSurfexBinaries"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">OutputDataFromSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract output data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="OutputDataFromSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.&quot;&quot;&quot;</span></div>
-
-<div class="viewcode-block" id="OutputDataFromSurfexBinaries.archive_files"><a class="viewcode-back" href="../../index.html#surfex.OutputDataFromSurfexBinaries.archive_files">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive files.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
-
-
-<div class="viewcode-block" id="JsonOutputData"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData">[docs]</a><span class="k">class</span> <span class="nc">JsonOutputData</span><span class="p">(</span><span class="n">OutputDataFromSurfexBinaries</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Output data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="JsonOutputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Output data from dict.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data (dict): Output data.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">OutputDataFromSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
-
-<div class="viewcode-block" id="JsonOutputData.archive_files"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputData.archive_files">[docs]</a>    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive files.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;mv&quot;</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">target</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                    <span class="n">command</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    <span class="n">target</span> <span class="o">=</span> <span class="n">key</span>
-
-            <span class="n">cmd</span> <span class="o">=</span> <span class="n">command</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">output_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">target</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-                <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot; failed&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">IOError</span></div></div>
-
-
-<div class="viewcode-block" id="JsonOutputDataFromFile"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile">[docs]</a><span class="k">class</span> <span class="nc">JsonOutputDataFromFile</span><span class="p">(</span><span class="n">JsonOutputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;JSON output data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="JsonOutputDataFromFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct from json file.&quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
-        <span class="n">JsonOutputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="JsonOutputDataFromFile.archive_files"><a class="viewcode-back" href="../../index.html#surfex.JsonOutputDataFromFile.archive_files">[docs]</a>    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive files.&quot;&quot;&quot;</span>
-        <span class="n">JsonOutputData</span><span class="o">.</span><span class="n">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="JsonInputData"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData">[docs]</a><span class="k">class</span> <span class="nc">JsonInputData</span><span class="p">(</span><span class="n">InputDataToSurfexBinaries</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;JSON input data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="JsonInputData.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data (dict): Input data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">InputDataToSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
-
-<div class="viewcode-block" id="JsonInputData.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.prepare_input">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare input.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">input_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">input_file</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">input_file</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">input_file</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                    <span class="n">command</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_file</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                    <span class="n">input_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                    <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@INPUT@&quot;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">)</span>
-                    <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@TARGET@&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Target and input file is the same file&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;ln -sf &quot;</span> <span class="o">+</span> <span class="n">input_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">target</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="n">command</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-                    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-                    <span class="k">raise</span><span class="p">(</span><span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot; failed&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">IOError</span></div>
-
-<div class="viewcode-block" id="JsonInputData.add_data"><a class="viewcode-back" href="../../index.html#surfex.JsonInputData.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data (_type_): _description_</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span></div></div>
-
-
-<div class="viewcode-block" id="JsonInputDataFromFile"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile">[docs]</a><span class="k">class</span> <span class="nc">JsonInputDataFromFile</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;JSON input data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="JsonInputDataFromFile.__init__"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct JSON input data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            file (_type_): _description_</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="JsonInputDataFromFile.prepare_input"><a class="viewcode-back" href="../../index.html#surfex.JsonInputDataFromFile.prepare_input">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare input.&quot;&quot;&quot;</span>
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
-
-
 <span class="c1"># TODO is it used?</span>
-<div class="viewcode-block" id="create_working_dir"><a class="viewcode-back" href="../../index.html#surfex.create_working_dir">[docs]</a><span class="k">def</span> <span class="nf">create_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">enter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="create_working_dir"><a class="viewcode-back" href="../../index.html#surfex.run.create_working_dir">[docs]</a><span class="k">def</span> <span class="nf">create_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">enter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create working dir.&quot;&quot;&quot;</span>
     <span class="c1"># Create work directory</span>
     <span class="k">if</span> <span class="n">workdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -468,7 +374,7 @@
 
 
 <span class="c1"># TODO is it used?</span>
-<div class="viewcode-block" id="clean_working_dir"><a class="viewcode-back" href="../../index.html#surfex.clean_working_dir">[docs]</a><span class="k">def</span> <span class="nf">clean_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">):</span>
+<div class="viewcode-block" id="clean_working_dir"><a class="viewcode-back" href="../../index.html#surfex.run.clean_working_dir">[docs]</a><span class="k">def</span> <span class="nf">clean_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean working dir.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">exit</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
@@ -509,7 +415,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>
