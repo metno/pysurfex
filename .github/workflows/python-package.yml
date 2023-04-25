@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev
+          apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev
 
       #----------------------------------------------
       #  --- configure poetry & install project  ----
