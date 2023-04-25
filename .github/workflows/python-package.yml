@@ -67,7 +67,7 @@ jobs:
       #----------------------------------------------
       - name: Run tests
         run: |
-          poetry run pytest -n auto
+          poetry run pytest
 
       - name: Coveralls
         if: ${{ matrix.python-version == 3.8 }}
