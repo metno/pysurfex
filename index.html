@@ -125,14 +125,16 @@ folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
 </pre></div>
 </div>
-</section>
-<section id="create-documentation">
-<h2>Create documentation<a class="headerlink" href="#create-documentation" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
-<span class="c1"># Create html documentation</span>
-make<span class="w"> </span>html
-</pre></div>
-</div>
+<p>This will install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> in a poetry environment and this environment can be activated interactively by:</p>
+<blockquote>
+<div><p>poetry shell</p>
+</div></blockquote>
+<p>or</p>
+<blockquote>
+<div><p>poetry run [command]
+# e.g.
+poetry run python # will run python inside the pysurfex poetry environment</p>
+</div></blockquote>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
@@ -6505,7 +6507,6 @@ Defaults to 5000.</p></li>
 <li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
 <li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies (from pypi)</a></li>
 <li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
-<li><a class="reference internal" href="#create-documentation">Create documentation</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
