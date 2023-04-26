@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Create auto documentation."""
+import logging
 import os
 import time
-import logging
 
 classes = []
 class_methods = []
