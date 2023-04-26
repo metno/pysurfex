@@ -48,7 +48,9 @@ for code_dir in code_dirs:
 with open("index.rst", mode="w", encoding="utf-8") as fh:
     fh.write(".. SURFEX Python API documentation master file, created by\n")
     fh.write("   auto_sphinx.py on " + time.ctime() + "\n")
-    fh.write("   You can adapt this file completely to your liking, but it should at least\n")
+    fh.write(
+        "   You can adapt this file completely to your liking, but it should at least\n"
+    )
     fh.write("   contain the root `toctree` directive.\n")
     fh.write("\n")
     fh.write("PYSURFEX documentation\n")
@@ -64,7 +66,7 @@ with open("index.rst", mode="w", encoding="utf-8") as fh:
     fh.write("Classes\n")
     fh.write("---------------------------------------------\n")
     for cl in classes:
-       fh.write(".. autoclass:: " + cl + "\n")
+        fh.write(".. autoclass:: " + cl + "\n")
 
     fh.write("\nClass methods\n")
     fh.write("---------------------------------------------\n")
