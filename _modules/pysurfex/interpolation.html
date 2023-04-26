@@ -1,0 +1,645 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.interpolation &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.interpolation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.interpolation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Interpolation. All interfaces to gridpp.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gridpp</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">gridpp</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="k">class</span> <span class="nc">Grid</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A gridpp Grid wrapper.</span>
+
+<span class="sd">    Gridpp expects lat, lon, but pysurfex uses lon, lat.</span>
+<span class="sd">    This class handles the conversion for the grid</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">elevs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a gridpp Grid wrapper.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            grid_lons (np.ndarray): grid longitudes</span>
+<span class="sd">            grid_lats (np.ndarray): grid latitudes</span>
+<span class="sd">            elevs (np.ndarray, optional): elevations</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: You need gridpp for interpolation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">gridpp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need gridpp for interpolation&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;gridpp.__file__ = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lons_shape in 0 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lats_shape in 0 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">)</span>
+        <span class="n">grid_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">grid_lats</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lons_shape in 1 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lats_shape in 1 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">elevs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">grid_lats</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">elevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">elevs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">grid_lats</span><span class="p">,</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">elevs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Points</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A gridpp Points wrapper.</span>
+
+<span class="sd">    Gridpp expects lat, lon, but pysurfex uses lon, lat.</span>
+<span class="sd">    This class handles the conversion for the grid</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">,</span> <span class="n">p_elevs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a gridpp Points wrapper.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p_lons(np.array): Point longitudes</span>
+<span class="sd">            p_lats(np.array): Point latitudes</span>
+<span class="sd">            p_elevs(np.array, optional): Point elevations. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: You need gridpp for interpolation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">gridpp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need gridpp for interpolation&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p_lons</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">p_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p_lons</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p_lats</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">p_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p_lats</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;p_lons_shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">p_lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;p_lats_shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">p_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">p_lons</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">p_lats</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevs</span> <span class="o">=</span> <span class="n">p_elevs</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;self.lons_shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;self.lats_shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p_elevs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p_elevs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">p_elevs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">p_elevs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inside_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">2500.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if inside grid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            grid(Grid): Grid object</span>
+<span class="sd">            distance(float, optional): Max distance from grid. Defaults to 2500.0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            inside_grid(list): Logical mask if inside grid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inside_grid</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Check if they are in grid</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">neighbours</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_num_neighbours</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">neighbours</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">inside_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inside_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inside_grid</span>
+
+
+<div class="viewcode-block" id="Interpolation"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation">[docs]</a><span class="k">class</span> <span class="nc">Interpolation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolation.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Interpolation.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo_out</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an intrpolation object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            operator (str): Operator</span>
+<span class="sd">            geo_in (surfex.geo.Geo): Input geometry</span>
+<span class="sd">            geo_out (surfex.geo.Geo): Output geometry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: You can not interpolate without specifying an output geometry</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span> <span class="o">=</span> <span class="n">geo_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span> <span class="o">=</span> <span class="n">geo_out</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;You can not interpolate without specifying an output geometry&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Input</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lons.shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_lats.shape in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lons</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span> <span class="o">=</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">lats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identical</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identical</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">lonlist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">latlist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">npoints</span></div>
+
+<div class="viewcode-block" id="Interpolation.interpolate"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field2d</span><span class="p">,</span> <span class="n">undefined</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do interpolation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field2d (np.ndarray): Two dimensional field to interpolate</span>
+<span class="sd">            undefined (float, optional): Undefined value if field2d is None. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Input domain and ouput domain differ.</span>
+<span class="sd">            RuntimeError: You try to interpolate a missing field!</span>
+<span class="sd">            NotImplementedError: Interpolation method not implemented</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: interpolated_field</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">field2d</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">undefined</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">nlons</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">nlats</span><span class="p">),</span> <span class="n">undefined</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field2d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You try to interpolate a missing field!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;field2d.shape </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">field2d</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identical</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">identical</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="s2">&quot;Input domain and ouput domain differ. &quot;</span>
+                            <span class="s2">&quot;You must interpolate!&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No interpolation chosen&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Input and output domain are identical. &quot;</span>
+                        <span class="s2">&quot;No interpolation is needed&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">field2d</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sub_lons</span><span class="p">,</span> <span class="n">sub_lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_out</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo_in</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_lons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_lats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Doing &#39;</span><span class="si">%s</span><span class="s2">&#39; interpolation for </span><span class="si">%s</span><span class="s2"> points&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">:</span>
+                        <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span><span class="p">)</span>
+                        <span class="n">points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+                        <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">grid2points</span><span class="p">(</span>
+                            <span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">field2d</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">operator</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+                        <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">field2d</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Output domain is a subset of input domain&quot;</span><span class="p">)</span>
+                    <span class="n">new_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_lats</span><span class="p">)])</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub_lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sub_lons</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">sub_lat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sub_lats</span><span class="p">):</span>
+                            <span class="n">new_field</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">field2d</span><span class="p">[</span><span class="n">sub_lon</span><span class="p">,</span> <span class="n">sub_lat</span><span class="p">]</span>
+                    <span class="n">interpolated_field</span> <span class="o">=</span> <span class="n">new_field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">interpolated_field</span></div>
+
+<div class="viewcode-block" id="Interpolation.rotate_wind_to_geographic"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation.rotate_wind_to_geographic">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_wind_to_geographic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not implemented.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Interpolation.distance"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation.distance">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute distance.</span>
+
+<span class="sd">        Computes the great circle distance between two points using the</span>
+<span class="sd">        haversine formula. Values can be vectors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lon1(float): lon1</span>
+<span class="sd">            lat1(float): lat1</span>
+<span class="sd">            lon2(float): lon2</span>
+<span class="sd">            lat2(float): lat2</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            cval(float): Circle distance</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert from degrees to radians</span>
+        <span class="n">pi_constant</span> <span class="o">=</span> <span class="mf">3.14159265</span>
+        <span class="n">lon1</span> <span class="o">=</span> <span class="n">lon1</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi_constant</span> <span class="o">/</span> <span class="mf">360.0</span>
+        <span class="n">lat1</span> <span class="o">=</span> <span class="n">lat1</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi_constant</span> <span class="o">/</span> <span class="mf">360.0</span>
+        <span class="n">lon2</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi_constant</span> <span class="o">/</span> <span class="mf">360.0</span>
+        <span class="n">lat2</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi_constant</span> <span class="o">/</span> <span class="mf">360.0</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span>
+        <span class="n">dlat</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">-</span> <span class="n">lat1</span>
+        <span class="n">aval</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlat</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlon</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">cval</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">aval</span><span class="p">))</span> <span class="o">*</span> <span class="mf">6.367e6</span>
+        <span class="k">return</span> <span class="n">cval</span></div>
+
+<div class="viewcode-block" id="Interpolation.alpha_grid_rot"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.Interpolation.alpha_grid_rot">[docs]</a>    <span class="k">def</span> <span class="nf">alpha_grid_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate alpha.&quot;&quot;&quot;</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_lons</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_lats</span>
+        <span class="n">n_x</span> <span class="o">=</span> <span class="n">lat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">lat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">dlat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">lat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">i_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">dlon</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">lon</span><span class="p">[</span><span class="n">i_1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">lon</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lon</span><span class="p">[</span><span class="n">i_1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="n">dlat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">i_1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">lat</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lon</span><span class="p">[</span><span class="n">i_1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="n">i_1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+
+        <span class="n">dlon</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="n">dlat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lon</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">lat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">dlon</span><span class="p">,</span> <span class="n">dlat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">alpha</span></div></div>
+
+
+<div class="viewcode-block" id="fill_field"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.fill_field">[docs]</a><span class="k">def</span> <span class="nf">fill_field</span><span class="p">(</span><span class="n">field_tmp</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fill field.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        field_tmp (np.ndarray): Field</span>
+<span class="sd">        geo (surfex.geo.Geo): Geometry</span>
+<span class="sd">        radius (int, optional): Radius. Defaults to 1.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: field, nans</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: You need gridpp for fill_field</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">gridpp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need gridpp for fill_field&quot;</span><span class="p">)</span>
+    <span class="n">ovalues</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">(</span><span class="n">field_tmp</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Mean</span><span class="p">)</span>
+    <span class="n">nans</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">field_tmp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]):</span>
+                <span class="n">nans</span> <span class="o">=</span> <span class="n">nans</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">field_tmp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalues</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">field_tmp</span><span class="p">,</span> <span class="n">nans</span></div>
+
+
+<span class="k">def</span> <span class="nf">gridpos2points</span><span class="p">(</span>
+    <span class="n">grid_lons</span><span class="p">,</span>
+    <span class="n">grid_lats</span><span class="p">,</span>
+    <span class="n">p_lons</span><span class="p">,</span>
+    <span class="n">p_lats</span><span class="p">,</span>
+    <span class="n">grid_values</span><span class="p">,</span>
+    <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+    <span class="n">elev_gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert grid positions to points.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grid_lons (np.ndarray): Grid longitudes</span>
+<span class="sd">        grid_lats (np.ndarray): Grid latitudes</span>
+<span class="sd">        p_lons (np.ndaray): Point longitudes</span>
+<span class="sd">        p_lats (np.ndarray): Point latitudes</span>
+<span class="sd">        grid_values (np.ndarray): Grid values</span>
+<span class="sd">        operator (str, optional): Interpolation operator. Defaults to &quot;bilinear&quot;.</span>
+<span class="sd">        elev_gradient (float, optional): Elevation gradient for downscaler</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Interpolated values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grid2points</span><span class="p">(</span>
+        <span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="n">elev_gradient</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="grid2points"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.grid2points">[docs]</a><span class="k">def</span> <span class="nf">grid2points</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a grid to points.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grid (Grid): Grid object</span>
+<span class="sd">        points (Points): Points object</span>
+<span class="sd">        grid_values (np.ndarray): Grid values</span>
+<span class="sd">        operator (str, optional): Interpolation operator. Defaults to &quot;bilinear&quot;.</span>
+<span class="sd">        elev_gradient (float, optional): Elevation gradient for downscaler</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: Operator not implemented</span>
+<span class="sd">        RuntimeError: You need gridpp for interpolation</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Interpolated values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">gridpp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need gridpp for interpolation&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_values.shape 0: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">grid_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">grid_values</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_values.shape 1: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">elev_gradient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">bilinear</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">simple_gradient</span><span class="p">(</span>
+                <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Bilinear</span>
+            <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">elev_gradient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">simple_gradient</span><span class="p">(</span>
+                <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Nearest</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operator </span><span class="si">{</span><span class="n">operator</span><span class="si">}</span><span class="s2"> not implemented!&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span></div>
+
+
+<div class="viewcode-block" id="inside_grid"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.inside_grid">[docs]</a><span class="k">def</span> <span class="nf">inside_grid</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">2500.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get number of neighbours.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grid_lons (np.ndarray): Grid longitudes</span>
+<span class="sd">        grid_lats (np.ndarray): Grid latitudes</span>
+<span class="sd">        p_lons (np.array): Point longitudes</span>
+<span class="sd">        p_lats (np.array): Point latitudes</span>
+<span class="sd">        distance (float, optional): Max distance from points. Defaults to 2500.0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        inside_grid(list): Boolean mask</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">points</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObsOperator"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.ObsOperator">[docs]</a><span class="k">class</span> <span class="nc">ObsOperator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obs operator. Class to convert a field to an observation point.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ObsOperator.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.ObsOperator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the observation operator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            operator (str): Interpolation operator.</span>
+<span class="sd">            geo (surfex.Geo): Surfex geometry.</span>
+<span class="sd">            dataset (QCDataSet): QC data set.</span>
+<span class="sd">            grid_values (np.darray): Values in the grid.</span>
+<span class="sd">            max_distance (int, optional): Max allowed deviation in meters from grid borders.</span>
+<span class="sd">                                          Defaults to 5000.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lats</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s1">&#39;Setting up &quot;</span><span class="si">%s</span><span class="s1">&quot; observation operator for </span><span class="si">%s</span><span class="s1"> points&#39;</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">obs_values</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
+            <span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">operator</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span> <span class="o">=</span> <span class="n">inside_grid</span><span class="p">(</span>
+            <span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">max_distance</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">obs_values</span></div>
+
+<div class="viewcode-block" id="ObsOperator.get_obs_value"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.ObsOperator.get_obs_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_obs_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the observed value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pos (int, optional): Position. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Specific position not implemented yet!</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Observation value for index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Specific position not implemented yet!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ObsOperator.is_in_grid"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.ObsOperator.is_in_grid">[docs]</a>    <span class="k">def</span> <span class="nf">is_in_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if index is in grid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): Index to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if inside</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">horizontal_oi</span><span class="p">(</span>
+    <span class="n">geo</span><span class="p">,</span>
+    <span class="n">background</span><span class="p">,</span>
+    <span class="n">observations</span><span class="p">,</span>
+    <span class="n">gelevs</span><span class="p">,</span>
+    <span class="n">hlength</span><span class="o">=</span><span class="mf">10000.0</span><span class="p">,</span>
+    <span class="n">vlength</span><span class="o">=</span><span class="mf">10000.0</span><span class="p">,</span>
+    <span class="n">wlength</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">elev_gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">structure_function</span><span class="o">=</span><span class="s2">&quot;Barnes&quot;</span><span class="p">,</span>
+    <span class="n">max_locations</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">minvalue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">maxvalue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">interpol</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+    <span class="n">only_diff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Do horizontal OI.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        geo (_type_): _description_</span>
+<span class="sd">        background (_type_): _description_</span>
+<span class="sd">        observations (_type_): _description_</span>
+<span class="sd">        gelevs (_type_): _description_</span>
+<span class="sd">        hlength (_type_, optional): _description_. Defaults to 10000..</span>
+<span class="sd">        vlength (_type_, optional): _description_. Defaults to 10000..</span>
+<span class="sd">        wlength (float, optional): _description_. Defaults to 0.5.</span>
+<span class="sd">        elev_gradient (int, optional): _description_. Defaults to 0.</span>
+<span class="sd">        structure_function (str, optional): _description_. Defaults to &quot;Barnes&quot;.</span>
+<span class="sd">        max_locations (int, optional): _description_. Defaults to 50.</span>
+<span class="sd">        epsilon (float, optional): _description_. Defaults to 0.5.</span>
+<span class="sd">        minvalue (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">        maxvalue (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">        interpol (str, optional): _description_. Defaults to &quot;bilinear&quot;.</span>
+<span class="sd">        only_diff (bool, optional): _description_. Defaults to False.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: Structure function not implemented</span>
+<span class="sd">        RuntimeError: You need gridpp to perform OI</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">gridpp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need gridpp to perform OI&quot;</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">gridpp</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">gridpp</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="n">glats</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">lats</span>
+    <span class="n">glons</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">lons</span>
+
+    <span class="k">def</span> <span class="nf">obs2vectors</span><span class="p">(</span><span class="n">my_obs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">stids</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">elevs</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">cis</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">lafs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">obs2vectors</span><span class="p">)</span>
+    <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">(</span><span class="n">observations</span><span class="p">)</span>
+
+    <span class="n">bgrid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">glons</span><span class="p">,</span> <span class="n">glats</span><span class="p">,</span> <span class="n">gelevs</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">elevs</span><span class="p">)</span>
+    <span class="n">pbackground</span> <span class="o">=</span> <span class="n">grid2points</span><span class="p">(</span>
+        <span class="n">bgrid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">interpol</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="n">elev_gradient</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Remove undefined backgrounds</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pbackground</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found undefined backgrounds. Remove them&quot;</span><span class="p">)</span>
+        <span class="n">lons2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lats2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">elevs2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">values2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pbackground</span><span class="p">[</span><span class="n">point</span><span class="p">]):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Undefined background in lon=</span><span class="si">%s</span><span class="s2"> lat=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">lons</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
+                    <span class="n">lats</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lons2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lons</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
+                <span class="n">lats2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lats</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
+                <span class="n">elevs2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elevs</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
+                <span class="n">values2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">values2</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="n">lons2</span><span class="p">,</span> <span class="n">lats2</span><span class="p">,</span> <span class="n">elevs2</span><span class="p">)</span>
+        <span class="n">pbackground</span> <span class="o">=</span> <span class="n">grid2points</span><span class="p">(</span>
+            <span class="n">bgrid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="n">interpol</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="n">elev_gradient</span>
+        <span class="p">)</span>
+
+    <span class="n">variance_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">epsilon</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">structure_function</span> <span class="o">==</span> <span class="s2">&quot;Barnes&quot;</span><span class="p">:</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">BarnesStructure</span><span class="p">(</span><span class="n">hlength</span><span class="p">,</span> <span class="n">vlength</span><span class="p">,</span> <span class="n">wlength</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+    <span class="n">field</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">optimal_interpolation</span><span class="p">(</span>
+        <span class="n">bgrid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
+        <span class="n">background</span><span class="p">,</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">,</span>
+        <span class="n">variance_ratios</span><span class="p">,</span>
+        <span class="n">pbackground</span><span class="p">,</span>
+        <span class="n">structure</span><span class="p">,</span>
+        <span class="n">max_locations</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">minvalue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="n">minvalue</span><span class="p">]</span> <span class="o">=</span> <span class="n">minvalue</span>
+    <span class="k">if</span> <span class="n">maxvalue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="n">maxvalue</span><span class="p">]</span> <span class="o">=</span> <span class="n">maxvalue</span>
+    <span class="k">if</span> <span class="n">only_diff</span><span class="p">:</span>
+        <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">==</span> <span class="n">background</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.interpolation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>

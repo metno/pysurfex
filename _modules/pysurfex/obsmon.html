@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.obsmon &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.obsmon</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.obsmon</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Obsmon.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="k">except</span> <span class="ne">ImportWarning</span><span class="p">:</span>
+    <span class="n">sqlite3</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not import sqlite3 modules&quot;</span><span class="p">)</span>
+
+
+<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span>
+<span class="kn">from</span> <span class="nn">.netcdf</span> <span class="kn">import</span> <span class="n">read_first_guess_netcdf_file</span>
+<span class="kn">from</span> <span class="nn">.obs</span> <span class="kn">import</span> <span class="n">Observation</span>
+<span class="kn">from</span> <span class="nn">.titan</span> <span class="kn">import</span> <span class="n">Departure</span><span class="p">,</span> <span class="n">dataset_from_file</span>
+
+
+<div class="viewcode-block" id="open_db"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.open_db">[docs]</a><span class="k">def</span> <span class="nf">open_db</span><span class="p">(</span><span class="n">dbname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Open database.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dbname (str): File name.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: Need SQLite</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sqlite3.connect: A connection</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sqlite3</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You need SQLITE for obsmon&quot;</span><span class="p">)</span>
+
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dbname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span></div>
+
+
+<div class="viewcode-block" id="close_db"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.close_db">[docs]</a><span class="k">def</span> <span class="nf">close_db</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Close data base connection.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn (sqlite3.connect): Data base connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="create_db"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.create_db">[docs]</a><span class="k">def</span> <span class="nf">create_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create data base.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn (sqlite3.connect): Data base connection.</span>
+<span class="sd">        modes (_type_): _description_</span>
+<span class="sd">        stat_cols (_type_): _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="c1"># Create usage table</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;CREATE TABLE IF NOT EXISTS usage (DTG INT, obnumber INT, obname CHAR(20), &quot;</span>
+        <span class="s2">&quot;satname CHAR(20), varname CHAR(20), level INT, latitude FLOAT, longitude FLOAT, &quot;</span>
+        <span class="s2">&quot;statid CHAR(20), obsvalue FLOAT, fg_dep FLOAT, an_dep FLOAT, biascrl FLOAT, &quot;</span>
+        <span class="s2">&quot;active INT, rejected INT, passive INT, blacklisted INT, anflag INT)&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+    <span class="c1"># Create obsmon table</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;CREATE TABLE IF NOT EXISTS obsmon (DTG INT, obnumber INT, obname CHAR(20), &quot;</span>
+        <span class="s2">&quot;satname CHAR(20), varname CHAR(20), level INT, passive INT&quot;</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">stat_cols</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">col</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s2">&quot; FLOAT&quot;</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;CREATE INDEX IF NOT EXISTS obsmon_index on usage(DTG,obnumber,obname)&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Save (commit) the changes</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="populate_usage_db"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.populate_usage_db">[docs]</a><span class="k">def</span> <span class="nf">populate_usage_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">observations</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Populate usage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn (_type_): _description_</span>
+<span class="sd">        dtg (_type_): _description_</span>
+<span class="sd">        varname (_type_): _description_</span>
+<span class="sd">        observations (_type_): _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Update usage&quot;</span><span class="p">)</span>
+    <span class="n">obnumber</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">obname</span> <span class="o">=</span> <span class="s2">&quot;synop&quot;</span>
+    <span class="n">satname</span> <span class="o">=</span> <span class="s2">&quot;undef&quot;</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="c1"># Insert a row of data</span>
+
+    <span class="k">def</span> <span class="nf">obs2vectors</span><span class="p">(</span><span class="n">my_obs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">stids</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">elevs</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">fg_dep</span><span class="p">,</span>
+            <span class="n">my_obs</span><span class="o">.</span><span class="n">an_dep</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">obs2vectors</span><span class="p">)</span>
+    <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">fg_deps</span><span class="p">,</span> <span class="n">an_deps</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">(</span><span class="n">observations</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lon_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lons</span><span class="p">):</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="n">lon_val</span><span class="p">)</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">stid</span> <span class="o">==</span> <span class="s2">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">stid</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;nan&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;NULL&quot;</span><span class="p">:</span>
+            <span class="n">fg_dep</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+            <span class="n">an_dep</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">fg_deps</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">fg_dep</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fg_dep</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fg_deps</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">an_deps</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">an_dep</span> <span class="o">=</span> <span class="s2">&quot;NULL&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">an_dep</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">an_deps</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO usage VALUES(&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">obnumber</span>
+            <span class="o">+</span> <span class="s1">&#39;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">obname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">satname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">varname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&#39;</span>
+            <span class="o">+</span> <span class="n">level</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">lat</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">lon</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">stid</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">value</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">fg_dep</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">an_dep</span>
+            <span class="o">+</span> <span class="s2">&quot;,0,0,0,0,0,&quot;</span>
+            <span class="o">+</span> <span class="n">status</span>
+            <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+        <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+    <span class="c1"># Save (commit) the changes</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updated usage&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rmse"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.rmse">[docs]</a><span class="k">def</span> <span class="nf">rmse</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Root mean square error.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        predictions (_type_): _description_</span>
+<span class="sd">        targets (_type_): _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(((</span><span class="n">predictions</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
+
+
+<div class="viewcode-block" id="bias"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.bias">[docs]</a><span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bias.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        predictions (_type_): _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
+
+
+<div class="viewcode-block" id="absbias"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.absbias">[docs]</a><span class="k">def</span> <span class="nf">absbias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute bias.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        predictions (_type_): _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
+
+
+<div class="viewcode-block" id="mean"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.mean">[docs]</a><span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mean.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        predictions (_type_): _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
+
+
+<div class="viewcode-block" id="calculate_statistics"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.calculate_statistics">[docs]</a><span class="k">def</span> <span class="nf">calculate_statistics</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistics.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        observations (_type_): _description_</span>
+<span class="sd">        modes (_type_): _description_</span>
+<span class="sd">        stat_cols (_type_): _description_</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">flags</span><span class="p">)):</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="n">statistics</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
+        <span class="n">fg_dep</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">an_dep</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+            <span class="n">land</span> <span class="o">=</span> <span class="n">observations</span><span class="o">.</span><span class="n">lafs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">use</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">observations</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">use</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;total&quot;</span><span class="p">:</span>
+                <span class="n">use</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;land&quot;</span> <span class="ow">and</span> <span class="n">land</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">use</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;sea&quot;</span> <span class="ow">and</span> <span class="n">land</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">use</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">use</span><span class="p">:</span>
+                <span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">fg_dep</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">fg_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">fg_dep</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fg_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">an_dep</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">an_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observations</span><span class="o">.</span><span class="n">an_dep</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">an_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+        <span class="n">fg_dep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)</span>
+        <span class="n">an_dep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">stat_cols</span><span class="p">:</span>
+            <span class="n">tab</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">mode</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;nobs&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_bias&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">bias</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_abs_bias&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">absbias</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_rms&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">rmse</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">,</span> <span class="n">obs</span><span class="p">),</span> <span class="n">obs</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_dep&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">mean</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_uncorr&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">mean</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;bc&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_bias&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">bias</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_abs_bias&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">absbias</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_rms&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">rmse</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">an_dep</span><span class="p">,</span> <span class="n">obs</span><span class="p">),</span> <span class="n">obs</span><span class="p">)})</span>
+            <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_dep&quot;</span><span class="p">:</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">mean</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not defined &quot;</span> <span class="o">+</span> <span class="n">col</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">statistics</span></div>
+
+
+<div class="viewcode-block" id="populate_obsmon_db"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.populate_obsmon_db">[docs]</a><span class="k">def</span> <span class="nf">populate_obsmon_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">statistics</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Populate obsmon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn (_type_): _description_</span>
+<span class="sd">        dtg (_type_): _description_</span>
+<span class="sd">        statistics (_type_): _description_</span>
+<span class="sd">        modes (_type_): _description_</span>
+<span class="sd">        stat_cols (_type_): _description_</span>
+<span class="sd">        varname (_type_): _description_</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: _description_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Update obsmon table&quot;</span><span class="p">)</span>
+    <span class="n">obnumber</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">obname</span> <span class="o">=</span> <span class="s2">&quot;synop&quot;</span>
+    <span class="n">satname</span> <span class="o">=</span> <span class="s2">&quot;undef&quot;</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;SELECT * FROM obsmon WHERE DTG==&quot;</span>  <span class="c1"># noqa</span>
+        <span class="o">+</span> <span class="n">dtg</span>
+        <span class="o">+</span> <span class="s2">&quot; AND obnumber==&quot;</span>
+        <span class="o">+</span> <span class="n">obnumber</span>
+        <span class="o">+</span> <span class="s1">&#39; AND obname ==&quot;&#39;</span>
+        <span class="o">+</span> <span class="n">obname</span>
+        <span class="o">+</span> <span class="s1">&#39;&quot; AND varname==&quot;&#39;</span>
+        <span class="o">+</span> <span class="n">varname</span>
+        <span class="o">+</span> <span class="s1">&#39;&quot; AND LEVEL == &#39;</span>
+        <span class="o">+</span> <span class="n">level</span>
+    <span class="p">)</span>  <span class="c1"># noqa</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">records</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;You should not have &quot;</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="s2">&quot; in your database&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">records</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO obsmon VALUES(&quot;</span>
+            <span class="o">+</span> <span class="n">dtg</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="n">obnumber</span>
+            <span class="o">+</span> <span class="s1">&#39;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">obname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">satname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">varname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot;,&#39;</span>
+            <span class="o">+</span> <span class="n">level</span>
+            <span class="o">+</span> <span class="s2">&quot;,0&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;UPDATE obsmon SET &quot;</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">stat_cols</span><span class="p">:</span>
+            <span class="n">tab</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">mode</span>
+            <span class="k">if</span> <span class="n">records</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">statistics</span><span class="p">[</span><span class="n">tab</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span> <span class="o">+</span> <span class="n">tab</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">statistics</span><span class="p">[</span><span class="n">tab</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">tab</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">statistics</span><span class="p">[</span><span class="n">tab</span><span class="p">])</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">records</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cmd</span>
+            <span class="o">+</span> <span class="s2">&quot; WHERE DTG==&quot;</span>
+            <span class="o">+</span> <span class="n">dtg</span>
+            <span class="o">+</span> <span class="s2">&quot; AND obnumber==&quot;</span>
+            <span class="o">+</span> <span class="n">obnumber</span>
+            <span class="o">+</span> <span class="s1">&#39; AND obname==&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">obname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot; AND varname==&quot;&#39;</span>
+            <span class="o">+</span> <span class="n">varname</span>
+            <span class="o">+</span> <span class="s1">&#39;&quot; AND LEVEL == &#39;</span>
+            <span class="o">+</span> <span class="n">level</span>
+        <span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="c1"># Save (commit) the changes</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="write_obsmon_sqlite_file"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.write_obsmon_sqlite_file">[docs]</a><span class="k">def</span> <span class="nf">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write obsmon sqlite file.&quot;&quot;&quot;</span>
+    <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;sea&quot;</span><span class="p">]</span>
+    <span class="n">stat_cols</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;nobs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fg_bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fg_abs_bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fg_rms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fg_dep&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fg_uncorr&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;an_bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;an_abs_bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;an_rms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;an_dep&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">an_time</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dtg&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">an_time</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">an_time</span><span class="p">)</span>
+    <span class="n">dtg</span> <span class="o">=</span> <span class="n">an_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+    <span class="n">varname</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
+    <span class="n">dbname</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span>
+
+    <span class="n">operator</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;operator&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">operator</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;operator&quot;</span><span class="p">]</span>
+
+    <span class="n">q_c</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;qc&quot;</span><span class="p">]</span>
+    <span class="n">obs_titan</span> <span class="o">=</span> <span class="n">dataset_from_file</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">q_c</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="p">[</span><span class="mi">150</span><span class="p">])</span>
+
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">open_db</span><span class="p">(</span><span class="n">dbname</span><span class="p">)</span>
+    <span class="n">create_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">)</span>
+    <span class="n">fg_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;fg_file&quot;</span><span class="p">]</span>
+    <span class="n">fg_var</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;file_var&quot;</span><span class="p">]</span>
+    <span class="n">an_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;an_file&quot;</span><span class="p">]</span>
+    <span class="n">an_var</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;file_var&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Only first guess file implemented at the moment</span>
+    <span class="n">geo_in</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">an_field</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">an_file</span><span class="p">,</span> <span class="n">an_var</span><span class="p">)</span>
+    <span class="n">geo_in</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">fg_file</span><span class="p">,</span> <span class="n">fg_var</span><span class="p">)</span>
+
+    <span class="n">fg_dep</span> <span class="o">=</span> <span class="n">Departure</span><span class="p">(</span>
+        <span class="n">operator</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">obs_titan</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="s2">&quot;first_guess&quot;</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_departure</span><span class="p">()</span>
+    <span class="n">an_dep</span> <span class="o">=</span> <span class="n">Departure</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">obs_titan</span><span class="p">,</span> <span class="n">an_field</span><span class="p">,</span> <span class="s2">&quot;analysis&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_departure</span><span class="p">()</span>
+
+    <span class="n">obs_titan</span> <span class="o">=</span> <span class="n">dataset_from_file</span><span class="p">(</span>
+        <span class="n">an_time</span><span class="p">,</span> <span class="n">q_c</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="p">[</span><span class="mi">150</span><span class="p">,</span> <span class="mi">199</span><span class="p">],</span> <span class="n">fg_dep</span><span class="o">=</span><span class="n">fg_dep</span><span class="p">,</span> <span class="n">an_dep</span><span class="o">=</span><span class="n">an_dep</span>
+    <span class="p">)</span>
+
+    <span class="n">populate_usage_db</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">dtg</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">obs_titan</span><span class="p">)</span>
+    <span class="n">populate_obsmon_db</span><span class="p">(</span>
+        <span class="n">conn</span><span class="p">,</span>
+        <span class="n">dtg</span><span class="p">,</span>
+        <span class="n">calculate_statistics</span><span class="p">(</span><span class="n">obs_titan</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">stat_cols</span><span class="p">),</span>
+        <span class="n">modes</span><span class="p">,</span>
+        <span class="n">stat_cols</span><span class="p">,</span>
+        <span class="n">varname</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">close_db</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.obsmon</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>

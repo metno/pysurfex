@@ -1,0 +1,612 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.variable &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.variable</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.variable</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Variable.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span> <span class="nn">.fa</span> <span class="kn">import</span> <span class="n">Fa</span>
+<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">SurfexFileVariable</span><span class="p">,</span> <span class="n">get_surfex_io_object</span>
+<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">get_geo_object</span>
+<span class="kn">from</span> <span class="nn">.grib</span> <span class="kn">import</span> <span class="n">Grib</span><span class="p">,</span> <span class="n">Grib1Variable</span><span class="p">,</span> <span class="n">Grib2Variable</span>
+<span class="kn">from</span> <span class="nn">.input_methods</span> <span class="kn">import</span> <span class="n">get_datasources</span>
+<span class="kn">from</span> <span class="nn">.netcdf</span> <span class="kn">import</span> <span class="n">Netcdf</span><span class="p">,</span> <span class="n">NetCDFReadVariable</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">parse_filepattern</span>
+
+
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;New combined variable.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">initial_basetime</span><span class="p">,</span> <span class="n">prefer_forecast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            var_type (str): Variable type.</span>
+<span class="sd">            var_dict (dict): Variable definitions</span>
+<span class="sd">            initial_basetime (datetime): Initial basetime</span>
+<span class="sd">            prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Variable not implemented</span>
+<span class="sd">            RuntimeError: No filepattern provided</span>
+<span class="sd">            RuntimeError: variable must have attribute</span>
+<span class="sd">            RuntimeError: You can not have larger offset than the frequency of forecasts</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">=</span> <span class="n">var_type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;parameter&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tri&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;discipline&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;parameterCategory&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;parameterNumber&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;levelType&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+            <span class="n">mandatory</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;filetype&quot;</span><span class="p">,</span> <span class="s2">&quot;fcint&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">for</span> <span class="n">mand_val</span> <span class="ow">in</span> <span class="n">mandatory</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mand_val</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_dict</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="n">var_type</span>
+                    <span class="o">+</span> <span class="s2">&quot; variable must have attribute &quot;</span>
+                    <span class="o">+</span> <span class="n">mand_val</span>
+                    <span class="o">+</span> <span class="s2">&quot; var_dict:&quot;</span>
+                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var_dict</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">var_dict</span><span class="p">)</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="mi">3600</span>
+        <span class="k">if</span> <span class="s2">&quot;timestep&quot;</span> <span class="ow">in</span> <span class="n">var_dict</span><span class="p">:</span>
+            <span class="n">interval</span> <span class="o">=</span> <span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+        <span class="k">if</span> <span class="s2">&quot;filepattern&quot;</span> <span class="ow">in</span> <span class="n">var_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span> <span class="o">=</span> <span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No filepattern provided&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span> <span class="o">=</span> <span class="n">initial_basetime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefer_forecast</span> <span class="o">=</span> <span class="n">prefer_forecast</span>
+        <span class="k">if</span> <span class="s2">&quot;prefer_forecast&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prefer_forecast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;prefer_forecast&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;You can not have larger offset than the frequency of forecasts &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed variable for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Variable.get_filename"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filename">[docs]</a>    <span class="k">def</span> <span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the filename.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (datetime.datetime): Valid time.</span>
+<span class="sd">            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Parsed filename</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set basename for filename&quot;</span><span class="p">)</span>
+        <span class="n">basetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_basetime</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="n">previoustime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">previoustime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">validtime</span> <span class="o">=</span> <span class="n">previoustime</span>
+        <span class="k">return</span> <span class="n">parse_filepattern</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Variable.get_filehandler"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filehandler">[docs]</a>    <span class="k">def</span> <span class="nf">get_filehandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file handler.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (datetime.datetime): Valid time.</span>
+<span class="sd">            cache (surfex.Cache, optional): Cache. Defaults to None.</span>
+<span class="sd">            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Variable type not implemented</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: Filehandler and file name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filename</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="n">previoustime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache</span><span class="o">.</span><span class="n">file_open</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">file_handler</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_file_handler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">Netcdf</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">Grib</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">Fa</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+                <span class="n">fileformat</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="s2">&quot;fileformat&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                    <span class="n">fileformat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;fileformat&quot;</span><span class="p">]</span>
+                <span class="n">filetype</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="s2">&quot;filetype&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                    <span class="n">filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;filetype&quot;</span><span class="p">]</span>
+                <span class="n">geo_in</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="s2">&quot;geo_input&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                    <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;geo_input&quot;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="s2">&quot;geo_input_file&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                    <span class="n">geo_in_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;geo_input_file&quot;</span><span class="p">]</span>
+                    <span class="n">geo_in</span> <span class="o">=</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">geo_in_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">get_surfex_io_object</span><span class="p">(</span>
+                    <span class="n">filename</span><span class="p">,</span> <span class="n">fileformat</span><span class="o">=</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="n">filetype</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo_in</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+                <span class="n">var_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span>
+                <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;set&quot;</span><span class="p">:</span> <span class="n">var_dict</span><span class="p">}</span>
+                <span class="n">basetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_basetime</span><span class="p">(</span><span class="n">validtime</span><span class="p">)</span>
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">get_datasources</span><span class="p">(</span><span class="n">basetime</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cache</span><span class="o">.</span><span class="n">set_file_handler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;var_type: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">filename</span></div>
+
+<div class="viewcode-block" id="Variable.read_var_points"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_var_points">[docs]</a>    <span class="k">def</span> <span class="nf">read_var_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points for a variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            var (object): Variable object</span>
+<span class="sd">            geo (surfex.Geo): Surfex geometry</span>
+<span class="sd">            validtime (datetime.datetime): Valid time</span>
+<span class="sd">            previoustime (datetime.datetime, optional): Previous valid time for accumulated</span>
+<span class="sd">                                                        variables. Defaults to None.</span>
+<span class="sd">            cache (surfex.Cache, optional): Cache. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            numpy.darray: A numpy array with point values for variable</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">interpolation</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">!=</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interpolator&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">interpolation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;interpolator&quot;</span><span class="p">]</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;set basetime from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+
+        <span class="c1"># TODO put this in a netcdf variable and we don&#39;t need this any more</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+            <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]]})</span>
+            <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]][</span><span class="mi">0</span><span class="p">])})</span>
+
+        <span class="n">filehandler</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filehandler</span><span class="p">(</span>
+            <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="n">previoustime</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">previoustime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">validtime</span> <span class="o">=</span> <span class="n">previoustime</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;new validtime to read previous time </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filehandler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No file handler exist for this time step&quot;</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)])</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">id_str</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">id_str</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">generate_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache</span><span class="o">.</span><span class="n">is_saved</span><span class="p">(</span><span class="n">id_str</span><span class="p">):</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">saved_fields</span><span class="p">[</span><span class="n">id_str</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using cached value for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+                    <span class="n">__</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">filehandler</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span> <span class="o">=</span> <span class="n">filehandler</span><span class="o">.</span><span class="n">points</span><span class="p">(</span>
+                        <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span>
+                    <span class="p">)</span>
+
+                    <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotate_geographic_wind</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;field.shape </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ID_STRING </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">id_str</span><span class="p">)</span>
+                    <span class="n">cache</span><span class="o">.</span><span class="n">save_field</span><span class="p">(</span><span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">field</span></div>
+
+<div class="viewcode-block" id="Variable.set_var"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.set_var">[docs]</a>    <span class="k">def</span> <span class="nf">set_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (datetime.datetime, optional): Valid time. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Variable not implemented</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: accumulated, instant, var</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">accumulated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;accumulated&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">accumulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;accumulated&quot;</span><span class="p">]</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">level</span> <span class="o">=</span> <span class="p">[</span><span class="n">level</span><span class="p">]</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">member</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;member&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;member&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">member</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">member</span> <span class="o">=</span> <span class="p">[</span><span class="n">member</span><span class="p">]</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">NetCDFReadVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span><span class="p">:</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;parameter&quot;</span><span class="p">]</span>
+            <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+            <span class="n">tri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;tri&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tri</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">accumulated</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">Grib1Variable</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
+            <span class="n">discipline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;discipline&quot;</span><span class="p">]</span>
+            <span class="n">p_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;parameterCategory&quot;</span><span class="p">]</span>
+            <span class="n">p_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;parameterNumber&quot;</span><span class="p">]</span>
+            <span class="n">l_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;levelType&quot;</span><span class="p">]</span>
+            <span class="n">lev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+            <span class="n">tsp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="s2">&quot;typeOfStatisticalProcessing&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">tsp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tsp</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">accumulated</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">Grib2Variable</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span> <span class="n">p_c</span><span class="p">,</span> <span class="n">p_n</span><span class="p">,</span> <span class="n">l_t</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=</span><span class="n">tsp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+            <span class="n">varname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;layers&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">]</span>
+            <span class="n">patches</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;patches&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;patches&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;accumulated&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">accumulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;accumulated&quot;</span><span class="p">]</span>
+            <span class="n">datatype</span> <span class="o">=</span> <span class="s2">&quot;float&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;datatype&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">datatype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;datatype&quot;</span><span class="p">]</span>
+            <span class="n">tiletype</span> <span class="o">=</span> <span class="s2">&quot;FULL&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;tiletype&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">tiletype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;tiletype&quot;</span><span class="p">]</span>
+
+            <span class="n">basetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_basetime</span><span class="p">(</span><span class="n">validtime</span><span class="p">)</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">SurfexFileVariable</span><span class="p">(</span>
+                <span class="n">varname</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                <span class="n">patches</span><span class="o">=</span><span class="n">patches</span><span class="p">,</span>
+                <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+                <span class="n">basetime</span><span class="o">=</span><span class="n">basetime</span><span class="p">,</span>
+                <span class="n">interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">,</span>
+                <span class="n">datatype</span><span class="o">=</span><span class="n">datatype</span><span class="p">,</span>
+                <span class="n">tiletype</span><span class="o">=</span><span class="n">tiletype</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;varname&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">instant</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">accumulated</span><span class="p">:</span>
+            <span class="n">instant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span>
+        <span class="k">if</span> <span class="s2">&quot;instant&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+            <span class="n">instant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;instant&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;prefer_forecast&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prefer_forecast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;prefer_forecast&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">accumulated</span><span class="p">,</span> <span class="n">instant</span><span class="p">,</span> <span class="n">var</span></div>
+
+<div class="viewcode-block" id="Variable.read_variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_variable">[docs]</a>    <span class="k">def</span> <span class="nf">read_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            geo (surfex.Geometry): Geometry to read</span>
+<span class="sd">            validtime (datetime.datetime): Valid time.</span>
+<span class="sd">            cache (surfex.cache): Cache. Defaults to None</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Negative accumulated value found</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.darray: Field read and interpolated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Set variable info</span>
+        <span class="n">accumulated</span><span class="p">,</span> <span class="n">instant</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_var</span><span class="p">(</span><span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">)</span>
+        <span class="n">previous_field</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">accumulated</span><span class="p">:</span>
+            <span class="c1"># Re-read field</span>
+            <span class="n">previoustime</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span>
+            <span class="c1"># Don&#39;t read if previous time is older than the very first basetime</span>
+            <span class="k">if</span> <span class="n">previoustime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Re-read </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">previoustime</span><span class="p">)</span>
+                <span class="n">previous_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_var_points</span><span class="p">(</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="n">previoustime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">previous_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">previous_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">])</span>
+
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_var_points</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+        <span class="c1"># Deaccumulate if either two files are read or if instant is &gt; 0.</span>
+        <span class="k">if</span> <span class="n">accumulated</span> <span class="ow">or</span> <span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deaccumulate</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Negative accumulated value found for &quot;</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">field</span></div>
+
+<div class="viewcode-block" id="Variable.print_variable_info"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.print_variable_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print variable.&quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;:</span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Variable.deaccumulate"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.deaccumulate">[docs]</a>    <span class="k">def</span> <span class="nf">deaccumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deaccumulate variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (_type_): _description_</span>
+<span class="sd">            previous_field (_type_): _description_</span>
+<span class="sd">            instant (_type_): _description_</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deaccumulate field with: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">instant</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Field is not read properly&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]):</span>
+                <span class="n">neg</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">field</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="n">neg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">neg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Deaccumulated field has </span><span class="si">%s</span><span class="s2"> negative values. lowest: </span><span class="si">%s</span><span class="s2"> mean: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">neg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">neg</span><span class="p">)),</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">neg</span><span class="p">)),</span>
+                <span class="p">)</span>
+            <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Should not be negative values&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">instant</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">instant</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">field</span></div>
+
+<div class="viewcode-block" id="Variable.get_basetime"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_basetime">[docs]</a>    <span class="k">def</span> <span class="nf">get_basetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_different_basetime</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the basetime of the file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validtime (datetime.datetime): Valid time</span>
+<span class="sd">            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.</span>
+<span class="sd">            allow_different_basetime (bool, optional): Allow different base times.</span>
+<span class="sd">                                                       Defaults to False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            datetime.datetime: Base time.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Negative offset does not make sense here&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Take offset into account</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
+
+        <span class="n">basetime</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">basetime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="p">:</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">basetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;             validtime: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;          previoustime: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">previoustime</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;                 first: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">first</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;                 fcint: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;                offset: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;      initial_basetime: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  Basetime with offset: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basetime</span><span class="p">)</span>
+
+        <span class="c1"># Modify based on fcint</span>
+        <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">basetime</span> <span class="o">-</span> <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="mi">86400</span><span class="p">:</span>
+            <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">basetime_inc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">seconds_since_midnight</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
+        <span class="p">)</span>
+
+        <span class="n">prefer_forecast</span> <span class="o">=</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="n">basetime_inc</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;First basetime&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefer_forecast</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefer forecasts instead of analyis&quot;</span><span class="p">)</span>
+                    <span class="n">prefer_forecast</span> <span class="o">=</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefer analysis instead of forecast&quot;</span><span class="p">)</span>
+
+        <span class="n">fcint</span> <span class="o">=</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
+        <span class="n">basetime</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">basetime_inc</span> <span class="o">*</span> <span class="n">fcint</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">prefer_forecast</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">previoustime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">allow_different_basetime</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;seconds_since_midnight: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">seconds_since_midnight</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;         cycle seconds: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">basetime_inc</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;       prefer_forecast: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefer_forecast</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;   prefer_forecast_inc: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">prefer_forecast</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;          basetime_inc: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basetime_inc</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;           Basetime is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basetime</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">basetime</span></div>
+
+<div class="viewcode-block" id="Variable.rotate_geographic_wind"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.rotate_geographic_wind">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_geographic_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate wind.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (_type_): _description_</span>
+<span class="sd">            interpolator (_type_): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rotate_wind</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;rotate_to_geographic&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+            <span class="n">rotate_wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;rotate_to_geographic&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rotate_wind</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">rotate_wind_to_geographic</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">field</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">field</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.variable</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>

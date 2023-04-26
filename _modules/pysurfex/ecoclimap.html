@@ -1,0 +1,329 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.ecoclimap &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.ecoclimap</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.ecoclimap</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Ecoclimap handling.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile">[docs]</a><span class="k">class</span> <span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper around external input data to surfex.</span>
+
+<span class="sd">    Can have special treatment for each format.</span>
+<span class="sd">    Uses internally the SystemFilePaths class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ExternalSurfexInputFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ExternalSurfexInputFile.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            system_file_paths (surfex.SystemFilePaths): Match system specific files.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span></div>
+
+    <span class="k">def</span> <span class="nf">set_input_data_from_format</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">,</span>
+        <span class="n">fname</span><span class="p">,</span>
+        <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">linkbasename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input data based on format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype (_type_): _description_</span>
+<span class="sd">            fname (_type_): _description_</span>
+<span class="sd">            default_dir (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_existence (bool, optional): _description_. Defaults to False.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            linkbasename (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: File name mappings.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fname_with_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="p">,</span>
+            <span class="n">fname</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="n">default_dir</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">):</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">basedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_path</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="p">,</span>
+                <span class="n">default_dir</span><span class="o">=</span><span class="n">default_dir</span><span class="p">,</span>
+                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+                <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+                <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">basedir</span><span class="p">,</span> <span class="n">fname_with_path</span><span class="p">)</span>
+            <span class="n">hdr_file</span> <span class="o">=</span> <span class="n">basedir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">basename</span> <span class="o">+</span> <span class="s2">&quot;.hdr&quot;</span>
+            <span class="n">dir_file</span> <span class="o">=</span> <span class="n">basedir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">basename</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+            <span class="k">if</span> <span class="n">linkbasename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">linkbasename</span> <span class="o">=</span> <span class="n">basename</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">linkbasename</span> <span class="o">+</span> <span class="s2">&quot;.hdr&quot;</span><span class="p">:</span> <span class="n">hdr_file</span><span class="p">,</span> <span class="n">linkbasename</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">:</span> <span class="n">dir_file</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">fname</span><span class="p">:</span> <span class="n">fname_with_path</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap">[docs]</a><span class="k">class</span> <span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Ecoclimap.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap data object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (surfex.Configuration): Surfex configuration.</span>
+<span class="sd">            system_file_paths (surfex.SystemFilePaths, optional): Mapping of local file structure</span>
+<span class="sd">                                                                  to look for inut files.</span>
+<span class="sd">                                                                  Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cover_dir</span> <span class="o">=</span> <span class="s2">&quot;ecoclimap_cover_dir&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span> <span class="o">=</span> <span class="s2">&quot;ecoclimap_bin_dir&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ecoclimap_files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ecoclimapI_covers_param.bin&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ecoclimapII_af_covers_param.bin&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ecoclimapII_eu_covers_param.bin&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Ecoclimap.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): _description_. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: System file path must be set for this method</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: File mappings.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;System file path must be set for this method&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ecoclimap_files</span><span class="p">:</span>
+            <span class="n">fname_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span><span class="p">,</span>
+                <span class="n">fname</span><span class="p">,</span>
+                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">fname_data</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Ecoclimap.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set bin files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: File mappings.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG">[docs]</a><span class="k">class</span> <span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap SG.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EcoclimapSG.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">veg_types</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">decades</span><span class="o">=</span><span class="mi">36</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap SG.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (_type_): _description_</span>
+<span class="sd">            system_file_paths (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            veg_types (int, optional): _description_. Defaults to 20.</span>
+<span class="sd">            decades (int, optional): _description_. Defaults to 36.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Ecoclimap</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">veg_types</span> <span class="o">=</span> <span class="n">veg_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decades</span> <span class="o">=</span> <span class="n">decades</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cover_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cover_dir</span> <span class="o">=</span> <span class="s2">&quot;ecoclimap_sg_cover_dir&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ALBNIR_SOIL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBNIR_VEG&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBVIS_SOIL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBVIS_VEG&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LAI&quot;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="EcoclimapSG.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;set_bin_files not used for SG.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="EcoclimapSG.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if files are existing. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: System file path must be set for this method</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Mapping of files.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;System file path must be set for this method&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">tree_height_dir</span> <span class="o">=</span> <span class="s2">&quot;tree_height_dir&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                    <span class="n">tree_height_dir</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">decadal_data_types</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ALBNIR_SOIL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBNIR_VEG&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBVIS_SOIL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ALBVIS_VEG&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LAI&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">decadal_data_type</span> <span class="ow">in</span> <span class="n">decadal_data_types</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">veg_types</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">decade</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decades</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">filepattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+                        <span class="s2">&quot;SURFEX#COVER#&quot;</span> <span class="o">+</span> <span class="n">decadal_data_type</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                    <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_fnames</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">decade</span><span class="p">)</span>
+                    <span class="n">dtype</span> <span class="o">=</span> <span class="n">decadal_data_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;_dir&quot;</span>
+                    <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
+                    <span class="n">dat</span> <span class="o">=</span> <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                        <span class="n">dtype</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span>
+                    <span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="EcoclimapSG.parse_fnames"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.parse_fnames">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_fnames</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">decade</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse file names.&quot;&quot;&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filepattern</span>
+        <span class="n">decade</span> <span class="o">=</span> <span class="n">decade</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">mmm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decade</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">cmm</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mmm</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">cdd</span> <span class="o">=</span> <span class="p">((</span><span class="n">decade</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span>
+        <span class="n">cdd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cdd</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@MM@&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cmm</span><span class="p">))</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@CDD@&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cdd</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filename</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.ecoclimap</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.configuration &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.configuration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.configuration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Configuration.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">toml</span>
+
+<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">ConfProj</span>
+<span class="kn">from</span> <span class="nn">.platform</span> <span class="kn">import</span> <span class="n">SystemFilePaths</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">merge_toml_env</span>
+
+
+<div class="viewcode-block" id="Configuration"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.Configuration">[docs]</a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Configuration.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.Configuration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the pysurfex configuration.</span>
+
+<span class="sd">        Encapsulation of settings dictionary.</span>
+<span class="sd">        Settings for a deterministic run or an individual member.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            conf (dict): Actual psyurfex settings to run</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">conf</span>
+        <span class="c1"># Set default file names</span>
+        <span class="k">if</span> <span class="s2">&quot;CPGDFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CPGDFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;PGD&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;CPREPFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CPREPFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;PREP&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;CSURFFILE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;CSURFFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFOUT&quot;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="s2">&quot;LFAGMAP&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;SURFEX&quot;</span><span class="p">][</span><span class="s2">&quot;IO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;LFAGMAP&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="Configuration.dump_json"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.Configuration.dump_json">[docs]</a>    <span class="k">def</span> <span class="nf">dump_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump configuration to json file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): Filename</span>
+<span class="sd">            indent (int, optional): Indentation. Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;settings </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">setting_is</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            default (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+                <span class="n">setting</span><span class="p">,</span>
+                <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+                <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+                <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+                <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">==</span> <span class="n">value</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_not</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is not value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            default (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+                <span class="n">setting</span><span class="p">,</span>
+                <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+                <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+                <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+                <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">==</span> <span class="n">value</span>
+        <span class="p">):</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">value_is_one_of</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if value is one of the settings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            settings (list): Settings</span>
+<span class="sd">            value(any): Value</span>
+<span class="sd">            sep (str, optional): Separator. Defaults to &quot;#&quot;</span>
+<span class="sd">            abort (bool, optional): Abort. Defaults to True</span>
+<span class="sd">            system_variables (dict): Arbitrary settings to substitute</span>
+<span class="sd">                                     @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
+<span class="sd">            check_parsing (bool): Check if all @@ pairs were parsed</span>
+<span class="sd">            validtime (as_datetime): Parse setting with this as validtime</span>
+<span class="sd">            basedtg (as_datetime): Parse setting with this as base time</span>
+<span class="sd">            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)</span>
+<span class="sd">            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)</span>
+<span class="sd">            pert (int): Parse setting with this as perturbation number @PERT@</span>
+<span class="sd">            var (str): Parse setting with this as the variable (@VAR@)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            found (bool): True if value is found in any of the settings</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Expected a list as input</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            self.get_setting()</span>
+<span class="sd">            surfex.SystemFilePaths.parse_setting()</span>
+<span class="sd">            surfex.SystemFilePaths.substitute_string()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected a list as input, got &quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">check_s</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+                <span class="n">check_s</span><span class="p">,</span>
+                <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+                <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+                <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+                <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+                <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+                <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">value_is_not_one_of</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if value is not one of.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            _type_: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_is_one_of</span><span class="p">(</span>
+            <span class="n">setting</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+            <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_one_of</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is one of values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            values (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Excpected a list as input</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if found</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+            <span class="n">setting</span><span class="p">,</span>
+            <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+            <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Excpected a list as input, got &quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">setting_is_not_one_of</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if setting is not one of values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            values (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            abort (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            system_variables (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            check_parsing (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">            validtime (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            basedtg (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            mbr (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            tstep (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            pert (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">            var (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setting_is_one_of</span><span class="p">(</span>
+            <span class="n">setting</span><span class="p">,</span>
+            <span class="n">values</span><span class="p">,</span>
+            <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+            <span class="n">abort</span><span class="o">=</span><span class="n">abort</span><span class="p">,</span>
+            <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="n">abort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get configurations setting.</span>
+
+<span class="sd">        Settings are nested in blocks.</span>
+<span class="sd">        To get the full setting request setting joined by a separation character.</span>
+
+<span class="sd">        E.g setting = &quot;SURFEX#ASSIM#ASSIM_SCHEMES&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (str): The requested setting</span>
+<span class="sd">            default (any): A fallback setting in case setting is not found</span>
+<span class="sd">            sep (str): A separation character between different configuration blocks</span>
+<span class="sd">            abort (bool): Abort if setting is not found and default not set</span>
+<span class="sd">            system_variables (dict): Arbitrary settings to substitute</span>
+<span class="sd">                                     @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
+<span class="sd">            check_parsing (bool): Check if all @@ pairs were parsed</span>
+<span class="sd">            validtime (datetime.daetime): Parse setting with this as validtime</span>
+<span class="sd">            basedtg (datetime.datetime): Parse setting with this as base time</span>
+<span class="sd">            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)</span>
+<span class="sd">            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)</span>
+<span class="sd">            pert (int): Parse setting with this as perturbation number @PERT@</span>
+<span class="sd">            var (str): Parse setting with this as the variable (@VAR@)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            found (bool): True if value is found in any of the settings</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            self.get_setting()</span>
+<span class="sd">            surfex.SystemFilePaths.parse_setting()</span>
+<span class="sd">            surfex.SystemFilePaths.substitute_string()</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: Key not found</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span>
+
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">this_setting</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_setting </span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">this_setting</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">this_setting</span><span class="p">:</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">this_setting</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                        <span class="c1"># Time information</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span>
+                            <span class="n">this_setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span>
+                        <span class="p">)</span>
+                        <span class="n">this_setting</span> <span class="o">=</span> <span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
+                            <span class="n">this_setting</span><span class="p">,</span>
+                            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+                            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
+                            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
+                            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
+                            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
+                            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
+                            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">this_setting</span> <span class="o">=</span> <span class="n">default</span>
+                        <span class="k">elif</span> <span class="n">abort</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Key not found &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
+                            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Key not found &quot;</span> <span class="o">+</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">this_setting</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_setting </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">this_setting</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">this_setting</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">this_setting</span>
+
+<div class="viewcode-block" id="Configuration.update_setting"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.Configuration.update_setting">[docs]</a>    <span class="k">def</span> <span class="nf">update_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the setting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            setting (_type_): _description_</span>
+<span class="sd">            value (_type_): _description_</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">setting</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="n">last_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dsetting</span> <span class="o">=</span> <span class="p">{</span><span class="n">last_key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">dsetting</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">dsetting</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">merge_toml_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">dsetting</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ConfigurationFromHarmonie"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromHarmonie">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonie</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the configuration from Harmonie environment.</span>
+
+<span class="sd">    This class sets up a SURFEX configuration from an environment based Harmonie run with it&#39;s</span>
+<span class="sd">    corresponding configuration.</span>
+
+<span class="sd">    Some settings imply several changes in SURFEX configuration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigurationFromHarmonie.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromHarmonie.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constuct the Configuration object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (dict): System environment e.g. os.environ</span>
+<span class="sd">            conf (dict): The default configuration for this deterministic run/ensemble member</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: soil_texture not implemented</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+
+        <span class="c1"># Set domain from environment variables. Geo is alway conf proj</span>
+        <span class="n">ezone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;EZONE&quot;</span><span class="p">])</span>
+        <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLON&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDLUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDLUXG&quot;</span><span class="p">])</span>
+        <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLAT&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDGUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDGUXG&quot;</span><span class="p">])</span>
+        <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;LGSIZE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LGSIZE&quot;</span><span class="p">])</span>
+        <span class="n">trunc</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># linear</span>
+        <span class="k">if</span> <span class="s2">&quot;TRUNC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">trunc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;TRUNC&quot;</span><span class="p">])</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;CONF PROJ&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LAT0&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LON0&quot;</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LATC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LONC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">ndluxg</span><span class="p">,</span>
+                <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ndguxg</span><span class="p">,</span>
+                <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="n">trunc</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">ConfProj</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GEO: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;FORECAST&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">:</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PHYSICS&quot;</span><span class="p">]}})</span>
+
+        <span class="c1"># Ensemble member information</span>
+        <span class="n">mbr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;ENSMBR&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">mbr</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ENSMBR&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;EPS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ENSMBR&quot;</span><span class="p">:</span> <span class="n">mbr</span><span class="p">}})</span>
+
+        <span class="c1"># IO</span>
+        <span class="n">cnmexp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CNMEXP&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CPGDFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;Const.Clim&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CPREPFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;ICMSH&quot;</span> <span class="o">+</span> <span class="n">cnmexp</span> <span class="o">+</span> <span class="s2">&quot;INIT&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="s2">&quot;ICMSH&quot;</span> <span class="o">+</span> <span class="n">cnmexp</span> <span class="o">+</span> <span class="s2">&quot;+@LLLL@&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CTIMESERIES_FILETYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">lselect</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SURFEX_LSELECT&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+            <span class="n">lselect</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSELECT&quot;</span><span class="p">,</span> <span class="n">lselect</span><span class="p">)</span>
+
+        <span class="c1">#  CISBA Type of ISBA scheme in SURFEX. Options: &quot;3-L&quot;|&quot;2-L&quot;|&quot;DIF&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CISBA&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CISBA&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#MEB&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># CSNOW Type of snow scheme in SURFEX. Options: &quot;D95&quot; and &quot;3-L&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CSNOW&quot;</span><span class="p">])</span>
+
+        <span class="c1"># NPATCH Number of patches over land in SURFEX (see also LISBA_CANOPY)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#NPATCH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NPATCH&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># LISBA_CANOPY Activates surface boundary multi layer scheme over land in SURFEX</span>
+        <span class="c1"># (must be .FALSE. for NPATCH&gt;1)</span>
+        <span class="n">canopy</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LISBA_CANOPY&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">canopy</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+            <span class="n">canopy</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">canopy</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#CANOPY&quot;</span><span class="p">,</span> <span class="n">canopy</span><span class="p">)</span>
+
+        <span class="c1"># CROUGH SSO scheme used in SURFEX &quot;NONE&quot;|&quot;Z01D&quot;|&quot;BE04&quot;|&quot;OROT&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SSO#SCHEME&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CROUGH&quot;</span><span class="p">])</span>
+
+        <span class="c1"># SURFEX_SEA_ICE Treatment of sea ice in surfex (none|sice)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SURFEX_SEA_ICE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+        <span class="c1"># SURFEX_LAKES Treatment of lakes in surfex (WATFLX|FLAKE)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SURFEX_LAKES&quot;</span><span class="p">])</span>
+
+        <span class="c1"># TOPO_SOURCE Input source for orography. Available are (gmted2010|gtopo30)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ZS#YZS&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;TOPO_SOURCE&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ECOCLIMAP</span>
+        <span class="n">ecoclimap_version</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ECOCLIMAP_VERSION&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ecoclimap_version</span> <span class="o">==</span> <span class="s2">&quot;SG&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#YCOVER&quot;</span><span class="p">,</span> <span class="s2">&quot;ecosg_final_map.dir&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">version1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="s2">&quot;1.2&quot;</span><span class="p">,</span> <span class="s2">&quot;1.3&quot;</span><span class="p">,</span> <span class="s2">&quot;1.4&quot;</span><span class="p">,</span> <span class="s2">&quot;1.5&quot;</span><span class="p">]</span>
+            <span class="n">version2</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2.0&quot;</span><span class="p">,</span> <span class="s2">&quot;2.1&quot;</span><span class="p">,</span> <span class="s2">&quot;2.2&quot;</span><span class="p">,</span> <span class="s2">&quot;2.2.1&quot;</span><span class="p">,</span> <span class="s2">&quot;2.5_plus&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ecoclimap_version</span> <span class="ow">in</span> <span class="n">version1</span><span class="p">:</span>
+                <span class="n">ycover</span> <span class="o">=</span> <span class="s2">&quot;ECOCLIMAP_I_GLOBAL&quot;</span>
+            <span class="k">elif</span> <span class="n">ecoclimap_version</span> <span class="ow">in</span> <span class="n">version2</span><span class="p">:</span>
+                <span class="n">ycover</span> <span class="o">=</span> <span class="s2">&quot;ECOCLIMAP_II_EUROP&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="n">ycover_ver</span> <span class="o">=</span> <span class="n">ycover</span> <span class="o">+</span> <span class="s2">&quot;_V&quot;</span> <span class="o">+</span> <span class="n">ecoclimap_version</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#YCOVER&quot;</span><span class="p">,</span> <span class="n">ycover_ver</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># SOIL_TEXTURE_VERSION  # Soil texture input data FAO|HWSD_v2|SOILGRID</span>
+        <span class="c1"># Soil texture (sand/clay)</span>
+        <span class="n">soil_texture</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SOIL_TEXTURE_VERSION&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;FAO&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;sand_fao&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;clay_fao&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;HWSD_v2&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;SAND_HWSD_MOY_v2&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;CLAY_HWSD_MOY_v2&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;SOILGRID&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;SAND_SOILGRID&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;CLAY_SOILGRID&quot;</span>
+        <span class="k">elif</span> <span class="n">soil_texture</span> <span class="o">==</span> <span class="s2">&quot;SOILGRID_v2&quot;</span><span class="p">:</span>
+            <span class="n">ysand</span> <span class="o">=</span> <span class="s2">&quot;sand_0-200cm_mean_int&quot;</span>
+            <span class="n">yclay</span> <span class="o">=</span> <span class="s2">&quot;clay_0-200cm_mean_int&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#YSAND&quot;</span><span class="p">,</span> <span class="n">ysand</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#YCLAY&quot;</span><span class="p">,</span> <span class="n">yclay</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Lake database version.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#FLAKE#LDB_VERSION&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LDB_VERSION&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Treeheight</span>
+        <span class="k">if</span> <span class="s2">&quot;H_TREE_FILE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;H_TREE_FILE&quot;</span><span class="p">])</span>
+
+        <span class="c1"># XRIMAX Maximum allowed Richardson number in the surface layer (cy40h default was 0.0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XRIMAX&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># XSCALE_H_TREE  Scale the tree height with this factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#XSCALE_H_TREE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSCALE_H_TREE&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;LFAKETREE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LFAKETREE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lfaketree</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#FAKETREES&quot;</span><span class="p">,</span> <span class="n">lfaketree</span><span class="p">)</span>
+
+        <span class="c1"># Heat capacity</span>
+        <span class="k">if</span> <span class="s2">&quot;XCGMAX&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#XCGMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XCGMAX&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="s2">&quot;XCSMAX&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#XCSMAX&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XCSMAX&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># CFORCING_FILETYPE Offline surfex forcing format (NETCDF/ASCII)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CFORCING_FILETYPE&quot;</span><span class="p">])</span>
+
+        <span class="c1">#########################</span>
+        <span class="c1"># Assimilation settings #</span>
+        <span class="c1">#########################</span>
+        <span class="c1"># Default schemes. Possible to override in future</span>
+        <span class="c1"># Sea</span>
+        <span class="n">ana_sea</span> <span class="o">=</span> <span class="s2">&quot;INPUT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_SEA&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_sea</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_SEA&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">,</span> <span class="n">ana_sea</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;LECSST&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LECSST&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lecsst</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="n">lecsst</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#LECSST&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Inland water</span>
+        <span class="n">ana_lake</span> <span class="o">=</span> <span class="s2">&quot;INPUT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_LAKE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_lake</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_LAKE&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#INLAND_WATER&quot;</span><span class="p">,</span> <span class="n">ana_lake</span><span class="p">)</span>
+        <span class="c1"># TEB</span>
+        <span class="n">ana_teb</span> <span class="o">=</span> <span class="s2">&quot;ROADT&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;ANA_TEB&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ana_teb</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANA_TEB&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">,</span> <span class="n">ana_teb</span><span class="p">)</span>
+
+        <span class="c1"># Soil assimilation</span>
+        <span class="n">anasurf</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANASURF&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;OI&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_OI_MAIN&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;OI&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_EKF_SURFEX&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Active EKF control variables from CVAR_M</span>
+        <span class="k">if</span> <span class="s2">&quot;NNCV&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCV&quot;</span><span class="p">]</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nncv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#NNCV&quot;</span><span class="p">,</span> <span class="n">nncv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;CVAR_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CVAR_M&quot;</span><span class="p">]</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cvar_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#CVAR_M&quot;</span><span class="p">,</span> <span class="n">cvar_m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;XSIGMA_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xsigma_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSIGMA_M&quot;</span><span class="p">]</span>
+            <span class="n">xsigma_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">xsigma_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#XSIGMA_M&quot;</span><span class="p">,</span> <span class="n">xsigma_m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;XTPRT_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xtprt_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XTPRT_M&quot;</span><span class="p">]</span>
+            <span class="n">xtprt_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">xtprt_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#XTPRT_M&quot;</span><span class="p">,</span> <span class="n">xtprt_m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;LLINCHECK&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">llincheck</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LLINCHECK&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">llincheck</span> <span class="o">==</span> <span class="s2">&quot;TRUE&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#LLINCHECK&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#LLINCHECK&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;XALPHA&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xalpha</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XALPHA&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#XALPHA&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">xalpha</span><span class="p">))</span>
+
+        <span class="c1"># Observations</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCO&quot;</span><span class="p">]</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nnco</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">,</span> <span class="n">nnco</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;COBS_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">cobs_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;COBS_M&quot;</span><span class="p">]</span>
+            <span class="n">cobs_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cobs_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#COBS_M&quot;</span><span class="p">,</span> <span class="n">cobs_m</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;XERROBS_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xerrobs_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;XERROBS_M&quot;</span><span class="p">]</span>
+            <span class="n">xerrobs_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">xerrobs_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#XERROBS_M&quot;</span><span class="p">,</span> <span class="n">xerrobs_m</span><span class="p">)</span>
+
+        <span class="c1"># Active EnKF control variables from CVAR_M</span>
+        <span class="k">if</span> <span class="s2">&quot;NNCV&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NNCV&quot;</span><span class="p">]</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">nncv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NNCV&quot;</span><span class="p">,</span> <span class="n">nncv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;CVAR_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;CVAR_M&quot;</span><span class="p">]</span>
+            <span class="n">cvar_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cvar_m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#CVAR_M&quot;</span><span class="p">,</span> <span class="n">cvar_m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;NENS_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nens_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NENS_M&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NENS_M&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nens_m</span><span class="p">))</span>
+
+        <span class="c1"># Observations</span>
+        <span class="k">if</span> <span class="s2">&quot;NOBSTYPE_M&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">nobstype_m</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;NOBSTYPE_M&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OBS#NOBSTYPE_M&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nobstype_m</span><span class="p">))</span>
+
+        <span class="c1"># ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)</span>
+        <span class="c1"># # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#COEFFS&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;ANASURF_OI_COEFF&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Always set SURFEX#IO#LSPLIT_PATCH False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSPLIT_PATCH&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Always use FA format as input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#CFILE_FORMAT_SST&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_OI_MAIN&quot;</span> <span class="ow">or</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;CANARI_EKF_SURFEX&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">,</span> <span class="s2">&quot;FA&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#LSWE&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">,</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#LSWE&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;06&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;SNOW_CYCLES&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">snow_cycles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">snow_cycles</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;SNOW_CYCLES&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">,</span> <span class="n">snow_cycles</span><span class="p">)</span>
+
+        <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSINI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lswepsini</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LSWEPSINI&quot;</span><span class="p">,</span> <span class="n">lswepsini</span><span class="p">)</span>
+        <span class="n">xswepsini</span> <span class="o">=</span> <span class="mf">1000.0</span>
+        <span class="k">if</span> <span class="s2">&quot;XSWEPSINI&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xswepsini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSWEPSINI&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSINI&quot;</span><span class="p">,</span> <span class="n">xswepsini</span><span class="p">)</span>
+        <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LSWEPSMIN&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lswepsmin</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LSWEPSMIN&quot;</span><span class="p">,</span> <span class="n">lswepsmin</span><span class="p">)</span>
+        <span class="n">xswepsmin</span> <span class="o">=</span> <span class="mf">500.0</span>
+        <span class="k">if</span> <span class="s2">&quot;XSWEPSMIN&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">xswepsmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;XSWEPSMIN&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#XSWEPSMIN&quot;</span><span class="p">,</span> <span class="n">xswepsmin</span><span class="p">)</span>
+
+        <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;LPATCH1&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPATCH1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lpatch1</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#LPATCH1&quot;</span><span class="p">,</span> <span class="n">lpatch1</span><span class="p">)</span>
+
+        <span class="c1"># Perturbations</span>
+        <span class="c1"># PERTSURF ECMA    : perturb also the surface observation before Canari (recommended</span>
+        <span class="c1">#                  : for EDA to have full perturbation of the initial state).</span>
+        <span class="c1">#          model   : perturb surface fields in grid-point space (recursive filter)</span>
+        <span class="c1">#          none    : no perturbation for surface observations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PERTSURF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;LPERTSURF&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LPERTSURF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#PERTFLUX&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Volatile sea ice (climate mode)</span>
+        <span class="k">if</span> <span class="s2">&quot;LVOLATILE_SIC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;LVOLATILE_SIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX.SEA.LVOLATILE_SIC&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ConfigurationFromHarmonieAndConfigFile"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromHarmonieAndConfigFile">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromHarmonieAndConfigFile</span><span class="p">(</span><span class="n">ConfigurationFromHarmonie</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigurationFromHarmonieAndConfigFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromHarmonieAndConfigFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a configuration from envrionment and a toml configuration file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (dict): System environment e.g. os.environ</span>
+<span class="sd">            conf_file (str): Filename with configuration</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="n">ConfigurationFromHarmonie</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ConfigurationFromTomlFile"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromTomlFile">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationFromTomlFile</span><span class="p">(</span><span class="n">Configuration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration from a TOML file.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigurationFromTomlFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.configuration.ConfigurationFromTomlFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): File name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="n">Configuration</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.configuration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>
