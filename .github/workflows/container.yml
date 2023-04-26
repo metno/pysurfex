@@ -44,6 +44,6 @@ jobs:
           target: final
           push: true
           tags: |
-            $REGISTRY/$OWNER/$IMAGE_NAME:${{ GITHUB_REF }}
+            $REGISTRY/$OWNER/$IMAGE_NAME:${{github.ref}}
           build-args: |
             ENVIRONMENT=production
