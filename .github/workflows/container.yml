@@ -37,6 +37,7 @@ jobs:
           REGISTRY: ghcr.io
           OWNER: metno
           IMAGE_NAME: ${{ github.repository }}
+          REF: ${{github.ref}}
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -44,6 +45,6 @@ jobs:
           target: final
           push: true
           tags: |
-            $REGISTRY/$OWNER/$IMAGE_NAME:${{github.ref}}
+            ${{REGISTRY}}/${{OWNER}}/${{IMAGE_NAME}}:${{REF}}
           build-args: |
             ENVIRONMENT=production
