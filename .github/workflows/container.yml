@@ -39,8 +39,8 @@ jobs:
           file: ./Dockerfile_ubuntu_20_04
           target: final
           push: true
+          # ghcr.io/metno/pysurfex:${{github.ref}}
           tags: |
-            # ghcr.io/metno/pysurfex:${{github.ref}}
             ghcr.io/metno/pysurfex:$(date +%s)
           build-args: |
             ENVIRONMENT=production
