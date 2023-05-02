@@ -27,6 +27,7 @@ from .cmd_parsing import (
     parse_args_bufr2json,
     parse_args_create_forcing,
     parse_args_create_namelist,
+    parse_args_dump_environ,
     parse_args_first_guess_for_oi,
     parse_args_gridpp,
     parse_args_hm2pysurfex,
@@ -1544,7 +1545,9 @@ def dump_environ(argv=None):
     """
     if argv is None:
         argv = sys.argv[1:]
-    with open("rte.json", mode="w", encoding="utf-8") as file_handler:
+    kwargs = parse_args_dump_environ(argv)
+    outputfile = kwargs["outputfile"]
+    with open(outputfile, mode="w", encoding="utf-8") as file_handler:
         json.dump(os.environ.copy(), file_handler)
 
 

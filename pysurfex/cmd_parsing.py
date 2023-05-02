@@ -504,6 +504,26 @@ def parse_args_qc2obsmon(argv):
     return kwargs
 
 
+def parse_args_dump_environ(argv):
+    """Parse arguments for dum environ.
+
+    Args:
+        argv (list): List with arguments.
+
+    Returns:
+        dict: Parsed arguments.
+
+    """
+    parser = ArgumentParser(description="Dump environment")
+    parser.add_argument(
+        "-o", "--outpufile", type=str, default="rte.json", help="Default output file")
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
 def parse_args_first_guess_for_oi(argv):
     """Parse arguments for firstguess4oi.
 
