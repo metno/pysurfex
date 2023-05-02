@@ -115,14 +115,21 @@ Install pysurfex
 
   poetry install
 
-Create documentation
----------------------------------------------
+This will install ``pysurfex`` in a poetry environment and this environment can be activated interactively by:
 
+-------------------------------------------
 .. code-block:: bash
 
-  cd docs
-  # Create html documentation
-  make html
+  poetry shell
+
+or
+
+-------------------------------------------
+.. code-block:: bash
+
+  poetry run [command]
+  # e.g.
+  poetry run python # will run python inside the pysurfex poetry environment
 
 
 Examples

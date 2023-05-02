@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Create auto documentation."""
+import logging
 import os
+import time
 
 classes = []
 class_methods = []
 methods = []
-code_dirs = ["scheduler", "surfex"]
+code_dirs = ["pysurfex"]
+os.chdir("..")
 for code_dir in code_dirs:
     for root, __, files in os.walk("./" + code_dir):
         for f in files:
@@ -14,6 +17,7 @@ for code_dir in code_dirs:
                 root = root.replace("./", "")
                 ff = f.replace(".py", "")
                 fname = root + "/" + f
+                logging.debug("fname=%s", fname)
                 with open(fname, "r") as fh:
                     cl = None
                     for line in fh.readlines():
@@ -41,41 +45,43 @@ for code_dir in code_dirs:
                                     m = m.split("(")[0]
                                     methods.append(root + "." + ff + "." + m)
 
+with open("index.rst", mode="w", encoding="utf-8") as fh:
+    fh.write(".. SURFEX Python API documentation master file, created by\n")
+    fh.write("   auto_sphinx.py on " + time.ctime() + "\n")
+    fh.write(
+        "   You can adapt this file completely to your liking, but it should at least\n"
+    )
+    fh.write("   contain the root `toctree` directive.\n")
+    fh.write("\n")
+    fh.write("PYSURFEX documentation\n")
+    fh.write("=============================================\n")
+    fh.write("\n")
+    fh.write(".. toctree::\n")
+    fh.write("   :maxdepth: 3\n")
+    fh.write("   :caption: Contents:\n")
+    fh.write("\n")
+    fh.write(".. include::  README.rst\n")
+    fh.write(".. include::  docs/example.rst\n")
+    fh.write("\n")
+    fh.write("Classes\n")
+    fh.write("---------------------------------------------\n")
+    for cl in classes:
+        fh.write(".. autoclass:: " + cl + "\n")
 
-print(".. SURFEX Python API documentation master file, created by")
-print("   sphinx-quickstart on Mon Mar  2 18:25:38 2020.")
-print("   You can adapt this file completely to your liking, but it should at least")
-print("   contain the root `toctree` directive.")
-print("")
-print("PYSURFEX documentation")
-print("=============================================")
-print("")
-print(".. toctree::")
-print("   :maxdepth: 3")
-print("   :caption: Contents:")
-print("")
-print(".. include::  README.rst")
-print(".. include::  docs/example.rst")
-print("")
-print("Classes")
-print("---------------------------------------------")
-for cl in classes:
-    print(".. autoclass:: " + cl)
+    fh.write("\nClass methods\n")
+    fh.write("---------------------------------------------\n")
+    for m in class_methods:
+        fh.write(".. automethod:: " + m + "\n")
 
-print("\nClass methods")
-print("---------------------------------------------")
-for m in class_methods:
-    print(".. automethod:: " + m)
-
-print("\nMethods")
-print("---------------------------------------------")
-for m in methods:
-    print(".. autofunction:: " + m)
-print("")
-print("* :ref: `README`")
-print("")
-print("Indices and tables")
-print("==================")
-print("")
-print("* :ref:`genindex`")
-print("* :ref:`search`")
+    fh.write("\nMethods\n")
+    fh.write("---------------------------------------------\n")
+    for m in methods:
+        fh.write(".. autofunction:: " + m + "\n")
+    fh.write("\n")
+    fh.write("* :ref: `README`\n")
+    fh.write("\n")
+    fh.write("Indices and tables\n")
+    fh.write("==================\n")
+    fh.write("\n")
+    fh.write("* :ref:`genindex`\n")
+    fh.write("* :ref:`search`\n")

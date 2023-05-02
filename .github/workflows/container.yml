@@ -1,0 +1,46 @@
+
+name: "Container"
+
+on:
+  release:
+    types: [created]
+
+#on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
+
+jobs:
+  container:
+    if: github.repository_owner == 'metno'
+    name: Create and upload container
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container registry
+        uses: docker/login-action@v1
+        env:
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          registry: ghcr.io
+          username: $GITHUB_USER
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Copy"
+        run: cp Dockerfile_ubuntu_20_04 Dockerfile
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          # ghcr.io/metno/pysurfex:${{github.ref}}
+          tags: |
+            ghcr.io/metno/pysurfex:latest
