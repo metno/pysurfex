@@ -82,6 +82,7 @@ jobs:
         if: ${{ matrix.python-version == 3.8 }}
         run: |
           cd docs
+          poetry run python auto_sphinx.py
           make html
       - name: Commit documentation changes
         if: ${{ matrix.python-version == 3.8 }}
