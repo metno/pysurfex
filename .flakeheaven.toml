@@ -1,5 +1,5 @@
 [tool.flakeheaven]
-    exclude = [".*/", "tmp/", "*/tmp/", "*.ipynb"]
+    exclude = [".*/", "tmp/", "*/tmp/", "*.ipynb", "*.rst"]
     # Group output by file. Colored.
     format = "grouped"
     # Show line of source code in output, with syntax highlighting

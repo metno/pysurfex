@@ -1,8 +1,6 @@
-.. _README:
 
 .. image:: https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master
 
-https://coveralls.io/github/metno/pysurfex
 
 Python API to SURFEX (pysurfex)
 =======================================================

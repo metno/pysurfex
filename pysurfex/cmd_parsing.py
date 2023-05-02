@@ -516,13 +516,15 @@ def parse_args_dump_environ(argv):
     """
     parser = ArgumentParser(description="Dump environment")
     parser.add_argument(
-        "-o", "--outpufile", type=str, default="rte.json", help="Default output file")
+        "-o", "--outputfile", type=str, default="rte.json", help="Default output file"
+    )
 
     args = parser.parse_args(argv)
     kwargs = {}
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
+
 
 def parse_args_first_guess_for_oi(argv):
     """Parse arguments for firstguess4oi.
