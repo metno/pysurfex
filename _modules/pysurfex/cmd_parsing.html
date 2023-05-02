@@ -540,6 +540,28 @@
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 
+<div class="viewcode-block" id="parse_args_dump_environ"><a class="viewcode-back" href="../../index.html#pysurfex.cmd_parsing.parse_args_dump_environ">[docs]</a><span class="k">def</span> <span class="nf">parse_args_dump_environ</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments for dum environ.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        argv (list): List with arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Parsed arguments.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Dump environment&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--outputfile&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;rte.json&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Default output file&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
 <div class="viewcode-block" id="parse_args_first_guess_for_oi"><a class="viewcode-back" href="../../index.html#pysurfex.cmd_parsing.parse_args_first_guess_for_oi">[docs]</a><span class="k">def</span> <span class="nf">parse_args_first_guess_for_oi</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse arguments for firstguess4oi.</span>
 

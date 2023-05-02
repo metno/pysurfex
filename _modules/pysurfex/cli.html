@@ -63,6 +63,7 @@
     <span class="n">parse_args_bufr2json</span><span class="p">,</span>
     <span class="n">parse_args_create_forcing</span><span class="p">,</span>
     <span class="n">parse_args_create_namelist</span><span class="p">,</span>
+    <span class="n">parse_args_dump_environ</span><span class="p">,</span>
     <span class="n">parse_args_first_guess_for_oi</span><span class="p">,</span>
     <span class="n">parse_args_gridpp</span><span class="p">,</span>
     <span class="n">parse_args_hm2pysurfex</span><span class="p">,</span>
@@ -1580,7 +1581,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;rte.json&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_dump_environ</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">outputfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;outputfile&quot;</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outputfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">file_handler</span><span class="p">)</span></div>
 
 

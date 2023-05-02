@@ -35,14 +35,63 @@
             
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h1>
-<p>First you must install pysurfex for example with poetry</p>
-<p>Create forcing from MET-Nordic analysis</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Local address: /lustre/storeB/project/metproduction/products/yr_short/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc</span>
+<p>All examples here assume you have an installation or that you have a working poetry environment.</p>
+<p>You can use pysurfex with poetry from inside a container if you set the variable CONTAINER in the examples.</p>
+<p>If you have a system-wide installation you can run pysurfex entry points directly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run pgd entry point</span>
+pgd
+
+<span class="c1"># Use empty env variables in examples</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+</pre></div>
+</div>
+<p>This is how you run the pgd entry point with poetry</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run pgd entry point</span>
+poetry<span class="w"> </span>run<span class="w"> </span>pgd
+
+<span class="c1"># Use empty env variables in examples</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+</pre></div>
+</div>
+<p>This is how to create an apptainer container on ECMWF-atos and run it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load singularity/apptainer</span>
+module<span class="w"> </span>load<span class="w"> </span>apptainer/1.1.8
+<span class="c1"># First time creation</span>
+singularity<span class="w"> </span>pull<span class="w"> </span>/scratch/<span class="nv">$USER</span>/pysurfex.sif<span class="w"> </span>docker://ghcr.io/metno/pysurfex:latest
+<span class="c1"># Run pgd entry point</span>
+singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>/scratch/<span class="nv">$USER</span>/pysurfex.sif<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
+
+<span class="w"> </span><span class="c1"># Assume set in variables with local bindings</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;/local/&quot;</span>
+<span class="c1"># X11 not working yet</span>
+<span class="c1"># export CONTAINER=&quot;singularity exec --bind .:$LOCAL --env=QT_X11_NO_MITSHM=1 --bind=/tmp/.X11-unix:/tmp/.X11-unix:rw /scratch/$USER/pysurfex.sif&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;singularity exec --bind .:</span><span class="nv">$LOCAL</span><span class="s2"> /scratch/</span><span class="nv">$USER</span><span class="s2">/pysurfex.sif&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+</pre></div>
+</div>
+<p>This is how to create a container with podman and run it. Podman is recommended as you can run docker containers without root/sudo.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run pgd entry point</span>
+podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>docker://ghcr.io/metno/pysurfex:latest<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
+
+<span class="c1"># Assume set in a variables with local bindings</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;/local/&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;podman -v .:</span><span class="nv">$LOCAL</span><span class="s2"> --env=&#39;DISPLAY&#39; --env=&#39;QT_X11_NO_MITSHM=1&#39; --volume=&#39;/tmp/.X11-unix:/tmp/.X11-unix:rw&#39; run -it docker://ghcr.io/metno/pysurfex:latest&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="create-forcing-from-met-nordic-analysis">
+<h1>Create forcing from MET-Nordic analysis<a class="headerlink" href="#create-forcing-from-met-nordic-analysis" title="Permalink to this heading">¶</a></h1>
+<div class="highlight-bash notranslate" id="forcing"><div class="highlight"><pre><span></span><span class="c1"># Local address: /lustre/storeB/project/metproduction/products/yr_short/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc</span>
 <span class="c1"># Thredds: https://thredds.met.no/thredds/dodsC/metpparchivev3/@YYYY@/@MM@/@DD@/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc</span>
 
 <span class="c1"># Thredds example:</span>
-create_forcing<span class="w"> </span>-p<span class="w">  </span>https://thredds.met.no/thredds/dodsC/metpparchivev3/@YYYY@/@MM@/@DD@/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span><span class="se">\</span>
-<span class="w"> </span><span class="m">2023013010</span><span class="w"> </span><span class="m">2023013011</span><span class="w"> </span>-d<span class="w"> </span>domain.json<span class="w"> </span>-a<span class="w"> </span><span class="se">\</span>
+<span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>create_forcing<span class="w"> </span>-p<span class="w">  </span>https://thredds.met.no/thredds/dodsC/metpparchivev3/@YYYY@/@MM@/@DD@/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span><span class="m">2023013010</span><span class="w"> </span><span class="m">2023013011</span><span class="w"> </span>-d<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-a<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--rain_converter<span class="w"> </span>calcrain<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--snow_converter<span class="w"> </span>calcsnow<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--zref<span class="w"> </span>screen<span class="w"> </span>--uref<span class="w"> </span>screen<span class="w"> </span><span class="se">\</span>
@@ -78,140 +127,70 @@ create_forcing<span class="w"> </span>-p<span class="w">  </span>https://thredds
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Example on a system json file</p>
+<p>Example on a system json file for ECMWF-atos</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;ecoclimap_bin_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/lustre/storeB/users/trygveasp/H2O/open_SURFEX_V8_1/MY_RUN/ECOCLIMAP/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;climdir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/lustre/storeB/project/nwp/surfex/PGD/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;oro_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/lustre/storeB/project/nwp/surfex/PGD/&quot;</span>
+<span class="w">  </span><span class="nt">&quot;sand_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;clay_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;soilgrid_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;soc_top_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;soc_sub_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ecoclimap_cover_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ecoclimap_bin_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/scratch/sbu/sfx_data/test_default/lib/offline/MY_RUN/ECOCLIMAP&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;flake_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ecoclimap_sg_cover_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/COVER/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;albnir_soil_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;albvis_soil_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;albnir_veg_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;albvis_veg_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tree_height_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/HT/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;lai_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/LAI_SAT/&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;oro_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/gmted_carra2/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
-<section id="run-open-surfex-8-1">
-<h1>Run open-SURFEX 8.1<a class="headerlink" href="#run-open-surfex-8-1" title="Permalink to this heading">¶</a></h1>
+<section id="run-surfex-binaries">
+<h1>Run SURFEX binaries<a class="headerlink" href="#run-surfex-binaries" title="Permalink to this heading">¶</a></h1>
 <ul class="simple">
-<li><p>Assume pysurfex is installed and in your path</p></li>
-<li><p>Assume pysurfex installation directory is “path-to-pysurfex”</p></li>
 <li><p>Assume that you have your surfex binaries in PATH and that they are called PGD, PREP, OFFLINE and SODA</p></li>
 <li><p>Assume that you have system paths defined in a file called system.json</p></li>
-<li><p>Assume a domain defined in a file called domain.json</p></li>
+<li><p>Assume that you have a namelist directory consistent with your SURFEX version</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>tutorial_open_surfex_8_1
-<span class="nb">cd</span><span class="w"> </span>tutorial_open_surfex_8_1
+<p>If you want to modify local input and run in containers you have to bind the local data to the container similar to the rte.json and system.json below.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>tutorial
+<span class="nb">cd</span><span class="w"> </span>tutorial
 
-<span class="c1"># Copy example settings (Modify if wanted)</span>
-cp<span class="w"> </span>path-to-pysurfex/examples/cfg/config_exp_surfex_open_surfex_8_1.toml<span class="w"> </span>config_exp_surfex.toml
-
-<span class="c1"># Copy namelist settings (modify if wanted)</span>
-cp<span class="w"> </span>-r<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/nam_open_surfex_8_1<span class="w"> </span>nam_open_surfex_8_1
+<span class="c1"># Example namelists</span>
+<span class="c1"># open surfex 8.1</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NAM_DIR</span><span class="o">=</span><span class="s2">&quot;examples/nam_open_surfex_8_1&quot;</span>
+<span class="c1"># cy43</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NAM_DIR</span><span class="o">=</span><span class="s2">&quot;examples/nam_cy43_dev&quot;</span>
+<span class="c1"># cy46</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NAM_DIR</span><span class="o">=</span><span class="s2">&quot;examples/nam_hm_cy46&quot;</span>
 
 <span class="c1"># Use only one openMP thread</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">1</span>
 
 <span class="c1"># Dump environment</span>
-dump_environ
+<span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>dump_environ<span class="w"> </span>-o<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>rte.json
 
 <span class="c1"># Create PGD</span>
-pgd<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>system.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>-o<span class="w"> </span>PGD.nc<span class="w"> </span>PGD
+<span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd<span class="w"> </span>-c<span class="w"> </span>pysurfex/cfg/config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>rte.json<span class="w"> </span>--domain<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-s<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>system.json<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NAM_DIR</span><span class="w"> </span>-o<span class="w"> </span>PGD.nc<span class="w"> </span>PGD
 
 <span class="c1"># Create PREP (from namelist values)</span>
-prep<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>system.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>-o<span class="w"> </span>PREP.nc<span class="w"> </span>--prep_file<span class="w"> </span>path-to-pysurfex/test/nam/prep_from_namelist_values.json<span class="w"> </span>--prep_filetype<span class="w"> </span>json<span class="w"> </span>--dtg<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span>PREP
+<span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>prep<span class="w"> </span>-c<span class="w"> </span>pysurfex/cfg/config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>rte.json<span class="w"> </span>--domain<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-s<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>system.json<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NAM_DIR</span><span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>-o<span class="w"> </span>PREP.nc<span class="w"> </span>--prep_file<span class="w"> </span><span class="si">${</span><span class="nv">NAM_DIR</span><span class="si">}</span>/prep_from_namelist_values.json<span class="w"> </span>--prep_filetype<span class="w"> </span>json<span class="w"> </span>--dtg<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span>PREP
 
-<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
-create_forcing<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span><span class="m">2021010104</span><span class="w"> </span>-d<span class="w"> </span>domain.json<span class="w"> </span>-p<span class="w"> </span>https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span>--zsoro_converter<span class="w"> </span>none<span class="w"> </span>-i<span class="w"> </span>surfex<span class="w"> </span>--rain_converter<span class="w"> </span>none<span class="w"> </span>--wind_converter<span class="w"> </span>none<span class="w"> </span>--wind_dir_converter<span class="w"> </span>none<span class="w"> </span>-ig<span class="w"> </span>path-to-pysurfex/0.0.1-dev/examples/domains/met_nordic.json
-
-<span class="c1"># Run Offline</span>
-offline<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>system.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>--prep<span class="w"> </span>PREP.nc<span class="w"> </span>-o<span class="w"> </span>SURFOUT.nc<span class="w"> </span>OFFLINE<span class="w"> </span>--forcing<span class="w"> </span><span class="nv">$PWD</span>
-</pre></div>
-</div>
-</section>
-<section id="run-open-surfex-8-1-on-centos7-ppi">
-<h1>Run open-SURFEX 8.1 on centos7 PPI<a class="headerlink" href="#run-open-surfex-8-1-on-centos7-ppi" title="Permalink to this heading">¶</a></h1>
-<ul class="simple">
-<li><p>Let us assume that you have your surfex binaries in PATH and that they are called PGD, PREP, OFFLINE and SODA</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load pysurfex</span>
-module<span class="w"> </span>load<span class="w"> </span>Python/3.7.3<span class="w"> </span>gridpp/0.6.0<span class="w"> </span>suv/pysurfex/0.0.1-dev
-
-mkdir<span class="w"> </span>tutorial_open_surfex_8_1_ppi
-<span class="nb">cd</span><span class="w"> </span>tutorial_open_surfex_8_1_ppi
-
-<span class="c1"># Copy example settings (modify if wanted)</span>
-cp<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/cfg/config_exp_surfex_open_surfex_8_1.toml<span class="w"> </span>config_exp_surfex.toml
-
-<span class="c1"># Copy namelist settings (modify if wanted)</span>
-cp<span class="w"> </span>-r<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/nam_open_surfex_8_1<span class="w"> </span>nam_open_surfex_8_1
-
-<span class="c1"># Link ppi settings (to make commands shorter)</span>
-ln<span class="w"> </span>-sf<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/cfg/ppi_centos7.json<span class="w"> </span>ppi.json
-
-<span class="c1"># Create your domain in a file called domain.json</span>
-
-<span class="c1"># Set openMP threads</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">1</span>
-
-<span class="c1"># Dump environment</span>
-dump_environ
-
-<span class="c1"># Create PGD (Positional argument PGD is the name of your PGD binary)</span>
-pgd<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>-o<span class="w"> </span>PGD.nc<span class="w"> </span>PGD
-
-<span class="c1"># Create PREP (Positional argument PREP is the name of your PREP binary)</span>
-prep<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>-o<span class="w"> </span>PREP.nc<span class="w"> </span>--prep_file<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json<span class="w"> </span>--prep_filetype<span class="w"> </span>json<span class="w"> </span>--dtg<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span>PREP
-
-<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
-create_forcing<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span><span class="m">2021010104</span><span class="w"> </span>-d<span class="w"> </span>domain.json<span class="w"> </span>-p<span class="w"> </span>https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span>--zsoro_converter<span class="w"> </span>none<span class="w"> </span>-i<span class="w"> </span>surfex<span class="w"> </span>--rain_converter<span class="w"> </span>none<span class="w"> </span>--wind_converter<span class="w"> </span>none<span class="w"> </span>--wind_dir_converter<span class="w"> </span>none<span class="w"> </span>-ig<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
-
-<span class="c1"># Run Offline (Positional argument OFFLINE is the name of your OFFLINE binary)</span>
-<span class="c1"># If your domain is different from your forcing you might need to use option --forc_zs</span>
-offline<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_open_surfex_8_1<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>--prep<span class="w"> </span>PREP.nc<span class="w"> </span>-o<span class="w"> </span>SURFOUT.nc<span class="w"> </span>OFFLINE<span class="w"> </span>--forcing<span class="w"> </span><span class="nv">$PWD</span><span class="w"> </span>--forc_zs
-</pre></div>
-</div>
-</section>
-<section id="run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version">
-<h1>Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)<a class="headerlink" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version" title="Permalink to this heading">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load modules</span>
-module<span class="w"> </span>load<span class="w"> </span>suv/surfex/cy43-dev<span class="w"> </span>Python/3.7.3<span class="w"> </span>gridpp/0.6.0<span class="w"> </span>suv/pysurfex/0.0.1-dev
-
-mkdir<span class="w"> </span>tutorial_cy43_dev_ppi
-<span class="nb">cd</span><span class="w"> </span>tutorial_cy43_dev_ppi
-
-<span class="c1"># Copy example settings (Modify if wanted)</span>
-cp<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/cfg/config_exp_surfex_cy43_dev_ppi.toml<span class="w"> </span>config_exp_surfex.toml
-
-<span class="c1"># Link ppi settings (to make commands shorter)</span>
-ln<span class="w"> </span>-sf<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/cfg/ppi_centos7.json<span class="w"> </span>ppi.json
-
-<span class="c1"># Use namelists from examples</span>
-cp<span class="w"> </span>-r<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/nam_cy43_dev<span class="w"> </span>nam_cy43_dev_ppi
-
-<span class="c1"># Modify settings (if wanted)</span>
-
-<span class="c1"># Create your domain in a file called domain.json</span>
-
-<span class="c1"># Set openMP threads</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">1</span>
-
-<span class="c1"># Dump environment</span>
-dump_environ
-
-<span class="c1"># Create PGD</span>
-pgd<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_cy43_dev_ppi<span class="w"> </span>-o<span class="w"> </span>PGD.nc<span class="w"> </span>PGD-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
-
-<span class="c1"># Create PREP</span>
-prep<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_cy43_dev_ppi<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>-o<span class="w"> </span>PREP.nc<span class="w"> </span>--prep_file<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/test/nam/prep_from_namelist_values.json<span class="w"> </span>--prep_filetype<span class="w"> </span>json<span class="w">  </span>--dtg<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span>PREP-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0
-
-<span class="c1"># Create forcing from 2021010103 to 2021010104 (From MET-Nordic on MET-Norway thredds server)</span>
-create_forcing<span class="w"> </span><span class="m">2021010103</span><span class="w"> </span><span class="m">2021010104</span><span class="w"> </span>-d<span class="w"> </span>domain.json<span class="w"> </span>-p<span class="w"> </span>https://thredds.met.no/thredds/dodsC/metusers/trygveasp/forcing/met_nordic/@YYYY@/@MM@/@DD@//FORCING_@YYYY@@MM@@DD@T@HH@Z.nc<span class="w"> </span>--zsoro_converter<span class="w"> </span>none<span class="w"> </span>-i<span class="w"> </span>surfex<span class="w"> </span>--rain_converter<span class="w"> </span>none<span class="w"> </span>--wind_converter<span class="w"> </span>none<span class="w"> </span>--wind_dir_converter<span class="w"> </span>none<span class="w"> </span>-ig<span class="w"> </span>/modules/centos7/user-apps/suv/pysurfex/0.0.1-dev/examples/domains/met_nordic.json
+<span class="c1"># Use forcing created above.</span>
 
 <span class="c1"># Run Offline</span>
-offline<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span>rte.json<span class="w"> </span>--domain<span class="w"> </span>domain.json<span class="w"> </span>-s<span class="w"> </span>ppi.json<span class="w"> </span>-n<span class="w"> </span>nam_cy43_dev_ppi<span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>--prep<span class="w"> </span>PREP.nc<span class="w"> </span>-o<span class="w"> </span>SURFOUT.nc<span class="w"> </span>OFFLINE-METNO-centOS-SFX-V8-1-1-OPENMPI-PPI-GFORTRAN-CENTOS-OMP-O2-X0<span class="w"> </span>--forcing<span class="w"> </span><span class="nv">$PWD</span><span class="w"> </span>--forc_zs
+<span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>offline<span class="w"> </span>-c<span class="w"> </span>pysurfex/cfg/config_exp_surfex.toml<span class="w"> </span>-r<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>rte.json<span class="w"> </span>--domain<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-s<span class="w"> </span><span class="si">${</span><span class="nv">LOCAL</span><span class="si">}</span>system.json<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NAM_DIR</span><span class="w"> </span>--pgd<span class="w"> </span>PGD.nc<span class="w"> </span>--prep<span class="w"> </span>PREP.nc<span class="w"> </span>-o<span class="w"> </span>SURFOUT.nc<span class="w"> </span>OFFLINE<span class="w"> </span>--forcing<span class="w"> </span><span class="nv">$PWD</span>
 </pre></div>
 </div>
 </section>
 <section id="plot-meps-data-from-thredds">
 <h1>Plot MEPS data from thredds<a class="headerlink" href="#plot-meps-data-from-thredds" title="Permalink to this heading">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plot_points<span class="w"> </span>-v<span class="w"> </span>air_temperature_2m<span class="w"> </span>-g<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-it<span class="w"> </span>netcdf<span class="w"> </span>-i<span class="w"> </span>https://thredds.met.no/thredds/dodsC/meps25epsarchive/2023/04/13/meps_det_2_5km_20230413T06Z.nc<span class="w"> </span>-t<span class="w"> </span><span class="m">2023041307</span>
+<p>You can plot data interpolated to surfex points using matplotlib. It is also possible to plot directly from a containes as demonstrated below.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$CONTAINER</span><span class="w"> </span><span class="nv">$POETRY</span><span class="w"> </span>plot_points<span class="w"> </span>-v<span class="w"> </span>air_temperature_2m<span class="w"> </span>-g<span class="w"> </span>examples/domains/drammen.json<span class="w"> </span>-it<span class="w"> </span>netcdf<span class="w"> </span>-i<span class="w"> </span>https://thredds.met.no/thredds/dodsC/meps25epsarchive/2023/04/13/meps_det_2_5km_20230413T06Z.nc<span class="w"> </span>-t<span class="w"> </span><span class="m">2023041307</span>
 </pre></div>
 </div>
 </section>
@@ -227,9 +206,8 @@ offline<span class="w"> </span>-c<span class="w"> </span>config_exp_surfex.toml<
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Examples</a></li>
-<li><a class="reference internal" href="#run-open-surfex-8-1">Run open-SURFEX 8.1</a></li>
-<li><a class="reference internal" href="#run-open-surfex-8-1-on-centos7-ppi">Run open-SURFEX 8.1 on centos7 PPI</a></li>
-<li><a class="reference internal" href="#run-surfex-from-the-module-suv-surfex-cy43-dev-on-ppi-cy43-development-version">Run surfex from the module suv/surfex/cy43-dev on PPI (cy43 development version)</a></li>
+<li><a class="reference internal" href="#create-forcing-from-met-nordic-analysis">Create forcing from MET-Nordic analysis</a></li>
+<li><a class="reference internal" href="#run-surfex-binaries">Run SURFEX binaries</a></li>
 <li><a class="reference internal" href="#plot-meps-data-from-thredds">Plot MEPS data from thredds</a></li>
 </ul>
 

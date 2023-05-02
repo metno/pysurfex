@@ -33,8 +33,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" id="readme" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
-<p><a class="reference external" href="https://coveralls.io/github/metno/pysurfex">https://coveralls.io/github/metno/pysurfex</a></p>
+  <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
 <section id="python-api-to-surfex-pysurfex">
 <h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this heading">¶</a></h1>
 <dl class="simple">
@@ -42,7 +41,6 @@
 <li><p>Prepare input and namelists to a SURFEX binary</p></li>
 <li><p>Create atmospheric forcing for offline SURFEX runs</p></li>
 <li><p>Read SURFEX output</p></li>
-<li><p>A scheduler setup to run offline SURFEX experiments</p></li>
 <li><p>Quality control of observations with titanlib</p></li>
 <li><p>Optimal interpolation with gridpp</p></li>
 <li><p>Monitor the observations usage</p></li>
@@ -52,6 +50,7 @@
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
 <h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
+<p>All releases will trigger an autmomatic pre-built package on pypi which can be installed by pip</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex
 </pre></div>
 </div>
@@ -60,11 +59,18 @@
 </pre></div>
 </div>
 </section>
+<section id="run-pysurfex-from-pre-built-container">
+<h2>Run pysurfex from pre-built container<a class="headerlink" href="#run-pysurfex-from-pre-built-container" title="Permalink to this heading">¶</a></h2>
+<p>Releases also trigger an update of the pysurfex container in the github container registry. Below is an example to run pgd without any arguments.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>ghcr.io/metno/pysurfex:latest<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
+</pre></div>
+</div>
+</section>
 <section id="installation-on-debian-based-linux-system">
 <h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
 <p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libudunits2-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev<span class="w"> </span>libnetcdf-dev<span class="w"> </span>netcdf-bin
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libudunits2-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev<span class="w"> </span>libnetcdf-dev<span class="w"> </span>netcdf-bin<span class="w"> </span>ca-certificates
 </pre></div>
 </div>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
@@ -72,18 +78,15 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 <section id="general-dependencies-from-pypi">
 <h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
-netCDF4
-cfunits
 pyproj
 pyyaml
 toml
-netCDF4
 f90nml
-requests
 </pre></div>
 </div>
 <p>To read NetCDF files:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NetCDF4
+cfunits
 </pre></div>
 </div>
 <p>To read grib files:</p>
@@ -101,7 +104,6 @@ requests
 </div>
 <p>For Quality control of observations</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>titanlib
-db-sqlite3
 </pre></div>
 </div>
 <p>For optimal interpolation and observation operators</p>
@@ -112,24 +114,38 @@ db-sqlite3
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest
 </pre></div>
 </div>
-<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
-folder:</p>
 </section>
 <section id="install-pysurfex">
 <h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
+<p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
+folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
 </pre></div>
 </div>
 <p>This will install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> in a poetry environment and this environment can be activated interactively by:</p>
-<blockquote>
-<div><p>poetry shell</p>
-</div></blockquote>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>shell
+</pre></div>
+</div>
 <p>or</p>
-<blockquote>
-<div><p>poetry run [command]
-# e.g.
-poetry run python # will run python inside the pysurfex poetry environment</p>
-</div></blockquote>
+</section>
+<section id="run-pysurfex-client-applications">
+<h2>Run pysurfex client applications<a class="headerlink" href="#run-pysurfex-client-applications" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>command<span class="o">]</span>
+<span class="c1"># e.g.</span>
+poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span><span class="c1"># will run python inside the pysurfex poetry environment</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h2>Run pysurfex client applications<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">pysurfex.cli</span> <span class="kn">import</span> <span class="n">parse_args_surfex_binary</span><span class="p">,</span> <span class="n">run_surfex_binary</span>
+
+<span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_surfex_binary</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="s2">&quot;pgd&quot;</span><span class="p">)</span>
+<span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
@@ -149,9 +165,12 @@ poetry run python # will run python inside the pysurfex poetry environment</p>
     <ul>
 <li><a class="reference internal" href="#">Python API to SURFEX (pysurfex)</a><ul>
 <li><a class="reference internal" href="#installation-of-pregenerated-packages-from-pypi-pip">Installation of pregenerated packages from pypi (pip)</a></li>
+<li><a class="reference internal" href="#run-pysurfex-from-pre-built-container">Run pysurfex from pre-built container</a></li>
 <li><a class="reference internal" href="#installation-on-debian-based-linux-system">Installation on debian based Linux system</a></li>
 <li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies (from pypi)</a></li>
 <li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
+<li><a class="reference internal" href="#run-pysurfex-client-applications">Run pysurfex client applications</a></li>
+<li><a class="reference internal" href="#id1">Run pysurfex client applications</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
