@@ -902,3 +902,238 @@ class SodaInputData(JsonInputData):
             )
             enkf_settings.update({target: lsmfile})
         return enkf_settings
+
+
+class InputDataFromNamelist(JsonInputData):
+
+    def __init__(self, nml, input_data, program, dtg=None, fg_dtg=None):
+        self.nml = nml
+        try:
+            self.data = input_data[program]
+        except KeyError:
+            raise RuntimeError(f"Could not find program {program}")         
+        data = self.process_data(dtg=dtg, fg_dtg=fg_dtg)
+        JsonInputData.__init__(self, data)
+
+    @staticmethod
+    def get_value(nml, block, key):
+        if block in nml:
+            if key in nml[block]:
+                return nml[block][key]
+        return None 
+
+    def substitute(self, key, val, macros, basetime=None, validtime=None):
+        #pert_run = self.system_file_paths.get_system_file(
+        #            data_dir,
+        #            pert_fp,
+        #            validtime=self.dtg,
+        #            basedtg=fg_dtg,
+        #            check_existence=check_existence,
+        #            default_dir="assim_dir",
+        #            pert=pert_input,
+        #        )
+
+        if macros is not None:
+            print("macros", macros)
+            processed_data = {}
+            for kmacro, macro_defs in macros.items():
+                loop = {}
+
+                print(macro_defs)
+                if kmacro == "VTYPE":
+                    start = macro_defs["start"]
+                    end = macro_defs["end"]
+                    for lval in range(start, end):
+                        loop.update({str(lval): str(lval)})
+                if kmacro == "PERT":
+                    nam_block = macro_defs["list"].split("#")[0]
+                    nam_key = macro_defs["list"].split("#")[1]
+                    nncvs = self.get_value(self.nml, nam_block, nam_key)
+                    nam_block = macro_defs["duplicate"].split("#")[0]
+                    nam_key = macro_defs["duplicate"].split("#")[1]
+                    duplicate = self.get_value(self.nml, nam_block, nam_key)
+                    if duplicate:
+                        nncvs += nncvs
+                    loop.update({"0": "0"})
+                    icounter1 = 0
+                    icounter2 = 0
+                    for nncv in nncvs:
+                        if nncv == 1:
+                            loop.update({str(icounter1): str(icounter2)})
+                            icounter1 += 1
+                        icounter2 += 1
+
+
+                for vmacro1, vmacro2 in loop.items():
+                    pkey = key.replace(f"@{kmacro}@", vmacro1)
+                    pval = val.replace(f"@{kmacro}@", vmacro2)
+                    processed_data.update({pkey: pval})
+            else:
+                processed_data.update({key: val})
+            return processed_data
+        return {key: val}
+
+    def process_data(self, dtg=None, fg_dtg=None):
+
+        data = {}
+        for key, value in self.data.items():
+            print(key)
+            # Namelist variable
+            if key.find("#") > 0:
+                nam_section = key.split("#")[0]
+                nam_block = key.split("#")[1]
+                val = self.get_value(self.nml, nam_section, nam_block)
+                if val is not None:
+                    val = str(val)
+                if isinstance(value, dict):
+                    skeys = list(value.keys())
+                elif isinstance(value, str):
+                    skeys = [value]
+
+                print("val", val, skeys)
+                for skey in skeys:
+                    print("matching %s and %s", val, skey)    
+                    if val == skey:
+                        unprocessed_data = {}
+                        macros = None
+                        print("macros", value)
+                        if "macros" in value[skey]:
+                            macros = value[skey]["macros"]
+                        print("Looping %s", value[skey].items())
+                        for key1, value1 in value[skey].items():
+                            print("key1 %s value1 %s",key1, value1)
+                            if key1 == "macros":
+                                pass
+                            elif key1.find("#") > 0:
+                                print("Found nam")
+                                nam_section1 = key1.split("#")[0]
+                                nam_block1 = key1.split("#")[1]
+                                val1 = self.get_value(self.nml, nam_section1, nam_block1)
+
+                                if isinstance(value1, dict):
+                                    skeys1 = list(value1.keys())
+                                elif isinstance(value1, str):
+                                    skeys1 = [value1]
+                                for skey1 in skeys1:
+                                    print("matching %s and %s", val1, skey1)
+                                    if val1 == skey1:
+                                        for key2, value2 in value1[skey1].items():
+                                            print("key2 %s value2 %s",key2, value2)
+                                            if val.find("#") > 0:
+                                                nam_section = key2.split("#")[0]
+                                                nam_block = key2.split("#")[1]
+                                                val2 = self.get_value(self.nml, nam_section, nam_block)
+
+                                                if val2 == value2:
+                                                    for key3, value3 in value2.items():
+                                                        unprocessed_data.update({key3: value3})
+                                            else:
+                                                unprocessed_data.update({key2: value2})
+                            else:
+                                if isinstance(value1, str):
+                                    print(key1, value1)
+                                    unprocessed_data.update({key1: value1})
+                                else:
+                                    print("Did not find a string")
+                        for key, value in unprocessed_data.items():
+                            processed_values = self.substitute(key, value, macros)
+                            data.update(processed_values)
+            else:
+                print("Excpected a namelist variable")
+        print("Data", data)
+        return data
+
+def namelist_dict():
+
+    input_data = {
+        "pgd": {
+            "NAM_FRAC#LECOSG": {
+                "True": {
+                    "macros": {
+                        "VTYPE": {
+                            "start": 1,
+                            "end": 21,
+
+                        },
+                        "DECADE": {
+                            "start": 0,
+                            "end": "NAM_DATA_ISBA#NTIME",
+                            "unit": "decade_days"                        
+                        }
+                    },
+                    "NAM_DATA_ISBA#CF_TYP_ALBNIR_SOIL": {
+                        "DIRTYPE": {
+                            "ALBNIR@VTYPE@@DECADE@": "@ecoclimap_sg@/ALB@VTYPE@@DECADE@"
+                        }
+                    }
+                }
+            }
+        },
+        "soda": {
+            "NAM_ASSIM#CASSIM_ISBA": {
+                "OI": {
+                    "NAM_ASSIM#CFILE_FORMAT_FG": {
+                        "FA": {
+                            "FG_OI_MAIN": ""
+                        },
+                        "NC": {
+                            "FIRST_GUESS_@YY@@MM@@DD@H@HH@.DAT": ""
+                        }
+                    },
+                    "ASCAT_SM.DAT": "@ascat_dir@/ASCAT_SM.DAT",
+                    "fort.61": "@oi_coeffs_dir@/ISBA_POLYNOMES",
+                    "NAM_ASSIM#CFILE_FORMAT_LSM": {
+                        "FA": {
+                            "FG_OI_MAIN": ""
+                        },
+                        "ASCII": {
+                            "LSM.DAT": ""       
+                        }
+                    }
+                },
+                "EKF": {
+                    "macros": {
+                        "PERT": {
+                            "list": "NAM_VAR#NNVC",
+                            "duplicate": "NAM_ASSIM#LLINCHECK"
+                        },
+                    },
+                    "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                        "FA": {
+                            "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
+                            "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa"
+                        },
+                        "NC": {
+                            "PREP_INIT.nc": "@first_guess_dir@/PREP_INIT.nc",
+                            "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc"
+                        }
+                    } 
+                },
+                "ENKF": {
+                    "macros": {
+                        "EE": {
+                            "start": 0,
+                            "end": "NAM_ASSIM#NENS_M",
+                            "step": 1,
+                            "digits": 2
+                        }
+                    },
+                    "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                        "FA": {
+                            "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
+                            "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa"
+                        }
+                    },
+                    "NAM_ASSIM#CFILE_FORMAT_LSM": {
+                        "FA": {
+                            "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
+                        },
+                        "ASCII": {
+                            "LSM.DAT": "@first_guess_dir@/LSM.DAT"
+                        }
+                    }
+                }
+            }        
+        }
+    }
+    return input_data

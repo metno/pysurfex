@@ -3,9 +3,10 @@ import contextlib
 import os
 from pathlib import Path
 
+import f90nml
 import pytest
 
-from pysurfex.binary_input import JsonOutputData, SodaInputData
+from pysurfex.binary_input import JsonOutputData, SodaInputData, namelist_dict, InputDataFromNamelist
 from pysurfex.configuration import ConfigurationFromTomlFile
 from pysurfex.platform import SystemFilePaths
 
@@ -108,3 +109,32 @@ def test_json_output(tmp_path_factory):
     }
     with working_directory(tmp_path_factory.getbasetemp()):
         JsonOutputData(data).archive_files()
+
+def test_new_binary_input():
+    nml_input = {
+        "NAM_FRAC": {
+            "LECOSG": True
+        },
+        "NAM_IO_OFFLINE": {
+            "CSURFFILETYPE": "FA"
+        },
+        "NAM_DATA_ISBA": {
+            "CF_NAM_ALBNIR_SOIL": "filename",
+            "CF_TYP_ALBNIR_SOIL": "DIRTYPE"
+        },
+        "NAM_ASSIM": {
+            "CASSIM_ISBA": "EKF",
+            "CFILE_FORMAT_LSM": "ASCII",
+            "CFILE_FORMAT_FG": "FA",
+            "LLINCHECK": True
+        },
+        "NAM_VAR": {
+            "NNVC": [0, 1, 0, 1]
+        }
+    }
+    nml = f90nml.Namelist(nml_input)
+    input_data =  namelist_dict()
+    binary_data = InputDataFromNamelist(nml, input_data, "pgd")
+    assert binary_data.data["ALBNIR1@DECADE@"] == "@ecoclimap_sg@/ALB1@DECADE@"
+    binary_data = InputDataFromNamelist(nml, input_data, "soda")
+    # assert binary_data.data["PREP_INIT.fa"] == "@first_guess_dir@/PREP_INIT.fa"
