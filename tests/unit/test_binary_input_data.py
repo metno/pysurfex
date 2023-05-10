@@ -1,14 +1,18 @@
 """Test binary input data to surfex commands."""
 import contextlib
+import json
+import logging
 import os
 from pathlib import Path
 
 import f90nml
 import pytest
 
-from pysurfex.binary_input import JsonOutputData, SodaInputData, namelist_dict, InputDataFromNamelist
+from pysurfex.binary_input import InputDataFromNamelist, JsonOutputData
+from pysurfex.binary_input_legacy import SodaInputData
 from pysurfex.configuration import ConfigurationFromTomlFile
-from pysurfex.platform import SystemFilePaths
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.platform_deps import SystemFilePaths
 
 
 @pytest.fixture()
@@ -110,31 +114,130 @@ def test_json_output(tmp_path_factory):
     with working_directory(tmp_path_factory.getbasetemp()):
         JsonOutputData(data).archive_files()
 
-def test_new_binary_input():
-    nml_input = {
-        "NAM_FRAC": {
-            "LECOSG": True
-        },
-        "NAM_IO_OFFLINE": {
-            "CSURFFILETYPE": "FA"
-        },
-        "NAM_DATA_ISBA": {
-            "CF_NAM_ALBNIR_SOIL": "filename",
-            "CF_TYP_ALBNIR_SOIL": "DIRTYPE"
-        },
-        "NAM_ASSIM": {
-            "CASSIM_ISBA": "EKF",
-            "CFILE_FORMAT_LSM": "ASCII",
-            "CFILE_FORMAT_FG": "FA",
-            "LLINCHECK": True
-        },
-        "NAM_VAR": {
-            "NNVC": [0, 1, 0, 1]
-        }
+
+@pytest.fixture()
+def f90ml_namelist(tmp_path_factory):
+    nml = tmp_path_factory.getbasetemp() / "nml"
+    nml_input = """
+        &NAM_FRAC
+            LECOSG = .True.
+        /
+        &NAM_IO_OFFLINE
+            CSURFFILETYPE = "FA"
+        /
+        &NAM_DATA_ISBA
+            NTIME = 36
+            CFNAM_ALBNIR_SOIL(1,1) = "filename_1_0105"
+            CFTYP_ALBNIR_SOIL(1,1) = "DIRTYPE"
+            CFNAM_ALBNIR_SOIL(20,1) = "filename_20_0105"
+            CFTYP_ALBNIR_SOIL(20,1) = "DIRTYPE"
+            CFNAM_ALBNIR_SOIL(2,2) = "filename_2_0115"
+            CFTYP_ALBNIR_SOIL(2,2) = "DIRTYPE"
+            CFNAM_ALBNIR_SOIL(20,36) = "filename_20_1225"
+            CFTYP_ALBNIR_SOIL(20,36) = "DIRTYPE"
+        /
+        &NAM_ASSIM
+            CASSIM_ISBA = "EKF"
+            CFILE_FORMAT_LSM = "ASCII"
+            CFILE_FORMAT_FG = "FA"
+            LLINCHECK = .True.
+            NENS_M = 16
+        /
+        &NAM_VAR
+            NNCV(1) = 0
+            NNCV(2) = 1
+            NNCV(3) = 1
+            NNCV(4) = 0
+        /
+        &NAM_ZS
+            YFILE = "gmted2010file"
+            YFILETYPE = "DIRECT"
+        /
+    """
+    with open(nml, mode="w", encoding="utf-8") as nml_file:
+        nml_file.write(nml_input)
+    return nml
+
+
+def test_new_binary_input(f90ml_namelist, input_binary_data_file):
+
+    system_paths = {
+        "first_guess_dir": "/fg",
+        "ecoclimap_sg": "/ecoclimap",
+        "oi_coeffs_dir": "/oi",
+        "ascat_dir": "/ascat",
+        "gmted": "/gmted",
+        "climdir": "/climdir",
     }
-    nml = f90nml.Namelist(nml_input)
-    input_data =  namelist_dict()
-    binary_data = InputDataFromNamelist(nml, input_data, "pgd")
-    assert binary_data.data["ALBNIR1@DECADE@"] == "@ecoclimap_sg@/ALB1@DECADE@"
-    binary_data = InputDataFromNamelist(nml, input_data, "soda")
-    # assert binary_data.data["PREP_INIT.fa"] == "@first_guess_dir@/PREP_INIT.fa"
+    with open(f90ml_namelist, mode="r", encoding="utf-8") as nml_fh:
+        nml = f90nml.read(nml_fh)
+    with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
+        input_data = json.load(fhandler)
+    platform = SystemFilePaths(system_paths)
+    basetime = as_datetime("2022022006")
+    validtime = as_datetime("2022022006")
+    binary_data = InputDataFromNamelist(
+        nml, input_data, "pgd", platform, basetime=basetime, validtime=validtime
+    )
+    print(binary_data.data)
+    assert binary_data.data["filename_2_0115"] == "/ecoclimap/ALB_2_0115"
+    assert binary_data.data["filename_20_1225"] == "/ecoclimap/ALB_20_1225"
+    binary_data = InputDataFromNamelist(
+        nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert binary_data.data["PREP_INIT.fa"] == "/fg/PREP_INIT.fa"
+    assert (
+        binary_data.data["PREP_220220H06_EKF_PERT0.fa"]
+        == "/fg/PREP_220220H06_EKF_PERT0.fa"
+    )
+    assert (
+        binary_data.data["PREP_220220H06_EKF_PERT4.fa"]
+        == "/fg/PREP_220220H06_EKF_PERT7.fa"
+    )
+
+    nml["NAM_ASSIM"]["LLINCHECK"] = False
+    binary_data = InputDataFromNamelist(
+        nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert binary_data.data["PREP_INIT.fa"] == "/fg/PREP_INIT.fa"
+    assert (
+        binary_data.data["PREP_220220H06_EKF_PERT0.fa"]
+        == "/fg/PREP_220220H06_EKF_PERT0.fa"
+    )
+    assert (
+        binary_data.data["PREP_220220H06_EKF_PERT1.fa"]
+        == "/fg/PREP_220220H06_EKF_PERT2.fa"
+    )
+    assert (
+        binary_data.data["PREP_220220H06_EKF_PERT2.fa"]
+        == "/fg/PREP_220220H06_EKF_PERT3.fa"
+    )
+
+    nml["NAM_ASSIM"]["CASSIM_ISBA"] = "ENKF"
+    binary_data = InputDataFromNamelist(
+        nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert binary_data.data["PREP_INIT.fa"] == "/fg/PREP_INIT.fa"
+    assert (
+        binary_data.data["PREP_220220H06_EKF_ENS01.fa"]
+        == "/fg/PREP_220220H06_EKF_ENS01.fa"
+    )
+    assert (
+        binary_data.data["PREP_220220H06_EKF_ENS15.fa"]
+        == "/fg/PREP_220220H06_EKF_ENS15.fa"
+    )
+
+    with open(f90ml_namelist, mode="r", encoding="utf-8") as nml_fh:
+        nml = f90nml.read(nml_fh)
+    nml["NAM_ASSIM"]["CASSIM_ISBA"] = "OI"
+    binary_data = InputDataFromNamelist(
+        nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert binary_data.data["FG_OI_MAIN"] == "/fg/FG_OI_MAIN"
+    assert binary_data.data["ASCAT_SM.DAT"] == "/ascat/ASCAT_SM.DAT"
+    assert binary_data.data["fort.61"] == "/oi/ISBA_POLYNOMES"
+    assert binary_data.data["LSM.DAT"] == "/climdir/LSM.DAT"

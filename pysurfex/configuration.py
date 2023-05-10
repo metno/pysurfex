@@ -6,7 +6,7 @@ import os
 import toml
 
 from .geo import ConfProj
-from .platform import SystemFilePaths
+from .platform_deps import SystemFilePaths
 from .util import merge_toml_env
 
 

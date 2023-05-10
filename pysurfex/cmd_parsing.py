@@ -756,6 +756,9 @@ def parse_args_masterodb(argv):
     parser.add_argument(
         "--force", "-f", action="store_true", default=False, help="Force re-creation"
     )
+    parser.add_argument(
+        "--input_binary_data", "-i", dest="input_binary_data", required=False
+    )
     parser.add_argument("--rte", "-r", required=True, nargs="?")
     parser.add_argument("--config", "-c", required=False, nargs="?")
     parser.add_argument(
@@ -905,6 +908,9 @@ def parse_args_surfex_binary(argv, mode):
         default=False,
         help="Input file written by masterodb",
     )
+    parser.add_argument(
+        "--input_binary_data", "-i", dest="input_binary_data", required=False
+    )
     parser.add_argument("--rte", "-r", required=True, nargs="?")
     parser.add_argument("--config", "-c", required=False, nargs="?")
     parser.add_argument(
@@ -962,19 +968,7 @@ def parse_args_create_namelist(argv):
     parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False
     )
-    parser.add_argument(
-        "--wrapper", "-w", type=str, default="", help="Execution wrapper command"
-    )
     parser.add_argument("mode", type=str, help="Type of namelist")
-    parser.add_argument("--method", required=False, default="blocks", nargs="?")
-    parser.add_argument("--prep_file", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_filetype", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_pgdfile", required=False, default=None, nargs="?")
-    parser.add_argument("--prep_pgdfiletype", required=False, default=None, nargs="?")
-    parser.add_argument(
-        "--forc_zs", action="store_true", default=False, help="Set model ZS to forcing ZS"
-    )
-    parser.add_argument("--forcing_dir", required=False, default=None, nargs="?")
     parser.add_argument(
         "--harmonie",
         action="store_true",
@@ -994,7 +988,6 @@ def parse_args_create_namelist(argv):
         "--domain", type=str, required=False, help="JSON file with domain"
     )
     parser.add_argument("--output", "-o", type=str, required=False)
-    parser.add_argument("--dtg", type=str, required=False, default=None)
 
     if len(argv) == 0:
         parser.print_help()

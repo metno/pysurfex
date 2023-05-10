@@ -14,7 +14,7 @@ except Exception:
     ogr = None
 
 
-from .namelist import BaseNamelist
+from .namelist_legacy import BaseNamelist
 
 
 class Geo(object):

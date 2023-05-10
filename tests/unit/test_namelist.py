@@ -1,11 +1,15 @@
 """Test namelist settings."""
 import json
+import os
 
 import pytest
+import yaml
 
 from pysurfex.configuration import ConfigurationFromTomlFile
 from pysurfex.datetime_utils import as_datetime
-from pysurfex.namelist import BaseNamelist, Namelist
+from pysurfex.namelist import NamelistGenerator
+from pysurfex.namelist_legacy import BaseNamelist, Namelist
+from pysurfex.platform_deps import SystemFilePaths
 
 
 @pytest.fixture()
@@ -78,3 +82,33 @@ def test_namelist(
     key = "@VEGTYPE@@DECADE@@VAR@"
     value = "value"
     Namelist.sub(namelist_dict, "TEST", key, value, vtype="1", decade="1", var="VAR")
+
+
+def test_new_namelists(
+        config_exp_surfex_toml,
+        tmp_path_factory,
+        input_binary_data_file,
+        get_nam_file
+    ):
+    program = "pgd"
+    config = ConfigurationFromTomlFile(config_exp_surfex_toml)
+
+    with open(get_nam_file, mode="r", encoding="utf-8") as fhandler:
+        definitions = yaml.safe_load(fhandler)
+    nml = NamelistGenerator(program, config, definitions)
+    with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
+        input_data = json.load(fhandler)
+    nml_out = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist.nml"
+    nml.write(nml_out)
+
+    system_paths = {
+        "first_guess_dir": "/fg",
+        "ecoclimap_sg": "/ecoclimap",
+        "oi_coeffs_dir": "/oi",
+        "ascat_dir": "/ascat",
+        "gmted": "/gmted",
+        "climdir": "/climdir",
+    }
+
+    platform = SystemFilePaths(system_paths)
+    nml.input_data_from_namelist(input_data, platform)
