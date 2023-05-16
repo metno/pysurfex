@@ -1,4 +1,5 @@
 """Namelist."""
+import collections
 import logging
 import re
 
@@ -28,9 +29,14 @@ class NamelistGenerator(object):
             "CPREPFILE": "SURFEX#IO#CPREPFILE",
             "CSURFFILE": "SURFEX#IO#CSURFFILE",
             "CSURF_FILETYPE": "SURFEX#IO#CSURF_FILETYPE",
+            "CFORCING_FILETYPE": "SURFEX#IO#CFORCING_FILETYPE",
             "CTIMESERIES_FILETYPE": "SURFEX#IO#CTIMESERIES_FILETYPE",
             "XRIMAX": "SURFEX#PARAMETERS#XRIMAX",
-            "LSPLIT_PATCH": "SURFEX#IO#LSPLIT_PATCH"
+            "LSPLIT_PATCH": "SURFEX#IO#LSPLIT_PATCH",
+            "LFAKETREE": "SURFEX#TREEDRAG#FAKETREES",
+            "LECOSG": "SURFEX#COVER#SG",
+            "XTSTEP": "SURFEX#IO#XTSTEP",
+            "XTSTEP_OUTPUT ": "SURFEX#IO#XTSTEP_OUTPUT"
         }
         macros = {}
         for macro, setting in macros_defs.items():
@@ -40,6 +46,8 @@ class NamelistGenerator(object):
                 macros.update({
                     macro: vmacro
                 })
+        macros = self.flatten_config()
+        print(macros)
         self.macros = macros
         if assemble is None:
             self.assemble = self.namelist_blocks()
@@ -67,6 +75,31 @@ class NamelistGenerator(object):
                                 "Problem with: %s Description=%s", problem, desc
                             )
 
+
+    def flatten_config(self):
+        """Flatten dictionary.
+
+        Returns:
+            source(dict): Flat dict with settings
+        """
+
+        def _flatten_dict_gen(dic, parent_key, sep):
+            for key, val in dic.items():
+                new_key = parent_key + sep + key if parent_key else key
+                if isinstance(val, collections.abc.MutableMapping):
+                    yield from flatten_dict(val, new_key, sep=sep).items()
+                else:
+                    yield new_key, val
+
+
+        def flatten_dict(
+                d: collections.abc.MutableMapping,
+                parent_key: str = '', sep: str = '#'
+            ):
+            return dict(_flatten_dict_gen(d, parent_key, sep))
+
+        return flatten_dict(self.config.settings)
+
     def namelist_blocks(self):
         """Construct building blocks for the namelist genrator."""
         logging.info("Building namelist blocks for program: %s", self.program)
@@ -82,6 +115,8 @@ class NamelistGenerator(object):
 
         # Program specific settings
         if self.program == "pgd":
+
+            input_blocks += ["pgd", "pgd_cover", "pgd_zs"]
             eco_sg = self.config.get_setting("SURFEX#COVER#SG")
             if eco_sg:
                 input_blocks += ["pgd_ecoclimap_sg"]
@@ -89,6 +124,8 @@ class NamelistGenerator(object):
                 input_blocks += ["pgd_ecoclimap"]
 
             # Set ISBA properties
+            if lisba:
+                input_blocks += ["pgd_isba"]
             if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
                 input_blocks += ["pgd_isba_dif"]
             elif self.config.get_setting("SURFEX#ISBA#SCHEME") == "3-L":
@@ -217,7 +254,7 @@ class NamelistGenerator(object):
     @staticmethod
     def check_nml_setting(problems, nml, block, key, value):
 
-        ckey = block + "." + key
+        ckey = block + "#" + key
         if block in nml:
             if key in nml[block]:
                 if nml[block][key] != value:
@@ -499,7 +536,7 @@ class NamelistGenerator(object):
                             # For now assumes only one subst. per line, could be generalized if needed
                             if str(finval).find("$") >= 0:
                                 m = re.search(
-                                    r"^([^\$]*)\$\{([\w\.]+)\-?([^}]*)\}(.*)", str(val)
+                                    r"^([^\$]*)\$\{([\w\#]+)\-?([^}]*)\}(.*)", str(val)
                                 )
                                 if m:
                                     pre = m.group(1)

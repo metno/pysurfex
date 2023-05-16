@@ -22,9 +22,9 @@
                 "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
             }
         },
-        "NAM_ZS#YFILETYPE": {
+        "NAM_ZS#YZSFILETYPE": {
             "DIRECT": {
-                "NAM_ZS#YFILE": "@gmted@/gmted2010"
+                "NAM_ZS#YZS": "@gmted@/gmted2010"
             }
         }
     },

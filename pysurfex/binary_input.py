@@ -6,6 +6,42 @@ import subprocess
 from abc import ABC, abstractmethod
 
 
+def binary_input_data():
+    return {
+        "pgd": {
+            "NAM_FRAC#LECOSG": {
+                "True": {
+                    "macros": {
+                        "VTYPE": {
+                            "fmt": "02d"
+                        },
+                        "DECADE": {
+                            "ntime": "NAM_DATA_ISBA#NTIME"
+                        }
+                    },
+                    "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
+                        "DIRTYPE": {
+                            "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@"
+                        }
+                    }
+                },
+                "False": {
+                    "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                    "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                    "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+                }
+            },
+            "NAM_ZS#YFILETYPE": {
+                "DIRECT": {
+                    "NAM_ZS#YFILE": "@gmted@/gmted2010"
+                }
+            }
+        },
+        "prep":{
+
+        }
+    }
+
 class InputDataToSurfexBinaries(ABC):
     """Abstract input data."""
 

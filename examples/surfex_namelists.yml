@@ -1,20 +1,23 @@
 constants:
   NAM_SURF_ATM:
-    XRIMAX: '${XRIMAX}'
+    XRIMAX: '${SURFEX#PARAMETERS#XRIMAX}'
   NAM_SURF_CSTS:
     xz0hsn: 0.0003
     xz0sn: 0.003
+
 flake:
   nam_flaken:
     lsediments: false
+
 sice:
   NAM_SEAICE_SICE:
     LICE_HAS_SNOW: true
     LICE_MASS_BALANCE: true
     XOCEAN_HEAT_FLUX: 2.0
+
 treedrag:
   NAM_TREEDRAG:
-    LFAKETREE: '${LFAKETREE}'
+    LFAKETREE: '${SURFEX#TREEDRAG#FAKETREES}'
     xallen_term: 2.5
     xforfrac1: 1.0
     xforfrac2: 0.0
@@ -23,25 +26,25 @@ treedrag:
     xgrass_h_dnm: 3.0
     xz0_max_limit: 1.6
     xz0_min_limit: 0.0
+
 io:
   NAM_IO_OFFLINE:
-    CFORCING_FILETYPE: '${CFORCING_FILETYPE}'
-    CPGDFILE: '${CPGDFILE}'
-    CPREPFILE: '${CPREPFILE}'
-    CSURFFILE: '${CSURFFILE}'
-    CSURF_FILETYPE: '${CSURF_FILETYPE}'
-    CTIMESERIES_FILETYPE: '${CTIMESERIES_FILETYPE}'
+    CFORCING_FILETYPE: '${SURFEX#IO#CFORCING_FILETYPE}'
+    CPGDFILE: '${SURFEX#IO#CPGDFILE}'
+    CPREPFILE: '${SURFEX#IO#CPREPFILE}'
+    CSURFFILE: '${SURFEX#IO#CSURFFILE}'
+    CSURF_FILETYPE: '${SURFEX#IO#CSURF_FILETYPE}'
+    CTIMESERIES_FILETYPE: '${SURFEX#IO#CTIMESERIES_FILETYPE}'
     LFAGMAP: true
     LRESTART: true
     LRESTART_2M: true
-    LSET_FORC_ZS: '${LSET_FORC_ZS}'
+    LSET_FORC_ZS: false
     NHALO: 0
-    XTSTEP_OUTPUT: '${XTSTEP_OUTPUT}'
-    XTSTEP_SURF: '${XTSTEP_SURF}'
+    XTSTEP_OUTPUT: '${SURFEX#IO#XTSTEP_OUTPUT}'
+    XTSTEP_SURF: '${SURFEX#IO#XTSTEP}'
   NAM_WRITE_SURF_ATM:
-    LSPLIT_PATCH: '${LSPLIT_PATCH}'
-pgd_isba_3-L: {}
-pgd_isba_dif: {}
+    LSPLIT_PATCH: '${SURFEX#IO#LSPLIT_PATCH}'
+
 pgd_meb:
   NAM_MEB_ISBA:
     LMEB_LITTER: true
@@ -57,6 +60,7 @@ pgd_meb:
     cpedo_function: CO84
     cphoto: NON
     xunif_runoffb: 0.2
+
 offline:
   NAM_DIAG_ISBAn:
     LPATCH_BUDGET: true
@@ -88,6 +92,7 @@ offline:
     XCD_COEFF1: 10.0
     XCD_COEFF2: 5.0
     XCH_COEFF1: 15.0
+
 offline_pert_isba_settings:
   NAM_IO_VARASSIM:
     LBEV: '${LBEV}'
@@ -96,46 +101,57 @@ offline_pert_isba_settings:
   NAM_VAR:
     NIVAR: '${NIVAR}'
     NVAR: '${NVAR}'
+
 offline_flake: {}
+
 offline_isba:
   NAM_ISBAn:
-    LPERTSURF: '${LPERTSURF}'
-    XCGMAX: '${XCGMAX}'
-    XCSMAX: '${XCSMAX}'
+    LPERTSURF: '${SURFEX#ISBA#LPERTSURF}'
+    XCGMAX: '${SURFEX#ISBA#XCGMAX}'
+    XCSMAX: '${SURFEX#ISBA#XCSMAX}'
+
 offline_seaflux:
   NAM_SEAFLUXn:
     CSEA_FLUX: ECUME6
-    LPERTFLUX: '${LPERTFLUX}'
+    LPERTFLUX: '${SURFEX#SEA#LPERTFLUX}'
     LPRECIP: false
     LPWEBB: false
     LPWG: false
+
 offline_seaice:
   NAM_SEAICEn:
     LVOLATILE_SIC: '${LVOLATILE_SIC}'
     XSIC_EFOLDING_TIME: '${XSIC_EFOLDING_TIME}'
+
 offline_sso:
   NAM_SSON:
     CROUGH: '${CROUGH}'
+
 offline_sso_orotur:
   NAM_SSON:
     XSOROT: '${XSOROT}'
+
 offline_teb: {}
+
 offline_watflux: {}
+
 pgd:
   NAM_FRAC:
-    LECOSG: '${LECOSG}'
+    LECOSG: '${SURFEX#COVER#SG}'
   NAM_PGD_SCHEMES:
-    CNATURE: '${CNATURE}'
-    CSEA: '${CSEA}'
-    CTOWN: '${CTOWN}'
-    CWATER: '${CWATER}'
+    CNATURE: '${SURFEX#TILES#NATURE}'
+    CSEA: '${SURFEX#TILES#SEA}'
+    CTOWN: '${SURFEX#TILES#TOWN}'
+    CWATER: '${SURFEX#TILES#INLAND_WATER}'
+
 pgd_arrange_cover:
   NAM_PGD_ARRANGE_COVER:
-    LTOWN_TO_ROCK: '${LTOWN_TO_ROCK}'
+    LTOWN_TO_ROCK: false
+
 pgd_cover:
   NAM_COVER:
-    YCOVER: '${YCOVER}'
-    YCOVERFILETYPE: '${YCOVERFILETYPE}'
+    YCOVER: '${SURFEX#COVER#YCOVER}'
+    YCOVERFILETYPE: 'DIRECT'
 pgd_cv:
   NAM_DATA_ISBA:
     XUNIF_CV:
@@ -7476,20 +7492,32 @@ pgd_flake:
 pgd_inland_water: {}
 pgd_isba:
   NAM_ISBA:
-    CISBA: '${CISBA}'
-    LMEB: '${LMEB}'
-    NGROUND_LAYER: '${NGROUND_LAYER}'
-    NPATCH: '${NPATCH}'
-    YCLAY: '${YCLAY}'
-    YCLAYFILETYPE: '${YCLAYFILETYPE}'
-    YSAND: '${YSAND}'
-    YSANDFILETYPE: '${YSANDFILETYPE}'
-    YSOCFILETYPE: '${YSOCFILETYPE}'
-    YSOC_SUB: '${YSOC_SUB}'
-    YSOC_TOP: '${YSOC_TOP}'
-pgd_isba_2-L: {}
-pgd_isba_3-L: {}
-pgd_isba_dif: {}
+    CISBA: '${SURFEX#ISBA#SCHEME}'
+    LMEB: '${SURFEX#ISBA#MEB}'
+    NPATCH: '${SURFEX#ISBA#NPATCH}'
+    YCLAY: '${SURFEX#ISBA#YCLAY}'
+    YCLAYFILETYPE: 'DIRECT'
+    YSAND: '${SURFEX#ISBA#YSAND}'
+    YSANDFILETYPE: 'DIRECT'
+    YSOCFILETYPE: 'DIRECT'
+    YSOC_SUB: '${SURFEX#ISBA#YSOC_SUB}'
+    YSOC_TOP: '${SURFEX#ISBA#YSOC_TOP}'
+
+pgd_isba_2l:
+  NAM_ISBA:
+    CISBA: '2-L'
+    NGROUND_LAYER: 2
+
+pgd_isba_3l:
+  NAM_ISBA:
+    CISBA: '3-L'
+    NGROUND_LAYER: 3
+
+pgd_isba_dif:
+  NAM_ISBA:
+    CISBA: 'DIF'
+    NGROUND_LAYER: 14
+
 pgd_rsmin:
   NAM_DATA_ISBA:
     XUNIF_RSMIN:
@@ -7512,7 +7540,9 @@ pgd_rsmin:
     - 150.0
     - 40.0
     - 150.0
+
 pgd_rsmin_mod: {}
+
 pgd_rsmin_sg:
   NAM_DATA_ISBA:
     XUNIF_RSMIN:
@@ -7536,14 +7566,18 @@ pgd_rsmin_sg:
     - 135.6
     - 150.0
     - 40.0
+
 pgd_rsmin_sg_mod: {}
+
 pgd_sea:
   nam_seabathy:
     xunif_seabathy: 0.0
+
 pgd_zs:
   NAM_ZS:
-    YZS: '${YZS}'
-    YZSFILETYPE: '${YZSFILETYPE}'
+    YZS: '${SURFEX#ZS#YZS}'
+    YZSFILETYPE: 'DIRECT'
+
 prep:
   NAM_PREP_SURF_ATM:
     CFILE: '${CFILE}'
@@ -7554,18 +7588,21 @@ prep:
     NMONTH: '${NMONTH}'
     NYEAR: '${NYEAR}'
     XTIME: '${XTIME}'
+
 prep_flake:
   NAM_PREP_FLAKE:
     LCLIM_LAKE: '${LCLIM_LAKE}'
+
 prep_isba:
   NAM_PREP_ISBA:
-    LISBA_CANOPY: '${LISBA_CANOPY}'
+    LISBA_CANOPY: false
     lextrap_sn: true
     lextrap_tg: true
     lextrap_wg: true
     lextrap_wgi: true
   nam_diag_isban:
     lpatch_budget: true
+
 prep_isba_dif:
   nam_isba:
     cpedo_function: CO84
@@ -7576,20 +7613,26 @@ prep_isba_dif:
     crain: SGH
     crunoff: DT92
     lsoc: true
+
 prep_isba_snow:
   nam_prep_isba_snow:
     CSNOW: '${CSNOW}'
     lswemax: true
+
 prep_isba_snow_crocus: {}
+
 prep_seaflux:
   NAM_PREP_SEAFLUX:
     CSEAICE_SCHEME: '${CSEAICE_SCHEME}'
     LSEA_SBL: false
+
 prep_sice:
   nam_prep_seaice_sice:
     num_layers: 4
     xice_thickness: 0.75
+
 prolog: {}
+
 selected_output:
   nam_write_diag_surfn:
     cselect:
@@ -7720,6 +7763,7 @@ selected_output:
     - CH
     - CE
     lselect: true
+
 soda:
   NAM_ASSIM:
     CASSIM_ISBA: '${CASSIM_ISBA}'
@@ -7741,6 +7785,7 @@ soda:
     NPRINTLEV: 0
   NAM_DIAG_ISBAn:
     lsurf_misc_budget: true
+
 soda_isba_ekf:
   NAM_ASSIM:
     CASSIM_ISBA: EKF
@@ -7754,10 +7799,12 @@ soda_isba_ekf:
     NVAR: '${NVAR}'
     XALPHA: '${XALPHA}'
     XSCALE_Q: '${XSCALE_Q}'
+
 soda_isba_enkf:
   NAM_VAR:
     NIVAR: '${NIVAR}'
     NVAR: '${NVAR}'
+
 soda_isba_oi:
   NAM_ASSIM:
     CFILE_FORMAT_CLIM: '${CFILE_FORMAT_CLIM}'
@@ -7771,6 +7818,7 @@ soda_isba_oi:
     XRCLISST: '${XRCLISST}'
     XSIGH2MO: '${XSIGH2MO}'
     XSIGT2MO: '${XSIGT2MO}'
+
 soda_obs:
   NAM_OBS:
     CFILE_FORMAT_OBS: '${CFILE_FORMAT_OBS}'
