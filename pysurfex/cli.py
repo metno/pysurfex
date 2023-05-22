@@ -506,6 +506,7 @@ def run_surfex_binary(mode, **kwargs):
         config.update_setting("SURFEX#PREP#NDAY", dtg.day)
         xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
         config.update_setting("SURFEX#PREP#XTIME", xtime)
+        config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]

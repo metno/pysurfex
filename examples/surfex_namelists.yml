@@ -99,8 +99,8 @@ offline_pert_isba_settings:
     LBFIXED: True
     LPRT: False
   NAM_VAR:
-    NIVAR: 0
-    NVAR: 0
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
 
 offline_flake: {}
 
@@ -111,6 +111,17 @@ offline_isba:
     LPERTSURF: '${SURFEX#ISBA#PERTSURF}'
     XCGMAX: '${SURFEX#ISBA#XCGMAX}'
     XCSMAX: '${SURFEX#ISBA#XCSMAX}'
+
+offline_isba_dif:
+  NAM_SGH_ISBAn:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: true
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
 
 offline_seaflux:
   NAM_SEAFLUXn:
@@ -7638,28 +7649,28 @@ prep_isba:
     LECOSG: '${SURFEX#COVER#SG}'
   NAM_PREP_ISBA:
     LISBA_CANOPY: false
-    lextrap_sn: true
-    lextrap_tg: true
-    lextrap_wg: true
-    lextrap_wgi: true
+    LEXTRAP_SN: true
+    LEXTRAP_TG: true
+    LEXTRAP_WG: true
+    LEXTRAP_WGI: true
   nam_diag_isban:
-    lpatch_budget: true
+    LPATCH_BUDGET: true
 
 prep_isba_dif:
-  nam_isba:
-    cpedo_function: CO84
-    cphoto: NON
-    xunif_runoffb: 0.2
-  nam_sgh_isban:
-    chort: DEF
-    crain: SGH
-    crunoff: DT92
-    lsoc: true
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
+  NAM_SGH_ISBAN:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: TRUE
 
 prep_isba_snow:
   nam_prep_isba_snow:
     CSNOW: '${SURFEX#ISBA#SNOW}'
-    lswemax: true
+    LSWEMAX: true
 
 prep_isba_snow_crocus: {}
 
@@ -7669,11 +7680,9 @@ prep_seaflux:
     LSEA_SBL: false
 
 prep_sice:
-  nam_prep_seaice_sice:
-    num_layers: 4
-    xice_thickness: 0.75
-
-prolog: {}
+  NAM_PREP_SEAICE_SICE:
+    NUM_LAYERS: 4
+    XICE_THICKNESS: 0.75
 
 selected_output:
   nam_write_diag_surfn:
@@ -7816,7 +7825,7 @@ soda:
     CASSIM_WATER: '${SURFEX#ASSIM#SCHEMES#INLAND_WATER}'
     CFILE_FORMAT_LSM: '${SURFEX#ASSIM#CFILE_FORMAT_LSM}'
     CFILE_FORMAT_SST: '${SURFEX#ASSIM#SEA#CFILE_FORMAT_SST}'
-    LAESNM: '${LAESNM}'
+    LAESNM: '${SURFEX#SODA#LAESNM}'
     LASSIM: True
     LECSST: '${SURFEX#ASSIM#SEA#LECSST}'
     LEXTRAP_NATURE: false
@@ -7840,15 +7849,20 @@ soda_isba_ekf:
     LBFIXED: True
     LPRT: False
   NAM_VAR:
-    NIVAR: 0
-    NVAR: 0
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
     XALPHA: '${SURFEX#ASSIM#ISBA#EKF#XALPHA}'
     XSCALE_Q: '${SURFEX#ASSIM#ISBA#EKF#XSCALE_Q}'
+    NNVC: '${SURFEX#ASSIM#ISBA#EKF#NNCV}'
+    CVAR_M: '${SURFEX#ASSIM#ISBA#EKF#CVAR_M}'
 
 soda_isba_enkf:
   NAM_VAR:
-    NIVAR: 0
-    NVAR: 0
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
+    NNVC: '${SURFEX#ASSIM#ISBA#ENKF#NNCV}'
+    CVAR_M: '${SURFEX#ASSIM#ISBA#ENKF#CVAR_M}'
+    NENS_M: '${SURFEX#ASSIM#ISBA#ENKF#NENS_M}'
 
 soda_isba_oi:
   NAM_ASSIM:
@@ -7870,4 +7884,7 @@ soda_obs:
     LOBSHEADER: '${SURFEX#ASSIM#OBS#LOBSHEADER}'
     LOBSNAT: '${SURFEX#ASSIM#OBS#LOBSNAT}'
     LSWE: '${SURFEX#ASSIM#OBS#LSWE}'
-    NOBSTYPE: '${SURFEX#ASSIM#OBS#NOBSTYPE}'
+    NNCO: '${SURFEX#ASSIM#OBS#NNCO}'
+    COBS_M: '${SURFEX#ASSIM#OBS#COBS_M}'
+    XERROBS_M: '${SURFEX#ASSIM#OBS#XERROBS_M}'
+    NOBSTYPE: '${SURFEX#SODA#NOBSTYPE}'

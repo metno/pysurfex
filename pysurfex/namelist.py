@@ -46,6 +46,35 @@ class NamelistGenerator(object):
                 macros.update({
                     macro: vmacro
                 })
+        
+        nobstype = 0
+        if program == "soda" or program == "offline":
+            nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
+            nobstype = 0
+            for __, obs_val in enumerate(nnco):
+                if obs_val == 1:
+                    nobstype += 1
+            self.config.update_setting("SURFEX#SODA#NOBSTYPE", nobstype)
+            soil_assim = self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA")
+            nncv = None
+            if soil_assim == "EKF":
+                nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
+            if soil_assim == "ENKF":
+                nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NNCV")
+            nvar = 0
+            if nncv is not None:
+                for __, cval in enumerate(nncv):
+                    if cval == 1:
+                        nvar += 1
+            self.config.update_setting("SURFEX#SODA#NVAR", nvar)
+
+        if program == "soda":
+            laesnm = False
+            hh = self.config.get_setting("SURFEX#SODA#HH")
+            if hh in self.config.get_setting("SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES"):
+                laesnm = True
+            self.config.update_setting("SURFEX#SODA#LAESNM", laesnm)
+
         macros = self.flatten_config()
         print(macros)
         self.macros = macros
@@ -210,6 +239,9 @@ class NamelistGenerator(object):
             # ISBA settings
             if lisba:
                 input_blocks += ["offline_isba"]
+
+                if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
+                    input_blocks += ["offline_isba_dif"]
                 if self.config.get_setting("SURFEX#ISBA#PERTSURF"):
                     input_blocks += ["offline_isba_pertsurf"]
 
