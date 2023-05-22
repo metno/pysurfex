@@ -192,6 +192,13 @@ class NamelistGenerator(object):
                 if self.config.get_setting("SURFEX#ISBA#SNOW") == "CRO":
                     input_blocks += ["prep_isba_snow_cro"]
 
+            if self.config.get_setting("SURFEX#PREP#FILE") is None:
+                input_blocks += ["prep_from_namelist"]
+            else:
+                input_blocks += ["prep_from_file"]
+            if self.config.get_setting("SURFEX#PREP#FILEPGD") is not None:
+                input_blocks += ["prep_from_file_with_pgd"]
+
         elif self.program == "offline" or self.program == "perturbed":
             input_blocks += ["offline"]
             input_blocks += ["offline_selected_output"]

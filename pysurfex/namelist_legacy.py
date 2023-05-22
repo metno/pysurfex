@@ -953,6 +953,14 @@ class BaseNamelist(object):
             _type_: _description_
 
         """
+        logging.debug("ldname=%s ldtype=%s", ldname, ldtype)
+        basename = os.path.basename(ldname)
+        parts = basename.split(".")
+        logging.debug("parts=%s", parts)
+        if len(parts) == 1:
+            logging.info("Assume format DIRTYP or DIRECT. ldname=%s", ldname)
+            ldname = ldname + ".dir"
+
         if ldname.endswith(".dir"):
             basename = os.path.splitext(os.path.basename(ldname))[0]
             filetype_name = ldtype

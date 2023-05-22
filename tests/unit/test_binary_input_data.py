@@ -127,14 +127,18 @@ def f90ml_namelist(tmp_path_factory):
         /
         &NAM_DATA_ISBA
             NTIME = 36
-            CFNAM_ALBNIR_SOIL(1,1) = "filename_1_0105"
-            CFTYP_ALBNIR_SOIL(1,1) = "DIRTYPE"
-            CFNAM_ALBNIR_SOIL(20,1) = "filename_20_0105"
-            CFTYP_ALBNIR_SOIL(20,1) = "DIRTYPE"
-            CFNAM_ALBNIR_SOIL(2,2) = "filename_2_0115"
-            CFTYP_ALBNIR_SOIL(2,2) = "DIRTYPE"
-            CFNAM_ALBNIR_SOIL(20,36) = "filename_20_1225"
-            CFTYP_ALBNIR_SOIL(20,36) = "DIRTYPE"
+            CFNAM_ALBNIR_SOIL(1,1) = "filename_albnir_soil_1_0105"
+            CFTYP_ALBNIR_SOIL(1,1) = "DIRTYP"
+            CFNAM_ALBNIR_SOIL(20,1) = "filename_albnir_soil_20_0105"
+            CFTYP_ALBNIR_SOIL(20,1) = "DIRTYP"
+            CFNAM_ALBNIR_SOIL(2,2) = "filename_albnir_soil_2_0115"
+            CFTYP_ALBNIR_SOIL(2,2) = "DIRTYP"
+            CFNAM_ALBNIR_SOIL(20,36) = "filename_albnir_soil_20_1225"
+            CFTYP_ALBNIR_SOIL(20,36) = "DIRTYP"
+            CFNAM_H_TREE(1) = "filename_h_tree_0105"
+            CFTYP_H_TREE(1) = "DIRTYP"          
+            CFNAM_H_TREE(36) = "filename_h_tree_1225"
+            CFTYP_H_TREE(36) = "DIRTYP"
         /
         &NAM_ASSIM
             CASSIM_ISBA = "EKF"
@@ -164,6 +168,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
     system_paths = {
         "first_guess_dir": "/fg",
         "ecoclimap_sg": "/ecoclimap",
+        "ecosg_data_path": "/ecoclimap",
         "oi_coeffs_dir": "/oi",
         "ascat_dir": "/ascat",
         "gmted": "/gmted",
@@ -180,8 +185,9 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         nml, input_data, "pgd", platform, basetime=basetime, validtime=validtime
     )
     print(binary_data.data)
-    assert binary_data.data["filename_2_0115"] == "/ecoclimap/ALB_2_0115"
-    assert binary_data.data["filename_20_1225"] == "/ecoclimap/ALB_20_1225"
+    assert binary_data.data["filename_albnir_soil_2_0115.dir"] == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115.dir"
+    assert binary_data.data["filename_albnir_soil_20_1225.dir"] == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225.dir"
+    assert binary_data.data["filename_h_tree_1225.dir"] == "/ecoclimap/HT/new_ht_c.dir"
     binary_data = InputDataFromNamelist(
         nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
     )

@@ -20,7 +20,7 @@ def binary_input_data():
                         }
                     },
                     "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
-                        "DIRTYPE": {
+                        "DIRTYP": {
                             "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@"
                         }
                     }
@@ -206,13 +206,22 @@ class InputDataFromNamelist(JsonInputData):
     def get_nml_value(nml, block, key, indices=None):
         logging.debug("Checking block=%s key=%s", block, key)
         if block in nml:
-            logging.debug(nml[block])
             if key in nml[block]:
+                logging.debug(nml[block][key])
                 if indices is not None:
-                    if len(indices) == 2:
-                        val = nml[block][key][indices[1]][indices[0]]
-                    else:
-                        val = nml[block][key][indices[0]]
+                    logging.debug("indices=%s", indices)
+                    try:
+                        if len(indices) == 2:
+                            val = nml[block][key][indices[1]][indices[0]]
+                        else:
+                            val = nml[block][key][indices[0]]
+                            logging.debug("Found 1D value %s", val)
+                            if isinstance(val, list):
+                                return None
+                    except IndexError:
+                        return None
+                    except TypeError:
+                        return None
                 else:
                     val = nml[block][key]
 
@@ -282,6 +291,7 @@ class InputDataFromNamelist(JsonInputData):
             setting = macro_defs[key]
             if isinstance(setting, str):
                 if setting.find(sep) > 0:
+                    logging.debug("Read macro setting from namelist %s", setting)
                     setting = self.get_nml_value_from_string(self.nml, setting)
             return setting
         except KeyError:
@@ -536,11 +546,13 @@ class InputDataFromNamelist(JsonInputData):
                             val1 = self.get_nml_value_from_string(self.nml, key1)
                             indices = None
                             if isinstance(val1, list):
+
                                 logging.debug("Got a namelist list variable")
                                 indices = []
                                 vals1 = []
                                 for i, vals in enumerate(val1):
                                     if isinstance(vals, list):
+                                        logging.debug("i=%s len(vals)=%s val1=%s", i, len(vals), val1)
                                         for j in range(0, len(vals)):
                                             ind = [j, i]
                                             vals1.append(val1[i][j])
@@ -574,11 +586,14 @@ class InputDataFromNamelist(JsonInputData):
                                     if isinstance(setting1, str):
                                         unprocessed_data.update({val1: setting1})
                                     else:
+                                        logging.debug("setting1=%s, lindices=%s", setting1, lindices)
                                         for key2, value2 in setting1.items():
                                             if key2.find(sep) > 0:
                                                 key2 = self.get_nml_value_from_string(
                                                     self.nml, key2, indices=lindices
                                                 )
+
+                                            logging.debug("key2=%s", key2)
                                             sub_macros = self.process_macro(
                                                 key2, value2, macros, indices=lindices
                                             )
@@ -605,6 +620,14 @@ class InputDataFromNamelist(JsonInputData):
                     )
                     for key, value in unprocessed_data.items():
                         logging.debug("key=%s value=%s", key, value)
+                        if isinstance(value, str):
+                            if value.endswith(".dir"):
+                                hdr_key = key + ".hdr"
+                                hdr_val = value.replace(".dir", ".hdr")
+                                sub_values = self.substitute(hdr_key, hdr_val)
+                                data.update(sub_values)
+                                key = key + ".dir"
+
                         processed_values = self.extend_macro(key, value, extenders)
                         for key, val in processed_values.items():
                             sub_values = self.substitute(key, val)

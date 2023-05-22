@@ -11,25 +11,90 @@
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
-                    "DIRTYPE": {
-                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@"
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_NI_@DECADE@.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_LAI": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI_SAT/LAI_SAT_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_H_TREE": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_H_TREE": "@ecosg_data_path@/HT/new_ht_c.dir"
+                    }
+                },
+                "NAM_COVER#YCOVERFILETYPE": {
+                    "DIRECT": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ecosg_final_map.dir"
                     }
                 }
             },
             "False": {
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
-                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin",
+                "NAM_COVER#YCOVERFILETYPE": {
+                    "DIRECT": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ECOCLIMAP_2_5_p.dir"
+                   }
+                }
             }
         },
         "NAM_ZS#YZSFILETYPE": {
             "DIRECT": {
-                "NAM_ZS#YZS": "@gmted@/gmted2010"
+                "NAM_ZS#YZS": "@gmted@/gmted2010.dir"
+            }
+        },
+        "NAM_ISBA#YSANDFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YSAND": "@climdata@/NAME_WE_GIVE_IT.dir"
+            }
+        },
+        "NAM_ISBA#YCLAYFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YCLAY": "@climdata@/NAME_WE_GIVE_IT.dir"
+            }
+        },
+        "NAM_ISBA#YSOCFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YSOC_SUB": "@climdata@/soc_sub.dir",
+                "NAM_ISBA#YSOC_TOP": "@climdata@/soc_top.dir"
+            }
+        },
+        "NAM_DATA_FLAKE#YWATER_DEPTHFILETYPE": {
+            "DIRECT": {
+                "NAM_DATA_FLAKE#YWATER_DEPTH": "@flake_dir@/GlobalLakeDepth.dir",
+                "NAM_DATA_FLAKE#YWATER_DEPTH_STATUS": "@flake_dir@/GlobalLakeStatus.dir"
             }
         }
     },
     "prep":{
-
+        "NAM_PREP_SURF_ATM#CFILETYPE": {
+            "GRIB": {
+                "NAM_PREP_SURF_ATM#CFILE": ""
+            },
+            "FA": {
+                "NAM_PREP_SURF_ATM#CFILE": ""
+            }
+        },
+        "NAM_PREP_SURF_ATM#CFILEPGDTYPE": {
+            "NC": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            },
+            "ASCII": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            },
+            "FA": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            }
+        }
     },
     "perturbed":{
         "NAM_FRAC#LECOSG": {

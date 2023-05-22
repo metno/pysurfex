@@ -468,15 +468,27 @@ def run_surfex_binary(mode, **kwargs):
     prep_input_file = None
     if "prep_file" in kwargs:
         prep_input_file = kwargs["prep_file"]
+    config.update_setting("SURFEX#PREP#FILE_WITH_PATH", prep_input_file)
+    basename = prep_input_file
+    if basename is not None:
+        basename = os.path.basename(basename)
+    config.update_setting("SURFEX#PREP#FILE", basename)
     prep_input_pgdfile = None
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
+    config.update_setting("SURFEX#PREP#PGDFILE_WITH_PATH", prep_input_pgdfile)
+    basename = prep_input_pgdfile
+    if basename is not None:
+        basename = os.path.basename(basename)
+    config.update_setting("SURFEX#PREP#FILEPGD", basename)
     prep_input_filetype = None
     if "prep_filetype" in kwargs:
         prep_input_filetype = kwargs["prep_filetype"]
+    config.update_setting("SURFEX#PREP#FILETYPE", prep_input_filetype)
     prep_input_pgdfiletype = None
     if "prep_pgdfiletype" in kwargs:
         prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
+    config.update_setting("SURFEX#PREP#FILEPGDTYPE", prep_input_pgdfiletype)
 
     # TODO
     perturbed_file_pattern = None
@@ -488,6 +500,12 @@ def run_surfex_binary(mode, **kwargs):
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
+    if dtg is not None:
+        config.update_setting("SURFEX#PREP#NYEAR", dtg.year)
+        config.update_setting("SURFEX#PREP#NMONTH", dtg.month)
+        config.update_setting("SURFEX#PREP#NDAY", dtg.day)
+        xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
+        config.update_setting("SURFEX#PREP#XTIME", xtime)
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]
@@ -566,11 +584,15 @@ def run_surfex_binary(mode, **kwargs):
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
             nam_gen = NamelistGenerator(mode, config, nam_defs)
+
             my_settings = nam_gen.nml
+            if mode == "pgd":
+                my_settings = geo.update_namelist(my_settings)
             if input_binary_data is None:
                 raise RuntimeError("input_binary_data not set")
             with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
                 input_binary_data = json.load(file_handler)
+
             input_data = nam_gen.input_data_from_namelist(
                 input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
             )
@@ -1647,6 +1669,8 @@ def create_namelist(argv=None):
     with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
         nam_defs = yaml.safe_load(file_handler)
 
+    config.update_setting("SURFEX#PREP#FILE", None)
+    config.update_setting("SURFEX#PREP#FILEPGD", None)
     my_settings = NamelistGenerator(mode, config, nam_defs)
     if os.path.exists(output):
         os.remove(output)
