@@ -5,7 +5,6 @@ import os
 import subprocess
 from abc import ABC, abstractmethod
 
-
 """
 def binary_input_data():
     return {
