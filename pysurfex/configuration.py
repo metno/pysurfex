@@ -6,7 +6,7 @@ import os
 import toml
 
 from .geo import ConfProj
-from .platform import SystemFilePaths
+from .platform_deps import SystemFilePaths
 from .util import merge_toml_env
 
 
@@ -791,11 +791,6 @@ class ConfigurationFromHarmonie(Configuration):
         if "NENS_M" in env:
             nens_m = env["NENS_M"]
             self.update_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M", int(nens_m))
-
-        # Observations
-        if "NOBSTYPE_M" in env:
-            nobstype_m = env["NOBSTYPE_M"]
-            self.update_setting("SURFEX#ASSIM#ISBA#OBS#NOBSTYPE_M", int(nobstype_m))
 
         # ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments

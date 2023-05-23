@@ -1,0 +1,206 @@
+{
+    "pgd": {
+        "NAM_FRAC#LECOSG": {
+            "True": {
+                "macros": {
+                    "VTYPE": {
+                        "fmt": "02d"
+                    },
+                    "DECADE": {
+                        "ntime": "NAM_DATA_ISBA#NTIME"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_NI_@DECADE@.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_LAI": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI_SAT/LAI_SAT_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_H_TREE": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_H_TREE": "@ecosg_data_path@/HT/new_ht_c.dir"
+                    }
+                },
+                "NAM_COVER#YCOVERFILETYPE": {
+                    "DIRECT": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ecosg_final_map.dir"
+                    }
+                }
+            },
+            "False": {
+                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin",
+                "NAM_COVER#YCOVERFILETYPE": {
+                    "DIRECT": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ECOCLIMAP_2_5_p.dir"
+                   }
+                }
+            }
+        },
+        "NAM_ZS#YZSFILETYPE": {
+            "DIRECT": {
+                "NAM_ZS#YZS": "@gmted@/gmted2010.dir"
+            }
+        },
+        "NAM_ISBA#YSANDFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YSAND": "@climdata@/NAME_WE_GIVE_IT.dir"
+            }
+        },
+        "NAM_ISBA#YCLAYFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YCLAY": "@climdata@/NAME_WE_GIVE_IT.dir"
+            }
+        },
+        "NAM_ISBA#YSOCFILETYPE": {
+            "DIRECT": {
+                "NAM_ISBA#YSOC_SUB": "@climdata@/soc_sub.dir",
+                "NAM_ISBA#YSOC_TOP": "@climdata@/soc_top.dir"
+            }
+        },
+        "NAM_DATA_FLAKE#YWATER_DEPTHFILETYPE": {
+            "DIRECT": {
+                "NAM_DATA_FLAKE#YWATER_DEPTH": "@flake_dir@/GlobalLakeDepth.dir",
+                "NAM_DATA_FLAKE#YWATER_DEPTH_STATUS": "@flake_dir@/GlobalLakeStatus.dir"
+            }
+        }
+    },
+    "prep":{
+        "NAM_FRAC#LECOSG": {
+            "False": {
+                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+            }
+        },
+        "NAM_PREP_SURF_ATM#CFILETYPE": {
+            "GRIB": {
+                "NAM_PREP_SURF_ATM#CFILE": ""
+            },
+            "FA": {
+                "NAM_PREP_SURF_ATM#CFILE": ""
+            }
+        },
+        "NAM_PREP_SURF_ATM#CFILEPGDTYPE": {
+            "NC": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            },
+            "ASCII": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            },
+            "FA": {
+                "NAM_PREP_SURF_ATM#CPGDFILE": ""
+            }
+        },
+        "NAM_PGD_SCHEMES#CWATER": {
+            "FLAKE": {
+                "LAKE_LTA_NEW.nc": "@flake_dir@/LAKE_LTA_NEW.nc"
+            }
+        }
+    },
+    "perturbed":{
+        "NAM_FRAC#LECOSG": {
+            "False": {
+                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+            }
+        }
+    },
+    "offline":{
+        "NAM_FRAC#LECOSG": {
+            "False": {
+                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+            }
+        }
+    },
+    "soda": {
+        "NAM_FRAC#LECOSG": {
+            "False": {
+                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+            }
+        },
+        "NAM_ASSIM#CASSIM_ISBA": {
+            "OI": {
+                "NAM_ASSIM#CFILE_FORMAT_FG": {
+                    "FA": {
+                        "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
+                    },
+                    "NC": {
+                        "FIRST_GUESS_@YY@@MM@@DD@H@HH@.DAT": ""
+                    }
+                },
+                "ASCAT_SM.DAT": "@ascat_dir@/ASCAT_SM.DAT",
+                "fort.61": "@oi_coeffs_dir@/ISBA_POLYNOMES",
+                "NAM_ASSIM#CFILE_FORMAT_LSM": {
+                    "FA": {
+                        "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
+                    },
+                    "ASCII": {
+                        "LSM.DAT": "@climdir@/LSM.DAT"
+                    }
+                }
+            },
+            "EKF": {
+                "extenders": {
+                    "PERT": {
+                        "ekfpert": {
+                            "list": "NAM_VAR#NNCV",
+                            "duplicate": "NAM_ASSIM#LLINCHECK"
+                        }
+                    }
+                },
+                "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                    "FA": {
+                        "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
+                        "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa"
+                    },
+                    "NC": {
+                        "PREP_INIT.nc": "@first_guess_dir@/PREP_INIT.nc",
+                        "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc"
+                    }
+                } 
+            },
+            "ENKF": {
+                "extenders": {
+                    "EE": {
+                        "iterator": {
+                            "start": 0,
+                            "end": "NAM_ASSIM#NENS_M",
+                            "step": 1,
+                            "fmt": "{:02d}"
+                        }
+                    }
+                },
+                "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                    "FA": {
+                        "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
+                        "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa"
+                    }
+                },
+                "NAM_ASSIM#CFILE_FORMAT_LSM": {
+                    "FA": {
+                        "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
+                    },
+                    "ASCII": {
+                        "LSM.DAT": "@first_guess_dir@/LSM.DAT"
+                    }
+                }
+            }
+        }        
+    }
+}

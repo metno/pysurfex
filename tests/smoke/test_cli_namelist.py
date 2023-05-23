@@ -33,25 +33,19 @@ def test_create_namelist(
     tmp_path_factory,
     mode,
     config_exp_surfex_toml,
-    get_nam_path,
+    get_nam_file,
     get_system,
     conf_proj_2x3_file,
-    prep_file,
 ):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_{mode}"
     with pytest.raises(SystemExit):
         create_namelist(argv=["fail"])
 
-    extra = []
-    if mode == "prep" or mode == "soda":
-        extra += ["--dtg", "2020010100"]
-    if mode == "prep":
-        extra += ["--prep_file", prep_file, "--prep_filetype", "json"]
     argv = [
         "-c",
         config_exp_surfex_toml,
         "-n",
-        get_nam_path,
+        get_nam_file,
         "-o",
         output,
         "--domain",
@@ -60,8 +54,4 @@ def test_create_namelist(
         get_system,
         mode,
     ]
-    argv += extra
-    create_namelist(argv=argv)
-
-    argv += ["--harmonie"]
     create_namelist(argv=argv)

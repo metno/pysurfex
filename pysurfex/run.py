@@ -191,7 +191,7 @@ class PerturbedOffline(SURFEXBinary):
             input_data (_type_): _description_
             surfout (_type_, optional): _description_. Defaults to None.
             archive_data (_type_, optional): _description_. Defaults to None.
-            pgdfile (_type_, optional): _description_. Defaults to None.
+            pgdfile (str, optional): _description_. Defaults to None.
             print_namelist (bool, optional): _description_. Defaults to False.
             negpert (bool, optional): _description_. Defaults to False.
 
