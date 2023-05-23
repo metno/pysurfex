@@ -1,3 +1,5 @@
+# GENERAL
+
 constants:
   NAM_SURF_ATM:
     XRIMAX: '${SURFEX#PARAMETERS#XRIMAX}'
@@ -8,12 +10,6 @@ constants:
 flake:
   nam_flaken:
     lsediments: false
-
-sice:
-  NAM_SEAICE_SICE:
-    LICE_HAS_SNOW: true
-    LICE_MASS_BALANCE: true
-    XOCEAN_HEAT_FLUX: 2.0
 
 treedrag:
   NAM_TREEDRAG:
@@ -45,6 +41,8 @@ io:
   NAM_WRITE_SURF_ATM:
     LSPLIT_PATCH: '${SURFEX#IO#LSPLIT_PATCH}'
 
+# PGD
+
 pgd_meb:
   NAM_MEB_ISBA:
     LMEB_LITTER: true
@@ -60,93 +58,6 @@ pgd_meb:
     cpedo_function: CO84
     cphoto: NON
     xunif_runoffb: 0.2
-
-offline:
-  NAM_DIAG_ISBAn:
-    LPATCH_BUDGET: true
-    LPGD: true
-    LSURF_MISC_BUDGET: true
-    LSURF_MISC_DIF: true
-  NAM_DIAG_SURF_ATMn:
-    LT2MMW: true
-  NAM_DIAG_SURFn:
-    LCOEF: true
-    LRESET_BUDGETC: true
-    LSURF_BUDGET: true
-    LSURF_BUDGETC: true
-    LSURF_VARS: true
-    N2M: 2
-  NAM_ISBAn:
-    LCANOPY_DRAG: true
-    XCDRAG: 0.01
-  NAM_SEAFLUXn:
-    LPRECIP: false
-    LPWEBB: false
-    LPWG: false
-  NAM_SSOn:
-    XCOROT: 500
-    XFRACZ0: 15.0
-    XSOROT: 2500.0
-    XVOROT: 8.0
-  NAM_SURF_ATM:
-    XCD_COEFF1: 10.0
-    XCD_COEFF2: 5.0
-    XCH_COEFF1: 15.0
-
-offline_pert_isba_settings:
-  NAM_IO_VARASSIM:
-    LBEV: False
-    LBFIXED: True
-    LPRT: False
-  NAM_VAR:
-    NIVAR: '${SURFEX#SODA#NIVAR}'
-    NVAR: '${SURFEX#SODA#NVAR}'
-
-offline_flake: {}
-
-offline_isba:
-  NAM_FRAC:
-    LECOSG: '${SURFEX#COVER#SG}'
-  NAM_ISBAn:
-    LPERTSURF: '${SURFEX#ISBA#PERTSURF}'
-    XCGMAX: '${SURFEX#ISBA#XCGMAX}'
-    XCSMAX: '${SURFEX#ISBA#XCSMAX}'
-
-offline_isba_dif:
-  NAM_SGH_ISBAn:
-    CHORT: DEF
-    CRAIN: SGH
-    CRUNOFF: DT92
-    LSOC: true
-  NAM_ISBA:
-    CPEDO_FUNCTION: CO84
-    CPHOTO: NON
-    XUNIF_RUNOFFB: 0.2
-
-offline_seaflux:
-  NAM_SEAFLUXn:
-    CSEA_FLUX: ECUME6
-    LPERTFLUX: '${SURFEX#SEA#PERTFLUX}'
-    LPRECIP: false
-    LPWEBB: false
-    LPWG: false
-
-offline_seaice:
-  NAM_SEAICEn:
-    LVOLATILE_SIC: '${SURFEX#SEA#LVOLATILE_SIC}'
-    XSIC_EFOLDING_TIME: 1.0
-
-offline_sso:
-  NAM_SSON:
-    CROUGH: '${SURFEX#SSO#SCHEME}'
-
-offline_sso_orotur:
-  NAM_SSON:
-    XSOROT: '${NAM_SSON#XSOROT}'
-
-offline_teb: {}
-
-offline_watflux: {}
 
 pgd:
   NAM_FRAC:
@@ -165,6 +76,7 @@ pgd_cover:
   NAM_COVER:
     YCOVER: '${SURFEX#COVER#YCOVER}'
     YCOVERFILETYPE: 'DIRECT'
+
 pgd_cv:
   NAM_DATA_ISBA:
     XUNIF_CV:
@@ -187,6 +99,7 @@ pgd_cv:
     - 1.0e-05
     - 2.0e-05
     - 2.0e-05
+
 pgd_cv_sg:
   NAM_DATA_ISBA:
     XUNIF_CV:
@@ -210,6 +123,7 @@ pgd_cv_sg:
     - 2.0e-05
     - 1.0e-05
     - 2.0e-05
+
 pgd_ecoclimap_sg:
   NAM_DATA_ISBA:
     CFNAM_ALBNIR_SOIL:
@@ -7497,12 +7411,15 @@ pgd_ecoclimap_sg:
       - DIRTYP
       - DIRTYP
     NTIME: 36
+
 pgd_flake:
   NAM_DATA_FLAKE:
     YWATER_DEPTH: GlobalLakeDepth
     YWATER_DEPTHFILETYPE: DIRECT
     YWATER_DEPTH_STATUS: GlobalLakeStatus
+
 pgd_inland_water: {}
+
 pgd_isba:
   NAM_ISBA:
     CISBA: '${SURFEX#ISBA#SCHEME}'
@@ -7590,6 +7507,8 @@ pgd_zs:
   NAM_ZS:
     YZS: '${SURFEX#ZS#YZS}'
     YZSFILETYPE: 'DIRECT'
+
+# PREP
 
 prep:
   NAM_PREP_SURF_ATM:
@@ -7684,7 +7603,101 @@ prep_sice:
     NUM_LAYERS: 4
     XICE_THICKNESS: 0.75
 
-selected_output:
+# OFFLINE
+offline:
+  NAM_DIAG_ISBAn:
+    LPATCH_BUDGET: true
+    LPGD: true
+    LSURF_MISC_BUDGET: true
+    LSURF_MISC_DIF: true
+  NAM_DIAG_SURF_ATMn:
+    LT2MMW: true
+  NAM_DIAG_SURFn:
+    LCOEF: true
+    LRESET_BUDGETC: true
+    LSURF_BUDGET: true
+    LSURF_BUDGETC: true
+    LSURF_VARS: true
+    N2M: 2
+  NAM_ISBAn:
+    LCANOPY_DRAG: true
+    XCDRAG: 0.01
+  NAM_SEAFLUXn:
+    LPRECIP: false
+    LPWEBB: false
+    LPWG: false
+  NAM_SSOn:
+    XCOROT: 500
+    XFRACZ0: 15.0
+    XSOROT: 2500.0
+    XVOROT: 8.0
+  NAM_SURF_ATM:
+    XCD_COEFF1: 10.0
+    XCD_COEFF2: 5.0
+    XCH_COEFF1: 15.0
+
+offline_pert_isba_settings:
+  NAM_IO_VARASSIM:
+    LBEV: False
+    LBFIXED: True
+    LPRT: False
+  NAM_VAR:
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
+
+offline_flake: {}
+
+offline_isba:
+  NAM_FRAC:
+    LECOSG: '${SURFEX#COVER#SG}'
+  NAM_ISBAn:
+    LPERTSURF: '${SURFEX#ISBA#PERTSURF}'
+    XCGMAX: '${SURFEX#ISBA#XCGMAX}'
+    XCSMAX: '${SURFEX#ISBA#XCSMAX}'
+
+offline_isba_dif:
+  NAM_SGH_ISBAn:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: true
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
+
+offline_seaflux:
+  NAM_SEAFLUXn:
+    CSEA_FLUX: ECUME6
+    LPERTFLUX: '${SURFEX#SEA#PERTFLUX}'
+    LPRECIP: false
+    LPWEBB: false
+    LPWG: false
+
+offline_seaice:
+  NAM_SEAICEn:
+    LVOLATILE_SIC: '${SURFEX#SEA#LVOLATILE_SIC}'
+    XSIC_EFOLDING_TIME: 1.0
+
+offline_sice:
+  NAM_SEAICE_SICE:
+    LICE_HAS_SNOW: true
+    LICE_MASS_BALANCE: true
+    XOCEAN_HEAT_FLUX: 2.0
+
+offline_sso:
+  NAM_SSON:
+    CROUGH: '${SURFEX#SSO#SCHEME}'
+
+offline_sso_orotur:
+  NAM_SSON:
+    XSOROT: '${NAM_SSON#XSOROT}'
+
+offline_teb: {}
+
+offline_watflux: {}
+
+offline_selected_output:
   nam_write_diag_surfn:
     cselect:
     - FMU
@@ -7815,6 +7828,8 @@ selected_output:
     - CE
     lselect: true
 
+# SODA
+
 soda:
   NAM_FRAC:
     LECOSG: '${SURFEX#COVER#SG}'
@@ -7839,6 +7854,11 @@ soda:
     LPATCH1: False
   NAM_DIAG_ISBAn:
     lsurf_misc_budget: true
+
+soda_sice:
+  NAM_SEAICE_SICE:
+    LICE_HAS_SNOW: true
+    LICE_MASS_BALANCE: true
 
 soda_isba_ekf:
   NAM_ASSIM:

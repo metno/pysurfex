@@ -126,7 +126,7 @@ class NamelistGenerator(object):
         """Construct building blocks for the namelist genrator."""
         logging.info("Building namelist blocks for program: %s", self.program)
 
-        input_blocks = ["io", "constants", "sice", "treedrag", "flake"]
+        input_blocks = ["io", "constants", "treedrag", "flake"]
         lisba = False
         if self.config.get_setting("SURFEX#ISBA#SCHEME") == "DIF":
             lisba = True
@@ -223,11 +223,16 @@ class NamelistGenerator(object):
 
         elif self.program == "offline" or self.program == "perturbed":
             input_blocks += ["offline"]
-            input_blocks += ["offline_selected_output"]
+
+            if self.config.get_setting("SURFEX#IO#LSELECT"):
+                input_blocks += ["offline_selected_output"]
 
             # SEAFLX settings
             if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
                 input_blocks += ["offline_seaflux"]
+
+            if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
+                input_blocks += ["offline_sice"]
 
             # ISBA settings
             if lisba:
@@ -259,6 +264,9 @@ class NamelistGenerator(object):
 
         elif self.program == "soda":
             input_blocks += ["soda", "soda_obs"]
+
+            if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
+                input_blocks += ["soda_sice"]
 
             # Set OI settings
             if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "OI":
