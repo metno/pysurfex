@@ -136,7 +136,7 @@ def f90ml_namelist(tmp_path_factory):
             CFNAM_ALBNIR_SOIL(20,36) = "filename_albnir_soil_20_1225"
             CFTYP_ALBNIR_SOIL(20,36) = "DIRTYP"
             CFNAM_H_TREE(1) = "filename_h_tree_0105"
-            CFTYP_H_TREE(1) = "DIRTYP"          
+            CFTYP_H_TREE(1) = "DIRTYP"
             CFNAM_H_TREE(36) = "filename_h_tree_1225"
             CFTYP_H_TREE(36) = "DIRTYP"
         /
@@ -185,8 +185,14 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         nml, input_data, "pgd", platform, basetime=basetime, validtime=validtime
     )
     print(binary_data.data)
-    assert binary_data.data["filename_albnir_soil_2_0115.dir"] == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115.dir"
-    assert binary_data.data["filename_albnir_soil_20_1225.dir"] == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225.dir"
+    assert (
+        binary_data.data["filename_albnir_soil_2_0115.dir"]
+        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115.dir"
+    )
+    assert (
+        binary_data.data["filename_albnir_soil_20_1225.dir"]
+        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225.dir"
+    )
     assert binary_data.data["filename_h_tree_1225.dir"] == "/ecoclimap/HT/new_ht_c.dir"
     binary_data = InputDataFromNamelist(
         nml, input_data, "soda", platform, basetime=basetime, validtime=validtime

@@ -6,41 +6,34 @@ import subprocess
 from abc import ABC, abstractmethod
 
 
+"""
 def binary_input_data():
     return {
         "pgd": {
             "NAM_FRAC#LECOSG": {
                 "True": {
                     "macros": {
-                        "VTYPE": {
-                            "fmt": "02d"
-                        },
-                        "DECADE": {
-                            "ntime": "NAM_DATA_ISBA#NTIME"
-                        }
+                        "VTYPE": {"fmt": "02d"},
+                        "DECADE": {"ntime": "NAM_DATA_ISBA#NTIME"},
                     },
                     "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
                         "DIRTYP": {
                             "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@"
                         }
-                    }
+                    },
                 },
                 "False": {
                     "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                     "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
-                    "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
-                }
+                    "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin",
+                },
             },
-            "NAM_ZS#YFILETYPE": {
-                "DIRECT": {
-                    "NAM_ZS#YFILE": "@gmted@/gmted2010"
-                }
-            }
+            "NAM_ZS#YFILETYPE": {"DIRECT": {"NAM_ZS#YFILE": "@gmted@/gmted2010"}},
         },
-        "prep":{
-
-        }
+        "prep": {},
     }
+"""
+
 
 class InputDataToSurfexBinaries(ABC):
     """Abstract input data."""
@@ -191,6 +184,20 @@ class InputDataFromNamelist(JsonInputData):
     """Binary input data for offline executables."""
 
     def __init__(self, nml, input_data, program, platform, basetime=None, validtime=None):
+        """Construct InputDataFromNamelist.
+
+        Args:
+            nml (f90nml.Namelist): Namelist
+            input_data (dict): Input data mapping
+            program (str): Kind of program
+            platform (SystemFilePaths): Platform settings
+            basetime (as_datetime, optional): Baseetime. Defaults to None.
+            validtime (as_datetime, optional): Validtime. Defaults to None.
+
+        Raises:
+            RuntimeError: Program not defined
+
+        """
         self.nml = nml
         self.platform = platform
         self.basetime = basetime
@@ -204,6 +211,18 @@ class InputDataFromNamelist(JsonInputData):
 
     @staticmethod
     def get_nml_value(nml, block, key, indices=None):
+        """Get namelist value.
+
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            block (str): Namelist block
+            key (str): Namelist key
+            indices (list, optional): Indices to read. Defaults to None.
+
+        Returns:
+            setting (any): Namelist setting
+
+        """
         logging.debug("Checking block=%s key=%s", block, key)
         if block in nml:
             if key in nml[block]:
@@ -231,6 +250,18 @@ class InputDataFromNamelist(JsonInputData):
 
     @staticmethod
     def get_nml_value_from_string(nml, string, sep="#", indices=None):
+        """Get namelist value from a string.
+
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            string (str): Namelist identifier
+            sep (str, optional): _description_. Defaults to "#".
+            indices (list, optional): Indices to read. Defaults to None.
+
+        Returns:
+            setting (any): Namelist setting
+
+        """
         nam_section = string.split(sep)[0]
         nam_key = string.split(sep)[1]
         return InputDataFromNamelist.get_nml_value(
@@ -286,6 +317,9 @@ class InputDataFromNamelist(JsonInputData):
             key (str): Macro setting to get.
             default (str, optional): Default value. Defaults to None.
             sep (str, optional): Namelist key separator. Defaults to "#".
+
+        Returns:
+            setting (any)
         """
         try:
             setting = macro_defs[key]
@@ -309,7 +343,6 @@ class InputDataFromNamelist(JsonInputData):
         Raises:
             NotImplementedError: _description_
             NotImplementedError: _description_
-            TypeError: _description_
 
         Returns:
             dict: Key, value dictionary
@@ -398,7 +431,6 @@ class InputDataFromNamelist(JsonInputData):
         Raises:
             NotImplementedError: _description_
             NotImplementedError: _description_
-            TypeError: _description_
 
         Returns:
             dict: Key, value dictionary
@@ -552,7 +584,12 @@ class InputDataFromNamelist(JsonInputData):
                                 vals1 = []
                                 for i, vals in enumerate(val1):
                                     if isinstance(vals, list):
-                                        logging.debug("i=%s len(vals)=%s val1=%s", i, len(vals), val1)
+                                        logging.debug(
+                                            "i=%s len(vals)=%s val1=%s",
+                                            i,
+                                            len(vals),
+                                            val1,
+                                        )
                                         for j in range(0, len(vals)):
                                             ind = [j, i]
                                             vals1.append(val1[i][j])
@@ -586,7 +623,9 @@ class InputDataFromNamelist(JsonInputData):
                                     if isinstance(setting1, str):
                                         unprocessed_data.update({val1: setting1})
                                     else:
-                                        logging.debug("setting1=%s, lindices=%s", setting1, lindices)
+                                        logging.debug(
+                                            "setting1=%s, lindices=%s", setting1, lindices
+                                        )
                                         for key2, value2 in setting1.items():
                                             if key2.find(sep) > 0:
                                                 key2 = self.get_nml_value_from_string(

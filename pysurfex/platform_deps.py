@@ -273,6 +273,7 @@ class SystemFilePaths(object):
             tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
             pert (int): Parse setting with this as perturbation number @PERT@
             var (str): Parse setting with this as the variable (@VAR@)
+            micro (str, optional): Micro character. Defaults to "@"
 
         Raises:
             RuntimeError: Setting was not substituted properly?
@@ -400,6 +401,7 @@ class SystemFilePaths(object):
             setting (str): if setting is string it can be subst
             system_variables (dict): Arbitrary settings to substitute @NAME@ =
                                      system_variables={"NAME": "Value"}
+            micro (str, optional): Micro character. Default to "@"
 
         Returns:
             setting: A setting possibly substituted if type is str

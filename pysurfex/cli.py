@@ -14,7 +14,7 @@ except ModuleNotFoundError:
     plt = None
 
 
-from .binary_input import  JsonOutputDataFromFile
+from .binary_input import JsonOutputDataFromFile
 from .binary_input_legacy import (
     InlineForecastInputData,
     OfflineInputData,
@@ -292,7 +292,8 @@ def run_masterodb(**kwargs):
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
-
+        if dtg is not None:
+            config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
     try:
         basetime = kwargs["basetime"]
         if isinstance(basetime, str):
@@ -1634,6 +1635,10 @@ def create_namelist(argv=None):
 
     Args:
         argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        FileNotFoundError: "File not found:"
+
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -1672,6 +1677,8 @@ def create_namelist(argv=None):
 
     config.update_setting("SURFEX#PREP#FILE", None)
     config.update_setting("SURFEX#PREP#FILEPGD", None)
+    config.update_setting("SURFEX#SODA#HH", "00")
+
     my_settings = NamelistGenerator(mode, config, nam_defs)
     if os.path.exists(output):
         os.remove(output)

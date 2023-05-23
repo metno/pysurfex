@@ -73,7 +73,7 @@ class ExternalSurfexInputFile(object):
 
         basename = os.path.basename(fname)
         parts = basename.split(".")
-        if len(parts) == 1  :
+        if len(parts) == 1:
             logging.info("Assume format DIRTYP or DIRECT. fname=%s", fname)
             fname = fname + ".dir"
 

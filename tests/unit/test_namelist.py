@@ -1,6 +1,5 @@
 """Test namelist settings."""
 import json
-import os
 
 import pytest
 import yaml
@@ -85,11 +84,8 @@ def test_namelist(
 
 
 def test_new_namelists(
-        config_exp_surfex_toml,
-        tmp_path_factory,
-        input_binary_data_file,
-        get_nam_file
-    ):
+    config_exp_surfex_toml, tmp_path_factory, input_binary_data_file, get_nam_file
+):
     program = "pgd"
     config = ConfigurationFromTomlFile(config_exp_surfex_toml)
 

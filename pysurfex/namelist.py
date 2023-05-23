@@ -36,17 +36,15 @@ class NamelistGenerator(object):
             "LFAKETREE": "SURFEX#TREEDRAG#FAKETREES",
             "LECOSG": "SURFEX#COVER#SG",
             "XTSTEP": "SURFEX#IO#XTSTEP",
-            "XTSTEP_OUTPUT ": "SURFEX#IO#XTSTEP_OUTPUT"
+            "XTSTEP_OUTPUT ": "SURFEX#IO#XTSTEP_OUTPUT",
         }
         macros = {}
         for macro, setting in macros_defs.items():
             vmacro = config.get_setting(setting)
             logging.debug("Mapping macro %s = %s", macro, vmacro)
             if vmacro is not None:
-                macros.update({
-                    macro: vmacro
-                })
-        
+                macros.update({macro: vmacro})
+
         nobstype = 0
         if program == "soda" or program == "offline":
             nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
@@ -100,10 +98,7 @@ class NamelistGenerator(object):
                                 "Problem with: %s Description=%s", problem, desc
                             )
                         else:
-                            logging.info(
-                                "Problem with: %s Description=%s", problem, desc
-                            )
-
+                            logging.info("Problem with: %s Description=%s", problem, desc)
 
     def flatten_config(self):
         """Flatten dictionary.
@@ -120,11 +115,9 @@ class NamelistGenerator(object):
                 else:
                     yield new_key, val
 
-
         def flatten_dict(
-                d: collections.abc.MutableMapping,
-                parent_key: str = '', sep: str = '#'
-            ):
+            d: collections.abc.MutableMapping, parent_key: str = "", sep: str = "#"
+        ):
             return dict(_flatten_dict_gen(d, parent_key, sep))
 
         return flatten_dict(self.config.settings)
@@ -292,7 +285,18 @@ class NamelistGenerator(object):
 
     @staticmethod
     def check_nml_setting(problems, nml, block, key, value):
+        """Check namelist settings.
 
+        Args:
+            problems (dict): Problems
+            nml (f90nml.Namelist): Namelist
+            block (str): Block
+            key (str): Key
+            value (any): Value
+
+        Returns:
+            problems (dict): Problems
+        """
         ckey = block + "#" + key
         if block in nml:
             if key in nml[block]:
@@ -305,21 +309,19 @@ class NamelistGenerator(object):
             problems.update({ckey: {"WARNING": "Namelist block not found"}})
         return problems
 
-    def concistency(self, nml, abort=True):
-        """Check if namelist is consistent with config
+    def concistency(self, nml):
+        """Check if namelist is consistent with config.
 
         Args:
             nml (f90nml.Namelist): A parsed f90nml namelist
-            abort (bool, optional): Abort if mismatch. Defaults to True.
-
 
         Raises:
-            RuntimeError: Input
-            RuntimeError: Merged dictionary contains a @ in value
             NotImplementedError: Mode is not implemented
 
-        """
+        Returns:
+            problems (dict): Problems.
 
+        """
         logging.info("Check namelist input for program: %s", self.program)
 
         problems = {}
@@ -520,10 +522,8 @@ class NamelistGenerator(object):
             basetime (as_datetime, optional): Base time
             validtime (as_datetime, optional): Valid time
 
-        Raises:
-            RuntimeError: Input
-            RuntimeError: Merged dictionary contains a @ in value
-            NotImplementedError: Mode is not implemented
+        Returns:
+            data_obj (InputDataFromNamelist): Input data from namelist
 
         """
         logging.info("Set input data from namelist for program: %s", self.program)
@@ -540,6 +540,9 @@ class NamelistGenerator(object):
 
     def assemble_namelist(self):
         """Generate the namelists for 'target'.
+
+        Raises:
+            KeyError: Key not found
 
         Returns:
             nlres (dict): Assembled namelist
