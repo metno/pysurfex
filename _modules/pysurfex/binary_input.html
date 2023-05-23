@@ -41,9 +41,33 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.ecoclimap</span> <span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span><span class="p">,</span> <span class="n">ExternalSurfexInputFile</span>
-<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">AsciiSurfexFile</span><span class="p">,</span> <span class="n">FaSurfexFile</span><span class="p">,</span> <span class="n">NCSurfexFile</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">def binary_input_data():</span>
+<span class="sd">    return {</span>
+<span class="sd">        &quot;pgd&quot;: {</span>
+<span class="sd">            &quot;NAM_FRAC#LECOSG&quot;: {</span>
+<span class="sd">                &quot;True&quot;: {</span>
+<span class="sd">                    &quot;macros&quot;: {</span>
+<span class="sd">                        &quot;VTYPE&quot;: {&quot;fmt&quot;: &quot;02d&quot;},</span>
+<span class="sd">                        &quot;DECADE&quot;: {&quot;ntime&quot;: &quot;NAM_DATA_ISBA#NTIME&quot;},</span>
+<span class="sd">                    },</span>
+<span class="sd">                    &quot;NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL&quot;: {</span>
+<span class="sd">                        &quot;DIRTYP&quot;: {</span>
+<span class="sd">                            &quot;NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL&quot;: &quot;@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@&quot;</span>
+<span class="sd">                        }</span>
+<span class="sd">                    },</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;False&quot;: {</span>
+<span class="sd">                    &quot;ecoclimapI_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin&quot;,</span>
+<span class="sd">                    &quot;ecoclimapII_eu_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin&quot;,</span>
+<span class="sd">                    &quot;ecoclimapII_af_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin&quot;,</span>
+<span class="sd">                },</span>
+<span class="sd">            },</span>
+<span class="sd">            &quot;NAM_ZS#YFILETYPE&quot;: {&quot;DIRECT&quot;: {&quot;NAM_ZS#YFILE&quot;: &quot;@gmted@/gmted2010&quot;}},</span>
+<span class="sd">        },</span>
+<span class="sd">        &quot;prep&quot;: {},</span>
+<span class="sd">    }</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="InputDataToSurfexBinaries"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataToSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">InputDataToSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
@@ -52,12 +76,12 @@
 <div class="viewcode-block" id="InputDataToSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataToSurfexBinaries.__init__">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="InputDataToSurfexBinaries.prepare_input"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataToSurfexBinaries.prepare_input">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare input.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
 <div class="viewcode-block" id="OutputDataFromSurfexBinaries"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.OutputDataFromSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">OutputDataFromSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
@@ -66,12 +90,12 @@
 <div class="viewcode-block" id="OutputDataFromSurfexBinaries.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.OutputDataFromSurfexBinaries.__init__">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="OutputDataFromSurfexBinaries.archive_files"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.OutputDataFromSurfexBinaries.archive_files">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive files.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
 <div class="viewcode-block" id="JsonOutputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.JsonOutputData">[docs]</a><span class="k">class</span> <span class="nc">JsonOutputData</span><span class="p">(</span><span class="n">OutputDataFromSurfexBinaries</span><span class="p">):</span>
@@ -84,7 +108,6 @@
 <span class="sd">            data (dict): Output data.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">OutputDataFromSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="JsonOutputData.archive_files"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.JsonOutputData.archive_files">[docs]</a>    <span class="k">def</span> <span class="nf">archive_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -131,7 +154,6 @@
 <span class="sd">        Args:</span>
 <span class="sd">            data (dict): Input data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">InputDataToSurfexBinaries</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="JsonInputData.prepare_input"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.JsonInputData.prepare_input">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -193,751 +215,502 @@
         <span class="n">JsonInputData</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;PGD input.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="InputDataFromNamelist"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist">[docs]</a><span class="k">class</span> <span class="nc">InputDataFromNamelist</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Binary input data for offline executables.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PgdInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.PgdInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PD input.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            config (Configuration): Surfex configuration</span>
-<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Ecoclimap settings</span>
-        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eco_sg</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">EcoclimapSG</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span>
-
-        <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
-        <span class="c1"># Set direct input files</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
-            <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#FLAKE#LDB_VERSION&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">version</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;_V&quot;</span> <span class="o">+</span> <span class="n">version</span>
-            <span class="n">datadir</span> <span class="o">=</span> <span class="s2">&quot;flake_dir&quot;</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeDepth&quot;</span> <span class="o">+</span> <span class="n">version</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
-            <span class="n">linkbasename</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeDepth&quot;</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
-                    <span class="n">datadir</span><span class="p">,</span>
-                    <span class="n">fname</span><span class="p">,</span>
-                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
-                    <span class="n">linkbasename</span><span class="o">=</span><span class="n">linkbasename</span><span class="p">,</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeStatus&quot;</span> <span class="o">+</span> <span class="n">version</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
-            <span class="n">linkbasename</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeStatus&quot;</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
-                    <span class="n">datadir</span><span class="p">,</span>
-                    <span class="n">fname</span><span class="p">,</span>
-                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
-                    <span class="n">linkbasename</span><span class="o">=</span><span class="n">linkbasename</span><span class="p">,</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
-        <span class="n">possible_direct_data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;ISBA&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;YSAND&quot;</span><span class="p">:</span> <span class="s2">&quot;sand_dir&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;YCLAY&quot;</span><span class="p">:</span> <span class="s2">&quot;clay_dir&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;YSOC_TOP&quot;</span><span class="p">:</span> <span class="s2">&quot;soc_top_dir&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;YSOC_SUB&quot;</span><span class="p">:</span> <span class="s2">&quot;soc_sub_dir&quot;</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;COVER&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YCOVER&quot;</span><span class="p">:</span> <span class="n">ecoclimap</span><span class="o">.</span><span class="n">cover_dir</span><span class="p">},</span>
-            <span class="s2">&quot;ZS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YZS&quot;</span><span class="p">:</span> <span class="s2">&quot;oro_dir&quot;</span><span class="p">},</span>
-        <span class="p">}</span>
-        <span class="k">for</span> <span class="n">namelist_section</span><span class="p">,</span> <span class="n">ftypes</span> <span class="ow">in</span> <span class="n">possible_direct_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="n">ftypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
-                    <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#&quot;</span> <span class="o">+</span> <span class="n">namelist_section</span> <span class="o">+</span> <span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="n">ftype</span><span class="p">)</span>
-                <span class="p">)</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
-                        <span class="n">data_dir</span><span class="p">,</span>
-                        <span class="n">fname</span><span class="p">,</span>
-                        <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
-                        <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-
-        <span class="c1"># Treedrag</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#TREEDATA_FILE&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#TREEDATA_FILE&quot;</span><span class="p">)</span>
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;tree_height_dir&quot;</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
-                    <span class="n">data_dir</span><span class="p">,</span>
-                    <span class="n">fname</span><span class="p">,</span>
-                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for PREP.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">,</span>
-        <span class="n">system_file_paths</span><span class="p">,</span>
-        <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for PREP.</span>
+<div class="viewcode-block" id="InputDataFromNamelist.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">platform</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct InputDataFromNamelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            config (Configuration): Surfex configuration</span>
-<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
-<span class="sd">            prep_file (str, optional): Prep input file. Defaults to None.</span>
-<span class="sd">            prep_pgdfile (str, optional): Filetype for prep input. Defaults to None.</span>
+<span class="sd">            nml (f90nml.Namelist): Namelist</span>
+<span class="sd">            input_data (dict): Input data mapping</span>
+<span class="sd">            program (str): Kind of program</span>
+<span class="sd">            platform (SystemFilePaths): Platform settings</span>
+<span class="sd">            basetime (as_datetime, optional): Baseetime. Defaults to None.</span>
+<span class="sd">            validtime (as_datetime, optional): Validtime. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Program not defined</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Ecoclimap settings</span>
-        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;prep class </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">prep_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">prep_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">):</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">prep_file</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">prep_file</span><span class="p">:</span>
-                    <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">prep_file</span><span class="p">})</span>
-                <span class="k">if</span> <span class="n">prep_pgdfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">prep_pgdfile</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">prep_pgdfile</span><span class="p">:</span>
-                        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">prep_pgdfile</span><span class="p">})</span>
-
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;flake_dir&quot;</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;LAKE_LTA_NEW.nc&quot;</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
-                    <span class="n">data_dir</span><span class="p">,</span>
-                    <span class="n">fname</span><span class="p">,</span>
-                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">nml</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">platform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span> <span class="o">=</span> <span class="n">basetime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span> <span class="o">=</span> <span class="n">validtime</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="n">program</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find program </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_data</span><span class="p">()</span>
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for offline.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="OfflineInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.OfflineInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for offline.</span>
+<div class="viewcode-block" id="InputDataFromNamelist.get_nml_value"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nml_value</span><span class="p">(</span><span class="n">nml</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist value.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            config (Configuration): Surfex configuration</span>
-<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+<span class="sd">            nml (nmlf90.Namelist): Namelist</span>
+<span class="sd">            block (str): Namelist block</span>
+<span class="sd">            key (str): Namelist key</span>
+<span class="sd">            indices (list, optional): Indices to read. Defaults to None.</span>
 
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: Filetype not implemented</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            setting (any): Namelist setting</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking block=</span><span class="si">%s</span><span class="s2"> key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">]:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found 1D value </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                                <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found: </span><span class="si">%s</span><span class="s2"> Indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.get_nml_value_from_string"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value_from_string">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nml_value_from_string</span><span class="p">(</span><span class="n">nml</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist value from a string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            nml (nmlf90.Namelist): Namelist</span>
+<span class="sd">            string (str): Namelist identifier</span>
+<span class="sd">            sep (str, optional): _description_. Defaults to &quot;#&quot;.</span>
+<span class="sd">            indices (list, optional): Indices to read. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            setting (any): Namelist setting</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nam_section</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nam_key</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">InputDataFromNamelist</span><span class="o">.</span><span class="n">get_nml_value</span><span class="p">(</span>
+            <span class="n">nml</span><span class="p">,</span> <span class="n">nam_section</span><span class="p">,</span> <span class="n">nam_key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.substitute"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.substitute">[docs]</a>    <span class="k">def</span> <span class="nf">substitute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute patterns.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (str): _description_</span>
+<span class="sd">            val (str): _description_</span>
+<span class="sd">            macros (dict, optional): Macros. Defaults to None.</span>
+<span class="sd">            micro (str, optional): Micro character. Defaults to &quot;@&quot;.</span>
+<span class="sd">            check_parsing (bool, optional): Caheck if values were substituted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Substituted key=value</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Substitute key=</span><span class="si">%s</span><span class="s2"> and val=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validtime</span>
+        <span class="p">)</span>
+        <span class="n">pkey</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">pval</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">for</span> <span class="n">spath_key</span><span class="p">,</span> <span class="n">spath_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">pkey</span> <span class="o">=</span> <span class="n">pkey</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}{</span><span class="n">spath_key</span><span class="si">}{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">spath_val</span><span class="p">)</span>
+            <span class="n">pval</span> <span class="o">=</span> <span class="n">pval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}{</span><span class="n">spath_key</span><span class="si">}{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">spath_val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">macro_key</span><span class="p">,</span> <span class="n">macro_val</span> <span class="ow">in</span> <span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">pkey</span> <span class="o">=</span> <span class="n">pkey</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}{</span><span class="n">macro_key</span><span class="si">}{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro_val</span><span class="p">)</span>
+                <span class="n">pval</span> <span class="o">=</span> <span class="n">pval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}{</span><span class="n">macro_key</span><span class="si">}{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro_val</span><span class="p">)</span>
+
+        <span class="n">pkey</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
+            <span class="n">pkey</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
+            <span class="n">pval</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validtime</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span>
+            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">pkey</span><span class="p">:</span> <span class="n">pval</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.read_macro_setting"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.read_macro_setting">[docs]</a>    <span class="k">def</span> <span class="nf">read_macro_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a macro setting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            macro_defs (dict): Macro definition</span>
+<span class="sd">            key (str): Macro setting to get.</span>
+<span class="sd">            default (str, optional): Default value. Defaults to None.</span>
+<span class="sd">            sep (str, optional): Namelist key separator. Defaults to &quot;#&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            setting (any)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="n">macro_defs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">setting</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read macro setting from namelist </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+                    <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">setting</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.extend_macro"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.extend_macro">[docs]</a>    <span class="k">def</span> <span class="nf">extend_macro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">macros</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extend entries from macro.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (_type_): _description_</span>
+<span class="sd">            val (_type_): _description_</span>
+<span class="sd">            macros (dict): Macros</span>
+<span class="sd">            sep (str, optional): Namelist key separator. Defaults to &quot;#&quot;.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Key, value dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macros=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macros</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+
+        <span class="n">processed_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">macro</span><span class="p">,</span> <span class="n">macro_types</span> <span class="ow">in</span> <span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">loop</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">macro_type</span><span class="p">,</span> <span class="n">macro_defs</span> <span class="ow">in</span> <span class="n">macro_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macro_defs=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">macro_type</span> <span class="o">==</span> <span class="s2">&quot;ekfpert&quot;</span><span class="p">:</span>
+                    <span class="n">nncvs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span><span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">nncvs</span> <span class="o">=</span> <span class="n">nncvs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">duplicate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span><span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;duplicate&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">duplicate</span><span class="p">:</span>
+                        <span class="n">nncvs</span> <span class="o">+=</span> <span class="n">nncvs</span>
+                    <span class="n">loop</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">})</span>
+                    <span class="n">icounter1</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">icounter2</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">for</span> <span class="n">nncv</span> <span class="ow">in</span> <span class="n">nncvs</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">nncv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">loop</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">icounter1</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="n">icounter2</span><span class="p">)})</span>
+                            <span class="n">icounter1</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">icounter2</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">macro_type</span> <span class="o">==</span> <span class="s2">&quot;dict&quot;</span><span class="p">:</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">)</span>
+                    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">loop</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)})</span>
+                        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">elif</span> <span class="n">macro_type</span> <span class="o">==</span> <span class="s2">&quot;iterator&quot;</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span><span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span><span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">fmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span>
+                        <span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;fmt&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">fmt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:d}</span><span class="s2">&quot;</span>
+                    <span class="k">for</span> <span class="n">lval</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+                        <span class="n">lval</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lval</span><span class="p">)</span>
+                        <span class="n">loop</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">lval</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="n">lval</span><span class="p">)})</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+            <span class="c1"># Loop normal macros not being nml arrays</span>
+            <span class="n">unprocessed_data</span> <span class="o">=</span> <span class="n">processed_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">processed_data</span><span class="p">:</span>
+                <span class="n">unprocessed_data</span> <span class="o">=</span> <span class="n">processed_data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">unprocessed_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">vmacro1</span><span class="p">,</span> <span class="n">vmacro2</span> <span class="ow">in</span> <span class="n">loop</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;key=</span><span class="si">%s</span><span class="s2"> val=</span><span class="si">%s</span><span class="s2"> macro=</span><span class="si">%s</span><span class="s2"> vmacro1=</span><span class="si">%s</span><span class="s2"> vmacro2=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">key</span><span class="p">,</span>
+                        <span class="n">val</span><span class="p">,</span>
+                        <span class="n">macro</span><span class="p">,</span>
+                        <span class="n">vmacro1</span><span class="p">,</span>
+                        <span class="n">vmacro2</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">pkey</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro1</span><span class="p">)</span>
+                    <span class="n">pval</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro2</span><span class="p">)</span>
+                    <span class="n">processed_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pkey</span><span class="p">:</span> <span class="n">pval</span><span class="p">})</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processed data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">processed_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">processed_data</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.process_macro"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.process_macro">[docs]</a>    <span class="k">def</span> <span class="nf">process_macro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">macros</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process macro.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (_type_): _description_</span>
+<span class="sd">            val (_type_): _description_</span>
+<span class="sd">            macros (dict): Macros</span>
+<span class="sd">            sep (str, optional): Namelist key separator. Defaults to &quot;#&quot;.</span>
+<span class="sd">            indices (list, optional): Process macro from namelist indices.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: _description_</span>
+<span class="sd">            NotImplementedError: _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Key, value dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macros=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macros</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+
+        <span class="n">pkey</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">pval</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">for</span> <span class="n">macro</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
+            <span class="n">lindex</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">macro</span> <span class="o">==</span> <span class="s2">&quot;DECADE&quot;</span><span class="p">:</span>
+                    <span class="n">lindex</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lindex</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">lindex</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+            <span class="n">vmacro</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">lindex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">macro_defs</span> <span class="o">=</span> <span class="n">macros</span><span class="p">[</span><span class="n">macro</span><span class="p">]</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macro_defs=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Macro </span><span class="si">%s</span><span class="s2"> not defined. Use index value </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro</span><span class="p">,</span> <span class="n">lindex</span>
+                    <span class="p">)</span>
+                    <span class="n">vmacro</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">lindex</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">macro</span> <span class="o">==</span> <span class="s2">&quot;VTYPE&quot;</span><span class="p">:</span>
+                    <span class="n">vmacro</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">lindex</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;DECADE&quot;</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
+                    <span class="n">ntime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_macro_setting</span><span class="p">(</span><span class="n">macro_defs</span><span class="p">,</span> <span class="s2">&quot;ntime&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">dec_days</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">360</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ntime</span><span class="p">))</span>
+                    <span class="n">dec_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dec_days</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="n">dec_end</span> <span class="o">=</span> <span class="mi">360</span> <span class="o">+</span> <span class="n">dec_start</span>
+                    <span class="n">dec</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dec_start</span><span class="p">,</span> <span class="n">dec_end</span><span class="p">,</span> <span class="n">dec_days</span><span class="p">):</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;day=</span><span class="si">%s</span><span class="s2">, dec=</span><span class="si">%s</span><span class="s2"> lindex=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">lindex</span><span class="p">)</span>
+                        <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">day</span> <span class="o">/</span> <span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">mday</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">day</span> <span class="o">%</span> <span class="mi">30</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">dec</span> <span class="o">==</span> <span class="n">lindex</span><span class="p">:</span>
+                            <span class="n">vmacro</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">mday</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">dec</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Substitute @</span><span class="si">%s</span><span class="s2">@ with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
+                <span class="n">pkey</span> <span class="o">=</span> <span class="n">pkey</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
+                <span class="n">pval</span> <span class="o">=</span> <span class="n">pval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">pkey</span><span class="p">:</span> <span class="n">pval</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.matching_value"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.matching_value">[docs]</a>    <span class="k">def</span> <span class="nf">matching_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match the value. Possibly also read namelist value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict): Data to check keys for</span>
+<span class="sd">            val (str): Key to find</span>
+<span class="sd">            sep (str, optional): Namelist separator. Defaults to &quot;#&quot;.</span>
+<span class="sd">            indices(list, optional): Indices in namelist</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: Data must be a dict or string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Matching entry in data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">skeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">skeys</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check for val=</span><span class="si">%s</span><span class="s2"> in skeys=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">skeys</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">skey</span> <span class="ow">in</span> <span class="n">skeys</span><span class="p">:</span>
+            <span class="n">skey_ms</span> <span class="o">=</span> <span class="p">[</span><span class="n">skey</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">skey</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;skey=</span><span class="si">%s</span><span class="s2"> is a namelist variable&quot;</span><span class="p">,</span> <span class="n">skey</span><span class="p">)</span>
+                <span class="n">skey_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">skey</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">skey_m</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">skey_ms</span> <span class="o">=</span> <span class="n">skey_m</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">skey_ms</span> <span class="o">=</span> <span class="p">[</span><span class="n">skey_m</span><span class="p">]</span>
+
+            <span class="n">found_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">skey_m</span> <span class="ow">in</span> <span class="n">skey_ms</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;matching val=</span><span class="si">%s</span><span class="s2"> skey=</span><span class="si">%s</span><span class="s2"> skey_m=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">skey</span><span class="p">,</span> <span class="n">skey_m</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">skey_m</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2">. data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">skey</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">][</span><span class="n">skey_m</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">skey_m</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">]})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">])</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;found_data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">found_data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">found_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">found_data</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Value=</span><span class="si">%s</span><span class="s2"> not found in data&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.process_data"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.process_data">[docs]</a>    <span class="k">def</span> <span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process input definitions on files to map.&quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Ecoclimap settings</span>
-        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Process data: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="c1"># Required namelist variable</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">setting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;forcing_dir&quot;</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;NETCDF&quot;</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;FORCING.nc&quot;</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="n">fname</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-                        <span class="n">data_dir</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="n">unprocessed_data</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">macros</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;macros&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+                        <span class="n">macros</span> <span class="o">=</span> <span class="n">setting</span><span class="p">[</span><span class="s2">&quot;macros&quot;</span><span class="p">]</span>
+                    <span class="n">extenders</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;extenders&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+                        <span class="n">extenders</span> <span class="o">=</span> <span class="n">setting</span><span class="p">[</span><span class="s2">&quot;extenders&quot;</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span> <span class="ow">in</span> <span class="n">setting</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key1 </span><span class="si">%s</span><span class="s2"> value1 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span><span class="p">)</span>
+                        <span class="c1"># Macro definition</span>
+                        <span class="k">if</span> <span class="n">key1</span> <span class="o">==</span> <span class="s2">&quot;macros&quot;</span> <span class="ow">or</span> <span class="n">key1</span> <span class="o">==</span> <span class="s2">&quot;extenders&quot;</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="c1"># Extra namelist level</span>
+                        <span class="k">elif</span> <span class="n">key1</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Key1=</span><span class="si">%s</span><span class="s2"> is a namelist variable&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">)</span>
+                            <span class="n">val1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key1</span><span class="p">)</span>
+                            <span class="n">indices</span> <span class="o">=</span> <span class="kc">None</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got a namelist list variable&quot;</span><span class="p">)</span>
+                                <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+                                <span class="n">vals1</span> <span class="o">=</span> <span class="p">[]</span>
+                                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val1</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                            <span class="s2">&quot;i=</span><span class="si">%s</span><span class="s2"> len(vals)=</span><span class="si">%s</span><span class="s2"> val1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                            <span class="n">i</span><span class="p">,</span>
+                                            <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">),</span>
+                                            <span class="n">val1</span><span class="p">,</span>
+                                        <span class="p">)</span>
+                                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)):</span>
+                                            <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                                            <span class="n">vals1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                                            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">vals1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                                        <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">vals1</span> <span class="o">=</span> <span class="p">[</span><span class="n">val1</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">val1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals1</span><span class="p">):</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                    <span class="s2">&quot;ind=</span><span class="si">%s</span><span class="s2"> Checking for val1=</span><span class="si">%s</span><span class="s2"> in setting=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                    <span class="n">ind</span><span class="p">,</span>
+                                    <span class="n">val1</span><span class="p">,</span>
+                                    <span class="n">setting</span><span class="p">,</span>
+                                <span class="p">)</span>
+                                <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="n">lindices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">lindices</span> <span class="o">=</span> <span class="kc">None</span>
+                                <span class="n">setting1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_value</span><span class="p">(</span>
+                                    <span class="n">setting</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
+                                <span class="p">)</span>
+                                <span class="k">if</span> <span class="n">setting1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                        <span class="s2">&quot;key1=</span><span class="si">%s</span><span class="s2"> val1=</span><span class="si">%s</span><span class="s2"> Setting1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                        <span class="n">key1</span><span class="p">,</span>
+                                        <span class="n">val1</span><span class="p">,</span>
+                                        <span class="n">setting1</span><span class="p">,</span>
+                                    <span class="p">)</span>
+                                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting1</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                                        <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">val1</span><span class="p">:</span> <span class="n">setting1</span><span class="p">})</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                            <span class="s2">&quot;setting1=</span><span class="si">%s</span><span class="s2">, lindices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting1</span><span class="p">,</span> <span class="n">lindices</span>
+                                        <span class="p">)</span>
+                                        <span class="k">for</span> <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span> <span class="ow">in</span> <span class="n">setting1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                            <span class="k">if</span> <span class="n">key2</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                                <span class="n">key2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key2</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
+                                                <span class="p">)</span>
+
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key2=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key2</span><span class="p">)</span>
+                                            <span class="n">sub_macros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_macro</span><span class="p">(</span>
+                                                <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">macros</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
+                                            <span class="p">)</span>
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                                <span class="s2">&quot;Substituted macros </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sub_macros</span>
+                                            <span class="p">)</span>
+                                            <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_macros</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                        <span class="s2">&quot;Could not match namelist variable </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span>
+                                    <span class="p">)</span>
+                        <span class="c1"># Direct defintions</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value1</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key1=</span><span class="si">%s</span><span class="s2"> value1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span><span class="p">)</span>
+                                <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key1</span><span class="p">:</span> <span class="n">value1</span><span class="p">})</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Did not find a string </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value1</span><span class="p">))</span>
+
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;Manipulate unprocesessed values with general&quot;</span>
+                        <span class="s2">&quot; or user-defined macros </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">unprocessed_data</span><span class="p">,</span>
                     <span class="p">)</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">):</span>
+                                <span class="n">hdr_key</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.hdr&quot;</span>
+                                <span class="n">hdr_val</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">,</span> <span class="s2">&quot;.hdr&quot;</span><span class="p">)</span>
+                                <span class="n">sub_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">hdr_key</span><span class="p">,</span> <span class="n">hdr_val</span><span class="p">)</span>
+                                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_values</span><span class="p">)</span>
+                                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
 
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inline forecast input data.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="InlineForecastInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InlineForecastInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for inline forecast.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            config (Configuration): Surfex configuration</span>
-<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Ecoclimap settings</span>
-        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
-
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for SODA.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">,</span>
-        <span class="n">system_file_paths</span><span class="p">,</span>
-        <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">perturbed_file_pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">dtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for SODA.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            config (Configuration): Surfex configuration</span>
-<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
-<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
-<span class="sd">            perturbed_file_pattern (str, optional): File pattern for perturbed files. Defaults to None.</span>
-<span class="sd">            dtg (datetime, optional): Basetime. Defaults to None.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_paths</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">dtg</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">=</span> <span class="n">dtg</span>
-        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># Ecoclimap settings</span>
-        <span class="n">eco_sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
-            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
-
-        <span class="c1"># OBS</span>
-        <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
-        <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">pobs</span> <span class="ow">in</span> <span class="n">nnco</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">pobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="n">need_obs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_observations</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
-
-        <span class="c1"># SEA</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;INPUT&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_input_sea_assimilation</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span>
-                <span class="p">)</span>
-
-        <span class="c1"># WATER</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-        <span class="c1"># NATURE</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">):</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_ekf</span><span class="p">(</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                    <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,</span>
-                    <span class="n">pert_fp</span><span class="o">=</span><span class="n">perturbed_file_pattern</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;OI&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_oi</span><span class="p">())</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_enkf</span><span class="p">(</span>
-                        <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                        <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,</span>
-                        <span class="n">pert_fp</span><span class="o">=</span><span class="n">perturbed_file_pattern</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-
-        <span class="c1"># Town</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-<div class="viewcode-block" id="SodaInputData.set_input_observations"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.SodaInputData.set_input_observations">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for observations.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: File format not implemented</span>
-<span class="sd">            RuntimeError: Obs ASCII file needs DTG information</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            obssettings: Input observations.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cfile_format_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cfile_format_obs</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Obs ASCII file needs DTG information&quot;</span><span class="p">)</span>
-            <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
-            <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
-            <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;OBSERVATIONS_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.DAT&quot;</span>
-        <span class="k">elif</span> <span class="n">cfile_format_obs</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;ICMSHANAL+0000&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_obs</span><span class="p">)</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;obs_dir&quot;</span>
-        <span class="n">obsfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">target</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">obssettings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">obsfile</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">obssettings</span></div>
-
-<div class="viewcode-block" id="SodaInputData.set_input_sea_assimilation"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.SodaInputData.set_input_sea_assimilation">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_sea_assimilation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for sea assimilation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            check_existence (bool, optional): Check if input files are existing. Defaults to True.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: File format not implemented</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            sea_settings(dict): Input filed for sea assimilation</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cfile_format_sst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#CFILE_FORMAT_SST&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cfile_format_sst</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;SST_SIC.DAT&quot;</span>
-        <span class="k">elif</span> <span class="n">cfile_format_sst</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;SST_SIC&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_sst</span><span class="p">)</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;sst_file_dir&quot;</span>
-        <span class="n">sstfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">target</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">sea_settings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">sstfile</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">sea_settings</span></div>
-
-<div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_oi"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.SodaInputData.set_input_vertical_soil_oi">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_vertical_soil_oi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for OI in soil.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: File format not implemented</span>
-<span class="sd">            RuntimeError: You must set DTG</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            oi_settings(dict): Input files for OI</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">oi_settings</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Climate</span>
-        <span class="n">cfile_format_clim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
-            <span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM&quot;</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">cfile_format_clim</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;CLIMATE.DAT&quot;</span>
-        <span class="k">elif</span> <span class="n">cfile_format_clim</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;clim_isba&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_clim</span><span class="p">)</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;climdir&quot;</span>
-        <span class="n">climfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
-        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">climfile</span><span class="p">})</span>
-
-        <span class="c1"># First guess for SURFEX</span>
-        <span class="n">cfile_format_fg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cfile_format_fg</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;First guess in ASCII format needs DTG information&quot;</span><span class="p">)</span>
-            <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
-            <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
-            <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FIRST_GUESS_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.DAT&quot;</span>
-        <span class="k">elif</span> <span class="n">cfile_format_fg</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_fg</span><span class="p">)</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
-        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">target</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">})</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;ascat_dir&quot;</span>
-        <span class="n">ascatfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">target</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;ASCAT_SM.DAT&quot;</span><span class="p">:</span> <span class="n">ascatfile</span><span class="p">})</span>
-
-        <span class="c1"># OI coefficients</span>
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;oi_coeffs_dir&quot;</span>
-        <span class="n">oi_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#COEFFS&quot;</span><span class="p">)</span>
-        <span class="n">oi_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span> <span class="n">oi_coeffs</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
-        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;fort.61&quot;</span><span class="p">:</span> <span class="n">oi_coeffs</span><span class="p">})</span>
-
-        <span class="c1"># LSM</span>
-        <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
-        <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
-        <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">target</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">oi_settings</span></div>
-
-    <span class="k">def</span> <span class="nf">set_input_vertical_soil_ekf</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for EKF in soil.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
-<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
-<span class="sd">            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.</span>
-<span class="sd">            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: File type not implmented</span>
-<span class="sd">            RuntimeError: You must set DTG</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            ekf_settings(dict): EKF input files</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set DTG&quot;</span><span class="p">)</span>
-
-        <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
-        <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
-        <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-        <span class="n">ekf_settings</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># TODO</span>
-        <span class="n">fcint</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">fcint</span> <span class="o">*</span> <span class="mf">3600.0</span><span class="p">)</span>
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
-        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_path</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="c1"># First guess for SURFEX</span>
-        <span class="n">csurf_filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="n">fgf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
-            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span>
-        <span class="p">)</span>
-        <span class="n">first_guess</span> <span class="o">=</span> <span class="n">first_guess</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fgf</span>
-        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fgf</span><span class="p">)</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
-            <span class="n">lfagmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">)</span>
-            <span class="c1"># TODO for now assume that first guess always is a inline forecast with FA format</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-        <span class="c1"># We never run inline model for perturbations or in SODA</span>
-        <span class="n">extension</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">extension</span>
-        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
-            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
-
-        <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;PREP_INIT.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">fgf</span><span class="p">})</span>
-        <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;PREP_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">fgf</span><span class="p">}</span>
-        <span class="p">)</span>
-
-        <span class="n">nncv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#NNCV&quot;</span><span class="p">)</span>
-        <span class="n">llincheck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#LLINCHECK&quot;</span><span class="p">)</span>
-        <span class="n">lnncv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">llincheck</span><span class="p">:</span>
-            <span class="n">lnncv</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">pert_ekf</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">pert_input</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">ppp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lnncv</span><span class="p">):</span>
-            <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">if</span> <span class="n">ppp</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">p_p</span> <span class="o">=</span> <span class="n">ppp</span>
-                <span class="k">if</span> <span class="n">llincheck</span> <span class="ow">and</span> <span class="n">ppp</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
-                    <span class="n">p_p</span> <span class="o">=</span> <span class="n">ppp</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">nncv</span><span class="p">[</span><span class="n">p_p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">pert_input</span> <span class="o">=</span> <span class="n">ppp</span>
+                        <span class="n">processed_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_macro</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">extenders</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">processed_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="n">sub_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_values</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find the namelist value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
-
-            <span class="k">if</span> <span class="n">exists</span><span class="p">:</span>
-                <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;perturbed_run_dir&quot;</span>
-                <span class="k">if</span> <span class="n">pert_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use default CSURFFILE for perturbed file names&quot;</span><span class="p">)</span>
-                    <span class="n">pert_fp</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
-                            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span>
-                        <span class="p">)</span>
-                        <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-                        <span class="o">+</span> <span class="n">extension</span>
-                    <span class="p">)</span>
-
-                <span class="c1"># TODO depending on when perturbations are run</span>
-                <span class="n">pert_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-                    <span class="n">data_dir</span><span class="p">,</span>
-                    <span class="n">pert_fp</span><span class="p">,</span>
-                    <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-                    <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-                    <span class="n">pert</span><span class="o">=</span><span class="n">pert_input</span><span class="p">,</span>
-                <span class="p">)</span>
-
-                <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;PREP_&quot;</span>
-                    <span class="o">+</span> <span class="n">cyy</span>
-                    <span class="o">+</span> <span class="n">cmm</span>
-                    <span class="o">+</span> <span class="n">cdd</span>
-                    <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
-                    <span class="o">+</span> <span class="n">chh</span>
-                    <span class="o">+</span> <span class="s2">&quot;_EKF_PERT&quot;</span>
-                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pert_ekf</span><span class="p">)</span>
-                    <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-                    <span class="o">+</span> <span class="n">extension</span>
-                <span class="p">)</span>
-                <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">pert_run</span><span class="p">})</span>
-                <span class="n">pert_ekf</span> <span class="o">=</span> <span class="n">pert_ekf</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="c1"># LSM</span>
-        <span class="c1"># Fetch first_guess needed for LSM for extrapolations</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER&quot;</span><span class="p">):</span>
-            <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
-            <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
-
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
-            <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-                <span class="n">data_dir</span><span class="p">,</span>
-                <span class="n">target</span><span class="p">,</span>
-                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">ekf_settings</span>
-
-    <span class="k">def</span> <span class="nf">set_input_vertical_soil_enkf</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for ENKF in soil.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
-<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
-<span class="sd">            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.</span>
-<span class="sd">            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            enkf_settings(dict): ENKF input data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: File type not implemented</span>
-<span class="sd">            RuntimeError: You must set DTG</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set DTG&quot;</span><span class="p">)</span>
-
-        <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
-        <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
-        <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-        <span class="n">enkf_settings</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># First guess for SURFEX</span>
-        <span class="n">csurf_filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-
-        <span class="c1"># TODO</span>
-        <span class="n">fcint</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">fcint</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
-        <span class="n">fgf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
-            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
-            <span class="n">lfagmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">)</span>
-            <span class="c1"># TODO for now assume that first guess always is a inline forecast with FA format</span>
-            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
-            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
-        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-            <span class="n">data_dir</span><span class="p">,</span>
-            <span class="n">fgf</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="c1"># We newer run inline model for perturbations or in SODA</span>
-        <span class="n">extension</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">extension</span>
-        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
-            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
-
-        <span class="n">nens_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NENS_M&quot;</span><span class="p">)</span>
-
-        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;PREP_INIT.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">})</span>
-        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;PREP_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">}</span>
-        <span class="p">)</span>
-        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;PREP_&quot;</span>
-                <span class="o">+</span> <span class="n">cyy</span>
-                <span class="o">+</span> <span class="n">cmm</span>
-                <span class="o">+</span> <span class="n">cdd</span>
-                <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
-                <span class="o">+</span> <span class="n">chh</span>
-                <span class="o">+</span> <span class="s2">&quot;_EKF_ENS&quot;</span>
-                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nens_m</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-                <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">ppp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nens_m</span><span class="p">):</span>
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;perturbed_run_dir&quot;</span>
-            <span class="k">if</span> <span class="n">pert_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use default CSURFFILE for perturbed file names&quot;</span><span class="p">)</span>
-                <span class="n">perturbed_file_pattern</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                    <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-                    <span class="o">+</span> <span class="n">extension</span>
-                <span class="p">)</span>
-
-            <span class="c1"># TODO depending on when perturbations are run</span>
-            <span class="n">perturbed_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-                <span class="n">data_dir</span><span class="p">,</span>
-                <span class="n">perturbed_file_pattern</span><span class="p">,</span>
-                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-                <span class="n">pert</span><span class="o">=</span><span class="n">ppp</span><span class="p">,</span>
-            <span class="p">)</span>
-
-            <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;PREP_&quot;</span>
-                <span class="o">+</span> <span class="n">cyy</span>
-                <span class="o">+</span> <span class="n">cmm</span>
-                <span class="o">+</span> <span class="n">cdd</span>
-                <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
-                <span class="o">+</span> <span class="n">chh</span>
-                <span class="o">+</span> <span class="s2">&quot;_EKF_ENS&quot;</span>
-                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ppp</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-                <span class="o">+</span> <span class="n">extension</span>
-            <span class="p">)</span>
-            <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">perturbed_run</span><span class="p">})</span>
-
-        <span class="c1"># LSM</span>
-        <span class="c1"># Fetch first_guess needed for LSM for extrapolations</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER&quot;</span><span class="p">):</span>
-            <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
-            <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
-
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
-            <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
-                <span class="n">data_dir</span><span class="p">,</span>
-                <span class="n">target</span><span class="p">,</span>
-                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
-                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
-                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
-                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">enkf_settings</span></div>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Expected a namelist variable&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

@@ -66,7 +66,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#pysurfex.cmd_parsing.LoadFromFile.__call__">__call__() (pysurfex.cmd_parsing.LoadFromFile method)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.InlineForecastInputData.__init__">__init__() (pysurfex.binary_input.InlineForecastInputData method)</a>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.__init__">__init__() (pysurfex.binary_input.InputDataFromNamelist method)</a>
 
       <ul>
         <li><a href="index.html#pysurfex.binary_input.InputDataToSurfexBinaries.__init__">(pysurfex.binary_input.InputDataToSurfexBinaries method)</a>
@@ -79,11 +79,13 @@
 </li>
         <li><a href="index.html#pysurfex.binary_input.JsonOutputDataFromFile.__init__">(pysurfex.binary_input.JsonOutputDataFromFile method)</a>
 </li>
-        <li><a href="index.html#pysurfex.binary_input.OfflineInputData.__init__">(pysurfex.binary_input.OfflineInputData method)</a>
-</li>
         <li><a href="index.html#pysurfex.binary_input.OutputDataFromSurfexBinaries.__init__">(pysurfex.binary_input.OutputDataFromSurfexBinaries method)</a>
 </li>
-        <li><a href="index.html#pysurfex.binary_input.PgdInputData.__init__">(pysurfex.binary_input.PgdInputData method)</a>
+        <li><a href="index.html#pysurfex.binary_input_legacy.InlineForecastInputData.__init__">(pysurfex.binary_input_legacy.InlineForecastInputData method)</a>
+</li>
+        <li><a href="index.html#pysurfex.binary_input_legacy.OfflineInputData.__init__">(pysurfex.binary_input_legacy.OfflineInputData method)</a>
+</li>
+        <li><a href="index.html#pysurfex.binary_input_legacy.PgdInputData.__init__">(pysurfex.binary_input_legacy.PgdInputData method)</a>
 </li>
         <li><a href="index.html#pysurfex.configuration.Configuration.__init__">(pysurfex.configuration.Configuration method)</a>
 </li>
@@ -145,6 +147,8 @@
 </li>
         <li><a href="index.html#pysurfex.interpolation.ObsOperator.__init__">(pysurfex.interpolation.ObsOperator method)</a>
 </li>
+        <li><a href="index.html#pysurfex.namelist.NamelistGenerator.__init__">(pysurfex.namelist.NamelistGenerator method)</a>
+</li>
         <li><a href="index.html#pysurfex.netcdf.Netcdf.__init__">(pysurfex.netcdf.Netcdf method)</a>
 </li>
         <li><a href="index.html#pysurfex.netcdf.NetCDFFileVariable.__init__">(pysurfex.netcdf.NetCDFFileVariable method)</a>
@@ -159,9 +163,9 @@
 </li>
         <li><a href="index.html#pysurfex.observation.Observation.__init__">(pysurfex.observation.Observation method)</a>
 </li>
-        <li><a href="index.html#pysurfex.platform.SystemFilePaths.__init__">(pysurfex.platform.SystemFilePaths method)</a>
+        <li><a href="index.html#pysurfex.platform_deps.SystemFilePaths.__init__">(pysurfex.platform_deps.SystemFilePaths method)</a>
 </li>
-        <li><a href="index.html#pysurfex.platform.SystemFilePathsFromFile.__init__">(pysurfex.platform.SystemFilePathsFromFile method)</a>
+        <li><a href="index.html#pysurfex.platform_deps.SystemFilePathsFromFile.__init__">(pysurfex.platform_deps.SystemFilePathsFromFile method)</a>
 </li>
         <li><a href="index.html#pysurfex.read.ConstantValue.__init__">(pysurfex.read.ConstantValue method)</a>
 </li>
@@ -240,21 +244,23 @@
 </li>
       <li><a href="index.html#pysurfex.datetime_utils.as_timedelta">as_timedelta() (in module pysurfex.datetime_utils)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.ascii2nml">ascii2nml() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.ascii2nml">ascii2nml() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.ascii2nml">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.ascii2nml">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.ascii_file2nml">ascii_file2nml() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.ascii_file2nml">ascii_file2nml() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.ascii_file2nml">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.ascii_file2nml">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.forcing.AsciiOutput">AsciiOutput (class in pysurfex.forcing)</a>
 </li>
       <li><a href="index.html#pysurfex.file.AsciiSurfexFile">AsciiSurfexFile (class in pysurfex.file)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.assemble_namelist">assemble_namelist() (pysurfex.namelist.NamelistGenerator method)</a>
 </li>
       <li><a href="index.html#pysurfex.netcdf.Axis">Axis (class in pysurfex.netcdf)</a>
 </li>
@@ -266,7 +272,7 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist">BaseNamelist (class in pysurfex.namelist)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist">BaseNamelist (class in pysurfex.namelist_legacy)</a>
 </li>
       <li><a href="index.html#pysurfex.run.BatchJob">BatchJob (class in pysurfex.run)</a>
 </li>
@@ -290,13 +296,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#pysurfex.obsmon.calculate_statistics">calculate_statistics() (in module pysurfex.obsmon)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.capitalize_namelist_dict">capitalize_namelist_dict() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.capitalize_namelist_dict">capitalize_namelist_dict() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.capitalize_namelist_dict">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.capitalize_namelist_dict">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.geo.Cartesian">Cartesian (class in pysurfex.geo)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.check_nml_setting">check_nml_setting() (pysurfex.namelist.NamelistGenerator static method)</a>
 </li>
       <li><a href="index.html#pysurfex.run.clean_working_dir">clean_working_dir() (in module pysurfex.run)</a>
 </li>
@@ -318,10 +326,12 @@
 </li>
       <li><a href="index.html#pysurfex.obsmon.close_db">close_db() (in module pysurfex.obsmon)</a>
 </li>
-      <li><a href="index.html#pysurfex.configuration.Configuration">Configuration (class in pysurfex.configuration)</a>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.concistency">concistency() (pysurfex.namelist.NamelistGenerator method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.configuration.Configuration">Configuration (class in pysurfex.configuration)</a>
+</li>
       <li><a href="index.html#pysurfex.configuration.ConfigurationFromHarmonie">ConfigurationFromHarmonie (class in pysurfex.configuration)</a>
 </li>
       <li><a href="index.html#pysurfex.configuration.ConfigurationFromHarmonieAndConfigFile">ConfigurationFromHarmonieAndConfigFile (class in pysurfex.configuration)</a>
@@ -366,7 +376,7 @@
 </li>
       <li><a href="index.html#pysurfex.titan.define_quality_control">define_quality_control() (in module pysurfex.titan)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.Namelist.delete">delete() (pysurfex.namelist.Namelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.Namelist.delete">delete() (pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -392,14 +402,16 @@
 </li>
       <li><a href="index.html#pysurfex.ecoclimap.EcoclimapSG">EcoclimapSG (class in pysurfex.ecoclimap)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.epilog">epilog() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.epilog">epilog() (pysurfex.namelist_legacy.BaseNamelist method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.epilog">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.epilog">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.extend_macro">extend_macro() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
       <li><a href="index.html#pysurfex.ecoclimap.ExternalSurfexInputFile">ExternalSurfexInputFile (class in pysurfex.ecoclimap)</a>
 </li>
   </ul></td>
@@ -444,9 +456,15 @@
         <li><a href="index.html#pysurfex.forcing.NetCDFOutput.finalize">(pysurfex.forcing.NetCDFOutput method)</a>
 </li>
       </ul></li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.find_num">find_num() (pysurfex.namelist.NamelistGenerator static method)</a>
+</li>
       <li><a href="index.html#pysurfex.cli.first_guess_for_oi">first_guess_for_oi() (in module pysurfex.cli)</a>
 </li>
       <li><a href="index.html#pysurfex.titan.FirstGuess">FirstGuess (class in pysurfex.titan)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.flatten_config">flatten_config() (pysurfex.namelist.NamelistGenerator method)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.flatten_list">flatten_list() (pysurfex.namelist.NamelistGenerator static method)</a>
 </li>
       <li><a href="index.html#pysurfex.file.ForcingFileNetCDF">ForcingFileNetCDF (class in pysurfex.file)</a>
 </li>
@@ -480,8 +498,12 @@
 </li>
       <li><a href="index.html#pysurfex.variable.Variable.get_filename">get_filename() (pysurfex.variable.Variable method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.Namelist.get_filetype_from_suffix">get_filetype_from_suffix() (pysurfex.namelist.Namelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.get_filetype_from_suffix">get_filetype_from_suffix() (pysurfex.namelist.NamelistGenerator static method)</a>
+
+      <ul>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.get_filetype_from_suffix">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
+      </ul></li>
       <li><a href="index.html#pysurfex.file.AsciiSurfexFile.get_geo">get_geo() (pysurfex.file.AsciiSurfexFile method)</a>
 
       <ul>
@@ -492,14 +514,20 @@
 </li>
       <li><a href="index.html#pysurfex.geo.get_geo_object">get_geo_object() (in module pysurfex.geo)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.get_namelist">get_namelist() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.get_namelist">get_namelist() (pysurfex.namelist.NamelistGenerator method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.get_namelist">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.get_namelist">(pysurfex.namelist_legacy.BaseNamelist method)</a>
+</li>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.get_namelist">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value">get_nml_value() (pysurfex.binary_input.InputDataFromNamelist static method)</a>
+</li>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value_from_string">get_nml_value_from_string() (pysurfex.binary_input.InputDataFromNamelist static method)</a>
+</li>
       <li><a href="index.html#pysurfex.obs.ObservationSet.get_obs">get_obs() (pysurfex.obs.ObservationSet method)</a>
 </li>
       <li><a href="index.html#pysurfex.interpolation.ObsOperator.get_obs_value">get_obs_value() (pysurfex.interpolation.ObsOperator method)</a>
@@ -552,7 +580,9 @@
 </li>
       <li><a href="index.html#pysurfex.geo.IGN.ign_mask">ign_mask() (pysurfex.geo.IGN static method)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.InlineForecastInputData">InlineForecastInputData (class in pysurfex.binary_input)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.InlineForecastInputData">InlineForecastInputData (class in pysurfex.binary_input_legacy)</a>
+</li>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist">InputDataFromNamelist (class in pysurfex.binary_input)</a>
 </li>
       <li><a href="index.html#pysurfex.binary_input.InputDataToSurfexBinaries">InputDataToSurfexBinaries (class in pysurfex.binary_input)</a>
 </li>
@@ -616,10 +646,10 @@
 </li>
       <li><a href="index.html#pysurfex.netcdf.NetCDFFileVariable.lons">lons() (pysurfex.netcdf.NetCDFFileVariable method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.lower_case_namelist_dict">lower_case_namelist_dict() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.lower_case_namelist_dict">lower_case_namelist_dict() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.lower_case_namelist_dict">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.lower_case_namelist_dict">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -636,24 +666,26 @@
 </li>
       <li><a href="index.html#pysurfex.obs.ObservationSet.matching_obs">matching_obs() (pysurfex.obs.ObservationSet method)</a>
 </li>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.matching_value">matching_value() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
       <li><a href="index.html#pysurfex.obsmon.mean">mean() (in module pysurfex.obsmon)</a>
 </li>
       <li><a href="index.html#pysurfex.netcdf.NetCDFFileVariable.members">members() (pysurfex.netcdf.NetCDFFileVariable method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.merge_json_namelist_file">merge_json_namelist_file() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.merge_json_namelist_file">merge_json_namelist_file() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.merge_json_namelist_file">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.merge_json_namelist_file">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#pysurfex.titan.merge_json_qc_data_sets">merge_json_qc_data_sets() (in module pysurfex.titan)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.merge_namelist_dicts">merge_namelist_dicts() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.merge_namelist_dicts">merge_namelist_dicts() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.merge_namelist_dicts">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.merge_namelist_dicts">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.util.merge_toml_env">merge_toml_env() (in module pysurfex.util)</a>
@@ -672,7 +704,11 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#pysurfex.namelist.Namelist">Namelist (class in pysurfex.namelist)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.Namelist">Namelist (class in pysurfex.namelist_legacy)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.namelist_blocks">namelist_blocks() (pysurfex.namelist.NamelistGenerator method)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator">NamelistGenerator (class in pysurfex.namelist)</a>
 </li>
       <li><a href="index.html#pysurfex.file.NCSurfexFile">NCSurfexFile (class in pysurfex.file)</a>
 </li>
@@ -682,18 +718,18 @@
 </li>
       <li><a href="index.html#pysurfex.netcdf.NetCDFFileVariable">NetCDFFileVariable (class in pysurfex.netcdf)</a>
 </li>
-      <li><a href="index.html#pysurfex.forcing.NetCDFOutput">NetCDFOutput (class in pysurfex.forcing)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.forcing.NetCDFOutput">NetCDFOutput (class in pysurfex.forcing)</a>
+</li>
       <li><a href="index.html#pysurfex.netcdf.NetCDFReadVariable">NetCDFReadVariable (class in pysurfex.netcdf)</a>
 </li>
       <li><a href="index.html#pysurfex.file.NetCDFSurfexFile">NetCDFSurfexFile (class in pysurfex.file)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.nml2ascii">nml2ascii() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.nml2ascii">nml2ascii() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.nml2ascii">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.nml2ascii">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.titan.NoMeta">NoMeta (class in pysurfex.titan)</a>
@@ -726,7 +762,7 @@
 </li>
       <li><a href="index.html#pysurfex.cli.offline">offline() (in module pysurfex.cli)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.OfflineInputData">OfflineInputData (class in pysurfex.binary_input)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.OfflineInputData">OfflineInputData (class in pysurfex.binary_input_legacy)</a>
 </li>
       <li><a href="index.html#pysurfex.netcdf.oi2soda">oi2soda() (in module pysurfex.netcdf)</a>
 </li>
@@ -734,10 +770,10 @@
 </li>
       <li><a href="index.html#pysurfex.binary_input.OutputDataFromSurfexBinaries">OutputDataFromSurfexBinaries (class in pysurfex.binary_input)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.override">override() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.override">override() (pysurfex.namelist_legacy.BaseNamelist method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.override">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.override">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -812,10 +848,10 @@
 </li>
       <li><a href="index.html#pysurfex.file.PGDFile">PGDFile (class in pysurfex.file)</a>
 </li>
+      <li><a href="index.html#pysurfex.binary_input_legacy.PgdInputData">PgdInputData (class in pysurfex.binary_input_legacy)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#pysurfex.binary_input.PgdInputData">PgdInputData (class in pysurfex.binary_input)</a>
-</li>
       <li><a href="index.html#pysurfex.titan.Plausibility">Plausibility (class in pysurfex.titan)</a>
 </li>
       <li><a href="index.html#pysurfex.cli.plot_points">plot_points() (in module pysurfex.cli)</a>
@@ -858,11 +894,11 @@
         <li><a href="index.html#pysurfex.binary_input.JsonInputDataFromFile.prepare_input">(pysurfex.binary_input.JsonInputDataFromFile method)</a>
 </li>
       </ul></li>
-      <li><a href="index.html#pysurfex.namelist.Namelist.prepare_offline_perturbation">prepare_offline_perturbation() (pysurfex.namelist.Namelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.Namelist.prepare_offline_perturbation">prepare_offline_perturbation() (pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       <li><a href="index.html#pysurfex.file.PREPFile">PREPFile (class in pysurfex.file)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.PrepInputData">PrepInputData (class in pysurfex.binary_input)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.PrepInputData">PrepInputData (class in pysurfex.binary_input_legacy)</a>
 </li>
       <li><a href="index.html#pysurfex.read.ConstantValue.print_info">print_info() (pysurfex.read.ConstantValue method)</a>
 
@@ -882,10 +918,14 @@
 </li>
       <li><a href="index.html#pysurfex.variable.Variable.print_variable_info">print_variable_info() (pysurfex.variable.Variable method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.prolog">prolog() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.process_data">process_data() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.process_macro">process_macro() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.prolog">prolog() (pysurfex.namelist_legacy.BaseNamelist method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.prolog">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.prolog">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -926,6 +966,8 @@
 </li>
       <li><a href="index.html#pysurfex.grib.Grib.read_geo_info">read_geo_info() (pysurfex.grib.Grib static method)</a>
 </li>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.read_macro_setting">read_macro_setting() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
       <li><a href="index.html#pysurfex.netcdf.read_sentinel_nc">read_sentinel_nc() (in module pysurfex.netcdf)</a>
 </li>
       <li><a href="index.html#pysurfex.read.ConstantValue.read_time_step">read_time_step() (pysurfex.read.ConstantValue method)</a>
@@ -942,10 +984,10 @@
 </li>
       <li><a href="index.html#pysurfex.variable.Variable.read_variable">read_variable() (pysurfex.variable.Variable method)</a>
 </li>
-      <li><a href="index.html#pysurfex.read.ReadData">ReadData (class in pysurfex.read)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.read.ReadData">ReadData (class in pysurfex.read)</a>
+</li>
       <li><a href="index.html#pysurfex.titan.Redundancy">Redundancy (class in pysurfex.titan)</a>
 </li>
       <li><a href="index.html#pysurfex.util.remove_existing_file">remove_existing_file() (in module pysurfex.util)</a>
@@ -957,8 +999,6 @@
       <li><a href="index.html#pysurfex.interpolation.Interpolation.rotate_wind_to_geographic">rotate_wind_to_geographic() (pysurfex.interpolation.Interpolation method)</a>
 </li>
       <li><a href="index.html#pysurfex.run.BatchJob.run">run() (pysurfex.run.BatchJob method)</a>
-</li>
-      <li><a href="index.html#pysurfex.cli.run_create_namelist">run_create_namelist() (in module pysurfex.cli)</a>
 </li>
       <li><a href="index.html#pysurfex.cli.run_first_guess_for_oi">run_first_guess_for_oi() (in module pysurfex.cli)</a>
 </li>
@@ -994,10 +1034,10 @@
         <li><a href="index.html#pysurfex.ecoclimap.EcoclimapSG.set_bin_files">(pysurfex.ecoclimap.EcoclimapSG method)</a>
 </li>
       </ul></li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.set_direct_data_namelist">set_direct_data_namelist() (pysurfex.namelist.BaseNamelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.set_direct_data_namelist">set_direct_data_namelist() (pysurfex.namelist_legacy.BaseNamelist static method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.set_direct_data_namelist">(pysurfex.namelist.Namelist static method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.set_direct_data_namelist">(pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.geo.set_domain">set_domain() (in module pysurfex.geo)</a>
@@ -1034,32 +1074,32 @@
         <li><a href="index.html#pysurfex.titan.Sct.set_input">(pysurfex.titan.Sct method)</a>
 </li>
       </ul></li>
-      <li><a href="index.html#pysurfex.binary_input.SodaInputData.set_input_observations">set_input_observations() (pysurfex.binary_input.SodaInputData method)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_observations">set_input_observations() (pysurfex.binary_input_legacy.SodaInputData method)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.SodaInputData.set_input_sea_assimilation">set_input_sea_assimilation() (pysurfex.binary_input.SodaInputData method)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_sea_assimilation">set_input_sea_assimilation() (pysurfex.binary_input_legacy.SodaInputData method)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.SodaInputData.set_input_vertical_soil_oi">set_input_vertical_soil_oi() (pysurfex.binary_input.SodaInputData method)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_vertical_soil_oi">set_input_vertical_soil_oi() (pysurfex.binary_input_legacy.SodaInputData method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.Namelist.set_obs">set_obs() (pysurfex.namelist.Namelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.Namelist.set_obs">set_obs() (pysurfex.namelist_legacy.Namelist method)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.set_offline_namelist">set_offline_namelist() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.set_offline_namelist">set_offline_namelist() (pysurfex.namelist_legacy.BaseNamelist method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.set_offline_namelist">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.set_offline_namelist">(pysurfex.namelist_legacy.Namelist method)</a>
+</li>
+      </ul></li>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.set_pgd_namelist">set_pgd_namelist() (pysurfex.namelist_legacy.BaseNamelist method)</a>
+
+      <ul>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.set_pgd_namelist">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.set_pgd_namelist">set_pgd_namelist() (pysurfex.namelist.BaseNamelist method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.BaseNamelist.set_soda_namelist">set_soda_namelist() (pysurfex.namelist_legacy.BaseNamelist method)</a>
 
       <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.set_pgd_namelist">(pysurfex.namelist.Namelist method)</a>
-</li>
-      </ul></li>
-      <li><a href="index.html#pysurfex.namelist.BaseNamelist.set_soda_namelist">set_soda_namelist() (pysurfex.namelist.BaseNamelist method)</a>
-
-      <ul>
-        <li><a href="index.html#pysurfex.namelist.Namelist.set_soda_namelist">(pysurfex.namelist.Namelist method)</a>
+        <li><a href="index.html#pysurfex.namelist_legacy.Namelist.set_soda_namelist">(pysurfex.namelist_legacy.Namelist method)</a>
 </li>
       </ul></li>
       <li><a href="index.html#pysurfex.variable.Variable.set_var">set_var() (pysurfex.variable.Variable method)</a>
@@ -1068,9 +1108,9 @@
 </li>
       <li><a href="index.html#pysurfex.cli.soda">soda() (in module pysurfex.cli)</a>
 </li>
-      <li><a href="index.html#pysurfex.binary_input.SodaInputData">SodaInputData (class in pysurfex.binary_input)</a>
+      <li><a href="index.html#pysurfex.binary_input_legacy.SodaInputData">SodaInputData (class in pysurfex.binary_input_legacy)</a>
 </li>
-      <li><a href="index.html#pysurfex.namelist.Namelist.sub">sub() (pysurfex.namelist.Namelist static method)</a>
+      <li><a href="index.html#pysurfex.namelist_legacy.Namelist.sub">sub() (pysurfex.namelist_legacy.Namelist static method)</a>
 </li>
       <li><a href="index.html#pysurfex.geo.Cartesian.subset">subset() (pysurfex.geo.Cartesian method)</a>
 
@@ -1086,7 +1126,9 @@
         <li><a href="index.html#pysurfex.geo.SurfexGeo.subset">(pysurfex.geo.SurfexGeo method)</a>
 </li>
       </ul></li>
-      <li><a href="index.html#pysurfex.platform.SystemFilePaths.substitute_string">substitute_string() (pysurfex.platform.SystemFilePaths static method)</a>
+      <li><a href="index.html#pysurfex.binary_input.InputDataFromNamelist.substitute">substitute() (pysurfex.binary_input.InputDataFromNamelist method)</a>
+</li>
+      <li><a href="index.html#pysurfex.platform_deps.SystemFilePaths.substitute_string">substitute_string() (pysurfex.platform_deps.SystemFilePaths static method)</a>
 </li>
       <li><a href="index.html#pysurfex.run.SURFEXBinary">SURFEXBinary (class in pysurfex.run)</a>
 </li>
@@ -1110,9 +1152,9 @@
 </li>
       <li><a href="index.html#pysurfex.file.SurfexSurfIO.symlink_input">symlink_input() (pysurfex.file.SurfexSurfIO method)</a>
 </li>
-      <li><a href="index.html#pysurfex.platform.SystemFilePaths">SystemFilePaths (class in pysurfex.platform)</a>
+      <li><a href="index.html#pysurfex.platform_deps.SystemFilePaths">SystemFilePaths (class in pysurfex.platform_deps)</a>
 </li>
-      <li><a href="index.html#pysurfex.platform.SystemFilePathsFromFile">SystemFilePathsFromFile (class in pysurfex.platform)</a>
+      <li><a href="index.html#pysurfex.platform_deps.SystemFilePathsFromFile">SystemFilePathsFromFile (class in pysurfex.platform_deps)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1206,6 +1248,8 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#pysurfex.namelist.NamelistGenerator.write">write() (pysurfex.namelist.NamelistGenerator method)</a>
+</li>
       <li><a href="index.html#pysurfex.forcing.AsciiOutput.write_forcing">write_forcing() (pysurfex.forcing.AsciiOutput method)</a>
 
       <ul>

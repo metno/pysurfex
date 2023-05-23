@@ -50,7 +50,7 @@
     <span class="n">ogr</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span> <span class="nn">.namelist</span> <span class="kn">import</span> <span class="n">BaseNamelist</span>
+<span class="kn">from</span> <span class="nn">.namelist_legacy</span> <span class="kn">import</span> <span class="n">BaseNamelist</span>
 
 
 <div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo">[docs]</a><span class="k">class</span> <span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -319,50 +319,31 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">,</span>
-                        <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">,</span>
-                        <span class="s2">&quot;xrpk&quot;</span><span class="p">:</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)),</span>
-                        <span class="s2">&quot;xbeta&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">,</span>
-                        <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xloncen</span><span class="p">,</span>
-                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span>
-                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span>
-                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">,</span>
-                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">,</span>
-                        <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span><span class="p">,</span>
-                    <span class="p">},</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">,</span>
-                        <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">,</span>
-                        <span class="s2">&quot;xrpk&quot;</span><span class="p">:</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)),</span>
-                        <span class="s2">&quot;xbeta&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span><span class="p">,</span>
-                        <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span><span class="p">,</span>
-                        <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">,</span>
-                        <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xloncen</span><span class="p">,</span>
-                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span>
-                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span>
-                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">,</span>
-                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">,</span>
-                        <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span><span class="p">,</span>
-                    <span class="p">},</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
+        <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
+                <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">,</span>
+                    <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">,</span>
+                    <span class="s2">&quot;xrpk&quot;</span><span class="p">:</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)),</span>
+                    <span class="s2">&quot;xbeta&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">,</span>
+                    <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xloncen</span><span class="p">,</span>
+                    <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span>
+                    <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span>
+                    <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">,</span>
+                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span><span class="p">})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span><span class="p">})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
 <div class="viewcode-block" id="ConfProj.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>

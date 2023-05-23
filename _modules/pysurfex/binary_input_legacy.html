@@ -1,0 +1,836 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysurfex.binary_input_legacy &#8212; SURFEX Python API (pysurfex)  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.binary_input_legacy</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pysurfex.binary_input_legacy</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Input data for surfex binaries.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">.binary_input</span> <span class="kn">import</span> <span class="n">JsonInputData</span>
+<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span> <span class="nn">.ecoclimap</span> <span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span><span class="p">,</span> <span class="n">ExternalSurfexInputFile</span>
+<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">AsciiSurfexFile</span><span class="p">,</span> <span class="n">FaSurfexFile</span><span class="p">,</span> <span class="n">NCSurfexFile</span>
+
+
+<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PGD input.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PgdInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PD input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Configuration): Surfex configuration</span>
+<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This is deprecated&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># Ecoclimap settings</span>
+        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eco_sg</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">EcoclimapSG</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="n">system_file_paths</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span>
+
+        <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
+        <span class="c1"># Set direct input files</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#FLAKE#LDB_VERSION&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;_V&quot;</span> <span class="o">+</span> <span class="n">version</span>
+            <span class="n">datadir</span> <span class="o">=</span> <span class="s2">&quot;flake_dir&quot;</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeDepth&quot;</span> <span class="o">+</span> <span class="n">version</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+            <span class="n">linkbasename</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeDepth&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                    <span class="n">datadir</span><span class="p">,</span>
+                    <span class="n">fname</span><span class="p">,</span>
+                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                    <span class="n">linkbasename</span><span class="o">=</span><span class="n">linkbasename</span><span class="p">,</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeStatus&quot;</span> <span class="o">+</span> <span class="n">version</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+            <span class="n">linkbasename</span> <span class="o">=</span> <span class="s2">&quot;GlobalLakeStatus&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                    <span class="n">datadir</span><span class="p">,</span>
+                    <span class="n">fname</span><span class="p">,</span>
+                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                    <span class="n">linkbasename</span><span class="o">=</span><span class="n">linkbasename</span><span class="p">,</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">possible_direct_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ISBA&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;YSAND&quot;</span><span class="p">:</span> <span class="s2">&quot;sand_dir&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YCLAY&quot;</span><span class="p">:</span> <span class="s2">&quot;clay_dir&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YSOC_TOP&quot;</span><span class="p">:</span> <span class="s2">&quot;soc_top_dir&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YSOC_SUB&quot;</span><span class="p">:</span> <span class="s2">&quot;soc_sub_dir&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;COVER&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YCOVER&quot;</span><span class="p">:</span> <span class="n">ecoclimap</span><span class="o">.</span><span class="n">cover_dir</span><span class="p">},</span>
+            <span class="s2">&quot;ZS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YZS&quot;</span><span class="p">:</span> <span class="s2">&quot;oro_dir&quot;</span><span class="p">},</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">namelist_section</span><span class="p">,</span> <span class="n">ftypes</span> <span class="ow">in</span> <span class="n">possible_direct_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="n">ftypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                    <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#&quot;</span> <span class="o">+</span> <span class="n">namelist_section</span> <span class="o">+</span> <span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="n">ftype</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                        <span class="n">data_dir</span><span class="p">,</span>
+                        <span class="n">fname</span><span class="p">,</span>
+                        <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                        <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Treedrag</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#TREEDATA_FILE&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TREEDRAG#TREEDATA_FILE&quot;</span><span class="p">)</span>
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;tree_height_dir&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                    <span class="n">data_dir</span><span class="p">,</span>
+                    <span class="n">fname</span><span class="p">,</span>
+                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for PREP.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">,</span>
+        <span class="n">system_file_paths</span><span class="p">,</span>
+        <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for PREP.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Configuration): Surfex configuration</span>
+<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+<span class="sd">            prep_file (str, optional): Prep input file. Defaults to None.</span>
+<span class="sd">            prep_pgdfile (str, optional): Filetype for prep input. Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This is deprecated&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Ecoclimap settings</span>
+        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;prep class </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="n">ext_data</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prep_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prep_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">):</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">prep_file</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">prep_file</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">prep_file</span><span class="p">})</span>
+                <span class="k">if</span> <span class="n">prep_pgdfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">prep_pgdfile</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="n">prep_pgdfile</span><span class="p">:</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">prep_pgdfile</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;flake_dir&quot;</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;LAKE_LTA_NEW.nc&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ext_data</span><span class="o">.</span><span class="n">set_input_data_from_format</span><span class="p">(</span>
+                    <span class="n">data_dir</span><span class="p">,</span>
+                    <span class="n">fname</span><span class="p">,</span>
+                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;climdir&quot;</span><span class="p">,</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for offline.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OfflineInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for offline.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Configuration): Surfex configuration</span>
+<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Filetype not implemented</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This is deprecated&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Ecoclimap settings</span>
+        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;forcing_dir&quot;</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;NETCDF&quot;</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;FORCING.nc&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">fname</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                        <span class="n">data_dir</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inline forecast input data.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InlineForecastInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for inline forecast.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Configuration): Surfex configuration</span>
+<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This is deprecated&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Ecoclimap settings</span>
+        <span class="n">eco_sg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for SODA.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">,</span>
+        <span class="n">system_file_paths</span><span class="p">,</span>
+        <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">perturbed_file_pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for SODA.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Configuration): Surfex configuration</span>
+<span class="sd">            system_file_paths (SystemFilePaths): System file paths</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
+<span class="sd">            perturbed_file_pattern (str, optional): File pattern for perturbed files. Defaults to None.</span>
+<span class="sd">            dtg (datetime, optional): Basetime. Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This is deprecated&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_paths</span> <span class="o">=</span> <span class="n">ExternalSurfexInputFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">dtg</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">=</span> <span class="n">dtg</span>
+        <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="c1"># Ecoclimap settings</span>
+        <span class="n">eco_sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eco_sg</span><span class="p">:</span>
+            <span class="n">ecoclimap</span> <span class="o">=</span> <span class="n">Ecoclimap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">ecoclimap</span><span class="o">.</span><span class="n">set_bin_files</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+
+        <span class="c1"># OBS</span>
+        <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
+        <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">pobs</span> <span class="ow">in</span> <span class="n">nnco</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">need_obs</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">need_obs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_observations</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">))</span>
+
+        <span class="c1"># SEA</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;INPUT&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_input_sea_assimilation</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># WATER</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># NATURE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_ekf</span><span class="p">(</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                    <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,</span>
+                    <span class="n">pert_fp</span><span class="o">=</span><span class="n">perturbed_file_pattern</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;OI&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_oi</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setting_is</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_input_vertical_soil_enkf</span><span class="p">(</span>
+                        <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                        <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">,</span>
+                        <span class="n">pert_fp</span><span class="o">=</span><span class="n">perturbed_file_pattern</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Town</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+<div class="viewcode-block" id="SodaInputData.set_input_observations"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_observations">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for observations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if input files exist. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: File format not implemented</span>
+<span class="sd">            RuntimeError: Obs ASCII file needs DTG information</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            obssettings: Input observations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfile_format_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfile_format_obs</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Obs ASCII file needs DTG information&quot;</span><span class="p">)</span>
+            <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
+            <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
+            <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;OBSERVATIONS_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.DAT&quot;</span>
+        <span class="k">elif</span> <span class="n">cfile_format_obs</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;ICMSHANAL+0000&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_obs</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;obs_dir&quot;</span>
+        <span class="n">obsfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">obssettings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">obsfile</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">obssettings</span></div>
+
+<div class="viewcode-block" id="SodaInputData.set_input_sea_assimilation"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_sea_assimilation">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_sea_assimilation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for sea assimilation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if input files are existing. Defaults to True.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: File format not implemented</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sea_settings(dict): Input filed for sea assimilation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfile_format_sst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SEA#CFILE_FORMAT_SST&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfile_format_sst</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;SST_SIC.DAT&quot;</span>
+        <span class="k">elif</span> <span class="n">cfile_format_sst</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;SST_SIC&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_sst</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;sst_file_dir&quot;</span>
+        <span class="n">sstfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sea_settings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">sstfile</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">sea_settings</span></div>
+
+<div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_oi"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_vertical_soil_oi">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_vertical_soil_oi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for OI in soil.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: File format not implemented</span>
+<span class="sd">            RuntimeError: You must set DTG</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            oi_settings(dict): Input files for OI</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oi_settings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Climate</span>
+        <span class="n">cfile_format_clim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+            <span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfile_format_clim</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;CLIMATE.DAT&quot;</span>
+        <span class="k">elif</span> <span class="n">cfile_format_clim</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;clim_isba&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_clim</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;climdir&quot;</span>
+        <span class="n">climfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">climfile</span><span class="p">})</span>
+
+        <span class="c1"># First guess for SURFEX</span>
+        <span class="n">cfile_format_fg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfile_format_fg</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;First guess in ASCII format needs DTG information&quot;</span><span class="p">)</span>
+            <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
+            <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
+            <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FIRST_GUESS_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.DAT&quot;</span>
+        <span class="k">elif</span> <span class="n">cfile_format_fg</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_fg</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
+        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">})</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;ascat_dir&quot;</span>
+        <span class="n">ascatfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;ASCAT_SM.DAT&quot;</span><span class="p">:</span> <span class="n">ascatfile</span><span class="p">})</span>
+
+        <span class="c1"># OI coefficients</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;oi_coeffs_dir&quot;</span>
+        <span class="n">oi_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#OI#COEFFS&quot;</span><span class="p">)</span>
+        <span class="n">oi_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span> <span class="n">oi_coeffs</span><span class="p">,</span> <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;fort.61&quot;</span><span class="p">:</span> <span class="n">oi_coeffs</span><span class="p">})</span>
+
+        <span class="c1"># LSM</span>
+        <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
+        <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
+        <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">oi_settings</span></div>
+
+    <span class="k">def</span> <span class="nf">set_input_vertical_soil_ekf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for EKF in soil.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
+<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
+<span class="sd">            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.</span>
+<span class="sd">            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: File type not implmented</span>
+<span class="sd">            RuntimeError: You must set DTG</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ekf_settings(dict): EKF input files</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set DTG&quot;</span><span class="p">)</span>
+
+        <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
+        <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
+        <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+        <span class="n">ekf_settings</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># TODO</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">fcint</span> <span class="o">*</span> <span class="mf">3600.0</span><span class="p">)</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
+        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_path</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># First guess for SURFEX</span>
+        <span class="n">csurf_filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">fgf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span>
+        <span class="p">)</span>
+        <span class="n">first_guess</span> <span class="o">=</span> <span class="n">first_guess</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fgf</span>
+        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fgf</span><span class="p">)</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">lfagmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO for now assume that first guess always is a inline forecast with FA format</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">first_guess</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="c1"># We never run inline model for perturbations or in SODA</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">extension</span>
+        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
+
+        <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;PREP_INIT.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">fgf</span><span class="p">})</span>
+        <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;PREP_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">fgf</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="n">nncv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#NNCV&quot;</span><span class="p">)</span>
+        <span class="n">llincheck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#LLINCHECK&quot;</span><span class="p">)</span>
+        <span class="n">lnncv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">llincheck</span><span class="p">:</span>
+            <span class="n">lnncv</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">pert_ekf</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pert_input</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">ppp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lnncv</span><span class="p">):</span>
+            <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">ppp</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">p_p</span> <span class="o">=</span> <span class="n">ppp</span>
+                <span class="k">if</span> <span class="n">llincheck</span> <span class="ow">and</span> <span class="n">ppp</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
+                    <span class="n">p_p</span> <span class="o">=</span> <span class="n">ppp</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">nncv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">nncv</span><span class="p">[</span><span class="n">p_p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">pert_input</span> <span class="o">=</span> <span class="n">ppp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">exists</span><span class="p">:</span>
+                <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;perturbed_run_dir&quot;</span>
+                <span class="k">if</span> <span class="n">pert_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use default CSURFFILE for perturbed file names&quot;</span><span class="p">)</span>
+                    <span class="n">pert_fp</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+                            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span>
+                        <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+                        <span class="o">+</span> <span class="n">extension</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># TODO depending on when perturbations are run</span>
+                <span class="n">pert_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                    <span class="n">data_dir</span><span class="p">,</span>
+                    <span class="n">pert_fp</span><span class="p">,</span>
+                    <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+                    <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+                    <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                    <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+                    <span class="n">pert</span><span class="o">=</span><span class="n">pert_input</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;PREP_&quot;</span>
+                    <span class="o">+</span> <span class="n">cyy</span>
+                    <span class="o">+</span> <span class="n">cmm</span>
+                    <span class="o">+</span> <span class="n">cdd</span>
+                    <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
+                    <span class="o">+</span> <span class="n">chh</span>
+                    <span class="o">+</span> <span class="s2">&quot;_EKF_PERT&quot;</span>
+                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pert_ekf</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+                    <span class="o">+</span> <span class="n">extension</span>
+                <span class="p">)</span>
+                <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">pert_run</span><span class="p">})</span>
+                <span class="n">pert_ekf</span> <span class="o">=</span> <span class="n">pert_ekf</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># LSM</span>
+        <span class="c1"># Fetch first_guess needed for LSM for extrapolations</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER&quot;</span><span class="p">):</span>
+            <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
+            <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
+
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
+            <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                <span class="n">data_dir</span><span class="p">,</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">ekf_settings</span>
+
+    <span class="k">def</span> <span class="nf">set_input_vertical_soil_enkf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for ENKF in soil.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            check_existence (bool, optional): Check if files exist. Defaults to True.</span>
+<span class="sd">            masterodb (bool, optional): Files produced with masterodb. Defaults to True.</span>
+<span class="sd">            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.</span>
+<span class="sd">            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            enkf_settings(dict): ENKF input data</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: File type not implemented</span>
+<span class="sd">            RuntimeError: You must set DTG</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set DTG&quot;</span><span class="p">)</span>
+
+        <span class="n">cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
+        <span class="n">cmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
+        <span class="n">cdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">chh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
+        <span class="n">enkf_settings</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># First guess for SURFEX</span>
+        <span class="n">csurf_filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># TODO</span>
+        <span class="n">fcint</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">fg_dtg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtg</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">fcint</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+        <span class="n">fgf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span>
+            <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;ascii&quot;</span><span class="p">:</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">AsciiSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;nc&quot;</span><span class="p">:</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">NCSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">elif</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">lfagmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LFAGMAP&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO for now assume that first guess always is a inline forecast with FA format</span>
+            <span class="n">fg_file</span> <span class="o">=</span> <span class="n">FaSurfexFile</span><span class="p">(</span><span class="n">fgf</span><span class="p">,</span> <span class="n">lfagmap</span><span class="o">=</span><span class="n">lfagmap</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="n">masterodb</span><span class="p">)</span>
+            <span class="n">fgf</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">filename</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;first_guess_dir&quot;</span>
+        <span class="n">first_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">fgf</span><span class="p">,</span>
+            <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+            <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+            <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># We newer run inline model for perturbations or in SODA</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">fg_file</span><span class="o">.</span><span class="n">extension</span>
+        <span class="k">if</span> <span class="n">csurf_filetype</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
+            <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;fa&quot;</span>
+
+        <span class="n">nens_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NENS_M&quot;</span><span class="p">)</span>
+
+        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;PREP_INIT.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">})</span>
+        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;PREP_&quot;</span> <span class="o">+</span> <span class="n">cyy</span> <span class="o">+</span> <span class="n">cmm</span> <span class="o">+</span> <span class="n">cdd</span> <span class="o">+</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">chh</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;PREP_&quot;</span>
+                <span class="o">+</span> <span class="n">cyy</span>
+                <span class="o">+</span> <span class="n">cmm</span>
+                <span class="o">+</span> <span class="n">cdd</span>
+                <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
+                <span class="o">+</span> <span class="n">chh</span>
+                <span class="o">+</span> <span class="s2">&quot;_EKF_ENS&quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nens_m</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+                <span class="o">+</span> <span class="n">extension</span><span class="p">:</span> <span class="n">first_guess</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ppp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nens_m</span><span class="p">):</span>
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;perturbed_run_dir&quot;</span>
+            <span class="k">if</span> <span class="n">pert_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use default CSURFFILE for perturbed file names&quot;</span><span class="p">)</span>
+                <span class="n">perturbed_file_pattern</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+                    <span class="o">+</span> <span class="n">extension</span>
+                <span class="p">)</span>
+
+            <span class="c1"># TODO depending on when perturbations are run</span>
+            <span class="n">perturbed_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                <span class="n">data_dir</span><span class="p">,</span>
+                <span class="n">perturbed_file_pattern</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+                <span class="n">pert</span><span class="o">=</span><span class="n">ppp</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;PREP_&quot;</span>
+                <span class="o">+</span> <span class="n">cyy</span>
+                <span class="o">+</span> <span class="n">cmm</span>
+                <span class="o">+</span> <span class="n">cdd</span>
+                <span class="o">+</span> <span class="s2">&quot;H&quot;</span>
+                <span class="o">+</span> <span class="n">chh</span>
+                <span class="o">+</span> <span class="s2">&quot;_EKF_ENS&quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ppp</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+                <span class="o">+</span> <span class="n">extension</span>
+            <span class="p">)</span>
+            <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">perturbed_run</span><span class="p">})</span>
+
+        <span class="c1"># LSM</span>
+        <span class="c1"># Fetch first_guess needed for LSM for extrapolations</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER&quot;</span><span class="p">):</span>
+            <span class="n">cfile_format_lsm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#CFILE_FORMAT_LSM&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;LSM.DAT&quot;</span>
+            <span class="k">elif</span> <span class="n">cfile_format_lsm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FA&quot;</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;FG_OI_MAIN&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">cfile_format_lsm</span><span class="p">)</span>
+
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;lsm_dir&quot;</span>
+            <span class="n">lsmfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">get_system_file</span><span class="p">(</span>
+                <span class="n">data_dir</span><span class="p">,</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="n">default_dir</span><span class="o">=</span><span class="s2">&quot;assim_dir&quot;</span><span class="p">,</span>
+                <span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtg</span><span class="p">,</span>
+                <span class="n">basedtg</span><span class="o">=</span><span class="n">fg_dtg</span><span class="p">,</span>
+                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">enkf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">enkf_settings</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SURFEX Python API (pysurfex)  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pysurfex.binary_input_legacy</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    </div>
+  </body>
+</html>
