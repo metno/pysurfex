@@ -135,10 +135,22 @@ def f90ml_namelist(tmp_path_factory):
             CFTYP_ALBNIR_SOIL(2,2) = "DIRTYP"
             CFNAM_ALBNIR_SOIL(20,36) = "filename_albnir_soil_20_1225"
             CFTYP_ALBNIR_SOIL(20,36) = "DIRTYP"
-            CFNAM_H_TREE(1) = "filename_h_tree_0105"
+            CFNAM_ALBVIS_SOIL(1,1) = "filename_albvis_soil_1_0105"
+            CFTYP_ALBVIS_SOIL(1,1) = "DIRTYP"
+            CFNAM_ALBVIS_SOIL(20,1) = "filename_albvis_soil_20_0105"
+            CFTYP_ALBVIS_SOIL(20,1) = "DIRTYP"
+            CFNAM_ALBVIS_SOIL(2,2) = "filename_albvis_soil_2_0115"
+            CFTYP_ALBVIS_SOIL(2,2) = "DIRTYP"
+            CFNAM_ALBVIS_SOIL(20,36) = "filename_albvis_soil_20_1225"
+            CFTYP_ALBVIS_SOIL(20,36) = "DIRTYP"
+            CFNAM_H_TREE(1) = "filename_h_tree_1"
             CFTYP_H_TREE(1) = "DIRTYP"
-            CFNAM_H_TREE(36) = "filename_h_tree_1225"
-            CFTYP_H_TREE(36) = "DIRTYP"
+            CFNAM_H_TREE(20) = "filename_h_tree_20"
+            CFTYP_H_TREE(20) = "DIRTYP"
+        /
+        &NAM_COVER
+            YCOVER = "ecosg_final_map"
+            YCOVERFILETYPE = "DIRECT"
         /
         &NAM_ASSIM
             CASSIM_ISBA = "EKF"
@@ -154,8 +166,12 @@ def f90ml_namelist(tmp_path_factory):
             NNCV(4) = 0
         /
         &NAM_ZS
-            YFILE = "gmted2010file"
-            YFILETYPE = "DIRECT"
+            YZS = "gmted2010file"
+            YZSFILETYPE = "DIRECT"
+        /
+        &NAM_PREP_SURF_ATM
+            CFILE = "my_prep_file"
+            CFILETYPE = "FA"
         /
     """
     with open(nml, mode="w", encoding="utf-8") as nml_file:
@@ -168,6 +184,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
     system_paths = {
         "first_guess_dir": "/fg",
         "ecoclimap_sg": "/ecoclimap",
+        "ecoclimap_bin_dir": "/eco_bin",
         "ecosg_data_path": "/ecoclimap",
         "oi_coeffs_dir": "/oi",
         "ascat_dir": "/ascat",
@@ -178,22 +195,61 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         nml = f90nml.read(nml_fh)
     with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
         input_data = json.load(fhandler)
+
     platform = SystemFilePaths(system_paths)
     basetime = as_datetime("2022022006")
     validtime = as_datetime("2022022006")
+
+    # PGD
     binary_data = InputDataFromNamelist(
-        nml, input_data, "pgd", platform, basetime=basetime, validtime=validtime
+        nml, input_data.copy(), "pgd", platform, basetime=basetime, validtime=validtime
     )
-    print(binary_data.data)
+    logging.debug("binary_data=%s", binary_data.data)
     assert (
         binary_data.data["filename_albnir_soil_2_0115.dir"]
-        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115.dir"
+        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115_c.dir"
     )
     assert (
         binary_data.data["filename_albnir_soil_20_1225.dir"]
-        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225.dir"
+        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225_c.dir"
     )
-    assert binary_data.data["filename_h_tree_1225.dir"] == "/ecoclimap/HT/new_ht_c.dir"
+    assert (
+        binary_data.data["filename_albvis_soil_2_0115.dir"]
+        == "/ecoclimap/ALB_SAT/ALB_SAT_VI_0115_c.dir"
+    )
+    assert binary_data.data["filename_h_tree_1.dir"] == "/ecoclimap/HT/new_ht_c.dir"
+    assert binary_data.data["filename_h_tree_20.dir"] == "/ecoclimap/HT/new_ht_c.dir"
+    assert binary_data.data["gmted2010file.dir"] == "/gmted/gmted2010.dir"
+
+    # Prep
+    input_data_copy = input_data.copy()
+    input_data_copy["prep"]["NAM_PREP_SURF_ATM#CFILETYPE"]["FA"][
+        "NAM_PREP_SURF_ATM#CFILE"
+    ] = "@first_guess_dir@/MYFILE"
+    binary_data = InputDataFromNamelist(
+        nml, input_data_copy, "prep", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert binary_data.data["my_prep_file"] == "/fg/MYFILE"
+
+    # Offline "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+    nml["NAM_FRAC"]["LECOSG"] = False
+    binary_data = InputDataFromNamelist(
+        nml,
+        input_data.copy(),
+        "offline",
+        platform,
+        basetime=basetime,
+        validtime=validtime,
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert (
+        binary_data.data["ecoclimapI_covers_param.bin"]
+        == "/eco_bin/ecoclimapI_covers_param.bin"
+    )
+
+    # SODA
+    # EKF
     binary_data = InputDataFromNamelist(
         nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
     )
@@ -208,6 +264,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         == "/fg/PREP_220220H06_EKF_PERT7.fa"
     )
 
+    # EKF LLINCHECK = FALSE
     nml["NAM_ASSIM"]["LLINCHECK"] = False
     binary_data = InputDataFromNamelist(
         nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
@@ -227,6 +284,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         == "/fg/PREP_220220H06_EKF_PERT3.fa"
     )
 
+    # ENKF
     nml["NAM_ASSIM"]["CASSIM_ISBA"] = "ENKF"
     binary_data = InputDataFromNamelist(
         nml, input_data, "soda", platform, basetime=basetime, validtime=validtime
@@ -242,6 +300,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         == "/fg/PREP_220220H06_EKF_ENS15.fa"
     )
 
+    # OI
     with open(f90ml_namelist, mode="r", encoding="utf-8") as nml_fh:
         nml = f90nml.read(nml_fh)
     nml["NAM_ASSIM"]["CASSIM_ISBA"] = "OI"

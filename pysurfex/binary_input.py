@@ -5,34 +5,6 @@ import os
 import subprocess
 from abc import ABC, abstractmethod
 
-"""
-def binary_input_data():
-    return {
-        "pgd": {
-            "NAM_FRAC#LECOSG": {
-                "True": {
-                    "macros": {
-                        "VTYPE": {"fmt": "02d"},
-                        "DECADE": {"ntime": "NAM_DATA_ISBA#NTIME"},
-                    },
-                    "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
-                        "DIRTYP": {
-                            "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@"
-                        }
-                    },
-                },
-                "False": {
-                    "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
-                    "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
-                    "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin",
-                },
-            },
-            "NAM_ZS#YFILETYPE": {"DIRECT": {"NAM_ZS#YFILE": "@gmted@/gmted2010"}},
-        },
-        "prep": {},
-    }
-"""
-
 
 class InputDataToSurfexBinaries(ABC):
     """Abstract input data."""
@@ -209,7 +181,7 @@ class InputDataFromNamelist(JsonInputData):
         JsonInputData.__init__(self, data)
 
     @staticmethod
-    def get_nml_value(nml, block, key, indices=None):
+    def get_nml_value2(nml, block, key, indices=None):
         """Get namelist value.
 
         Args:
@@ -245,6 +217,87 @@ class InputDataFromNamelist(JsonInputData):
 
                 logging.debug("Found: %s Indices=%s", val, indices)
                 return val
+        return None
+
+    @staticmethod
+    def get_nml_value(nml, block, key, indices=None):
+        """Get namelist value.
+
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            block (str): Namelist block
+            key (str): Namelist key
+            indices (list, optional): Indices to read. Defaults to None.
+
+        Returns:
+            setting (any): Namelist setting
+
+        """
+        logging.debug("Checking block=%s key=%s", block, key)
+        if block in nml:
+            if key in nml[block]:
+                vals = []
+                val_dict = {}
+                val = nml[block][key]
+                logging.debug("namelist type=%s", type(val))
+                if indices is not None:
+                    logging.debug("indices=%s", indices)
+                    if len(indices) == 2:
+                        val = nml[block][key][indices[1]][indices[0]]
+                    else:
+                        val = nml[block][key][indices[0]]
+                        logging.debug("Found 1D value %s", val)
+                        if isinstance(val, list):
+                            return None
+                    val_dict.update({"value": val, "indices": None})
+                    vals.append(val_dict)
+
+                else:
+                    if isinstance(val, list):
+                        dim_size = len(val)
+                        dims = []
+                        tval = val
+                        while dim_size != 1:
+                            logging.debug("tval=%s", tval)
+                            if isinstance(tval, int):
+                                dim_size = 1
+                            else:
+                                dim_size = len(tval)
+                                if dim_size != 1:
+                                    dims.append(dim_size)
+                                tval = tval[0]
+
+                        logging.debug("dims=%s", dims)
+                        logging.debug("type(val)=%s", type(val))
+                        if len(dims) - 1 == 2:
+                            for i in range(0, dims[0]):
+                                for j in range(0, dims[1]):
+                                    val_dict = {}
+                                    indices = [j, i]
+                                    lval = val[i][j]
+                                    val_dict.update({"value": lval, "indices": indices})
+                                    logging.debug("value=%s indices=%s", lval, indices)
+                                    vals.append(val_dict)
+                        elif len(dims) - 1 == 1:
+                            for i in range(0, dims[0]):
+                                val_dict = {}
+                                indices = [i]
+                                val_dict.update({"value": val[i], "indices": indices})
+                                logging.debug("value=%s indices=%s", val[i], indices)
+                                vals.append(val_dict)
+                        elif len(dims) - 1 == 0:
+                            val_dict = {}
+                            val_dict.update({"value": val, "indices": None})
+                            vals.append(val_dict)
+                    else:
+                        val_dict = {}
+                        if isinstance(val, bool):
+                            val = str(val)
+                        val_dict.update({"value": val, "indices": None})
+                        vals.append(val_dict)
+
+                logging.debug("Found: value=%s", val_dict["value"])
+                return vals
         return None
 
     @staticmethod
@@ -306,7 +359,7 @@ class InputDataFromNamelist(JsonInputData):
             basedtg=self.basetime,
             check_parsing=check_parsing,
         )
-        return {pkey: pval}
+        return pkey, pval
 
     def read_macro_setting(self, macro_defs, key, default=None, sep="#"):
         """Read a macro setting.
@@ -326,6 +379,8 @@ class InputDataFromNamelist(JsonInputData):
                 if setting.find(sep) > 0:
                     logging.debug("Read macro setting from namelist %s", setting)
                     setting = self.get_nml_value_from_string(self.nml, setting)
+                    if isinstance(setting, list):
+                        setting = setting[0]["value"]
             return setting
         except KeyError:
             return default
@@ -346,7 +401,7 @@ class InputDataFromNamelist(JsonInputData):
         Returns:
             dict: Key, value dictionary
         """
-        logging.debug("macros=%s", macros)
+        logging.debug("extenders=%s", macros)
         if macros is None:
             return {key: val}
 
@@ -373,7 +428,7 @@ class InputDataFromNamelist(JsonInputData):
                 elif macro_type == "dict":
                     values = self.get_nml_value_from_string(self.nml, macro_defs)
                     counter = 0
-                    for key, val in values.items():
+                    for key, val in values[0].items():
                         loop.update({str(key): str(val)})
                         counter += 1
 
@@ -421,26 +476,25 @@ class InputDataFromNamelist(JsonInputData):
         """Process macro.
 
         Args:
-            key (_type_): _description_
-            val (_type_): _description_
+            key (str): Key
+            val (str): Value
             macros (dict): Macros
             sep (str, optional): Namelist key separator. Defaults to "#".
             indices (list, optional): Process macro from namelist indices.
 
         Raises:
-            NotImplementedError: _description_
-            NotImplementedError: _description_
+            NotImplementedError: Only 2 dimensions are implemented
 
         Returns:
             dict: Key, value dictionary
         """
         logging.debug("macros=%s", macros)
         if macros is None:
-            return {key: val}
+            return key, val
 
         logging.debug("indices=%s", indices)
         if indices is None:
-            return {key: val}
+            return key, val
 
         pkey = key
         pval = val
@@ -454,7 +508,7 @@ class InputDataFromNamelist(JsonInputData):
             elif len(indices) == 1:
                 lindex = indices[0]
             elif len(indices) > 2:
-                raise NotImplementedError
+                raise NotImplementedError("Only 2 dimensions are implemented")
 
             vmacro = None
             if lindex is not None:
@@ -484,9 +538,11 @@ class InputDataFromNamelist(JsonInputData):
                         dec += 1
 
                 logging.debug("Substitute @%s@ with %s", macro, vmacro)
-                pkey = pkey.replace(f"@{macro}@", vmacro)
-                pval = pval.replace(f"@{macro}@", vmacro)
-        return {pkey: pval}
+                if isinstance(pkey, str):
+                    pkey = pkey.replace(f"@{macro}@", vmacro)
+                if isinstance(pval, str):
+                    pval = pval.replace(f"@{macro}@", vmacro)
+        return pkey, pval
 
     def matching_value(self, data, val, sep="#", indices=None):
         """Match the value. Possibly also read namelist value.
@@ -498,180 +554,175 @@ class InputDataFromNamelist(JsonInputData):
             indices(list, optional): Indices in namelist
 
         Raises:
-            TypeError: Data must be a dict or string
+            RuntimeError: "Malformed input data"
 
         Returns:
             dict: Matching entry in data.
+
         """
-        if val is not None:
-            val = str(val)
+        if val == "macro" or val == "extenders":
+            return None
         if isinstance(data, dict):
-            skeys = list(data.keys())
-        elif isinstance(data, str):
-            skeys = [data]
+            mdata = data.keys()
         else:
-            raise TypeError
-
-        logging.debug("Check for val=%s in skeys=%s", val, skeys)
-        for skey in skeys:
-            skey_ms = [skey]
-            if skey.find(sep) > 0:
-                logging.debug("skey=%s is a namelist variable", skey)
-                skey_m = self.get_nml_value_from_string(self.nml, skey, indices=indices)
-
-                if isinstance(skey_m, list):
-                    skey_ms = skey_m
-                else:
-                    skey_ms = [skey_m]
-
-            found_data = []
-            for skey_m in skey_ms:
-                logging.debug("matching val=%s skey=%s skey_m=%s", val, skey, skey_m)
-                if val is not None and val == skey_m:
-                    logging.debug("Found %s. data=%s", val, data)
-                    if skey.find(sep) > 0:
-                        if isinstance(data[skey], dict):
-                            found_data.append(data[skey][skey_m])
-                        elif isinstance(data[skey], str):
-                            found_data.append(data[skey])
-                        else:
-                            found_data.append({skey_m: data[skey]})
-                    else:
-                        found_data.append(data[skey])
-
-            logging.debug("found_data=%s", found_data)
-            if len(found_data) > 0:
-                if len(found_data) == 1:
-                    return found_data[0]
-                return found_data
+            mdata = [data]
+        val = str(val)
+        logging.debug("Check if val=%s matches mdata=%s", val, mdata)
+        sval = None
+        for mval in mdata:
+            if val.find(sep) > 0:
+                logging.debug("val=%s is a namelist variable", val)
+                sval = self.get_nml_value_from_string(self.nml, val, indices=indices)
+                logging.debug("Got sval=%s", sval)
+                if sval is None:
+                    return None
+                indices = sval[0]["indices"]
+                sval = sval[0]["value"]
+            if mval == val:
+                logging.debug("Found matching data. val=%s data=%s", val, data)
+                try:
+                    rval = data[val]
+                except TypeError:
+                    raise RuntimeError("Malformed input data") from TypeError
+                if sval is not None:
+                    rval = {sval: rval}
+                logging.debug("Return data rval=%s", rval)
+                return rval
         logging.warning("Value=%s not found in data", val)
         return None
 
     def process_data(self, sep="#"):
-        """Process input definitions on files to map."""
-        data = {}
+        """Process input definitions on files to map.
+
+        Args:
+            sep (str, optional): Namelist separator. Defaults to "#".
+
+        Returns:
+            mapped_data (dict): A dict with mapped local names and target files.
+
+        """
         logging.debug("Process data: %s", self.data)
-        for key, value in self.data.items():
-            logging.debug("key=%s", key)
-            # Required namelist variable
-            if key.find(sep) > 0:
-                val = self.get_nml_value_from_string(self.nml, key)
-                setting = self.matching_value(value, val, sep=sep)
-                if setting is not None:
 
-                    unprocessed_data = {}
-                    macros = None
-                    if "macros" in setting:
-                        macros = setting["macros"]
-                    extenders = None
-                    if "extenders" in setting:
-                        extenders = setting["extenders"]
-                    for key1, value1 in setting.items():
-                        logging.debug("key1 %s value1 %s", key1, value1)
-                        # Macro definition
-                        if key1 == "macros" or key1 == "extenders":
-                            pass
-                        # Extra namelist level
-                        elif key1.find(sep) > 0:
-                            logging.debug("Key1=%s is a namelist variable", key1)
-                            val1 = self.get_nml_value_from_string(self.nml, key1)
-                            indices = None
-                            if isinstance(val1, list):
-
-                                logging.debug("Got a namelist list variable")
-                                indices = []
-                                vals1 = []
-                                for i, vals in enumerate(val1):
-                                    if isinstance(vals, list):
-                                        logging.debug(
-                                            "i=%s len(vals)=%s val1=%s",
-                                            i,
-                                            len(vals),
-                                            val1,
-                                        )
-                                        for j in range(0, len(vals)):
-                                            ind = [j, i]
-                                            vals1.append(val1[i][j])
-                                            indices.append(ind)
-                                    else:
-                                        vals1.append(val1[i])
-                                        indices.append([i])
-                            else:
-                                vals1 = [val1]
-                            for ind, val1 in enumerate(vals1):
-                                logging.debug(
-                                    "ind=%s Checking for val1=%s in setting=%s",
-                                    ind,
-                                    val1,
-                                    setting,
-                                )
-                                if indices is not None:
-                                    lindices = indices[ind]
-                                else:
-                                    lindices = None
-                                setting1 = self.matching_value(
-                                    setting, val1, sep=sep, indices=lindices
-                                )
-                                if setting1 is not None:
-                                    logging.debug(
-                                        "key1=%s val1=%s Setting1=%s",
-                                        key1,
-                                        val1,
-                                        setting1,
-                                    )
-                                    if isinstance(setting1, str):
-                                        unprocessed_data.update({val1: setting1})
-                                    else:
-                                        logging.debug(
-                                            "setting1=%s, lindices=%s", setting1, lindices
-                                        )
-                                        for key2, value2 in setting1.items():
-                                            if key2.find(sep) > 0:
-                                                key2 = self.get_nml_value_from_string(
-                                                    self.nml, key2, indices=lindices
-                                                )
-
-                                            logging.debug("key2=%s", key2)
-                                            sub_macros = self.process_macro(
-                                                key2, value2, macros, indices=lindices
-                                            )
-                                            logging.debug(
-                                                "Substituted macros %s", sub_macros
-                                            )
-                                            unprocessed_data.update(sub_macros)
-                                else:
-                                    logging.warning(
-                                        "Could not match namelist variable %s", key1
-                                    )
-                        # Direct defintions
-                        else:
-                            if isinstance(value1, str):
-                                logging.debug("key1=%s value1=%s", key1, value1)
-                                unprocessed_data.update({key1: value1})
-                            else:
-                                logging.warning("Did not find a string %s", type(value1))
-
-                    logging.debug(
-                        "Manipulate unprocesessed values with general"
-                        " or user-defined macros %s",
-                        unprocessed_data,
-                    )
-                    for key, value in unprocessed_data.items():
-                        logging.debug("key=%s value=%s", key, value)
-                        if isinstance(value, str):
-                            if value.endswith(".dir"):
-                                hdr_key = key + ".hdr"
-                                hdr_val = value.replace(".dir", ".hdr")
-                                sub_values = self.substitute(hdr_key, hdr_val)
-                                data.update(sub_values)
-                                key = key + ".dir"
-
-                        processed_values = self.extend_macro(key, value, extenders)
-                        for key, val in processed_values.items():
-                            sub_values = self.substitute(key, val)
-                            data.update(sub_values)
+        def _process_data(mapped_data, data, indices=None, macros=None, extenders=None):
+            for key, value in data.items():
+                logging.debug(".................. key=%s", key)
+                # Required namelist variable
+                if key.find(sep) > 0:
+                    vals = self.get_nml_value_from_string(self.nml, key, indices=indices)
                 else:
-                    logging.warning("Could not find the namelist value=%s", val)
-            else:
-                logging.warning("Expected a namelist variable")
-        return data
+                    vals = [{"value": value, "indices": None}]
+
+                if isinstance(vals, list):
+                    for val_dict in vals:
+                        logging.debug("=========== val_dict=%s", val_dict)
+                        val = val_dict["value"]
+                        indices = val_dict["indices"]
+
+                        setting = self.matching_value(
+                            value, val, sep=sep, indices=indices
+                        )
+                        logging.debug("Setting=%s", setting)
+                        if setting is not None:
+                            if "macros" in setting:
+                                macros = setting.copy()
+                                macros = macros["macros"]
+                            if "extenders" in setting:
+                                extenders = setting.copy()
+                                extenders = extenders["extenders"]
+
+                            last_dict = True
+                            if isinstance(setting, dict):
+                                for __, tval in setting.items():
+                                    if isinstance(tval, dict):
+                                        last_dict = False
+                            else:
+                                print(setting)
+                            if not last_dict:
+                                logging.debug(
+                                    "------ Call next loop. setting=%s", setting
+                                )
+                                _process_data(
+                                    mapped_data,
+                                    setting,
+                                    indices=indices,
+                                    macros=macros,
+                                    extenders=extenders,
+                                )
+                            else:
+                                for key2, value2 in setting.items():
+                                    logging.debug(
+                                        "Setting1 key=%s value=%s indices=%s",
+                                        key2,
+                                        value2,
+                                        indices,
+                                    )
+                                    if key2.find(sep) > 0:
+                                        keys = self.get_nml_value_from_string(
+                                            self.nml, key2, indices=indices
+                                        )
+                                        key2 = keys[0]["value"]
+
+                                    processed = False
+                                    logging.debug(
+                                        "Setting2 key=%s value=%s indices=%s",
+                                        key2,
+                                        value2,
+                                        indices,
+                                    )
+                                    if macros is not None:
+                                        processed = True
+                                        key3, value3 = self.process_macro(
+                                            key2, value2, macros, indices=indices
+                                        )
+                                        if value3.endswith(".dir"):
+                                            dir_key = key3 + ".dir"
+                                            dir_val = value3
+                                            hdr_key = key3 + ".hdr"
+                                            hdr_val = value3.replace(".dir", ".hdr")
+                                            hdr_key, hdr_val = self.substitute(
+                                                hdr_key, hdr_val
+                                            )
+                                            dir_key, dir_val = self.substitute(
+                                                dir_key, dir_val
+                                            )
+                                            mapped_data.update({hdr_key: hdr_val})
+                                            mapped_data.update({dir_key: dir_val})
+                                        else:
+                                            mapped_data.update({key3: setting})
+
+                                    if extenders is not None:
+                                        processed = True
+                                        processed_values = self.extend_macro(
+                                            key2, value2, extenders
+                                        )
+                                        for pkey3, pval3 in processed_values.items():
+                                            logging.debug(
+                                                "pkey3=%s pval3=%s", pkey3, pval3
+                                            )
+                                            pkey3, pval3 = self.substitute(pkey3, pval3)
+                                            logging.debug(
+                                                "pkey3=%s pval3=%s", pkey3, pval3
+                                            )
+                                            mapped_data.update({pkey3: pval3})
+
+                                    if not processed:
+                                        pkey3 = key2
+                                        pval3 = value2
+                                        logging.debug("pkey3=%s pval3=%s", pkey3, pval3)
+                                        pkey3, pval3 = self.substitute(pkey3, pval3)
+                                        mapped_data.update({pkey3: pval3})
+
+                                indices = None
+                        else:
+                            if key not in ["macros", "extenders"]:
+                                logging.warning(
+                                    "Could not match key=%s value=%s", key, val
+                                )
+                else:
+                    logging.warning("Could not find namelist key=%s", key)
+                    indices = None
+
+        mapped_data = {}
+        _process_data(mapped_data, self.data)
+        logging.debug("Mapped data=%s", mapped_data)
+        return mapped_data

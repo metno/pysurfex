@@ -87,7 +87,7 @@ YSAND = 'sand_fao'                  # Soil texture input data: "sand_fao"|"SAND_
 
 YCLAY = "clay_fao"                  # Soil texture input data: "clay_fao"|"CLAY_HWSD_MOY_V2"|"clay_SOILGRID"
                                     # suffix json assumes namelist values provided as a json file
-PERTSURF = true                    # Perturb surface parameters
+PERTSURF = false                    # Perturb surface parameters
 XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
 XCSMAX = 2.0E-4                     # Maximum value for snow heat capacity; default=2.0E-4
 

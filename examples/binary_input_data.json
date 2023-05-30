@@ -12,7 +12,7 @@
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
                     "DIRTYP": {
-                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_NI_@DECADE@.dir"
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
@@ -37,9 +37,13 @@
                 }
             },
             "False": {
-                "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
-                "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
-                "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin",
+                "NAM_FRAC#LECOSG": {
+                    "False": {
+                        "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
+                        "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
+                        "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+                    }
+                },
                 "NAM_COVER#YCOVERFILETYPE": {
                     "DIRECT": {
                         "NAM_COVER#YCOVER": "@ecosg_data_path@/ECOCLIMAP_2_5_p.dir"
@@ -77,6 +81,7 @@
     },
     "prep":{
         "NAM_FRAC#LECOSG": {
+            "True": {},
             "False": {
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
@@ -110,6 +115,7 @@
     },
     "perturbed":{
         "NAM_FRAC#LECOSG": {
+            "True": {},
             "False": {
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
@@ -119,6 +125,7 @@
     },
     "offline":{
         "NAM_FRAC#LECOSG": {
+            "True": {},
             "False": {
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
@@ -128,6 +135,7 @@
     },
     "soda": {
         "NAM_FRAC#LECOSG": {
+            "True": {},
             "False": {
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
@@ -136,22 +144,26 @@
         },
         "NAM_ASSIM#CASSIM_ISBA": {
             "OI": {
-                "NAM_ASSIM#CFILE_FORMAT_FG": {
-                    "FA": {
-                        "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
-                    },
-                    "NC": {
-                        "FIRST_GUESS_@YY@@MM@@DD@H@HH@.DAT": ""
+                "NAM_ASSIM#CASSIM_ISBA": {
+                    "OI": {
+                        "ASCAT_SM.DAT": "@ascat_dir@/ASCAT_SM.DAT",
+                        "fort.61": "@oi_coeffs_dir@/ISBA_POLYNOMES"
                     }
                 },
-                "ASCAT_SM.DAT": "@ascat_dir@/ASCAT_SM.DAT",
-                "fort.61": "@oi_coeffs_dir@/ISBA_POLYNOMES",
                 "NAM_ASSIM#CFILE_FORMAT_LSM": {
                     "FA": {
                         "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
                     },
                     "ASCII": {
                         "LSM.DAT": "@climdir@/LSM.DAT"
+                    }
+                },
+                "NAM_ASSIM#CFILE_FORMAT_FG": {
+                    "FA": {
+                        "FG_OI_MAIN": "@first_guess_dir@/FG_OI_MAIN"
+                    },
+                    "ASCII": {
+                        "FIRST_GUESS_@YY@@MM@@DD@H@HH@.DAT": "@first_guess_dir@/FIRST_GUESS_@YY@@MM@@DD@H@HH@.DAT"
                     }
                 }
             },
