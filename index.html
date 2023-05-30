@@ -3079,6 +3079,28 @@ Defaults to 5000.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pysurfex.binary_input.InputDataFromNamelist.get_nml_value2">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">InputDataFromNamelist.</span></span><span class="sig-name descname"><span class="pre">get_nml_value2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/binary_input.html#InputDataFromNamelist.get_nml_value2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.binary_input.InputDataFromNamelist.get_nml_value2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get namelist value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nml</strong> (<em>nmlf90.Namelist</em>) – Namelist</p></li>
+<li><p><strong>block</strong> (<em>str</em>) – Namelist block</p></li>
+<li><p><strong>key</strong> (<em>str</em>) – Namelist key</p></li>
+<li><p><strong>indices</strong> (<em>list</em><em>, </em><em>optional</em>) – Indices to read. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Namelist setting</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>setting (any)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pysurfex.binary_input.InputDataFromNamelist.get_nml_value">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">InputDataFromNamelist.</span></span><span class="sig-name descname"><span class="pre">get_nml_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/binary_input.html#InputDataFromNamelist.get_nml_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.binary_input.InputDataFromNamelist.get_nml_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get namelist value.</p>
@@ -3199,18 +3221,15 @@ Defaults to 5000.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<em>_type_</em>) – _description_</p></li>
-<li><p><strong>val</strong> (<em>_type_</em>) – _description_</p></li>
+<li><p><strong>key</strong> (<em>str</em>) – Key</p></li>
+<li><p><strong>val</strong> (<em>str</em>) – Value</p></li>
 <li><p><strong>macros</strong> (<em>dict</em>) – Macros</p></li>
 <li><p><strong>sep</strong> (<em>str</em><em>, </em><em>optional</em>) – Namelist key separator. Defaults to “#”.</p></li>
 <li><p><strong>indices</strong> (<em>list</em><em>, </em><em>optional</em>) – Process macro from namelist indices.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>NotImplementedError</strong> – _description_</p></li>
-<li><p><strong>NotImplementedError</strong> – _description_</p></li>
-</ul>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Only 2 dimensions are implemented</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Key, value dictionary</p>
@@ -3235,7 +3254,7 @@ Defaults to 5000.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>TypeError</strong> – Data must be a dict or string</p>
+<dd class="field-even"><p><strong>RuntimeError</strong> – “Malformed input data”</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Matching entry in data.</p>
@@ -3250,6 +3269,17 @@ Defaults to 5000.</p></li>
 <dt class="sig sig-object py" id="pysurfex.binary_input.InputDataFromNamelist.process_data">
 <span class="sig-prename descclassname"><span class="pre">InputDataFromNamelist.</span></span><span class="sig-name descname"><span class="pre">process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/binary_input.html#InputDataFromNamelist.process_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.binary_input.InputDataFromNamelist.process_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process input definitions on files to map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sep</strong> (<em>str</em><em>, </em><em>optional</em>) – Namelist separator. Defaults to “#”.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dict with mapped local names and target files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mapped_data (dict)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -7126,6 +7156,7 @@ Defaults to False.</p></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.JsonInputDataFromFile.__init__"><code class="docutils literal notranslate"><span class="pre">JsonInputDataFromFile.__init__()</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.JsonInputDataFromFile.prepare_input"><code class="docutils literal notranslate"><span class="pre">JsonInputDataFromFile.prepare_input()</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist.__init__"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist.get_nml_value2"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist.get_nml_value2()</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist.get_nml_value"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist.get_nml_value()</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist.get_nml_value_from_string"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist.get_nml_value_from_string()</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist.substitute"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist.substitute()</span></code></a></li>

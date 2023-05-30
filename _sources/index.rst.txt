@@ -1,5 +1,5 @@
 .. SURFEX Python API documentation master file, created by
-   auto_sphinx.py on Tue May 23 10:11:55 2023
+   auto_sphinx.py on Tue May 30 11:45:04 2023
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -270,6 +270,7 @@ Class methods
 .. automethod:: pysurfex.binary_input.JsonInputDataFromFile.__init__
 .. automethod:: pysurfex.binary_input.JsonInputDataFromFile.prepare_input
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.__init__
+.. automethod:: pysurfex.binary_input.InputDataFromNamelist.get_nml_value2
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.get_nml_value
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.get_nml_value_from_string
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.substitute
@@ -278,6 +279,7 @@ Class methods
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.process_macro
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.matching_value
 .. automethod:: pysurfex.binary_input.InputDataFromNamelist.process_data
+.. automethod:: pysurfex.binary_input.InputDataFromNamelist._process_data
 .. automethod:: pysurfex.file.SurfexIO.__init__
 .. automethod:: pysurfex.file.SurfexIO.field
 .. automethod:: pysurfex.file.SurfexIO.points
@@ -501,7 +503,6 @@ Methods
 .. autofunction:: pysurfex.interpolation.fill_field
 .. autofunction:: pysurfex.interpolation.grid2points
 .. autofunction:: pysurfex.interpolation.inside_grid
-.. autofunction:: pysurfex.binary_input.binary_input_data
 .. autofunction:: pysurfex.file.guess_file_format
 .. autofunction:: pysurfex.titan.define_quality_control
 .. autofunction:: pysurfex.titan.merge_json_qc_data_sets

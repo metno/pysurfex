@@ -41,34 +41,6 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">def binary_input_data():</span>
-<span class="sd">    return {</span>
-<span class="sd">        &quot;pgd&quot;: {</span>
-<span class="sd">            &quot;NAM_FRAC#LECOSG&quot;: {</span>
-<span class="sd">                &quot;True&quot;: {</span>
-<span class="sd">                    &quot;macros&quot;: {</span>
-<span class="sd">                        &quot;VTYPE&quot;: {&quot;fmt&quot;: &quot;02d&quot;},</span>
-<span class="sd">                        &quot;DECADE&quot;: {&quot;ntime&quot;: &quot;NAM_DATA_ISBA#NTIME&quot;},</span>
-<span class="sd">                    },</span>
-<span class="sd">                    &quot;NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL&quot;: {</span>
-<span class="sd">                        &quot;DIRTYP&quot;: {</span>
-<span class="sd">                            &quot;NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL&quot;: &quot;@ecoclimap_sg@/ALB_@VTYPE@_@DECADE@&quot;</span>
-<span class="sd">                        }</span>
-<span class="sd">                    },</span>
-<span class="sd">                },</span>
-<span class="sd">                &quot;False&quot;: {</span>
-<span class="sd">                    &quot;ecoclimapI_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin&quot;,</span>
-<span class="sd">                    &quot;ecoclimapII_eu_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin&quot;,</span>
-<span class="sd">                    &quot;ecoclimapII_af_covers_param.bin&quot;: &quot;@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin&quot;,</span>
-<span class="sd">                },</span>
-<span class="sd">            },</span>
-<span class="sd">            &quot;NAM_ZS#YFILETYPE&quot;: {&quot;DIRECT&quot;: {&quot;NAM_ZS#YFILE&quot;: &quot;@gmted@/gmted2010&quot;}},</span>
-<span class="sd">        },</span>
-<span class="sd">        &quot;prep&quot;: {},</span>
-<span class="sd">    }</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
 
 <div class="viewcode-block" id="InputDataToSurfexBinaries"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataToSurfexBinaries">[docs]</a><span class="k">class</span> <span class="nc">InputDataToSurfexBinaries</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract input data.&quot;&quot;&quot;</span>
@@ -244,8 +216,8 @@
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_data</span><span class="p">()</span>
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="InputDataFromNamelist.get_nml_value"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_nml_value</span><span class="p">(</span><span class="n">nml</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="InputDataFromNamelist.get_nml_value2"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value2">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nml_value2</span><span class="p">(</span><span class="n">nml</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist value.</span>
 
 <span class="sd">        Args:</span>
@@ -281,6 +253,87 @@
 
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found: </span><span class="si">%s</span><span class="s2"> Indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="InputDataFromNamelist.get_nml_value"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nml_value</span><span class="p">(</span><span class="n">nml</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            nml (nmlf90.Namelist): Namelist</span>
+<span class="sd">            block (str): Namelist block</span>
+<span class="sd">            key (str): Namelist key</span>
+<span class="sd">            indices (list, optional): Indices to read. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            setting (any): Namelist setting</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking block=</span><span class="si">%s</span><span class="s2"> key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">]:</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">val_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;namelist type=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found 1D value </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                            <span class="k">return</span> <span class="kc">None</span>
+                    <span class="n">val_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+                    <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">dim_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                        <span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">tval</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">while</span> <span class="n">dim_size</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;tval=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tval</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tval</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                                <span class="n">dim_size</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">dim_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tval</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">dim_size</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                                    <span class="n">dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim_size</span><span class="p">)</span>
+                                <span class="n">tval</span> <span class="o">=</span> <span class="n">tval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;dims=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;type(val)=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                                    <span class="n">val_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                                    <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                                    <span class="n">lval</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+                                    <span class="n">val_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">lval</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="n">indices</span><span class="p">})</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;value=</span><span class="si">%s</span><span class="s2"> indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lval</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+                                    <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                                <span class="n">val_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                                <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                                <span class="n">val_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="n">indices</span><span class="p">})</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;value=</span><span class="si">%s</span><span class="s2"> indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">indices</span><span class="p">)</span>
+                                <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">val_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                            <span class="n">val_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+                            <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">val_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                        <span class="n">val_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+                        <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found: value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val_dict</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">vals</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="InputDataFromNamelist.get_nml_value_from_string"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.get_nml_value_from_string">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -342,7 +395,7 @@
             <span class="n">basedtg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basetime</span><span class="p">,</span>
             <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">pkey</span><span class="p">:</span> <span class="n">pval</span><span class="p">}</span></div>
+        <span class="k">return</span> <span class="n">pkey</span><span class="p">,</span> <span class="n">pval</span></div>
 
 <div class="viewcode-block" id="InputDataFromNamelist.read_macro_setting"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.read_macro_setting">[docs]</a>    <span class="k">def</span> <span class="nf">read_macro_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a macro setting.</span>
@@ -362,6 +415,8 @@
                 <span class="k">if</span> <span class="n">setting</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read macro setting from namelist </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
                     <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">setting</span> <span class="o">=</span> <span class="n">setting</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">setting</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">default</span></div>
@@ -382,7 +437,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Key, value dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macros=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macros</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;extenders=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macros</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
 
@@ -409,7 +464,7 @@
                 <span class="k">elif</span> <span class="n">macro_type</span> <span class="o">==</span> <span class="s2">&quot;dict&quot;</span><span class="p">:</span>
                     <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">macro_defs</span><span class="p">)</span>
                     <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">loop</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)})</span>
                         <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -457,26 +512,25 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process macro.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            key (_type_): _description_</span>
-<span class="sd">            val (_type_): _description_</span>
+<span class="sd">            key (str): Key</span>
+<span class="sd">            val (str): Value</span>
 <span class="sd">            macros (dict): Macros</span>
 <span class="sd">            sep (str, optional): Namelist key separator. Defaults to &quot;#&quot;.</span>
 <span class="sd">            indices (list, optional): Process macro from namelist indices.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: _description_</span>
-<span class="sd">            NotImplementedError: _description_</span>
+<span class="sd">            NotImplementedError: Only 2 dimensions are implemented</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Key, value dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macros=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macros</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+            <span class="k">return</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span>
+            <span class="k">return</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span>
 
         <span class="n">pkey</span> <span class="o">=</span> <span class="n">key</span>
         <span class="n">pval</span> <span class="o">=</span> <span class="n">val</span>
@@ -490,7 +544,7 @@
             <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">lindex</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only 2 dimensions are implemented&quot;</span><span class="p">)</span>
 
             <span class="n">vmacro</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">lindex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -520,9 +574,11 @@
                         <span class="n">dec</span> <span class="o">+=</span> <span class="mi">1</span>
 
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Substitute @</span><span class="si">%s</span><span class="s2">@ with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
-                <span class="n">pkey</span> <span class="o">=</span> <span class="n">pkey</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
-                <span class="n">pval</span> <span class="o">=</span> <span class="n">pval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">pkey</span><span class="p">:</span> <span class="n">pval</span><span class="p">}</span></div>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pkey</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">pkey</span> <span class="o">=</span> <span class="n">pkey</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">pval</span> <span class="o">=</span> <span class="n">pval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="n">macro</span><span class="si">}</span><span class="s2">@&quot;</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pkey</span><span class="p">,</span> <span class="n">pval</span></div>
 
 <div class="viewcode-block" id="InputDataFromNamelist.matching_value"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.matching_value">[docs]</a>    <span class="k">def</span> <span class="nf">matching_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Match the value. Possibly also read namelist value.</span>
@@ -534,183 +590,178 @@
 <span class="sd">            indices(list, optional): Indices in namelist</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: Data must be a dict or string</span>
+<span class="sd">            RuntimeError: &quot;Malformed input data&quot;</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Matching entry in data.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;macro&quot;</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;extenders&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">skeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">skeys</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+            <span class="n">mdata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check for val=</span><span class="si">%s</span><span class="s2"> in skeys=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">skeys</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">skey</span> <span class="ow">in</span> <span class="n">skeys</span><span class="p">:</span>
-            <span class="n">skey_ms</span> <span class="o">=</span> <span class="p">[</span><span class="n">skey</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">skey</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;skey=</span><span class="si">%s</span><span class="s2"> is a namelist variable&quot;</span><span class="p">,</span> <span class="n">skey</span><span class="p">)</span>
-                <span class="n">skey_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">skey</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">skey_m</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                    <span class="n">skey_ms</span> <span class="o">=</span> <span class="n">skey_m</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">skey_ms</span> <span class="o">=</span> <span class="p">[</span><span class="n">skey_m</span><span class="p">]</span>
-
-            <span class="n">found_data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">skey_m</span> <span class="ow">in</span> <span class="n">skey_ms</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;matching val=</span><span class="si">%s</span><span class="s2"> skey=</span><span class="si">%s</span><span class="s2"> skey_m=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">skey</span><span class="p">,</span> <span class="n">skey_m</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">skey_m</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2">. data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">skey</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">][</span><span class="n">skey_m</span><span class="p">])</span>
-                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
-                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">])</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">skey_m</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">]})</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">found_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">skey</span><span class="p">])</span>
-
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;found_data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">found_data</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">found_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">return</span> <span class="n">found_data</span>
+            <span class="n">mdata</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check if val=</span><span class="si">%s</span><span class="s2"> matches mdata=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">mdata</span><span class="p">)</span>
+        <span class="n">sval</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">mval</span> <span class="ow">in</span> <span class="n">mdata</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;val=</span><span class="si">%s</span><span class="s2"> is a namelist variable&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="n">sval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got sval=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sval</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">sval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">sval</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;indices&quot;</span><span class="p">]</span>
+                <span class="n">sval</span> <span class="o">=</span> <span class="n">sval</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">mval</span> <span class="o">==</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found matching data. val=</span><span class="si">%s</span><span class="s2"> data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rval</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">val</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Malformed input data&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">TypeError</span>
+                <span class="k">if</span> <span class="n">sval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">rval</span> <span class="o">=</span> <span class="p">{</span><span class="n">sval</span><span class="p">:</span> <span class="n">rval</span><span class="p">}</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Return data rval=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">rval</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">rval</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Value=</span><span class="si">%s</span><span class="s2"> not found in data&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="InputDataFromNamelist.process_data"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input.InputDataFromNamelist.process_data">[docs]</a>    <span class="k">def</span> <span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process input definitions on files to map.&quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process input definitions on files to map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sep (str, optional): Namelist separator. Defaults to &quot;#&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            mapped_data (dict): A dict with mapped local names and target files.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Process data: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-            <span class="c1"># Required namelist variable</span>
-            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-                <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">setting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-                    <span class="n">unprocessed_data</span> <span class="o">=</span> <span class="p">{}</span>
-                    <span class="n">macros</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="k">if</span> <span class="s2">&quot;macros&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
-                        <span class="n">macros</span> <span class="o">=</span> <span class="n">setting</span><span class="p">[</span><span class="s2">&quot;macros&quot;</span><span class="p">]</span>
-                    <span class="n">extenders</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="k">if</span> <span class="s2">&quot;extenders&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
-                        <span class="n">extenders</span> <span class="o">=</span> <span class="n">setting</span><span class="p">[</span><span class="s2">&quot;extenders&quot;</span><span class="p">]</span>
-                    <span class="k">for</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span> <span class="ow">in</span> <span class="n">setting</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key1 </span><span class="si">%s</span><span class="s2"> value1 </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span><span class="p">)</span>
-                        <span class="c1"># Macro definition</span>
-                        <span class="k">if</span> <span class="n">key1</span> <span class="o">==</span> <span class="s2">&quot;macros&quot;</span> <span class="ow">or</span> <span class="n">key1</span> <span class="o">==</span> <span class="s2">&quot;extenders&quot;</span><span class="p">:</span>
-                            <span class="k">pass</span>
-                        <span class="c1"># Extra namelist level</span>
-                        <span class="k">elif</span> <span class="n">key1</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Key1=</span><span class="si">%s</span><span class="s2"> is a namelist variable&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">)</span>
-                            <span class="n">val1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key1</span><span class="p">)</span>
-                            <span class="n">indices</span> <span class="o">=</span> <span class="kc">None</span>
-                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-
-                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got a namelist list variable&quot;</span><span class="p">)</span>
-                                <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
-                                <span class="n">vals1</span> <span class="o">=</span> <span class="p">[]</span>
-                                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val1</span><span class="p">):</span>
-                                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                            <span class="s2">&quot;i=</span><span class="si">%s</span><span class="s2"> len(vals)=</span><span class="si">%s</span><span class="s2"> val1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                            <span class="n">i</span><span class="p">,</span>
-                                            <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">),</span>
-                                            <span class="n">val1</span><span class="p">,</span>
-                                        <span class="p">)</span>
-                                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)):</span>
-                                            <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
-                                            <span class="n">vals1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
-                                            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
-                                    <span class="k">else</span><span class="p">:</span>
-                                        <span class="n">vals1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                                        <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">])</span>
-                            <span class="k">else</span><span class="p">:</span>
-                                <span class="n">vals1</span> <span class="o">=</span> <span class="p">[</span><span class="n">val1</span><span class="p">]</span>
-                            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">val1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals1</span><span class="p">):</span>
-                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                    <span class="s2">&quot;ind=</span><span class="si">%s</span><span class="s2"> Checking for val1=</span><span class="si">%s</span><span class="s2"> in setting=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                    <span class="n">ind</span><span class="p">,</span>
-                                    <span class="n">val1</span><span class="p">,</span>
-                                    <span class="n">setting</span><span class="p">,</span>
-                                <span class="p">)</span>
-                                <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                                    <span class="n">lindices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
-                                <span class="k">else</span><span class="p">:</span>
-                                    <span class="n">lindices</span> <span class="o">=</span> <span class="kc">None</span>
-                                <span class="n">setting1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_value</span><span class="p">(</span>
-                                    <span class="n">setting</span><span class="p">,</span> <span class="n">val1</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
-                                <span class="p">)</span>
-                                <span class="k">if</span> <span class="n">setting1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                        <span class="s2">&quot;key1=</span><span class="si">%s</span><span class="s2"> val1=</span><span class="si">%s</span><span class="s2"> Setting1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                        <span class="n">key1</span><span class="p">,</span>
-                                        <span class="n">val1</span><span class="p">,</span>
-                                        <span class="n">setting1</span><span class="p">,</span>
-                                    <span class="p">)</span>
-                                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting1</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                                        <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">val1</span><span class="p">:</span> <span class="n">setting1</span><span class="p">})</span>
-                                    <span class="k">else</span><span class="p">:</span>
-                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                            <span class="s2">&quot;setting1=</span><span class="si">%s</span><span class="s2">, lindices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting1</span><span class="p">,</span> <span class="n">lindices</span>
-                                        <span class="p">)</span>
-                                        <span class="k">for</span> <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span> <span class="ow">in</span> <span class="n">setting1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                                            <span class="k">if</span> <span class="n">key2</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                                                <span class="n">key2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span>
-                                                    <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key2</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
-                                                <span class="p">)</span>
-
-                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key2=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key2</span><span class="p">)</span>
-                                            <span class="n">sub_macros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_macro</span><span class="p">(</span>
-                                                <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">macros</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">lindices</span>
-                                            <span class="p">)</span>
-                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                                <span class="s2">&quot;Substituted macros </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sub_macros</span>
-                                            <span class="p">)</span>
-                                            <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_macros</span><span class="p">)</span>
-                                <span class="k">else</span><span class="p">:</span>
-                                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                                        <span class="s2">&quot;Could not match namelist variable </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span>
-                                    <span class="p">)</span>
-                        <span class="c1"># Direct defintions</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value1</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key1=</span><span class="si">%s</span><span class="s2"> value1=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key1</span><span class="p">,</span> <span class="n">value1</span><span class="p">)</span>
-                                <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key1</span><span class="p">:</span> <span class="n">value1</span><span class="p">})</span>
-                            <span class="k">else</span><span class="p">:</span>
-                                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Did not find a string </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value1</span><span class="p">))</span>
-
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s2">&quot;Manipulate unprocesessed values with general&quot;</span>
-                        <span class="s2">&quot; or user-defined macros </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="n">unprocessed_data</span><span class="p">,</span>
-                    <span class="p">)</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">unprocessed_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;key=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">):</span>
-                                <span class="n">hdr_key</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.hdr&quot;</span>
-                                <span class="n">hdr_val</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">,</span> <span class="s2">&quot;.hdr&quot;</span><span class="p">)</span>
-                                <span class="n">sub_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">hdr_key</span><span class="p">,</span> <span class="n">hdr_val</span><span class="p">)</span>
-                                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_values</span><span class="p">)</span>
-                                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
-
-                        <span class="n">processed_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_macro</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">extenders</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">processed_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="n">sub_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-                            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sub_values</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">_process_data</span><span class="p">(</span><span class="n">mapped_data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extenders</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;.................. key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="c1"># Required namelist variable</span>
+                <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find the namelist value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Expected a namelist variable&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span></div></div>
+                    <span class="n">vals</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}]</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">val_dict</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;=========== val_dict=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val_dict</span><span class="p">)</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="n">val_dict</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+                        <span class="n">indices</span> <span class="o">=</span> <span class="n">val_dict</span><span class="p">[</span><span class="s2">&quot;indices&quot;</span><span class="p">]</span>
+
+                        <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_value</span><span class="p">(</span>
+                            <span class="n">value</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span>
+                        <span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">setting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="s2">&quot;macros&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+                                <span class="n">macros</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                                <span class="n">macros</span> <span class="o">=</span> <span class="n">macros</span><span class="p">[</span><span class="s2">&quot;macros&quot;</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="s2">&quot;extenders&quot;</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+                                <span class="n">extenders</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                                <span class="n">extenders</span> <span class="o">=</span> <span class="n">extenders</span><span class="p">[</span><span class="s2">&quot;extenders&quot;</span><span class="p">]</span>
+
+                            <span class="n">last_dict</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                                <span class="k">for</span> <span class="n">__</span><span class="p">,</span> <span class="n">tval</span> <span class="ow">in</span> <span class="n">setting</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tval</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                                        <span class="n">last_dict</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">last_dict</span><span class="p">:</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                    <span class="s2">&quot;------ Call next loop. setting=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">setting</span>
+                                <span class="p">)</span>
+                                <span class="n">_process_data</span><span class="p">(</span>
+                                    <span class="n">mapped_data</span><span class="p">,</span>
+                                    <span class="n">setting</span><span class="p">,</span>
+                                    <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
+                                    <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span>
+                                    <span class="n">extenders</span><span class="o">=</span><span class="n">extenders</span><span class="p">,</span>
+                                <span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">for</span> <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span> <span class="ow">in</span> <span class="n">setting</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                        <span class="s2">&quot;Setting1 key=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2"> indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                        <span class="n">key2</span><span class="p">,</span>
+                                        <span class="n">value2</span><span class="p">,</span>
+                                        <span class="n">indices</span><span class="p">,</span>
+                                    <span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">key2</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                        <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nml_value_from_string</span><span class="p">(</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span> <span class="n">key2</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span>
+                                        <span class="p">)</span>
+                                        <span class="n">key2</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+
+                                    <span class="n">processed</span> <span class="o">=</span> <span class="kc">False</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                        <span class="s2">&quot;Setting2 key=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2"> indices=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                        <span class="n">key2</span><span class="p">,</span>
+                                        <span class="n">value2</span><span class="p">,</span>
+                                        <span class="n">indices</span><span class="p">,</span>
+                                    <span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="n">processed</span> <span class="o">=</span> <span class="kc">True</span>
+                                        <span class="n">key3</span><span class="p">,</span> <span class="n">value3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_macro</span><span class="p">(</span>
+                                            <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">macros</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span>
+                                        <span class="p">)</span>
+                                        <span class="k">if</span> <span class="n">value3</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">):</span>
+                                            <span class="n">dir_key</span> <span class="o">=</span> <span class="n">key3</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+                                            <span class="n">dir_val</span> <span class="o">=</span> <span class="n">value3</span>
+                                            <span class="n">hdr_key</span> <span class="o">=</span> <span class="n">key3</span> <span class="o">+</span> <span class="s2">&quot;.hdr&quot;</span>
+                                            <span class="n">hdr_val</span> <span class="o">=</span> <span class="n">value3</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">,</span> <span class="s2">&quot;.hdr&quot;</span><span class="p">)</span>
+                                            <span class="n">hdr_key</span><span class="p">,</span> <span class="n">hdr_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                                                <span class="n">hdr_key</span><span class="p">,</span> <span class="n">hdr_val</span>
+                                            <span class="p">)</span>
+                                            <span class="n">dir_key</span><span class="p">,</span> <span class="n">dir_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                                                <span class="n">dir_key</span><span class="p">,</span> <span class="n">dir_val</span>
+                                            <span class="p">)</span>
+                                            <span class="n">mapped_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">hdr_key</span><span class="p">:</span> <span class="n">hdr_val</span><span class="p">})</span>
+                                            <span class="n">mapped_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">dir_key</span><span class="p">:</span> <span class="n">dir_val</span><span class="p">})</span>
+                                        <span class="k">else</span><span class="p">:</span>
+                                            <span class="n">mapped_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key3</span><span class="p">:</span> <span class="n">setting</span><span class="p">})</span>
+
+                                    <span class="k">if</span> <span class="n">extenders</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="n">processed</span> <span class="o">=</span> <span class="kc">True</span>
+                                        <span class="n">processed_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_macro</span><span class="p">(</span>
+                                            <span class="n">key2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="n">extenders</span>
+                                        <span class="p">)</span>
+                                        <span class="k">for</span> <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span> <span class="ow">in</span> <span class="n">processed_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                                <span class="s2">&quot;pkey3=</span><span class="si">%s</span><span class="s2"> pval3=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span>
+                                            <span class="p">)</span>
+                                            <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span><span class="p">)</span>
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                                <span class="s2">&quot;pkey3=</span><span class="si">%s</span><span class="s2"> pval3=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span>
+                                            <span class="p">)</span>
+                                            <span class="n">mapped_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pkey3</span><span class="p">:</span> <span class="n">pval3</span><span class="p">})</span>
+
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="n">processed</span><span class="p">:</span>
+                                        <span class="n">pkey3</span> <span class="o">=</span> <span class="n">key2</span>
+                                        <span class="n">pval3</span> <span class="o">=</span> <span class="n">value2</span>
+                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pkey3=</span><span class="si">%s</span><span class="s2"> pval3=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span><span class="p">)</span>
+                                        <span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">pkey3</span><span class="p">,</span> <span class="n">pval3</span><span class="p">)</span>
+                                        <span class="n">mapped_data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pkey3</span><span class="p">:</span> <span class="n">pval3</span><span class="p">})</span>
+
+                                <span class="n">indices</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;macros&quot;</span><span class="p">,</span> <span class="s2">&quot;extenders&quot;</span><span class="p">]:</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                    <span class="s2">&quot;Could not match key=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span>
+                                <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find namelist key=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="n">indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">mapped_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">_process_data</span><span class="p">(</span><span class="n">mapped_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Mapped data=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mapped_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mapped_data</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>
