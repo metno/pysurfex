@@ -12,17 +12,27 @@
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
                     "DIRTYP": {
-                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBNIR_VEG": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
                     "DIRTYP": {
-                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBVIS_VEG": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_LAI": {
                     "DIRTYP": {
-                        "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI_SAT/LAI_SAT_@DECADE@_c.dir"
+                        "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI/LAI_SAT/LAI_SAT_@DECADE@_c.dir"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_H_TREE": {
@@ -32,7 +42,7 @@
                 },
                 "NAM_COVER#YCOVERFILETYPE": {
                     "DIRECT": {
-                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ecosg_final_map.dir"
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/COVER/ecosg_final_map.dir"
                     }
                 }
             },
@@ -53,23 +63,23 @@
         },
         "NAM_ZS#YZSFILETYPE": {
             "DIRECT": {
-                "NAM_ZS#YZS": "@gmted@/gmted2010.dir"
+                "NAM_ZS#YZS": "@climdir@/gmted2010.dir"
             }
         },
         "NAM_ISBA#YSANDFILETYPE": {
             "DIRECT": {
-                "NAM_ISBA#YSAND": "@climdata@/NAME_WE_GIVE_IT.dir"
+                "NAM_ISBA#YSAND": "@climdir@/SAND_SOILGRID.dir"
             }
         },
         "NAM_ISBA#YCLAYFILETYPE": {
             "DIRECT": {
-                "NAM_ISBA#YCLAY": "@climdata@/NAME_WE_GIVE_IT.dir"
+                "NAM_ISBA#YCLAY": "@climdir@/CLAY_SOILGRID.dir"
             }
         },
         "NAM_ISBA#YSOCFILETYPE": {
             "DIRECT": {
-                "NAM_ISBA#YSOC_SUB": "@climdata@/soc_sub.dir",
-                "NAM_ISBA#YSOC_TOP": "@climdata@/soc_top.dir"
+                "NAM_ISBA#YSOC_SUB": "@climdir@/soc_sub.dir",
+                "NAM_ISBA#YSOC_TOP": "@climdir@/soc_top.dir"
             }
         },
         "NAM_DATA_FLAKE#YWATER_DEPTHFILETYPE": {
@@ -131,6 +141,11 @@
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
                 "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
             }
+        },
+        "NAM_IO_OFFLINE#CFORCING_FILETYPE": {
+            "NETCDF": {
+                "FORCING.nc": "@forcing_dir@/FORCING.nc"
+            }
         }
     },
     "soda": {
@@ -140,6 +155,11 @@
                 "ecoclimapI_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapI_covers_param.bin",
                 "ecoclimapII_eu_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_eu_covers_param.bin",
                 "ecoclimapII_af_covers_param.bin": "@ecoclimap_bin_dir@/ecoclimapII_af_covers_param.bin"
+            }
+        },
+        "NAM_OBS#CFILE_FORMAT_OBS": {
+            "ASCII": {
+                "OBSERVATIONS_@YY@@MM_LL@@DD_LL@H@HH_LL@.DAT": "@obs_dir@/OBSERVATIONS_@YY@@MM_LL@@DD_LL@H@HH_LL@.DAT"
             }
         },
         "NAM_ASSIM#CASSIM_ISBA": {
@@ -176,14 +196,14 @@
                         }
                     }
                 },
-                "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                "NAM_IO_OFFLINE#CSURF_FILETYPE": {
                     "FA": {
                         "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
                         "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.fa"
                     },
                     "NC": {
-                        "PREP_INIT.nc": "@first_guess_dir@/PREP_INIT.nc",
-                        "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc"
+                        "PREP_INIT.nc": "@first_guess_dir@/SURFOUT.nc",
+                        "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_PERT@PERT@.nc": "@archive_dir@/SURFOUT_PERT@PERT@.nc"
                     }
                 } 
             },
@@ -198,7 +218,7 @@
                         }
                     }
                 },
-                "NAM_IO_OFFLINE#CSURFFILETYPE": {
+                "NAM_IO_OFFLINE#CSURF_FILETYPE": {
                     "FA": {
                         "PREP_INIT.fa": "@first_guess_dir@/PREP_INIT.fa",
                         "PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa": "@first_guess_dir@/PREP_@FG_YY@@FG_MM@@FG_DD@H@FG_HH@_EKF_ENS@EE@.fa"
