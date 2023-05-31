@@ -24,6 +24,7 @@ class NamelistGenerator(object):
         self.program = program
         self.config = config
         self.nldict = definitions
+        """
         macros_defs = {
             "CPGDFILE": "SURFEX#IO#CPGDFILE",
             "CPREPFILE": "SURFEX#IO#CPREPFILE",
@@ -43,7 +44,10 @@ class NamelistGenerator(object):
             vmacro = config.get_setting(setting)
             logging.debug("Mapping macro %s = %s", macro, vmacro)
             if vmacro is not None:
+                if isinstance(vmacro, tuple):
+                    vmacro = list(vmacro)
                 macros.update({macro: vmacro})
+        """
 
         nobstype = 0
         if program == "soda" or program == "offline":
@@ -113,6 +117,8 @@ class NamelistGenerator(object):
                 if isinstance(val, collections.abc.MutableMapping):
                     yield from flatten_dict(val, new_key, sep=sep).items()
                 else:
+                    if isinstance(val, tuple):
+                        val = list(val)
                     yield new_key, val
 
         def flatten_dict(

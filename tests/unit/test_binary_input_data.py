@@ -123,7 +123,7 @@ def f90ml_namelist(tmp_path_factory):
             LECOSG = .True.
         /
         &NAM_IO_OFFLINE
-            CSURFFILETYPE = "FA"
+            CSURF_FILETYPE = "FA"
         /
         &NAM_DATA_ISBA
             NTIME = 36
@@ -207,19 +207,19 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
     logging.debug("binary_data=%s", binary_data.data)
     assert (
         binary_data.data["filename_albnir_soil_2_0115.dir"]
-        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_0115_c.dir"
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_NI_0115_c.dir"
     )
     assert (
         binary_data.data["filename_albnir_soil_20_1225.dir"]
-        == "/ecoclimap/ALB_SAT/ALB_SAT_NI_1225_c.dir"
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_NI_1225_c.dir"
     )
     assert (
         binary_data.data["filename_albvis_soil_2_0115.dir"]
-        == "/ecoclimap/ALB_SAT/ALB_SAT_VI_0115_c.dir"
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_VI_0115_c.dir"
     )
     assert binary_data.data["filename_h_tree_1.dir"] == "/ecoclimap/HT/new_ht_c.dir"
     assert binary_data.data["filename_h_tree_20.dir"] == "/ecoclimap/HT/new_ht_c.dir"
-    assert binary_data.data["gmted2010file.dir"] == "/gmted/gmted2010.dir"
+    assert binary_data.data["gmted2010file.dir"] == "/climdir/gmted2010.dir"
 
     # Prep
     input_data_copy = input_data.copy()
