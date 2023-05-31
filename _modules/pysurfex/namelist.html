@@ -60,26 +60,30 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="n">program</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nldict</span> <span class="o">=</span> <span class="n">definitions</span>
-        <span class="n">macros_defs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;CPGDFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CPGDFILE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CPREPFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CPREPFILE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CSURFFILE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CSURFFILE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CSURF_FILETYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CFORCING_FILETYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CTIMESERIES_FILETYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#CTIMESERIES_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XRIMAX&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;LSPLIT_PATCH&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#LSPLIT_PATCH&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;LFAKETREE&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#TREEDRAG#FAKETREES&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;LECOSG&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XTSTEP&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#XTSTEP&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XTSTEP_OUTPUT &quot;</span><span class="p">:</span> <span class="s2">&quot;SURFEX#IO#XTSTEP_OUTPUT&quot;</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">macros</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">macro</span><span class="p">,</span> <span class="n">setting</span> <span class="ow">in</span> <span class="n">macros_defs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">vmacro</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Mapping macro </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">macro</span><span class="p">,</span> <span class="n">vmacro</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">vmacro</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">macros</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">macro</span><span class="p">:</span> <span class="n">vmacro</span><span class="p">})</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        macros_defs = {</span>
+<span class="sd">            &quot;CPGDFILE&quot;: &quot;SURFEX#IO#CPGDFILE&quot;,</span>
+<span class="sd">            &quot;CPREPFILE&quot;: &quot;SURFEX#IO#CPREPFILE&quot;,</span>
+<span class="sd">            &quot;CSURFFILE&quot;: &quot;SURFEX#IO#CSURFFILE&quot;,</span>
+<span class="sd">            &quot;CSURF_FILETYPE&quot;: &quot;SURFEX#IO#CSURF_FILETYPE&quot;,</span>
+<span class="sd">            &quot;CFORCING_FILETYPE&quot;: &quot;SURFEX#IO#CFORCING_FILETYPE&quot;,</span>
+<span class="sd">            &quot;CTIMESERIES_FILETYPE&quot;: &quot;SURFEX#IO#CTIMESERIES_FILETYPE&quot;,</span>
+<span class="sd">            &quot;XRIMAX&quot;: &quot;SURFEX#PARAMETERS#XRIMAX&quot;,</span>
+<span class="sd">            &quot;LSPLIT_PATCH&quot;: &quot;SURFEX#IO#LSPLIT_PATCH&quot;,</span>
+<span class="sd">            &quot;LFAKETREE&quot;: &quot;SURFEX#TREEDRAG#FAKETREES&quot;,</span>
+<span class="sd">            &quot;LECOSG&quot;: &quot;SURFEX#COVER#SG&quot;,</span>
+<span class="sd">            &quot;XTSTEP&quot;: &quot;SURFEX#IO#XTSTEP&quot;,</span>
+<span class="sd">            &quot;XTSTEP_OUTPUT &quot;: &quot;SURFEX#IO#XTSTEP_OUTPUT&quot;,</span>
+<span class="sd">        }</span>
+<span class="sd">        macros = {}</span>
+<span class="sd">        for macro, setting in macros_defs.items():</span>
+<span class="sd">            vmacro = config.get_setting(setting)</span>
+<span class="sd">            logging.debug(&quot;Mapping macro %s = %s&quot;, macro, vmacro)</span>
+<span class="sd">            if vmacro is not None:</span>
+<span class="sd">                if isinstance(vmacro, tuple):</span>
+<span class="sd">                    vmacro = list(vmacro)</span>
+<span class="sd">                macros.update({macro: vmacro})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">nobstype</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span> <span class="ow">or</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span><span class="p">:</span>
@@ -149,6 +153,8 @@
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
                     <span class="k">yield from</span> <span class="n">flatten_dict</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                     <span class="k">yield</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">val</span>
 
         <span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span>

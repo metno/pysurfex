@@ -951,7 +951,13 @@
 
             <span class="k">if</span> <span class="n">time_in_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">validtime</span> <span class="o">!=</span> <span class="n">time_in_file</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">time_in_file</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;time_in_file=</span><span class="si">%s</span><span class="s2"> validtime=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">time_in_file</span><span class="p">,</span>
+                        <span class="n">validtime</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="p">(</span><span class="n">time_in_file</span><span class="p">),</span>
+                        <span class="nb">type</span><span class="p">(</span><span class="n">validtime</span><span class="p">),</span>
+                    <span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Mismatch in times in file and the wanted time&quot;</span><span class="p">)</span>
 
         <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_geo</span><span class="p">()</span>
