@@ -1,6 +1,6 @@
 [tool.poetry]
     name = "pysurfex"
-    version = "0.0.4"
+    version = "0.0.4.1"
     description = "Python API to SURFEX"
     authors = ["Trygve Aspelien"]
     license = "MIT"
