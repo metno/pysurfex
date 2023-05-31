@@ -59,6 +59,11 @@
     <span class="k">return</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="offsetaware"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.offsetaware">[docs]</a><span class="k">def</span> <span class="nf">offsetaware</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make offset aware.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dtg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="as_timedelta"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_timedelta">[docs]</a><span class="k">def</span> <span class="nf">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert seconds to timedelta.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span></div>

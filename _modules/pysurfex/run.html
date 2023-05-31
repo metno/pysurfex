@@ -232,27 +232,19 @@
 <span class="sd">            negpert (bool, optional): _description_. Defaults to False.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pert_number</span> <span class="o">=</span> <span class="n">pert_number</span>
+        <span class="n">pert_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pert_number</span><span class="p">)</span>
         <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_io_varassim&quot;</span><span class="p">][</span><span class="s2">&quot;LPRT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nivar&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pert_number</span><span class="p">)</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nivar&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pert_number</span>
         <span class="c1"># Handle negative pertubations</span>
         <span class="k">if</span> <span class="n">negpert</span><span class="p">:</span>
-            <span class="n">nvar</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nvar&quot;</span><span class="p">])</span>
-            <span class="n">ipert</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">npert</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">nvi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nvar</span><span class="p">):</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;nncv(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nvi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
-                <span class="c1"># Check if active</span>
-                <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">npert</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">npert</span> <span class="o">=</span> <span class="n">npert</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">npert</span><span class="p">):</span>
-                    <span class="n">ipert</span> <span class="o">=</span> <span class="n">ipert</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;xtprt_m(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ipert</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
-                    <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
+            <span class="n">nncv</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nncv&quot;</span><span class="p">]</span>
+            <span class="n">nind</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">nvi</span><span class="p">,</span> <span class="n">nval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">nval</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">nind</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">nind</span> <span class="o">==</span> <span class="n">pert_number</span><span class="p">:</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span>
+                        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
         <span class="n">SURFEXBinary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">binary</span><span class="p">,</span>
