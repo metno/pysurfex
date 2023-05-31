@@ -23,6 +23,11 @@ def as_datetime_string(dtg):
     return dtg.strftime(fmt)
 
 
+def offsetaware(dtg):
+    """Make offset aware."""
+    return dtg.replace(tzinfo=timezone.utc)
+
+
 def as_timedelta(seconds=0):
     """Convert seconds to timedelta."""
     return timedelta(seconds=seconds)

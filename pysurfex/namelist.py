@@ -24,30 +24,6 @@ class NamelistGenerator(object):
         self.program = program
         self.config = config
         self.nldict = definitions
-        """
-        macros_defs = {
-            "CPGDFILE": "SURFEX#IO#CPGDFILE",
-            "CPREPFILE": "SURFEX#IO#CPREPFILE",
-            "CSURFFILE": "SURFEX#IO#CSURFFILE",
-            "CSURF_FILETYPE": "SURFEX#IO#CSURF_FILETYPE",
-            "CFORCING_FILETYPE": "SURFEX#IO#CFORCING_FILETYPE",
-            "CTIMESERIES_FILETYPE": "SURFEX#IO#CTIMESERIES_FILETYPE",
-            "XRIMAX": "SURFEX#PARAMETERS#XRIMAX",
-            "LSPLIT_PATCH": "SURFEX#IO#LSPLIT_PATCH",
-            "LFAKETREE": "SURFEX#TREEDRAG#FAKETREES",
-            "LECOSG": "SURFEX#COVER#SG",
-            "XTSTEP": "SURFEX#IO#XTSTEP",
-            "XTSTEP_OUTPUT ": "SURFEX#IO#XTSTEP_OUTPUT",
-        }
-        macros = {}
-        for macro, setting in macros_defs.items():
-            vmacro = config.get_setting(setting)
-            logging.debug("Mapping macro %s = %s", macro, vmacro)
-            if vmacro is not None:
-                if isinstance(vmacro, tuple):
-                    vmacro = list(vmacro)
-                macros.update({macro: vmacro})
-        """
 
         nobstype = 0
         if program == "soda" or program == "offline":
