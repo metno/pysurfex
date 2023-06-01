@@ -230,6 +230,9 @@ class ConfProj(SurfexGeo):
             raise KeyError("Missing key4")
 
         earth = 6.37122e6
+        # Work-around for SP cases where projection info in FA header is wrong
+        self.xlat0 = float("{:.5f}".format(self.xlat0))
+        self.xlon0 = float("{:.5f}".format(self.xlon0))
         if self.xlat0 == 90.0 or self.xlat0 == -90.0:
             proj_string = (
                 f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
