@@ -625,13 +625,13 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#TILES#INLAND_WATER", env["SURFEX_LAKES"])
 
         # TOPO_SOURCE Input source for orography. Available are (gmted2010|gtopo30)
-        self.update_setting("SURFEX#ZS#YZS", env["TOPO_SOURCE"] + ".dir")
+        self.update_setting("SURFEX#ZS#YZS", env["TOPO_SOURCE"])
 
         # ECOCLIMAP
         ecoclimap_version = env["ECOCLIMAP_VERSION"]
         if ecoclimap_version == "SG":
             self.update_setting("SURFEX#COVER#SG", True)
-            self.update_setting("SURFEX#COVER#YCOVER", "ecosg_final_map.dir")
+            self.update_setting("SURFEX#COVER#YCOVER", "ecosg_final_map")
         else:
             self.update_setting("SURFEX#COVER#SG", False)
             version1 = ["1.0", "1.2", "1.3", "1.4", "1.5"]
