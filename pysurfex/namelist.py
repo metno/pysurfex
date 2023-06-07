@@ -226,19 +226,21 @@ class NamelistGenerator(object):
                     input_blocks += ["offline_isba_pertsurf"]
 
             # SSO
+            input_blocks += ["offline_sso"]
             sso = self.config.get_setting("SURFEX#SSO#SCHEME").lower()
-            input_blocks += ["offline_" + sso]
+            input_blocks += ["offline_sso_" + sso]
 
             # Perturbed offline settings
-            if lisba:
-                input_blocks += ["offline_pert_isba_settings"]
-                if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
-                    input_blocks += ["offline_pert_isba_ekf"]
+            if self.program == "perturbed":
+                if lisba:
+                    input_blocks += ["offline_pert_isba_settings"]
+                    if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
+                        input_blocks += ["offline_pert_isba_ekf"]
 
-                if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
-                    input_blocks += ["offline_pert_isba_enkf"]
+                    if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
+                        input_blocks += ["offline_pert_isba_enkf"]
 
-            input_blocks += ["offline_pert_obs"]
+                input_blocks += ["offline_pert_obs"]
 
             # Climate setting
             if self.config.get_setting("SURFEX#SEA#LVOLATILE_SIC"):
@@ -267,6 +269,7 @@ class NamelistGenerator(object):
         else:
             raise NotImplementedError(self.program)
 
+        logging.info("Generated input_blocks: %s", input_blocks)
         return input_blocks
 
     def get_namelist(self):
@@ -602,6 +605,8 @@ class NamelistGenerator(object):
                                 else:
                                     raise KeyError(val)
                             nlres[nl][key] = finval
+            else:
+                logging.info("Category %s not found in definitions", catg)
         return nlres
 
     def write(self, output_file):
