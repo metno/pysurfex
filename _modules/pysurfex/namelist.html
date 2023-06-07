@@ -262,19 +262,21 @@
                     <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_isba_pertsurf&quot;</span><span class="p">]</span>
 
             <span class="c1"># SSO</span>
+            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sso&quot;</span><span class="p">]</span>
             <span class="n">sso</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SSO#SCHEME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_&quot;</span> <span class="o">+</span> <span class="n">sso</span><span class="p">]</span>
+            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sso_&quot;</span> <span class="o">+</span> <span class="n">sso</span><span class="p">]</span>
 
             <span class="c1"># Perturbed offline settings</span>
-            <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_settings&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_ekf&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
+                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_settings&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
+                        <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_ekf&quot;</span><span class="p">]</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_enkf&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
+                        <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_enkf&quot;</span><span class="p">]</span>
 
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_obs&quot;</span><span class="p">]</span>
+                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_obs&quot;</span><span class="p">]</span>
 
             <span class="c1"># Climate setting</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#LVOLATILE_SIC&quot;</span><span class="p">):</span>
@@ -303,6 +305,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
 
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generated input_blocks: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">input_blocks</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">input_blocks</span></div>
 
 <div class="viewcode-block" id="NamelistGenerator.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.get_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -638,6 +641,8 @@
                                 <span class="k">else</span><span class="p">:</span>
                                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                             <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">finval</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Category </span><span class="si">%s</span><span class="s2"> not found in definitions&quot;</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">nlres</span></div>
 
 <div class="viewcode-block" id="NamelistGenerator.write"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
