@@ -795,6 +795,7 @@ def parse_args_masterodb(argv):
         "--domain", type=str, required=False, help="JSON file with domain"
     )
     parser.add_argument("--dtg", type=str, required=False, default=None)
+    parser.add_argument("--basetime", type=str, required=False, default=None)
     parser.add_argument("--output", "-o", type=str, required=False, default=None)
     parser.add_argument(
         "--only_archive", action="store_true", default=False, help="Only call archiving"
