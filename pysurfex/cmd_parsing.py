@@ -949,6 +949,7 @@ def parse_args_surfex_binary(argv, mode):
     )
     parser.add_argument("--output", "-o", type=str, required=True)
     parser.add_argument("--dtg", type=str, required=False, default=None)
+    parser.add_argument("--basetime", type=str, required=False, default=None)
     if pert:
         parser.add_argument("--pert", "-p", type=int, required=False, default=None)
         parser.add_argument(
