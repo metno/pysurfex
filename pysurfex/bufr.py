@@ -386,7 +386,7 @@ class BufrObservationSet(ObservationSet):
                 cnt += 1
 
                 if (cnt % 1000) == 0:
-                    logging.info(".", end="")
+                    print(".", end="")
                     sys.stdout.flush()
 
             # delete handle
