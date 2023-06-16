@@ -364,6 +364,9 @@
             <span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;fa&quot;</span><span class="p">:</span>
             <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;accumulated&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
+                <span class="n">accumulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;accumulated&quot;</span><span class="p">]</span>
+
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;varname&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">:</span>
                 <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
