@@ -328,6 +328,9 @@ class Variable(object):
             )
         elif self.var_type == "fa":
             var = self.var_dict["name"]
+            if "accumulated" in self.var_dict:
+                accumulated = self.var_dict["accumulated"]
+
         elif self.var_type == "obs":
             if "varname" in self.var_dict:
                 var = self.var_dict["varname"]
