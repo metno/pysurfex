@@ -124,10 +124,7 @@
                     <span class="p">},</span>
                 <span class="p">}</span>
                 <span class="n">geo_out</span> <span class="o">=</span> <span class="n">ConfProj</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;polar_stereographic&quot;</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">range_y</span><span class="p">,</span> <span class="n">range_x</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">range_y</span><span class="p">,</span> <span class="n">range_x</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented yet!&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">geo_out</span></div>
