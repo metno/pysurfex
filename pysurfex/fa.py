@@ -88,10 +88,7 @@ class Fa(object):
                     },
                 }
                 geo_out = ConfProj(domain)
-                if field.geometry.name == "polar_stereographic":
-                    data = field.data[range_y, range_x].T
-                else:
-                    data = field.data.T
+                data = field.data[range_y, range_x].T
             else:
                 raise NotImplementedError(field.geometry.name + " not implemented yet!")
             return data, geo_out
