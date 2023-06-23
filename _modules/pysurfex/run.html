@@ -238,13 +238,11 @@
         <span class="c1"># Handle negative pertubations</span>
         <span class="k">if</span> <span class="n">negpert</span><span class="p">:</span>
             <span class="n">nncv</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;nncv&quot;</span><span class="p">]</span>
-            <span class="n">nind</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">nvi</span><span class="p">,</span> <span class="n">nval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">nval</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">nind</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="n">nind</span> <span class="o">==</span> <span class="n">pert_number</span><span class="p">:</span>
-                        <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span>
-                        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
+
+            <span class="k">for</span> <span class="n">nvi</span><span class="p">,</span> <span class="n">_nval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;nam_var&quot;</span><span class="p">][</span><span class="s2">&quot;xtprt_m&quot;</span><span class="p">][</span><span class="n">nvi</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">val</span>
+
         <span class="n">SURFEXBinary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">binary</span><span class="p">,</span>
