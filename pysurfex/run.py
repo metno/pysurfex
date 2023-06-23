@@ -202,17 +202,11 @@ class PerturbedOffline(SURFEXBinary):
         # Handle negative pertubations
         if negpert:
             nncv = settings["nam_var"]["nncv"]
-            #nind = 0
 
-            for nvi, nval in enumerate(nncv):
+            for nvi, _nval in enumerate(nncv):
                 val = settings["nam_var"]["xtprt_m"][nvi]
                 settings["nam_var"]["xtprt_m"][nvi] = -val
-                # setting only the relevant value to negative is not currently working
-                #if nval == 1:
-                    #nind += 1
-                #    if nvi + 1 == pert_number:
-                #        val = settings["nam_var"]["xtprt_m"][nvi]
-                #        settings["nam_var"]["xtprt_m"][nvi] = -val
+
         SURFEXBinary.__init__(
             self,
             binary,
