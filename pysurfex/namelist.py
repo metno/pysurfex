@@ -168,6 +168,10 @@ class NamelistGenerator(object):
         elif self.program == "prep":
             input_blocks += ["prep"]
 
+            # SEAFLX settings
+            if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
+                input_blocks += ["prep_seaflux", "prep_seaflx"]
+
             if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
                 input_blocks += ["prep_sice"]
 
@@ -211,7 +215,7 @@ class NamelistGenerator(object):
 
             # SEAFLX settings
             if self.config.get_setting("SURFEX#TILES#SEA") == "SEAFLX":
-                input_blocks += ["offline_seaflux"]
+                input_blocks += ["offline_seaflux", "offline_seaflx"]
 
             if self.config.get_setting("SURFEX#SEA#ICE") == "SICE":
                 input_blocks += ["offline_sice"]
