@@ -204,6 +204,10 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;prep&quot;</span><span class="p">:</span>
             <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep&quot;</span><span class="p">]</span>
 
+            <span class="c1"># SEAFLX settings</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SEAFLX&quot;</span><span class="p">:</span>
+                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_seaflux&quot;</span><span class="p">,</span> <span class="s2">&quot;prep_seaflx&quot;</span><span class="p">]</span>
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
                 <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_sice&quot;</span><span class="p">]</span>
 
@@ -247,7 +251,7 @@
 
             <span class="c1"># SEAFLX settings</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SEAFLX&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_seaflux&quot;</span><span class="p">]</span>
+                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_seaflux&quot;</span><span class="p">,</span> <span class="s2">&quot;offline_seaflx&quot;</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
                 <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sice&quot;</span><span class="p">]</span>
