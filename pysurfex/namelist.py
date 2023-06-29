@@ -26,7 +26,7 @@ class NamelistGenerator(object):
         self.nldict = definitions
 
         nobstype = 0
-        if program == "soda" or program == "offline":
+        if program == "soda" or program == "offline" or program == "perturbed":
             nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
             nobstype = 0
             for __, obs_val in enumerate(nnco):
