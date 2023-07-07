@@ -582,7 +582,7 @@ def run_surfex_binary(mode, **kwargs):
         else:
             raise FileNotFoundError("File not found: " + archive)
 
-    if not os.path.exists(output) or force:
+    if not (output is not None and os.path.exists(output)) or force:
         if os.path.isfile(namelist_path):
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)

@@ -947,7 +947,7 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument(
         "--domain", type=str, required=False, help="JSON file with domain"
     )
-    parser.add_argument("--output", "-o", type=str, required=True)
+    parser.add_argument("--output", "-o", type=str, required=False, default=None)
     parser.add_argument("--dtg", type=str, required=False, default=None)
     parser.add_argument("--basetime", type=str, required=False, default=None)
     if pert:
