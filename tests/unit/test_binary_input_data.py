@@ -179,7 +179,93 @@ def f90ml_namelist(tmp_path_factory):
     return nml
 
 
-def test_new_binary_input(f90ml_namelist, input_binary_data_file):
+@pytest.fixture()
+def f90ml_namelist_netcdf(tmp_path_factory):
+    nml = tmp_path_factory.getbasetemp() / "nc_nml"
+    nml_input = """
+        &NAM_FRAC
+            LECOSG = .True.
+        /
+        &NAM_IO_OFFLINE
+            CSURF_FILETYPE = "FA"
+        /
+        &NAM_DATA_ISBA
+            NTIME = 36
+            CFNAM_ALBNIR_SOIL(:,1) = "filename_albnir_soil_0105"
+            CFTYP_ALBNIR_SOIL(:,1) = "NETCDF"
+            CFNAM_ALBNIR_SOIL(:,1) = "filename_albnir_soil_0105"
+            CFTYP_ALBNIR_SOIL(:,1) = "NETCDF"
+            CFNAM_ALBNIR_SOIL(:,2) = "filename_albnir_soil_0115"
+            CFTYP_ALBNIR_SOIL(:,2) = "NETCDF"
+            CFNAM_ALBNIR_SOIL(:,36) = "filename_albnir_soil_1225"
+            CFTYP_ALBNIR_SOIL(:,36) = "NETCDF"
+            CFNAM_ALBVIS_SOIL(:,1) = "filename_albvis_soil_0105"
+            CFTYP_ALBVIS_SOIL(:,1) = "NETCDF"
+            CFNAM_ALBVIS_SOIL(:,1) = "filename_albvis_soil_0105"
+            CFTYP_ALBVIS_SOIL(:,1) = "NETCDF"
+            CFNAM_ALBVIS_SOIL(:,2) = "filename_albvis_soil_0115"
+            CFTYP_ALBVIS_SOIL(:,2) = "NETCDF"
+            CFNAM_ALBVIS_SOIL(:,36) = "filename_albvis_soil_1225"
+            CFTYP_ALBVIS_SOIL(:,36) = "NETCDF"
+            CFNAM_H_TREE = "filename_h_tree"
+            CFTYP_H_TREE = "NETCDF"
+        /
+        &NAM_COVER
+            YCOVER = "ecosg_final_map"
+            YCOVERFILETYPE = "NETCDF"
+        /
+        &NAM_ZS
+            YZS = "gmted2010file"
+            YZSFILETYPE = "NETCDF"
+        /
+    """
+    with open(nml, mode="w", encoding="utf-8") as nml_file:
+        nml_file.write(nml_input)
+    return nml
+
+
+@pytest.fixture()
+def f90ml_namelist_netcdf_single(tmp_path_factory):
+    nml = tmp_path_factory.getbasetemp() / "nc_single_nml"
+    nml_input = """
+        &NAM_FRAC
+            LECOSG = .True.
+        /
+        &NAM_IO_OFFLINE
+            CSURF_FILETYPE = "FA"
+        /
+        &NAM_DATA_ISBA
+            NTIME = 1
+            CFNAM_ALBNIR_SOIL(:,1) = "filename_albnir_soil"
+            CFTYP_ALBNIR_SOIL(:,1) = "NETCDF"
+            CFNAM_ALBVIS_SOIL(:,1) = "filename_albvis_soil"
+            CFTYP_ALBVIS_SOIL(:,1) = "NETCDF"
+            CFNAM_H_TREE = "filename_h_tree"
+            CFTYP_H_TREE = "NETCDF"
+            CFNAM_H_TREE = "filename_h_tree"
+            CFTYP_H_TREE = "NETCDF"
+        /
+        &NAM_COVER
+            YCOVER = "ecosg_final_map"
+            YCOVERFILETYPE = "NETCDF"
+        /
+        &NAM_ZS
+            YZS = "gmted2010file"
+            YZSFILETYPE = "NETCDF"
+        /
+    """
+    with open(nml, mode="w", encoding="utf-8") as nml_file:
+        nml_file.write(nml_input)
+    return nml
+
+
+def test_new_binary_input(
+    f90ml_namelist,
+    f90ml_namelist_netcdf,
+    f90ml_namelist_netcdf_single,
+    input_binary_data_file,
+    input_binary_data_file_single,
+):
 
     system_paths = {
         "first_guess_dir": "/fg",
@@ -191,6 +277,7 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
         "gmted": "/gmted",
         "climdir": "/climdir",
     }
+
     with open(f90ml_namelist, mode="r", encoding="utf-8") as nml_fh:
         nml = f90nml.read(nml_fh)
     with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
@@ -221,6 +308,51 @@ def test_new_binary_input(f90ml_namelist, input_binary_data_file):
     assert binary_data.data["filename_h_tree_20.dir"] == "/ecoclimap/HT/new_ht_c.dir"
     assert binary_data.data["gmted2010file.dir"] == "/climdir/gmted2010.dir"
 
+    # Netcdf input
+    with open(f90ml_namelist_netcdf, mode="r", encoding="utf-8") as nml_fh:
+        nml = f90nml.read(nml_fh)
+    binary_data = InputDataFromNamelist(
+        nml, input_data.copy(), "pgd", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert (
+        binary_data.data["filename_albnir_soil_0115.nc"]
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_NI_0115_c.nc"
+    )
+    assert (
+        binary_data.data["filename_albnir_soil_1225.nc"]
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_NI_1225_c.nc"
+    )
+    assert (
+        binary_data.data["filename_albvis_soil_0115.nc"]
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_VI_0115_c.nc"
+    )
+    assert binary_data.data["filename_h_tree.nc"] == "/ecoclimap/HT/new_ht_c.nc"
+    assert binary_data.data["filename_h_tree.nc"] == "/ecoclimap/HT/new_ht_c.nc"
+    assert binary_data.data["gmted2010file.nc"] == "/climdir/gmted2010.nc"
+
+    # Netcdf single input
+    with open(f90ml_namelist_netcdf_single, mode="r", encoding="utf-8") as nml_fh:
+        nml = f90nml.read(nml_fh)
+    with open(input_binary_data_file_single, mode="r", encoding="utf-8") as fhandler:
+        input_data = json.load(fhandler)
+    binary_data = InputDataFromNamelist(
+        nml, input_data.copy(), "pgd", platform, basetime=basetime, validtime=validtime
+    )
+    logging.debug("binary_data=%s", binary_data.data)
+    assert (
+        binary_data.data["filename_albnir_soil.nc"]
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_NI_1015_c.nc"
+    )
+    assert (
+        binary_data.data["filename_albvis_soil.nc"]
+        == "/ecoclimap/ALB/ALB_SAT/ALB_SAT_VI_1015_c.nc"
+    )
+
+    with open(f90ml_namelist, mode="r", encoding="utf-8") as nml_fh:
+        nml = f90nml.read(nml_fh)
+    with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
+        input_data = json.load(fhandler)
     # Prep
     input_data_copy = input_data.copy()
     input_data_copy["prep"]["NAM_PREP_SURF_ATM#CFILETYPE"]["FA"][

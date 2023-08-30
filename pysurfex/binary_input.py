@@ -255,21 +255,36 @@ class InputDataFromNamelist(JsonInputData):
                 else:
                     if isinstance(val, list):
                         dim_size = len(val)
+                        logging.debug("dim_size=%s", dim_size)
                         dims = []
                         tval = val
-                        while dim_size != 1:
-                            logging.debug("tval=%s", tval)
+                        more_dimensions = True
+                        while more_dimensions:
+                            logging.debug("tval=%s type(tval)=%s", tval, type(tval))
                             if isinstance(tval, int):
-                                dim_size = 1
+                                more_dimensions = False
                             else:
-                                dim_size = len(tval)
-                                if dim_size != 1:
-                                    dims.append(dim_size)
-                                tval = tval[0]
+                                logging.debug("type(tval)=%s", type(tval))
+                                if not isinstance(tval, list):
+                                    more_dimensions = False
+                                else:
+                                    if isinstance(tval[0], int):
+                                        more_dimensions = False
+                                    else:
+                                        logging.debug(
+                                            "len(tval)=%s type(tval)=%s", len(tval), type
+                                        )
+                                        dim_size = len(tval)
+                                        dims.append(dim_size)
+
+                                        tval = tval[0]
+                                        logging.debug(
+                                            "New tval=%s dim_size=%s", tval, dim_size
+                                        )
 
                         logging.debug("dims=%s", dims)
                         logging.debug("type(val)=%s", type(val))
-                        if len(dims) - 1 == 2:
+                        if len(dims) == 2:
                             for i in range(0, dims[0]):
                                 for j in range(0, dims[1]):
                                     val_dict = {}
@@ -278,15 +293,18 @@ class InputDataFromNamelist(JsonInputData):
                                     val_dict.update({"value": lval, "indices": indices})
                                     logging.debug("value=%s indices=%s", lval, indices)
                                     vals.append(val_dict)
-                        elif len(dims) - 1 == 1:
+                        elif len(dims) == 1:
                             for i in range(0, dims[0]):
                                 val_dict = {}
                                 indices = [i]
-                                val_dict.update({"value": val[i], "indices": indices})
-                                logging.debug("value=%s indices=%s", val[i], indices)
+                                logging.debug("i=%s, val[i]=%s", i, val[i])
+                                lval = val[i]
+                                val_dict.update({"value": lval, "indices": indices})
+                                logging.debug("value=%s indices=%s", lval, indices)
                                 vals.append(val_dict)
-                        elif len(dims) - 1 == 0:
+                        elif len(dims) == 0:
                             val_dict = {}
+                            logging.debug("val=%s", val)
                             val_dict.update({"value": val, "indices": None})
                             vals.append(val_dict)
                     else:
@@ -413,6 +431,7 @@ class InputDataFromNamelist(JsonInputData):
 
                 if macro_type == "ekfpert":
                     nncvs = self.read_macro_setting(macro_defs, "list", sep=sep)
+                    logging.debug("nncvs=%s", nncvs)
                     nncvs = nncvs.copy()
                     duplicate = self.read_macro_setting(macro_defs, "duplicate", sep=sep)
                     if duplicate:
@@ -537,11 +556,16 @@ class InputDataFromNamelist(JsonInputData):
                             vmacro = f"{month:02d}{mday:02d}"
                         dec += 1
 
-                logging.debug("Substitute @%s@ with %s", macro, vmacro)
+                logging.debug(
+                    "Substitute @%s@ with %s pkey=%s pval=%s", macro, vmacro, pkey, pval
+                )
                 if isinstance(pkey, str):
                     pkey = pkey.replace(f"@{macro}@", vmacro)
                 if isinstance(pval, str):
                     pval = pval.replace(f"@{macro}@", vmacro)
+                logging.debug(
+                    "Substitute @%s@ with %s pkey=%s pval=%s", macro, vmacro, pkey, pval
+                )
         return pkey, pval
 
     def matching_value(self, data, val, sep="#", indices=None):
@@ -562,6 +586,9 @@ class InputDataFromNamelist(JsonInputData):
         """
         if val == "macro" or val == "extenders":
             return None
+        logging.debug("type(data)=%s", type(data))
+        logging.debug("type(val)=%s", type(val))
+        logging.debug("indices=%s", indices)
         if isinstance(data, dict):
             mdata = data.keys()
         else:
@@ -687,8 +714,17 @@ class InputDataFromNamelist(JsonInputData):
                                             )
                                             mapped_data.update({hdr_key: hdr_val})
                                             mapped_data.update({dir_key: dir_val})
+                                        elif value3.endswith(".nc"):
+                                            my_key, my_val = self.substitute(key3, value3)
+                                            logging.debug(
+                                                "my_key=%s, my_val=%s", my_key, my_val
+                                            )
+                                            if not my_key.endswith(".nc"):
+                                                my_key = my_key + ".nc"
+                                            mapped_data.update({my_key: my_val})
                                         else:
-                                            mapped_data.update({key3: setting})
+                                            my_key, my_val = self.substitute(key3, value3)
+                                            mapped_data.update({my_key: my_val})
 
                                     if extenders is not None:
                                         processed = True
@@ -709,6 +745,9 @@ class InputDataFromNamelist(JsonInputData):
                                         pkey3 = key2
                                         pval3 = value2
                                         logging.debug("pkey3=%s pval3=%s", pkey3, pval3)
+                                        if pval3.endswith(".nc"):
+                                            if not pkey3.endswith(".nc"):
+                                                pkey3 = pkey3 + ".nc"
                                         pkey3, pval3 = self.substitute(pkey3, pval3)
                                         mapped_data.update({pkey3: pval3})
 

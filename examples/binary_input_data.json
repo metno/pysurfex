@@ -13,36 +13,57 @@
                 "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
+                    },
+                    "NETCDF": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.nc"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBNIR_VEG": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_ALBNIR_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
+                    },
+                    "NETCDF": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.nc"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                    },
+                    "NETCDF": {
+                       "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.nc"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_ALBVIS_VEG": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_ALBVIS_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.dir"
+                    },
+                    "NETCDF": {
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_VEG": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_@DECADE@_c.nc"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_LAI": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI/LAI_SAT/LAI_SAT_@DECADE@_c.dir"
+                    },
+                    "NETCDF": {
+                        "NAM_DATA_ISBA#CFNAM_LAI": "@ecosg_data_path@/LAI/LAI_SAT/LAI_SAT_@DECADE@_c.nc"
                     }
                 },
                 "NAM_DATA_ISBA#CFTYP_H_TREE": {
                     "DIRTYP": {
                         "NAM_DATA_ISBA#CFNAM_H_TREE": "@ecosg_data_path@/HT/new_ht_c.dir"
+                    },
+                    "NETCDF": {
+                       "NAM_DATA_ISBA#CFNAM_H_TREE": "@ecosg_data_path@/HT/new_ht_c.nc"
                     }
                 },
                 "NAM_COVER#YCOVERFILETYPE": {
                     "DIRECT": {
                         "NAM_COVER#YCOVER": "@ecosg_data_path@/COVER/ecosg_final_map.dir"
+                    },
+                    "NETCDF": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/COVER/ecosg_final_map.nc"
                     }
                 }
             },
@@ -57,6 +78,9 @@
                 "NAM_COVER#YCOVERFILETYPE": {
                     "DIRECT": {
                         "NAM_COVER#YCOVER": "@ecosg_data_path@/ECOCLIMAP_2_5_p.dir"
+                   },
+                   "NETCDF": {
+                        "NAM_COVER#YCOVER": "@ecosg_data_path@/ECOCLIMAP_2_5_p.nc"
                    }
                 }
             }
@@ -64,28 +88,51 @@
         "NAM_ZS#YZSFILETYPE": {
             "DIRECT": {
                 "NAM_ZS#YZS": "@climdir@/gmted2010.dir"
+            },
+            "NETCDF": {
+               "NAM_ZS#YZS": "@climdir@/gmted2010.nc"
             }
         },
         "NAM_ISBA#YSANDFILETYPE": {
             "DIRECT": {
                 "NAM_ISBA#YSAND": "@climdir@/SAND_SOILGRID.dir"
+            },
+            "NETCDF": {
+                "NAM_ISBA#YSAND": "@climdir@/SAND_SOILGRID.nc"
             }
         },
         "NAM_ISBA#YCLAYFILETYPE": {
             "DIRECT": {
                 "NAM_ISBA#YCLAY": "@climdir@/CLAY_SOILGRID.dir"
+            },
+            "NETCDF": {
+                "NAM_ISBA#YCLAY": "@climdir@/CLAY_SOILGRID.nc"
             }
         },
         "NAM_ISBA#YSOCFILETYPE": {
             "DIRECT": {
                 "NAM_ISBA#YSOC_SUB": "@climdir@/soc_sub.dir",
                 "NAM_ISBA#YSOC_TOP": "@climdir@/soc_top.dir"
+            },
+            "NETCDF": {
+               "NAM_ISBA#YSOC_SUB": "@climdir@/soc_sub.nc",
+               "NAM_ISBA#YSOC_TOP": "@climdir@/soc_top.nc"
             }
         },
         "NAM_DATA_FLAKE#YWATER_DEPTHFILETYPE": {
             "DIRECT": {
-                "NAM_DATA_FLAKE#YWATER_DEPTH": "@flake_dir@/GlobalLakeDepth.dir",
+                "NAM_DATA_FLAKE#YWATER_DEPTH": "@flake_dir@/GlobalLakeDepth.dir"
+            },
+            "NETCDF": {
+               "NAM_DATA_FLAKE#YWATER_DEPTH": "@flake_dir@/GlobalLakeDepth.nc"             
+            }
+        },
+        "NAM_DATA_FLAKE#YWATER_DEPTH_STATUSFILETYPE": {
+            "DIRECT": {
                 "NAM_DATA_FLAKE#YWATER_DEPTH_STATUS": "@flake_dir@/GlobalLakeStatus.dir"
+            },
+            "NETCDF": {
+                "NAM_DATA_FLAKE#YWATER_DEPTH_STATUS": "@flake_dir@/GlobalLakeStatus.nc"
             }
         }
     },
