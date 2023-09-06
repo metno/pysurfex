@@ -679,13 +679,13 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
         if "LFAKETREE" in env:
             envsetting = env["LFAKETREE"].replace(".", "").lower()
-            envsetting = envsetting.split(',')
+            envsetting = envsetting.split(",")
             lfaketree = [False for i in range(7)]
-            for ii in range(len(envsetting)): 
+            for ii in range(len(envsetting)):
                 if envsetting[ii].strip()[0] == "t":
-                      lfaketree[ii] = True
+                    lfaketree[ii] = True
                 else:
-                      lfaketree[ii] = False
+                    lfaketree[ii] = False
             self.update_setting("SURFEX#TREEDRAG#FAKETREES", lfaketree)
 
         # Heat capacity
