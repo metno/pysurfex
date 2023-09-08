@@ -678,10 +678,14 @@ class ConfigurationFromHarmonie(Configuration):
         # XSCALE_H_TREE  Scale the tree height with this factor
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
         if "LFAKETREE" in env:
-            if env["LFAKETREE"].replace(".", "").strip().lower()[0] == "t":
-                lfaketree = True
-            else:
-                lfaketree = False
+            envsetting = env["LFAKETREE"].replace(".", "").lower()
+            envsetting = envsetting.split(",")
+            lfaketree = [False for i in range(7)]
+            for ii in range(len(envsetting)):
+                if envsetting[ii].strip()[0] == "t":
+                    lfaketree[ii] = True
+                else:
+                    lfaketree[ii] = False
             self.update_setting("SURFEX#TREEDRAG#FAKETREES", lfaketree)
 
         # Heat capacity
