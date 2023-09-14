@@ -915,7 +915,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
 
         sd_var = sd_fh.variables[s_d["var"]][:]
         sd_var = sd_var.reshape([n_y * n_x], order="C")
-        sd_var = sd_var.filled(fill_value=999.0)
+        sd_var = sd_var.filled(fill_value=-999.0)
         sd_var = sd_var.tolist()
 
     if s_m is not None:
