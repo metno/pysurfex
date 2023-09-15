@@ -222,6 +222,28 @@ def get_nam_path(tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
+def get_nam_file():
+    fname = (
+        f"{os.path.abspath(os.path.dirname(__file__))}/../examples/surfex_namelists.yml"
+    )
+    return fname
+
+
+@pytest.fixture(scope="module")
+def input_binary_data_file():
+    fname = (
+        f"{os.path.abspath(os.path.dirname(__file__))}/../examples/binary_input_data.json"
+    )
+    return fname
+
+
+@pytest.fixture(scope="module")
+def input_binary_data_file_single():
+    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../examples/binary_input_data_single_decade.json"
+    return fname
+
+
+@pytest.fixture(scope="module")
 def rotated_ll_t2m_grib1(tmp_path_factory):
     keys = {
         "editionNumber": 1,

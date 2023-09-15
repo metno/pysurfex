@@ -5,10 +5,6 @@ import os
 import subprocess
 from abc import ABC, abstractmethod
 
-from .datetime_utils import as_datetime, as_timedelta
-from .ecoclimap import Ecoclimap, EcoclimapSG, ExternalSurfexInputFile
-from .file import AsciiSurfexFile, FaSurfexFile, NCSurfexFile
-
 
 class InputDataToSurfexBinaries(ABC):
     """Abstract input data."""
@@ -16,12 +12,12 @@ class InputDataToSurfexBinaries(ABC):
     @abstractmethod
     def __init__(self):
         """Construct."""
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def prepare_input(self):
         """Prepare input."""
-        return NotImplementedError
+        raise NotImplementedError
 
 
 class OutputDataFromSurfexBinaries(ABC):
@@ -30,12 +26,12 @@ class OutputDataFromSurfexBinaries(ABC):
     @abstractmethod
     def __init__(self):
         """Construct."""
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def archive_files(self):
         """Archive files."""
-        return NotImplementedError
+        raise NotImplementedError
 
 
 class JsonOutputData(OutputDataFromSurfexBinaries):
@@ -48,7 +44,6 @@ class JsonOutputData(OutputDataFromSurfexBinaries):
             data (dict): Output data.
 
         """
-        OutputDataFromSurfexBinaries.__init__(self)
         self.data = data
 
     def archive_files(self):
@@ -95,7 +90,6 @@ class JsonInputData(InputDataToSurfexBinaries):
         Args:
             data (dict): Input data.
         """
-        InputDataToSurfexBinaries.__init__(self)
         self.data = data
 
     def prepare_input(self):
@@ -157,748 +151,617 @@ class JsonInputDataFromFile(JsonInputData):
         JsonInputData.prepare_input(self)
 
 
-class PgdInputData(JsonInputData):
-    """PGD input."""
+class InputDataFromNamelist(JsonInputData):
+    """Binary input data for offline executables."""
 
-    def __init__(self, config, system_file_paths, check_existence=True):
-        """Construct PD input.
+    def __init__(self, nml, input_data, program, platform, basetime=None, validtime=None):
+        """Construct InputDataFromNamelist.
 
         Args:
-            config (Configuration): Surfex configuration
-            system_file_paths (SystemFilePaths): System file paths
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
+            nml (f90nml.Namelist): Namelist
+            input_data (dict): Input data mapping
+            program (str): Kind of program
+            platform (SystemFilePaths): Platform settings
+            basetime (as_datetime, optional): Baseetime. Defaults to None.
+            validtime (as_datetime, optional): Validtime. Defaults to None.
+
+        Raises:
+            RuntimeError: Program not defined
 
         """
-        # Ecoclimap settings
-        eco_sg = config.get_setting("SURFEX#COVER#SG")
-        if eco_sg:
-            ecoclimap = EcoclimapSG(config, system_file_paths=system_file_paths)
-        else:
-            ecoclimap = Ecoclimap(config, system_file_paths=system_file_paths)
+        self.nml = nml
+        self.platform = platform
+        self.basetime = basetime
+        self.validtime = validtime
+        try:
+            self.data = input_data[program]
+        except KeyError:
+            raise RuntimeError(f"Could not find program {program}") from KeyError
+        data = self.process_data()
+        JsonInputData.__init__(self, data)
 
-        data = ecoclimap.set_input(check_existence=check_existence)
+    @staticmethod
+    def get_nml_value2(nml, block, key, indices=None):
+        """Get namelist value.
 
-        ext_data = ExternalSurfexInputFile(system_file_paths)
-        # Set direct input files
-        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            version = config.get_setting("SURFEX#FLAKE#LDB_VERSION")
-            if version != "":
-                version = "_V" + version
-            datadir = "flake_dir"
-            fname = "GlobalLakeDepth" + version + ".dir"
-            linkbasename = "GlobalLakeDepth"
-            data.update(
-                ext_data.set_input_data_from_format(
-                    datadir,
-                    fname,
-                    default_dir="climdir",
-                    linkbasename=linkbasename,
-                    check_existence=check_existence,
-                )
-            )
-            fname = "GlobalLakeStatus" + version + ".dir"
-            linkbasename = "GlobalLakeStatus"
-            data.update(
-                ext_data.set_input_data_from_format(
-                    datadir,
-                    fname,
-                    default_dir="climdir",
-                    linkbasename=linkbasename,
-                    check_existence=check_existence,
-                )
-            )
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            block (str): Namelist block
+            key (str): Namelist key
+            indices (list, optional): Indices to read. Defaults to None.
 
-        possible_direct_data = {
-            "ISBA": {
-                "YSAND": "sand_dir",
-                "YCLAY": "clay_dir",
-                "YSOC_TOP": "soc_top_dir",
-                "YSOC_SUB": "soc_sub_dir",
-            },
-            "COVER": {"YCOVER": ecoclimap.cover_dir},
-            "ZS": {"YZS": "oro_dir"},
-        }
-        for namelist_section, ftypes in possible_direct_data.items():
-            for ftype, data_dir in ftypes.items():
-                fname = str(
-                    config.get_setting("SURFEX#" + namelist_section + "#" + ftype)
-                )
-                data.update(
-                    ext_data.set_input_data_from_format(
-                        data_dir,
-                        fname,
-                        default_dir="climdir",
-                        check_existence=check_existence,
+        Returns:
+            setting (any): Namelist setting
+
+        """
+        logging.debug("Checking block=%s key=%s", block, key)
+        if block in nml:
+            if key in nml[block]:
+                logging.debug(nml[block][key])
+                if indices is not None:
+                    logging.debug("indices=%s", indices)
+                    try:
+                        if len(indices) == 2:
+                            val = nml[block][key][indices[1]][indices[0]]
+                        else:
+                            val = nml[block][key][indices[0]]
+                            logging.debug("Found 1D value %s", val)
+                            if isinstance(val, list):
+                                return None
+                    except IndexError:
+                        return None
+                    except TypeError:
+                        return None
+                else:
+                    val = nml[block][key]
+
+                logging.debug("Found: %s Indices=%s", val, indices)
+                return val
+        return None
+
+    @staticmethod
+    def get_nml_value(nml, block, key, indices=None):
+        """Get namelist value.
+
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            block (str): Namelist block
+            key (str): Namelist key
+            indices (list, optional): Indices to read. Defaults to None.
+
+        Returns:
+            setting (any): Namelist setting
+
+        """
+        logging.debug("Checking block=%s key=%s", block, key)
+        if block in nml:
+            if key in nml[block]:
+                vals = []
+                val_dict = {}
+                val = nml[block][key]
+                logging.debug("namelist type=%s", type(val))
+                if indices is not None:
+                    logging.debug("indices=%s", indices)
+                    if len(indices) == 2:
+                        val = nml[block][key][indices[1]][indices[0]]
+                    else:
+                        val = nml[block][key][indices[0]]
+                        logging.debug("Found 1D value %s", val)
+                        if isinstance(val, list):
+                            return None
+                    val_dict.update({"value": val, "indices": None})
+                    vals.append(val_dict)
+
+                else:
+                    if isinstance(val, list):
+                        dim_size = len(val)
+                        logging.debug("dim_size=%s", dim_size)
+                        dims = []
+                        tval = val
+                        more_dimensions = True
+                        while more_dimensions:
+                            logging.debug("tval=%s type(tval)=%s", tval, type(tval))
+                            if isinstance(tval, int):
+                                more_dimensions = False
+                            else:
+                                logging.debug("type(tval)=%s", type(tval))
+                                if not isinstance(tval, list):
+                                    more_dimensions = False
+                                else:
+                                    if isinstance(tval[0], int):
+                                        more_dimensions = False
+                                    else:
+                                        logging.debug(
+                                            "len(tval)=%s type(tval)=%s", len(tval), type
+                                        )
+                                        dim_size = len(tval)
+                                        dims.append(dim_size)
+
+                                        tval = tval[0]
+                                        logging.debug(
+                                            "New tval=%s dim_size=%s", tval, dim_size
+                                        )
+
+                        logging.debug("dims=%s", dims)
+                        logging.debug("type(val)=%s", type(val))
+                        if len(dims) == 2:
+                            for i in range(0, dims[0]):
+                                for j in range(0, dims[1]):
+                                    val_dict = {}
+                                    indices = [j, i]
+                                    lval = val[i][j]
+                                    val_dict.update({"value": lval, "indices": indices})
+                                    logging.debug("value=%s indices=%s", lval, indices)
+                                    vals.append(val_dict)
+                        elif len(dims) == 1:
+                            for i in range(0, dims[0]):
+                                val_dict = {}
+                                indices = [i]
+                                logging.debug("i=%s, val[i]=%s", i, val[i])
+                                lval = val[i]
+                                val_dict.update({"value": lval, "indices": indices})
+                                logging.debug("value=%s indices=%s", lval, indices)
+                                vals.append(val_dict)
+                        elif len(dims) == 0:
+                            val_dict = {}
+                            logging.debug("val=%s", val)
+                            val_dict.update({"value": val, "indices": None})
+                            vals.append(val_dict)
+                    else:
+                        val_dict = {}
+                        if isinstance(val, bool):
+                            val = str(val)
+                        val_dict.update({"value": val, "indices": None})
+                        vals.append(val_dict)
+
+                logging.debug("Found: value=%s", val_dict["value"])
+                return vals
+        return None
+
+    @staticmethod
+    def get_nml_value_from_string(nml, string, sep="#", indices=None):
+        """Get namelist value from a string.
+
+        Args:
+            nml (nmlf90.Namelist): Namelist
+            string (str): Namelist identifier
+            sep (str, optional): _description_. Defaults to "#".
+            indices (list, optional): Indices to read. Defaults to None.
+
+        Returns:
+            setting (any): Namelist setting
+
+        """
+        nam_section = string.split(sep)[0]
+        nam_key = string.split(sep)[1]
+        return InputDataFromNamelist.get_nml_value(
+            nml, nam_section, nam_key, indices=indices
+        )
+
+    def substitute(self, key, val, macros=None, micro="@", check_parsing=False):
+        """Substitute patterns.
+
+        Args:
+            key (str): _description_
+            val (str): _description_
+            macros (dict, optional): Macros. Defaults to None.
+            micro (str, optional): Micro character. Defaults to "@".
+            check_parsing (bool, optional): Caheck if values were substituted.
+
+        Returns:
+            dict: Substituted key=value
+
+        """
+        logging.debug(
+            "Substitute key=%s and val=%s %s %s", key, val, self.basetime, self.validtime
+        )
+        pkey = key
+        pval = val
+        for spath_key, spath_val in self.platform.system_file_paths.items():
+            pkey = pkey.replace(f"{micro}{spath_key}{micro}", spath_val)
+            pval = pval.replace(f"{micro}{spath_key}{micro}", spath_val)
+        if macros is not None:
+            for macro_key, macro_val in macros.items():
+                pkey = pkey.replace(f"{micro}{macro_key}{micro}", macro_val)
+                pval = pval.replace(f"{micro}{macro_key}{micro}", macro_val)
+
+        pkey = self.platform.parse_setting(
+            pkey,
+            validtime=self.validtime,
+            basedtg=self.basetime,
+            check_parsing=check_parsing,
+        )
+        pval = self.platform.parse_setting(
+            pval,
+            validtime=self.validtime,
+            basedtg=self.basetime,
+            check_parsing=check_parsing,
+        )
+        return pkey, pval
+
+    def read_macro_setting(self, macro_defs, key, default=None, sep="#"):
+        """Read a macro setting.
+
+        Args:
+            macro_defs (dict): Macro definition
+            key (str): Macro setting to get.
+            default (str, optional): Default value. Defaults to None.
+            sep (str, optional): Namelist key separator. Defaults to "#".
+
+        Returns:
+            setting (any)
+        """
+        try:
+            setting = macro_defs[key]
+            if isinstance(setting, str):
+                if setting.find(sep) > 0:
+                    logging.debug("Read macro setting from namelist %s", setting)
+                    setting = self.get_nml_value_from_string(self.nml, setting)
+                    if isinstance(setting, list):
+                        setting = setting[0]["value"]
+            return setting
+        except KeyError:
+            return default
+
+    def extend_macro(self, key, val, macros, sep="#"):
+        """Extend entries from macro.
+
+        Args:
+            key (_type_): _description_
+            val (_type_): _description_
+            macros (dict): Macros
+            sep (str, optional): Namelist key separator. Defaults to "#".
+
+        Raises:
+            NotImplementedError: _description_
+            NotImplementedError: _description_
+
+        Returns:
+            dict: Key, value dictionary
+        """
+        logging.debug("extenders=%s", macros)
+        if macros is None:
+            return {key: val}
+
+        processed_data = {}
+        for macro, macro_types in macros.items():
+            loop = {}
+            for macro_type, macro_defs in macro_types.items():
+                logging.debug("macro_defs=%s", macro_defs)
+
+                if macro_type == "ekfpert":
+                    nncvs = self.read_macro_setting(macro_defs, "list", sep=sep)
+                    logging.debug("nncvs=%s", nncvs)
+                    nncvs = nncvs.copy()
+                    duplicate = self.read_macro_setting(macro_defs, "duplicate", sep=sep)
+                    if duplicate:
+                        nncvs += nncvs
+                    loop.update({"0": "0"})
+                    icounter1 = 1
+                    icounter2 = 1
+                    for nncv in nncvs:
+                        if nncv == 1:
+                            loop.update({str(icounter1): str(icounter2)})
+                            icounter1 += 1
+                        icounter2 += 1
+                elif macro_type == "dict":
+                    values = self.get_nml_value_from_string(self.nml, macro_defs)
+                    counter = 0
+                    for key, val in values[0].items():
+                        loop.update({str(key): str(val)})
+                        counter += 1
+
+                elif macro_type == "iterator":
+                    start = self.read_macro_setting(macro_defs, "start", sep=sep)
+                    end = self.read_macro_setting(macro_defs, "end", sep=sep)
+                    fmt = self.read_macro_setting(
+                        macro_defs, "fmt", sep=sep, default=None
                     )
-                )
-
-        # Treedrag
-        if config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE") != "":
-            fname = config.get_setting("SURFEX#TREEDRAG#TREEDATA_FILE")
-            data_dir = "tree_height_dir"
-            data.update(
-                ext_data.set_input_data_from_format(
-                    data_dir,
-                    fname,
-                    default_dir="climdir",
-                    check_existence=check_existence,
-                )
-            )
-
-        JsonInputData.__init__(self, data)
-
-
-class PrepInputData(JsonInputData):
-    """Input data for PREP."""
-
-    def __init__(
-        self,
-        config,
-        system_file_paths,
-        check_existence=True,
-        prep_file=None,
-        prep_pgdfile=None,
-    ):
-        """Construct input data for PREP.
-
-        Args:
-            config (Configuration): Surfex configuration
-            system_file_paths (SystemFilePaths): System file paths
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
-            prep_file (str, optional): Prep input file. Defaults to None.
-            prep_pgdfile (str, optional): Filetype for prep input. Defaults to None.
-
-        """
-        data = {}
-        # Ecoclimap settings
-        eco_sg = config.get_setting("SURFEX#COVER#SG")
-        if not eco_sg:
-            ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
-
-        logging.debug("prep class %s", system_file_paths.__class__)
-        ext_data = ExternalSurfexInputFile(system_file_paths)
-        if prep_file is not None:
-            if not prep_file.endswith(".json"):
-                fname = os.path.basename(prep_file)
-                if fname != prep_file:
-                    data.update({fname: prep_file})
-                if prep_pgdfile is not None:
-                    fname = os.path.basename(prep_pgdfile)
-                    if fname != prep_pgdfile:
-                        data.update({fname: prep_pgdfile})
-
-        if config.get_setting("SURFEX#TILES#INLAND_WATER") == "FLAKE":
-            data_dir = "flake_dir"
-            fname = "LAKE_LTA_NEW.nc"
-            data.update(
-                ext_data.set_input_data_from_format(
-                    data_dir,
-                    fname,
-                    default_dir="climdir",
-                    check_existence=check_existence,
-                )
-            )
-
-        JsonInputData.__init__(self, data)
-
-
-class OfflineInputData(JsonInputData):
-    """Input data for offline."""
-
-    def __init__(self, config, system_file_paths, check_existence=True):
-        """Construct input data for offline.
-
-        Args:
-            config (Configuration): Surfex configuration
-            system_file_paths (SystemFilePaths): System file paths
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
-
-        Raises:
-            NotImplementedError: Filetype not implemented
-
-        """
-        data = {}
-        # Ecoclimap settings
-        eco_sg = config.get_setting("SURFEX#COVER#SG")
-        if not eco_sg:
-            ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
-
-        data_dir = "forcing_dir"
-        if config.get_setting("SURFEX#IO#CFORCING_FILETYPE") == "NETCDF":
-            fname = "FORCING.nc"
-            data.update(
-                {
-                    fname: system_file_paths.get_system_file(
-                        data_dir, fname, default_dir=None
-                    )
-                }
-            )
-        else:
-            raise NotImplementedError
-
-        JsonInputData.__init__(self, data)
-
-
-class InlineForecastInputData(JsonInputData):
-    """Inline forecast input data."""
-
-    def __init__(self, config, system_file_paths, check_existence=True):
-        """Construct input data for inline forecast.
-
-        Args:
-            config (Configuration): Surfex configuration
-            system_file_paths (SystemFilePaths): System file paths
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
-
-        """
-        data = {}
-        # Ecoclimap settings
-        eco_sg = config.get_setting("SURFEX#COVER#SG")
-        if not eco_sg:
-            ecoclimap = Ecoclimap(config, system_file_paths)
-            data.update(ecoclimap.set_bin_files(check_existence=check_existence))
-
-        JsonInputData.__init__(self, data)
-
-
-class SodaInputData(JsonInputData):
-    """Input data for SODA."""
-
-    def __init__(
-        self,
-        config,
-        system_file_paths,
-        check_existence=True,
-        masterodb=True,
-        perturbed_file_pattern=None,
-        dtg=None,
-    ):
-        """Construct input data for SODA.
-
-        Args:
-            config (Configuration): Surfex configuration
-            system_file_paths (SystemFilePaths): System file paths
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
-            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
-            perturbed_file_pattern (str, optional): File pattern for perturbed files. Defaults to None.
-            dtg (datetime, optional): Basetime. Defaults to None.
-
-        """
-        self.config = config
-        self.system_file_paths = system_file_paths
-        self.file_paths = ExternalSurfexInputFile(self.system_file_paths)
-        if dtg is not None:
-            if isinstance(dtg, str):
-                dtg = as_datetime(dtg)
-        self.dtg = dtg
-        JsonInputData.__init__(self, {})
-
-        # Ecoclimap settings
-        eco_sg = self.config.get_setting("SURFEX#COVER#SG")
-        if not eco_sg:
-            ecoclimap = Ecoclimap(self.config, self.system_file_paths)
-            self.add_data(ecoclimap.set_bin_files(check_existence=check_existence))
-
-        # OBS
-        nnco = self.config.get_setting("SURFEX#ASSIM#OBS#NNCO")
-        need_obs = False
-        for pobs in nnco:
-            if pobs == 1:
-                need_obs = True
-        if need_obs:
-            self.add_data(self.set_input_observations(check_existence=check_existence))
-
-        # SEA
-        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") != "NONE":
-            if self.config.get_setting("SURFEX#ASSIM#SCHEMES#SEA") == "INPUT":
-                self.add_data(
-                    self.set_input_sea_assimilation(check_existence=check_existence)
-                )
-
-        # WATER
-        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#INLAND_WATER") != "NONE":
-            pass
-
-        # NATURE
-        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") != "NONE":
-            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "EKF"):
-                data = self.set_input_vertical_soil_ekf(
-                    check_existence=check_existence,
-                    masterodb=masterodb,
-                    pert_fp=perturbed_file_pattern,
-                )
-                self.add_data(data)
-            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "OI"):
-                self.add_data(self.set_input_vertical_soil_oi())
-            if self.config.setting_is("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF"):
-                self.add_data(
-                    self.set_input_vertical_soil_enkf(
-                        check_existence=check_existence,
-                        masterodb=masterodb,
-                        pert_fp=perturbed_file_pattern,
-                    )
-                )
-
-        # Town
-        if self.config.get_setting("SURFEX#ASSIM#SCHEMES#TEB") != "NONE":
-            pass
-
-    def set_input_observations(self, check_existence=True):
-        """Input data for observations.
-
-        Args:
-            check_existence (bool, optional): Check if input files exist. Defaults to True.
-
-        Raises:
-            NotImplementedError: File format not implemented
-            RuntimeError: Obs ASCII file needs DTG information
-
-        Returns:
-            obssettings: Input observations.
-
-        """
-        cfile_format_obs = self.config.get_setting("SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS")
-        if cfile_format_obs == "ASCII":
-            if self.dtg is None:
-                raise RuntimeError("Obs ASCII file needs DTG information")
-            cyy = self.dtg.strftime("%y")
-            cmm = self.dtg.strftime("%m")
-            cdd = self.dtg.strftime("%d")
-            chh = self.dtg.strftime("%H")
-            target = "OBSERVATIONS_" + cyy + cmm + cdd + "H" + chh + ".DAT"
-        elif cfile_format_obs == "FA":
-            target = "ICMSHANAL+0000"
-        else:
-            raise NotImplementedError(cfile_format_obs)
-
-        data_dir = "obs_dir"
-        obsfile = self.system_file_paths.get_system_file(
-            data_dir,
-            target,
-            default_dir="assim_dir",
-            check_existence=check_existence,
-            basedtg=self.dtg,
-        )
-        obssettings = {target: obsfile}
-        return obssettings
-
-    def set_input_sea_assimilation(self, check_existence=True):
-        """Input data for sea assimilation.
-
-        Args:
-            check_existence (bool, optional): Check if input files are existing. Defaults to True.
-
-        Raises:
-            NotImplementedError: File format not implemented
-
-        Returns:
-            sea_settings(dict): Input filed for sea assimilation
-
-        """
-        cfile_format_sst = self.config.get_setting("SURFEX#ASSIM#SEA#CFILE_FORMAT_SST")
-        if cfile_format_sst.upper() == "ASCII":
-            target = "SST_SIC.DAT"
-        elif cfile_format_sst.upper() == "FA":
-            target = "SST_SIC"
-        else:
-            raise NotImplementedError(cfile_format_sst)
-
-        data_dir = "sst_file_dir"
-        sstfile = self.system_file_paths.get_system_file(
-            data_dir,
-            target,
-            basedtg=self.dtg,
-            check_existence=check_existence,
-            default_dir="assim_dir",
-        )
-        sea_settings = {target: sstfile}
-        return sea_settings
-
-    def set_input_vertical_soil_oi(self):
-        """Input data for OI in soil.
-
-        Raises:
-            NotImplementedError: File format not implemented
-            RuntimeError: You must set DTG
-
-        Returns:
-            oi_settings(dict): Input files for OI
-
-        """
-        oi_settings = {}
-        # Climate
-        cfile_format_clim = self.config.get_setting(
-            "SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM"
-        )
-        if cfile_format_clim.upper() == "ASCII":
-            target = "CLIMATE.DAT"
-        elif cfile_format_clim.upper() == "FA":
-            target = "clim_isba"
-        else:
-            raise NotImplementedError(cfile_format_clim)
-
-        data_dir = "climdir"
-        climfile = self.system_file_paths.get_system_file(
-            data_dir, target, default_dir="assim_dir", check_existence=True
-        )
-        oi_settings.update({target: climfile})
-
-        # First guess for SURFEX
-        cfile_format_fg = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG")
-        if cfile_format_fg.upper() == "ASCII":
-            if self.dtg is None:
-                raise RuntimeError("First guess in ASCII format needs DTG information")
-            cyy = self.dtg.strftime("%y")
-            cmm = self.dtg.strftime("%m")
-            cdd = self.dtg.strftime("%d")
-            chh = self.dtg.strftime("%H")
-            target = "FIRST_GUESS_" + cyy + cmm + cdd + "H" + chh + ".DAT"
-        elif cfile_format_fg.upper() == "FA":
-            target = "FG_OI_MAIN"
-        else:
-            raise NotImplementedError(cfile_format_fg)
-
-        data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_file(
-            data_dir,
-            target,
-            default_dir="assim_dir",
-            basedtg=self.dtg,
-            check_existence=True,
-        )
-        oi_settings.update({target: first_guess})
-
-        data_dir = "ascat_dir"
-        ascatfile = self.system_file_paths.get_system_file(
-            data_dir,
-            target,
-            default_dir="assim_dir",
-            basedtg=self.dtg,
-            check_existence=True,
-        )
-        oi_settings.update({"ASCAT_SM.DAT": ascatfile})
-
-        # OI coefficients
-        data_dir = "oi_coeffs_dir"
-        oi_coeffs = self.config.get_setting("SURFEX#ASSIM#ISBA#OI#COEFFS")
-        oi_coeffs = self.system_file_paths.get_system_file(
-            data_dir, oi_coeffs, default_dir="assim_dir", check_existence=True
-        )
-        oi_settings.update({"fort.61": oi_coeffs})
-
-        # LSM
-        cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
-        if cfile_format_lsm.upper() == "ASCII":
-            target = "LSM.DAT"
-        elif cfile_format_lsm.upper() == "FA":
-            target = "FG_OI_MAIN"
-        else:
-            raise NotImplementedError(cfile_format_lsm)
-
-        data_dir = "lsm_dir"
-        lsmfile = self.system_file_paths.get_system_file(
-            data_dir,
-            target,
-            default_dir="assim_dir",
-            basedtg=self.dtg,
-            check_existence=True,
-        )
-        oi_settings.update({target: lsmfile})
-        return oi_settings
-
-    def set_input_vertical_soil_ekf(
-        self, check_existence=True, masterodb=True, pert_fp=None, geo=None
-    ):
-        """Input data for EKF in soil.
-
-        Args:
-            check_existence (bool, optional): Check if files exist. Defaults to True.
-            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
-            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.
-            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.
-
-        Raises:
-            NotImplementedError: File type not implmented
-            RuntimeError: You must set DTG
-
-        Returns:
-            ekf_settings(dict): EKF input files
-
-        """
-        if self.dtg is None:
-            raise RuntimeError("You must set DTG")
-
-        cyy = self.dtg.strftime("%y")
-        cmm = self.dtg.strftime("%m")
-        cdd = self.dtg.strftime("%d")
-        chh = self.dtg.strftime("%H")
-        ekf_settings = {}
-
-        # TODO
-        fcint = 3
-        fg_dtg = self.dtg - as_timedelta(seconds=fcint * 3600.0)
-        data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_path(
-            data_dir,
-            default_dir="assim_dir",
-            validtime=self.dtg,
-            basedtg=fg_dtg,
-            check_existence=check_existence,
-        )
-        # First guess for SURFEX
-        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
-        fgf = self.config.get_setting(
-            "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
-        )
-        first_guess = first_guess + "/" + fgf
-        if csurf_filetype == "ascii":
-            fg_file = AsciiSurfexFile(first_guess, geo=geo)
-            fgf = fg_file.filename
-        elif csurf_filetype == "nc":
-            logging.debug("%s", fgf)
-            fg_file = NCSurfexFile(first_guess, geo=geo)
-            fgf = fg_file.filename
-        elif csurf_filetype == "fa":
-            lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
-            # TODO for now assume that first guess always is a inline forecast with FA format
-            fg_file = FaSurfexFile(first_guess, lfagmap=lfagmap, masterodb=masterodb)
-            fgf = fg_file.filename
-        else:
-            raise NotImplementedError
-
-        # We never run inline model for perturbations or in SODA
-        extension = fg_file.extension
-        if csurf_filetype == "fa":
-            extension = "fa"
-
-        ekf_settings.update({"PREP_INIT." + extension: fgf})
-        ekf_settings.update(
-            {"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: fgf}
-        )
-
-        nncv = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#NNCV")
-        llincheck = self.config.get_setting("SURFEX#ASSIM#ISBA#EKF#LLINCHECK")
-        lnncv = len(nncv) + 1
-        if llincheck:
-            lnncv = (len(nncv) * 2) + 1
-        pert_ekf = 0
-        pert_input = 0
-        for ppp in range(0, lnncv):
-            exists = False
-            if ppp > 0:
-                p_p = ppp
-                if llincheck and ppp > len(nncv):
-                    p_p = ppp - len(nncv)
-                if nncv[p_p - 1] == 1:
-                    exists = True
-                    pert_input = ppp
+                    if fmt is None:
+                        fmt = "{:d}"
+                    for lval in range(start, end):
+                        lval = fmt.format(lval)
+                        loop.update({str(lval): str(lval)})
+                else:
+                    raise NotImplementedError
+
+            # Loop normal macros not being nml arrays
+            unprocessed_data = processed_data.copy()
+            if processed_data:
+                unprocessed_data = processed_data
             else:
-                exists = True
+                unprocessed_data = {key: val}
 
-            if exists:
-                data_dir = "perturbed_run_dir"
-                if pert_fp is None:
-                    logging.info("Use default CSURFFILE for perturbed file names")
-                    pert_fp = (
-                        self.config.get_setting(
-                            "SURFEX#IO#CSURFFILE", check_parsing=False
+            for key, val in unprocessed_data.items():
+                for vmacro1, vmacro2 in loop.items():
+                    logging.debug(
+                        "key=%s val=%s macro=%s vmacro1=%s vmacro2=%s",
+                        key,
+                        val,
+                        macro,
+                        vmacro1,
+                        vmacro2,
+                    )
+                    if key.find("#") > 0:
+                        key = self.get_nml_value_from_string(self.nml, key, sep=sep)
+                    pkey = key.replace(f"@{macro}@", vmacro1)
+                    pval = val.replace(f"@{macro}@", vmacro2)
+                    processed_data.update({pkey: pval})
+
+        logging.debug("Processed data=%s", processed_data)
+        return processed_data
+
+    def process_macro(self, key, val, macros, sep="#", indices=None):
+        """Process macro.
+
+        Args:
+            key (str): Key
+            val (str): Value
+            macros (dict): Macros
+            sep (str, optional): Namelist key separator. Defaults to "#".
+            indices (list, optional): Process macro from namelist indices.
+
+        Raises:
+            NotImplementedError: Only 2 dimensions are implemented
+
+        Returns:
+            dict: Key, value dictionary
+        """
+        logging.debug("macros=%s", macros)
+        if macros is None:
+            return key, val
+
+        logging.debug("indices=%s", indices)
+        if indices is None:
+            return key, val
+
+        pkey = key
+        pval = val
+        for macro in macros:
+            lindex = None
+            if len(indices) == 2:
+                if macro == "DECADE":
+                    lindex = indices[1]
+                else:
+                    lindex = indices[0]
+            elif len(indices) == 1:
+                lindex = indices[0]
+            elif len(indices) > 2:
+                raise NotImplementedError("Only 2 dimensions are implemented")
+
+            vmacro = None
+            if lindex is not None:
+                try:
+                    macro_defs = macros[macro]
+                    logging.debug("macro_defs=%s", macro_defs)
+                except KeyError:
+                    logging.warning(
+                        "Macro %s not defined. Use index value %s", macro, lindex
+                    )
+                    vmacro = str(lindex + 1)
+
+                if macro == "VTYPE":
+                    vmacro = str(lindex + 1)
+                elif "DECADE" in macros:
+                    ntime = self.read_macro_setting(macro_defs, "ntime", sep=sep)
+                    dec_days = int(360 / float(ntime))
+                    dec_start = int(dec_days / 2)
+                    dec_end = 360 + dec_start
+                    dec = 0
+                    for day in range(dec_start, dec_end, dec_days):
+                        logging.debug("day=%s, dec=%s lindex=%s", day, dec, lindex)
+                        month = int(day / 30) + 1
+                        mday = int(day % 30)
+                        if dec == lindex:
+                            vmacro = f"{month:02d}{mday:02d}"
+                        dec += 1
+
+                logging.debug(
+                    "Substitute @%s@ with %s pkey=%s pval=%s", macro, vmacro, pkey, pval
+                )
+                if isinstance(pkey, str):
+                    pkey = pkey.replace(f"@{macro}@", vmacro)
+                if isinstance(pval, str):
+                    pval = pval.replace(f"@{macro}@", vmacro)
+                logging.debug(
+                    "Substitute @%s@ with %s pkey=%s pval=%s", macro, vmacro, pkey, pval
+                )
+        return pkey, pval
+
+    def matching_value(self, data, val, sep="#", indices=None):
+        """Match the value. Possibly also read namelist value.
+
+        Args:
+            data (dict): Data to check keys for
+            val (str): Key to find
+            sep (str, optional): Namelist separator. Defaults to "#".
+            indices(list, optional): Indices in namelist
+
+        Raises:
+            RuntimeError: "Malformed input data"
+
+        Returns:
+            dict: Matching entry in data.
+
+        """
+        if val == "macro" or val == "extenders":
+            return None
+        logging.debug("type(data)=%s", type(data))
+        logging.debug("type(val)=%s", type(val))
+        logging.debug("indices=%s", indices)
+        if isinstance(data, dict):
+            mdata = data.keys()
+        else:
+            mdata = [data]
+        val = str(val)
+        logging.debug("Check if val=%s matches mdata=%s", val, mdata)
+        sval = None
+        for mval in mdata:
+            if val.find(sep) > 0:
+                logging.debug("val=%s is a namelist variable", val)
+                sval = self.get_nml_value_from_string(self.nml, val, indices=indices)
+                logging.debug("Got sval=%s", sval)
+                if sval is None:
+                    return None
+                indices = sval[0]["indices"]
+                sval = sval[0]["value"]
+            if mval == val:
+                logging.debug("Found matching data. val=%s data=%s", val, data)
+                try:
+                    rval = data[val]
+                except TypeError:
+                    raise RuntimeError("Malformed input data") from TypeError
+                if sval is not None:
+                    rval = {sval: rval}
+                logging.debug("Return data rval=%s", rval)
+                return rval
+        logging.warning("Value=%s not found in data", val)
+        return None
+
+    def process_data(self, sep="#"):
+        """Process input definitions on files to map.
+
+        Args:
+            sep (str, optional): Namelist separator. Defaults to "#".
+
+        Returns:
+            mapped_data (dict): A dict with mapped local names and target files.
+
+        """
+        logging.debug("Process data: %s", self.data)
+
+        def _process_data(mapped_data, data, indices=None, macros=None, extenders=None):
+            for key, value in data.items():
+                logging.debug(".................. key=%s", key)
+                # Required namelist variable
+                if key.find(sep) > 0:
+                    vals = self.get_nml_value_from_string(self.nml, key, indices=indices)
+                else:
+                    vals = [{"value": value, "indices": None}]
+
+                if isinstance(vals, list):
+                    for val_dict in vals:
+                        logging.debug("=========== val_dict=%s", val_dict)
+                        val = val_dict["value"]
+                        indices = val_dict["indices"]
+
+                        setting = self.matching_value(
+                            value, val, sep=sep, indices=indices
                         )
-                        + "."
-                        + extension
-                    )
+                        logging.debug("Setting=%s", setting)
+                        if setting is not None:
+                            if "macros" in setting:
+                                macros = setting.copy()
+                                macros = macros["macros"]
+                            if "extenders" in setting:
+                                extenders = setting.copy()
+                                extenders = extenders["extenders"]
 
-                # TODO depending on when perturbations are run
-                pert_run = self.system_file_paths.get_system_file(
-                    data_dir,
-                    pert_fp,
-                    validtime=self.dtg,
-                    basedtg=fg_dtg,
-                    check_existence=check_existence,
-                    default_dir="assim_dir",
-                    pert=pert_input,
-                )
+                            last_dict = True
+                            if isinstance(setting, dict):
+                                for __, tval in setting.items():
+                                    if isinstance(tval, dict):
+                                        last_dict = False
+                            else:
+                                print(setting)
+                            if not last_dict:
+                                logging.debug(
+                                    "------ Call next loop. setting=%s", setting
+                                )
+                                _process_data(
+                                    mapped_data,
+                                    setting,
+                                    indices=indices,
+                                    macros=macros,
+                                    extenders=extenders,
+                                )
+                            else:
+                                for key2, value2 in setting.items():
+                                    logging.debug(
+                                        "Setting1 key=%s value=%s indices=%s",
+                                        key2,
+                                        value2,
+                                        indices,
+                                    )
+                                    if key2.find(sep) > 0:
+                                        keys = self.get_nml_value_from_string(
+                                            self.nml, key2, indices=indices
+                                        )
+                                        key2 = keys[0]["value"]
 
-                target = (
-                    "PREP_"
-                    + cyy
-                    + cmm
-                    + cdd
-                    + "H"
-                    + chh
-                    + "_EKF_PERT"
-                    + str(pert_ekf)
-                    + "."
-                    + extension
-                )
-                ekf_settings.update({target: pert_run})
-                pert_ekf = pert_ekf + 1
+                                    processed = False
+                                    logging.debug(
+                                        "Setting2 key=%s value=%s indices=%s",
+                                        key2,
+                                        value2,
+                                        indices,
+                                    )
+                                    if macros is not None:
+                                        processed = True
+                                        key3, value3 = self.process_macro(
+                                            key2, value2, macros, indices=indices
+                                        )
+                                        if value3.endswith(".dir"):
+                                            dir_key = key3 + ".dir"
+                                            dir_val = value3
+                                            hdr_key = key3 + ".hdr"
+                                            hdr_val = value3.replace(".dir", ".hdr")
+                                            hdr_key, hdr_val = self.substitute(
+                                                hdr_key, hdr_val
+                                            )
+                                            dir_key, dir_val = self.substitute(
+                                                dir_key, dir_val
+                                            )
+                                            mapped_data.update({hdr_key: hdr_val})
+                                            mapped_data.update({dir_key: dir_val})
+                                        elif value3.endswith(".nc"):
+                                            my_key, my_val = self.substitute(key3, value3)
+                                            logging.debug(
+                                                "my_key=%s, my_val=%s", my_key, my_val
+                                            )
+                                            if not my_key.endswith(".nc"):
+                                                my_key = my_key + ".nc"
+                                            mapped_data.update({my_key: my_val})
+                                        else:
+                                            my_key, my_val = self.substitute(key3, value3)
+                                            mapped_data.update({my_key: my_val})
 
-        # LSM
-        # Fetch first_guess needed for LSM for extrapolations
-        if self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
-            cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
-            if cfile_format_lsm.upper() == "ASCII":
-                target = "LSM.DAT"
-            elif cfile_format_lsm.upper() == "FA":
-                target = "FG_OI_MAIN"
-            else:
-                raise NotImplementedError(cfile_format_lsm)
+                                    if extenders is not None:
+                                        processed = True
+                                        processed_values = self.extend_macro(
+                                            key2, value2, extenders
+                                        )
+                                        for pkey3, pval3 in processed_values.items():
+                                            logging.debug(
+                                                "pkey3=%s pval3=%s", pkey3, pval3
+                                            )
+                                            pkey3, pval3 = self.substitute(pkey3, pval3)
+                                            logging.debug(
+                                                "pkey3=%s pval3=%s", pkey3, pval3
+                                            )
+                                            mapped_data.update({pkey3: pval3})
 
-            data_dir = "lsm_dir"
-            lsmfile = self.system_file_paths.get_system_file(
-                data_dir,
-                target,
-                default_dir="assim_dir",
-                validtime=self.dtg,
-                basedtg=fg_dtg,
-                check_existence=check_existence,
-            )
-            ekf_settings.update({target: lsmfile})
-        return ekf_settings
+                                    if not processed:
+                                        pkey3 = key2
+                                        pval3 = value2
+                                        logging.debug("pkey3=%s pval3=%s", pkey3, pval3)
+                                        if pval3.endswith(".nc"):
+                                            if not pkey3.endswith(".nc"):
+                                                pkey3 = pkey3 + ".nc"
+                                        pkey3, pval3 = self.substitute(pkey3, pval3)
+                                        mapped_data.update({pkey3: pval3})
 
-    def set_input_vertical_soil_enkf(
-        self, check_existence=True, masterodb=True, pert_fp=None, geo=None
-    ):
-        """Input data for ENKF in soil.
+                                indices = None
+                        else:
+                            if key not in ["macros", "extenders"]:
+                                logging.warning(
+                                    "Could not match key=%s value=%s", key, val
+                                )
+                else:
+                    logging.warning("Could not find namelist key=%s", key)
+                    indices = None
 
-        Args:
-            check_existence (bool, optional): Check if files exist. Defaults to True.
-            masterodb (bool, optional): Files produced with masterodb. Defaults to True.
-            pert_fp (str, optional): File pattern for perturbed files. Defaults to None.
-            geo (surfex.geo.Geo, optional): Geometry. Defaults to None.
-
-        Returns:
-            enkf_settings(dict): ENKF input data
-
-        Raises:
-            NotImplementedError: File type not implemented
-            RuntimeError: You must set DTG
-
-        """
-        if self.dtg is None:
-            raise RuntimeError("You must set DTG")
-
-        cyy = self.dtg.strftime("%y")
-        cmm = self.dtg.strftime("%m")
-        cdd = self.dtg.strftime("%d")
-        chh = self.dtg.strftime("%H")
-        enkf_settings = {}
-
-        # First guess for SURFEX
-        csurf_filetype = self.config.get_setting("SURFEX#IO#CSURF_FILETYPE").lower()
-
-        # TODO
-        fcint = 3
-        fg_dtg = self.dtg - as_timedelta(seconds=fcint * 3600)
-        fgf = self.config.get_setting(
-            "SURFEX#IO#CSURFFILE", validtime=self.dtg, basedtg=fg_dtg
-        )
-        if csurf_filetype == "ascii":
-            fg_file = AsciiSurfexFile(fgf, geo=geo)
-            fgf = fg_file.filename
-        elif csurf_filetype == "nc":
-            fg_file = NCSurfexFile(fgf, geo=geo)
-            fgf = fg_file.filename
-        elif csurf_filetype == "fa":
-            lfagmap = self.config.get_setting("SURFEX#IO#LFAGMAP")
-            # TODO for now assume that first guess always is a inline forecast with FA format
-            fg_file = FaSurfexFile(fgf, lfagmap=lfagmap, geo=geo, masterodb=masterodb)
-            fgf = fg_file.filename
-        else:
-            raise NotImplementedError
-
-        data_dir = "first_guess_dir"
-        first_guess = self.system_file_paths.get_system_file(
-            data_dir,
-            fgf,
-            default_dir="assim_dir",
-            validtime=self.dtg,
-            basedtg=fg_dtg,
-            check_existence=check_existence,
-        )
-
-        # We newer run inline model for perturbations or in SODA
-        extension = fg_file.extension
-        if csurf_filetype == "fa":
-            extension = "fa"
-
-        nens_m = self.config.get_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M")
-
-        enkf_settings.update({"PREP_INIT." + extension: first_guess})
-        enkf_settings.update(
-            {"PREP_" + cyy + cmm + cdd + "H" + chh + "." + extension: first_guess}
-        )
-        enkf_settings.update(
-            {
-                "PREP_"
-                + cyy
-                + cmm
-                + cdd
-                + "H"
-                + chh
-                + "_EKF_ENS"
-                + str(nens_m)
-                + "."
-                + extension: first_guess
-            }
-        )
-
-        for ppp in range(0, nens_m):
-            data_dir = "perturbed_run_dir"
-            if pert_fp is None:
-                logging.info("Use default CSURFFILE for perturbed file names")
-                perturbed_file_pattern = (
-                    self.config.get_setting("SURFEX#IO#CSURFFILE", check_parsing=False)
-                    + "."
-                    + extension
-                )
-
-            # TODO depending on when perturbations are run
-            perturbed_run = self.system_file_paths.get_system_file(
-                data_dir,
-                perturbed_file_pattern,
-                validtime=self.dtg,
-                basedtg=fg_dtg,
-                check_existence=check_existence,
-                default_dir="assim_dir",
-                pert=ppp,
-            )
-
-            target = (
-                "PREP_"
-                + cyy
-                + cmm
-                + cdd
-                + "H"
-                + chh
-                + "_EKF_ENS"
-                + str(ppp)
-                + "."
-                + extension
-            )
-            enkf_settings.update({target: perturbed_run})
-
-        # LSM
-        # Fetch first_guess needed for LSM for extrapolations
-        if self.config.get_setting("SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER"):
-            cfile_format_lsm = self.config.get_setting("SURFEX#ASSIM#CFILE_FORMAT_LSM")
-            if cfile_format_lsm.upper() == "ASCII":
-                target = "LSM.DAT"
-            elif cfile_format_lsm.upper() == "FA":
-                target = "FG_OI_MAIN"
-            else:
-                raise NotImplementedError(cfile_format_lsm)
-
-            data_dir = "lsm_dir"
-            lsmfile = self.system_file_paths.get_system_file(
-                data_dir,
-                target,
-                default_dir="assim_dir",
-                validtime=self.dtg,
-                basedtg=fg_dtg,
-                check_existence=check_existence,
-            )
-            enkf_settings.update({target: lsmfile})
-        return enkf_settings
+        mapped_data = {}
+        _process_data(mapped_data, self.data)
+        logging.debug("Mapped data=%s", mapped_data)
+        return mapped_data

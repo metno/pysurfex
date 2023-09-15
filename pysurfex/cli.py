@@ -14,9 +14,9 @@ except ModuleNotFoundError:
     plt = None
 
 
-from .binary_input import (
+from .binary_input import JsonOutputDataFromFile
+from .binary_input_legacy import (
     InlineForecastInputData,
-    JsonOutputDataFromFile,
     OfflineInputData,
     PgdInputData,
     PrepInputData,
@@ -27,6 +27,7 @@ from .cmd_parsing import (
     parse_args_bufr2json,
     parse_args_create_forcing,
     parse_args_create_namelist,
+    parse_args_dump_environ,
     parse_args_first_guess_for_oi,
     parse_args_gridpp,
     parse_args_hm2pysurfex,
@@ -58,7 +59,8 @@ from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
 from .grib import Grib1Variable, Grib2Variable
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
-from .namelist import BaseNamelist, Namelist
+from .namelist import NamelistGenerator
+from .namelist_legacy import BaseNamelist, Namelist
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
@@ -69,7 +71,7 @@ from .netcdf import (
 )
 from .obs import Observation, sm_obs_sentinel, snow_pseudo_obs_cryoclim
 from .obsmon import write_obsmon_sqlite_file
-from .platform import SystemFilePathsFromFile
+from .platform_deps import SystemFilePathsFromFile
 from .read import ConvertedInput, Converter
 from .run import BatchJob, Masterodb, PerturbedOffline, SURFEXBinary
 from .titan import (
@@ -291,6 +293,19 @@ def run_masterodb(**kwargs):
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
+        if dtg is not None:
+            config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
+    try:
+        basetime = kwargs["basetime"]
+        if isinstance(basetime, str):
+            basetime = as_datetime(basetime)
+    except KeyError:
+        basetime = None
+
+    try:
+        input_binary_data = kwargs["input_binary_data"]
+    except KeyError:
+        input_binary_data = None
 
     # TODO
     perturbed_file_pattern = None
@@ -315,32 +330,52 @@ def run_masterodb(**kwargs):
             raise FileNotFoundError
 
     if mode == "forecast":
-        input_data = InlineForecastInputData(
-            config, system_file_paths, check_existence=check_existence
-        )
         mode = "offline"
     elif mode == "canari":
-        input_data = SodaInputData(
-            config,
-            system_file_paths,
-            check_existence=check_existence,
-            perturbed_file_pattern=perturbed_file_pattern,
-            dtg=dtg,
-        )
         mode = "soda"
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
-    blocks = False
-    if blocks:
-        my_settings = Namelist(
-            mode, config, namelist_path, dtg=dtg, fcint=3
-        ).get_namelist()
+    if os.path.isfile(namelist_path):
+        with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
+            nam_defs = yaml.safe_load(file_handler)
+        nam_gen = NamelistGenerator(mode, config, nam_defs)
+        my_settings = nam_gen.nml
+        if input_binary_data is None:
+            raise RuntimeError("input_binary_data not set")
+        with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
+            input_binary_data = json.load(file_handler)
+        input_data = nam_gen.input_data_from_namelist(
+            input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
+        )
+    elif os.path.isdir(namelist_path):
+        if mode == "offline":
+            input_data = InlineForecastInputData(
+                config, system_file_paths, check_existence=check_existence
+            )
+        elif mode == "soda":
+            input_data = SodaInputData(
+                config,
+                system_file_paths,
+                check_existence=check_existence,
+                perturbed_file_pattern=perturbed_file_pattern,
+                dtg=dtg,
+            )
+        else:
+            raise NotImplementedError(mode + " is not implemented!")
+
+        blocks = False
+        if blocks:
+            my_settings = Namelist(
+                mode, config, namelist_path, dtg=dtg, fcint=3
+            ).get_namelist()
+        else:
+            my_settings = BaseNamelist(
+                mode, config, namelist_path, dtg=dtg, fcint=3
+            ).get_namelist()
+        geo.update_namelist(my_settings)
     else:
-        my_settings = BaseNamelist(
-            mode, config, namelist_path, dtg=dtg, fcint=3
-        ).get_namelist()
-    geo.update_namelist(my_settings)
+        raise NotImplementedError
 
     # Create input
     my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -435,15 +470,27 @@ def run_surfex_binary(mode, **kwargs):
     prep_input_file = None
     if "prep_file" in kwargs:
         prep_input_file = kwargs["prep_file"]
+    config.update_setting("SURFEX#PREP#FILE_WITH_PATH", prep_input_file)
+    basename = prep_input_file
+    if basename is not None:
+        basename = os.path.basename(basename)
+    config.update_setting("SURFEX#PREP#FILE", basename)
     prep_input_pgdfile = None
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
+    config.update_setting("SURFEX#PREP#PGDFILE_WITH_PATH", prep_input_pgdfile)
+    basename = prep_input_pgdfile
+    if basename is not None:
+        basename = os.path.basename(basename)
+    config.update_setting("SURFEX#PREP#FILEPGD", basename)
     prep_input_filetype = None
     if "prep_filetype" in kwargs:
         prep_input_filetype = kwargs["prep_filetype"]
+    config.update_setting("SURFEX#PREP#FILETYPE", prep_input_filetype)
     prep_input_pgdfiletype = None
     if "prep_pgdfiletype" in kwargs:
         prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
+    config.update_setting("SURFEX#PREP#FILEPGDTYPE", prep_input_pgdfiletype)
 
     # TODO
     perturbed_file_pattern = None
@@ -455,46 +502,15 @@ def run_surfex_binary(mode, **kwargs):
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
+    if dtg is not None:
+        config.update_setting("SURFEX#PREP#NYEAR", dtg.year)
+        config.update_setting("SURFEX#PREP#NMONTH", dtg.month)
+        config.update_setting("SURFEX#PREP#NDAY", dtg.day)
+        xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
+        config.update_setting("SURFEX#PREP#XTIME", xtime)
+        config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
 
     logging.debug("kwargs: %s", str(kwargs))
-    if mode == "pgd":
-        pgd = True
-        need_pgd = False
-        need_prep = False
-        input_data = PgdInputData(
-            config, system_file_paths, check_existence=check_existence
-        )
-    elif mode == "prep":
-        prep = True
-        need_prep = False
-        input_data = PrepInputData(
-            config,
-            system_file_paths,
-            check_existence=check_existence,
-            prep_file=prep_input_file,
-            prep_pgdfile=prep_input_pgdfile,
-        )
-    elif mode == "offline":
-        input_data = OfflineInputData(
-            config, system_file_paths, check_existence=check_existence
-        )
-    elif mode == "soda":
-        input_data = SodaInputData(
-            config,
-            system_file_paths,
-            check_existence=check_existence,
-            masterodb=kwargs["masterodb"],
-            perturbed_file_pattern=perturbed_file_pattern,
-            dtg=dtg,
-        )
-    elif mode == "perturbed":
-        perturbed = True
-        input_data = OfflineInputData(
-            config, system_file_paths, check_existence=check_existence
-        )
-    else:
-        raise NotImplementedError(mode + " is not implemented!")
-
     binary = kwargs["binary"]
     rte = kwargs["rte"]
     wrapper = kwargs["wrapper"]
@@ -508,6 +524,22 @@ def run_surfex_binary(mode, **kwargs):
     forc_zs = False
     if "forc_zs" in kwargs:
         forc_zs = kwargs["forc_zs"]
+
+    if mode == "pgd":
+        pgd = True
+        need_pgd = False
+        need_prep = False
+    elif mode == "prep":
+        prep = True
+        need_prep = False
+    elif mode == "offline":
+        pass
+    elif mode == "soda":
+        pass
+    elif mode == "perturbed":
+        perturbed = True
+    else:
+        raise NotImplementedError(mode + " is not implemented!")
 
     pgd_file_path = None
     if need_pgd:
@@ -524,6 +556,18 @@ def run_surfex_binary(mode, **kwargs):
     if "negpert" in kwargs:
         negpert = kwargs["negpert"]
 
+    try:
+        basetime = kwargs["basetime"]
+        if isinstance(basetime, str):
+            basetime = as_datetime(basetime)
+    except KeyError:
+        basetime = None
+
+    try:
+        input_binary_data = kwargs["input_binary_data"]
+    except KeyError:
+        input_binary_data = None
+
     if os.path.exists(rte):
         with open(rte, mode="r", encoding="utf-8") as file_handler:
             rte = json.load(file_handler)
@@ -538,35 +582,92 @@ def run_surfex_binary(mode, **kwargs):
         else:
             raise FileNotFoundError("File not found: " + archive)
 
-    if not os.path.exists(output) or force:
-        blocks = False
-        if blocks:
-            my_settings = Namelist(
-                mode,
-                config,
-                namelist_path,
-                forc_zs=forc_zs,
-                prep_file=prep_input_file,
-                prep_filetype=prep_input_filetype,
-                prep_pgdfile=prep_input_pgdfile,
-                prep_pgdfiletype=prep_input_pgdfiletype,
-                dtg=dtg,
-                fcint=3,
-            ).get_namelist()
+    if not (output is not None and os.path.exists(output)) or force:
+        if os.path.isfile(namelist_path):
+            with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
+                nam_defs = yaml.safe_load(file_handler)
+            nam_gen = NamelistGenerator(mode, config, nam_defs)
+
+            my_settings = nam_gen.nml
+            if mode == "pgd":
+                my_settings = geo.update_namelist(my_settings)
+            if input_binary_data is None:
+                raise RuntimeError("input_binary_data not set")
+            with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
+                input_binary_data = json.load(file_handler)
+
+            input_data = nam_gen.input_data_from_namelist(
+                input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
+            )
+        elif os.path.isdir(namelist_path):
+            if mode == "pgd":
+                pgd = True
+                need_pgd = False
+                need_prep = False
+                input_data = PgdInputData(
+                    config, system_file_paths, check_existence=check_existence
+                )
+            elif mode == "prep":
+                prep = True
+                need_prep = False
+                input_data = PrepInputData(
+                    config,
+                    system_file_paths,
+                    check_existence=check_existence,
+                    prep_file=prep_input_file,
+                    prep_pgdfile=prep_input_pgdfile,
+                )
+            elif mode == "offline":
+                input_data = OfflineInputData(
+                    config, system_file_paths, check_existence=check_existence
+                )
+            elif mode == "soda":
+                input_data = SodaInputData(
+                    config,
+                    system_file_paths,
+                    check_existence=check_existence,
+                    masterodb=kwargs["masterodb"],
+                    perturbed_file_pattern=perturbed_file_pattern,
+                    dtg=dtg,
+                )
+            elif mode == "perturbed":
+                perturbed = True
+                input_data = OfflineInputData(
+                    config, system_file_paths, check_existence=check_existence
+                )
+            else:
+                raise NotImplementedError(mode + " is not implemented!")
+
+            blocks = False
+            if blocks:
+                my_settings = Namelist(
+                    mode,
+                    config,
+                    namelist_path,
+                    forc_zs=forc_zs,
+                    prep_file=prep_input_file,
+                    prep_filetype=prep_input_filetype,
+                    prep_pgdfile=prep_input_pgdfile,
+                    prep_pgdfiletype=prep_input_pgdfiletype,
+                    dtg=dtg,
+                    fcint=3,
+                ).get_namelist()
+            else:
+                my_settings = BaseNamelist(
+                    mode,
+                    config,
+                    namelist_path,
+                    forc_zs=forc_zs,
+                    prep_file=prep_input_file,
+                    prep_filetype=prep_input_filetype,
+                    prep_pgdfile=prep_input_pgdfile,
+                    prep_pgdfiletype=prep_input_pgdfiletype,
+                    dtg=dtg,
+                    fcint=3,
+                ).get_namelist()
+            geo.update_namelist(my_settings)
         else:
-            my_settings = BaseNamelist(
-                mode,
-                config,
-                namelist_path,
-                forc_zs=forc_zs,
-                prep_file=prep_input_file,
-                prep_filetype=prep_input_filetype,
-                prep_pgdfile=prep_input_pgdfile,
-                prep_pgdfiletype=prep_input_pgdfiletype,
-                dtg=dtg,
-                fcint=3,
-            ).get_namelist()
-        geo.update_namelist(my_settings)
+            raise NotImplementedError
 
         # Create input
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -578,6 +679,7 @@ def run_surfex_binary(mode, **kwargs):
             lfagmap = my_settings["nam_io_offline"]["lfagmap"]
 
         logging.debug("pgdfile=%s lfagmap=%s %s", my_pgdfile, lfagmap, pgd_file_path)
+        logging.debug("nam_io_offline=%s", my_settings["nam_io_offline"])
         if need_pgd:
             logging.debug("Need pgd")
             my_pgdfile = PGDFile(
@@ -674,89 +776,6 @@ def run_surfex_binary(mode, **kwargs):
 
     else:
         logging.info("%s already exists!", output)
-
-
-def run_create_namelist(**kwargs):
-    """Create a namelist."""
-    logging.debug("ARGS: %s", kwargs)
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
-    mode = kwargs.get("mode")
-
-    system_file_paths = kwargs["system_file_paths"]
-    if os.path.exists(system_file_paths):
-        system_file_paths = SystemFilePathsFromFile(system_file_paths)
-    else:
-        raise FileNotFoundError("File not found: " + system_file_paths)
-
-    if "forcing_dir" in kwargs:
-        system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
-
-    prep_input_file = None
-    if "prep_file" in kwargs:
-        prep_input_file = kwargs["prep_file"]
-    prep_input_pgdfile = None
-    if "prep_pgdfile" in kwargs:
-        prep_input_pgdfile = kwargs["prep_pgdfile"]
-    prep_input_filetype = None
-    if "prep_filetype" in kwargs:
-        prep_input_filetype = kwargs["prep_filetype"]
-    prep_input_pgdfiletype = None
-    if "prep_pgdfiletype" in kwargs:
-        prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
-
-    # TODO
-    perturbed_file_pattern = None
-    if perturbed_file_pattern in kwargs:
-        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
-
-    output = kwargs.get("output")
-    if output is None:
-        output = "OPTIONS.nam"
-    dtg = None
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = as_datetime(kwargs["dtg"])
-            kwargs.update({"dtg": dtg})
-
-    logging.debug("kwargs: %s", str(kwargs))
-
-    namelist_path = kwargs["namelist_path"]
-    forc_zs = False
-    if "forc_zs" in kwargs:
-        forc_zs = kwargs["forc_zs"]
-
-    if kwargs.get("method") == "blocks":
-        my_settings = Namelist(
-            mode,
-            config,
-            namelist_path,
-            forc_zs=forc_zs,
-            prep_file=prep_input_file,
-            geo=geo,
-            prep_filetype=prep_input_filetype,
-            prep_pgdfile=prep_input_pgdfile,
-            prep_pgdfiletype=prep_input_pgdfiletype,
-            dtg=dtg,
-            fcint=3,
-        ).get_namelist()
-    else:
-        my_settings = BaseNamelist(
-            mode,
-            config,
-            namelist_path,
-            forc_zs=forc_zs,
-            prep_file=prep_input_file,
-            prep_filetype=prep_input_filetype,
-            prep_pgdfile=prep_input_pgdfile,
-            prep_pgdfiletype=prep_input_pgdfiletype,
-            geo=geo,
-            dtg=dtg,
-            fcint=3,
-        ).get_namelist()
-    geo.update_namelist(my_settings)
-    if os.path.exists(output):
-        os.remove(output)
-    my_settings.write(output)
 
 
 def run_gridpp(**kwargs):
@@ -1544,7 +1563,9 @@ def dump_environ(argv=None):
     """
     if argv is None:
         argv = sys.argv[1:]
-    with open("rte.json", mode="w", encoding="utf-8") as file_handler:
+    kwargs = parse_args_dump_environ(argv)
+    outputfile = kwargs["outputfile"]
+    with open(outputfile, mode="w", encoding="utf-8") as file_handler:
         json.dump(os.environ.copy(), file_handler)
 
 
@@ -1617,6 +1638,10 @@ def create_namelist(argv=None):
 
     Args:
         argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        FileNotFoundError: "File not found:"
+
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -1633,7 +1658,34 @@ def create_namelist(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ %s ******************", mode)
-    run_create_namelist(**kwargs)
+
+    logging.debug("ARGS: %s", kwargs)
+    config, __ = get_geo_and_config_from_cmd(**kwargs)
+    mode = kwargs.get("mode")
+
+    system_file_paths = kwargs["system_file_paths"]
+    if os.path.exists(system_file_paths):
+        system_file_paths = SystemFilePathsFromFile(system_file_paths)
+    else:
+        raise FileNotFoundError("File not found: " + system_file_paths)
+
+    output = kwargs.get("output")
+    if output is None:
+        output = "OPTIONS.nam"
+
+    namelist_path = kwargs.get("namelist_path")
+
+    with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
+        nam_defs = yaml.safe_load(file_handler)
+
+    config.update_setting("SURFEX#PREP#FILE", None)
+    config.update_setting("SURFEX#PREP#FILEPGD", None)
+    config.update_setting("SURFEX#SODA#HH", "00")
+
+    my_settings = NamelistGenerator(mode, config, nam_defs)
+    if os.path.exists(output):
+        os.remove(output)
+    my_settings.write(output)
 
 
 def create_lsm_file_assim(argv=None):

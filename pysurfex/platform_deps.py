@@ -260,6 +260,7 @@ class SystemFilePaths(object):
         tstep=None,
         pert=None,
         var=None,
+        micro="@",
     ):
         """Parse setting with date/time/experiment specific values.
 
@@ -272,6 +273,7 @@ class SystemFilePaths(object):
             tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
             pert (int): Parse setting with this as perturbation number @PERT@
             var (str): Parse setting with this as the variable (@VAR@)
+            micro (str, optional): Micro character. Defaults to "@"
 
         Raises:
             RuntimeError: Setting was not substituted properly?
@@ -298,61 +300,108 @@ class SystemFilePaths(object):
 
             if basedtg is not None and validtime is not None:
                 lead_time = validtime - basedtg
-                setting = str(setting).replace("@YYYY_LL@", validtime.strftime("%Y"))
-                setting = str(setting).replace("@MM_LL@", validtime.strftime("%m"))
-                setting = str(setting).replace("@DD_LL@", validtime.strftime("%d"))
-                setting = str(setting).replace("@HH_LL@", validtime.strftime("%H"))
-                setting = str(setting).replace("@mm_LL@", validtime.strftime("%M"))
+                setting = str(setting).replace(
+                    f"{micro}YYYY_LL{micro}", validtime.strftime("%Y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}MM_LL{micro}", validtime.strftime("%m")
+                )
+                setting = str(setting).replace(
+                    f"{micro}DD_LL{micro}", validtime.strftime("%d")
+                )
+                setting = str(setting).replace(
+                    f"{micro}HH_LL{micro}", validtime.strftime("%H")
+                )
+                setting = str(setting).replace(
+                    f"{micro}mm_LL{micro}", validtime.strftime("%M")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_YYYY{micro}", basedtg.strftime("%Y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_YY{micro}", basedtg.strftime("%y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_MM{micro}", basedtg.strftime("%m")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_DD{micro}", basedtg.strftime("%d")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_HH{micro}", basedtg.strftime("%H")
+                )
+                setting = str(setting).replace(
+                    f"{micro}FG_mm{micro}", basedtg.strftime("%M")
+                )
                 lead_seconds = int(lead_time.total_seconds())
                 lead_hours = int(lead_seconds / 3600)
-                setting = str(setting).replace("@LL@", f"{lead_hours:02d}")
-                setting = str(setting).replace("@LLL@", f"{lead_hours:03d}")
-                setting = str(setting).replace("@LLLL@", f"{lead_hours:04d}")
+                setting = str(setting).replace(f"{micro}LL{micro}", f"{lead_hours:02d}")
+                setting = str(setting).replace(f"{micro}LLL{micro}", f"{lead_hours:03d}")
+                setting = str(setting).replace(f"{micro}LLLL{micro}", f"{lead_hours:04d}")
                 if tstep is not None:
                     lead_step = int(lead_seconds / tstep)
-                    setting = str(setting).replace("@TTT@", f"{lead_step:03d}")
-                    setting = str(setting).replace("@TTTT@", f"{lead_step:04d}")
+                    setting = str(setting).replace(
+                        f"{micro}TTT{micro}", f"{lead_step:03d}"
+                    )
+                    setting = str(setting).replace(
+                        f"{micro}TTTT{micro}", f"{lead_step:04d}"
+                    )
 
             if basedtg is not None:
-                setting = str(setting).replace("@YMD@", basedtg.strftime("%Y%m%d"))
-                setting = str(setting).replace("@YYYY@", basedtg.strftime("%Y"))
-                setting = str(setting).replace("@YY@", basedtg.strftime("%y"))
-                setting = str(setting).replace("@MM@", basedtg.strftime("%m"))
-                setting = str(setting).replace("@DD@", basedtg.strftime("%d"))
-                setting = str(setting).replace("@HH@", basedtg.strftime("%H"))
-                setting = str(setting).replace("@mm@", basedtg.strftime("%M"))
+                setting = str(setting).replace(
+                    f"{micro}YMD{micro}", basedtg.strftime("%Y%m%d")
+                )
+                setting = str(setting).replace(
+                    f"{micro}YYYY{micro}", basedtg.strftime("%Y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}YY{micro}", basedtg.strftime("%y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}MM{micro}", basedtg.strftime("%m")
+                )
+                setting = str(setting).replace(
+                    f"{micro}DD{micro}", basedtg.strftime("%d")
+                )
+                setting = str(setting).replace(
+                    f"{micro}HH{micro}", basedtg.strftime("%H")
+                )
+                setting = str(setting).replace(
+                    f"{micro}mm{micro}", basedtg.strftime("%M")
+                )
 
             if mbr is not None:
-                setting = str(setting).replace("@E@", f"mbr{int(mbr):d}")
-                setting = str(setting).replace("@EE@", f"mbr{int(mbr):02d}")
-                setting = str(setting).replace("@EEE@", f"mbr{int(mbr):03d}")
+                setting = str(setting).replace(f"{micro}E{micro}", f"mbr{int(mbr):d}")
+                setting = str(setting).replace(f"{micro}EE{micro}", f"mbr{int(mbr):02d}")
+                setting = str(setting).replace(f"{micro}EEE{micro}", f"mbr{int(mbr):03d}")
             else:
-                setting = str(setting).replace("@E@", "")
-                setting = str(setting).replace("@EE@", "")
-                setting = str(setting).replace("@EEE@", "")
+                setting = str(setting).replace(f"{micro}E{micro}", "")
+                setting = str(setting).replace(f"{micro}EE{micro}", "")
+                setting = str(setting).replace(f"{micro}EEE{micro}", "")
 
             if pert is not None:
                 logging.debug("replace %s in %s", pert, setting)
-                setting = str(setting).replace("@PERT@", str(pert))
+                setting = str(setting).replace(f"{micro}PERT{micro}", str(pert))
                 logging.debug("replaced %s in %s", pert, setting)
 
             if var is not None:
-                setting = str(setting).replace("@VAR@", var)
+                setting = str(setting).replace(f"{micro}VAR{micro}", var)
 
         if check_parsing:
-            if isinstance(setting, str) and setting.count("@") > 1:
+            if isinstance(setting, str) and setting.count(f"{micro}") > 1:
                 raise RuntimeError("Setting was not substituted properly? " + setting)
 
         return setting
 
     @staticmethod
-    def substitute_string(setting, system_variables=None):
+    def substitute_string(setting, system_variables=None, micro="@"):
         """Substitute setting if string with OS values of values from system_variables.
 
         Args:
             setting (str): if setting is string it can be subst
             system_variables (dict): Arbitrary settings to substitute @NAME@ =
                                      system_variables={"NAME": "Value"}
+            micro (str, optional): Micro character. Default to "@"
 
         Returns:
             setting: A setting possibly substituted if type is str
@@ -362,7 +411,9 @@ class SystemFilePaths(object):
             env_vals = ["USER", "HOME", "PWD"]
             for env_val in env_vals:
                 if env_val in os.environ:
-                    setting = setting.replace("@" + env_val + "@", os.environ[env_val])
+                    setting = setting.replace(
+                        f"{micro}" + env_val + f"{micro}", os.environ[env_val]
+                    )
                 else:
                     logging.debug("%s not found in environment", env_val)
 
@@ -371,7 +422,7 @@ class SystemFilePaths(object):
                 for var in system_variables:
                     logging.debug(var, system_variables)
                     setting = setting.replace(
-                        "@" + str(var) + "@", str(system_variables[var])
+                        f"{micro}" + str(var) + f"{micro}", str(system_variables[var])
                     )
 
         return setting

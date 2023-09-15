@@ -10,7 +10,7 @@ from pysurfex.geo import (
     get_geo_object,
     set_domain,
 )
-from pysurfex.namelist import BaseNamelist
+from pysurfex.namelist_legacy import BaseNamelist
 
 
 def test_geo_not_defined():

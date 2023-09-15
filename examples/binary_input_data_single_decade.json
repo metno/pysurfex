@@ -1,0 +1,24 @@
+{
+    "pgd": {
+        "NAM_FRAC#LECOSG": {
+            "True": {
+                "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_1015_c.dir"
+                    },
+                    "NETCDF":{
+                        "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_1015_c.nc"
+                    }
+                },
+                "NAM_DATA_ISBA#CFTYP_ALBVIS_SOIL": {
+                    "DIRTYP": {
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_1015_c.dir"
+                    },
+                    "NETCDF":{
+                        "NAM_DATA_ISBA#CFNAM_ALBVIS_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_VI_1015_c.nc"
+                    }
+                }
+            }
+        }
+    }
+}
