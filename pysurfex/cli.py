@@ -1624,11 +1624,11 @@ def cryoclim_pseudoobs(argv=None):
     indent = kwargs["indent"]
 
     grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(infiles)
-    fg_geo, validtime, grid_snow_fg, __, __ = read_first_guess_netcdf_file(
+    fg_geo, validtime, grid_snow_fg, glafs, gelevs = read_first_guess_netcdf_file(
         fg_file, varname
     )
     q_c = snow_pseudo_obs_cryoclim(
-        validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg
+        validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg, gelevs
     )
     q_c.write_output(output, indent=indent)
 

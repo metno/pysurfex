@@ -821,8 +821,9 @@ def snow_pseudo_obs_cryoclim(
     step,
     fg_geo,
     grid_snow_fg,
-    fg_threshold=2.0,
-    new_snow_depth=0.01,
+    gelevs_fg,
+    fg_threshold=.4,
+    new_snow_depth=0.1,
 ):
     """Cryoclim snow.
 
@@ -855,16 +856,20 @@ def snow_pseudo_obs_cryoclim(
     for __ in range(0, n_x):
         jjj = 0
         for __ in range(0, n_y):
-            res_lons.append(grid_lons[iii, jjj])
-            res_lats.append(grid_lats[iii, jjj])
-            p_snow_class.update({str(counter): grid_snow_class[0, iii, jjj]})
-            counter = counter + 1
+
+            if ( ( (grid_snow_class[0,iii,jjj] == 2) or (grid_snow_class[0,iii,jjj] == 1) ) and ((grid_lats[iii,jjj] < 90) and (grid_lats[iii,jjj] > 0.0)) and ((grid_lons[iii,jjj] < 180) and (grid_lons[iii,jjj] > -180.0)) ):
+                res_lons.append(grid_lons[iii, jjj])
+                res_lats.append(grid_lats[iii, jjj])
+                p_snow_class.update({str(counter): grid_snow_class[0, iii, jjj]})
+                print(grid_snow_class[0, iii, jjj])
+                counter = counter + 1
             jjj = jjj + step
         iii = iii + step
 
     p_fg_snow_depth = gridpos2points(
-        fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_snow_fg
-    )
+        fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_snow_fg)
+    p_fg_elevs = gridpos2points(
+        fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), gelevs_fg)
     in_grid = inside_grid(
         fg_geo.lons,
         fg_geo.lats,
@@ -887,7 +892,11 @@ def snow_pseudo_obs_cryoclim(
             # Check if in grid
             if in_grid[i]:
                 obs_value = np.nan
-                if p_snow_class[str(i)] == 1:
+                try:
+                  snow_class_val = p_snow_class[str(i)]
+                except KeyError:
+                  continue
+                if snow_class_val == 2:
                     if p_snow_fg > 0:
                         if fg_threshold is not None:
                             if p_snow_fg <= fg_threshold:
@@ -896,8 +905,8 @@ def snow_pseudo_obs_cryoclim(
                             obs_value = p_snow_fg
                     else:
                         obs_value = new_snow_depth
-                elif p_snow_class[str(i)] == 0:
-                    if p_snow_fg > 0:
+                elif snow_class_val == 1:
+                    if p_snow_fg >= 0.0:
                         obs_value = 0.0
 
                 if not np.isnan(obs_value):
@@ -906,7 +915,7 @@ def snow_pseudo_obs_cryoclim(
                     lafs.append(0)
                     providers.append(0)
                     obs.append(
-                        Observation(validtime, res_lons[i], res_lats[i], obs_value)
+                        Observation(validtime, res_lons[i], res_lats[i], obs_value,p_fg_elevs[i], varname="totalSnowDepth")
                     )
 
     logging.info("Possible pseudo-observations: %s", n_x * n_y)
