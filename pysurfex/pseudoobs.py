@@ -1,4 +1,4 @@
-"""Pseuodo-obs"""
+"""Pseuodo-obs."""
 
 
 import logging
@@ -28,19 +28,22 @@ def snow_pseudo_obs_cryoclim(
     """Cryoclim snow.
 
     Args:
-        validtime (_type_): _description_
-        grid_snow_class (_type_): _description_
-        grid_lons (_type_): _description_
-        grid_lats (_type_): _description_
-        step (_type_): _description_
-        fg_geo (_type_): _description_
-        grid_snow_fg (_type_): _description_
-        fg_threshold (float, optional): _description_. Defaults to 2.0.
-        new_snow_depth (float, optional): _description_. Defaults to 0.01.
+        validtime (as_datetime): Valid time
+        grid_snow_class (np.ndarray): Snow class
+        grid_lons (np.ndarray): Grid longitudes
+        grid_lats (np.ndarray): Grid latitudes
+        step (integer):  Step to process grid points.
+        fg_geo (Geo): Geometry
+        grid_snow_fg (np.ndarray): First guess snow
+        gelevs_fg (np.ndarray): Grid elevations
+        fg_threshold (float, optional): First guess threshold. Defaults to 2.0.
+        new_snow_depth (float, optional): New snow depth. Defaults to 0.01.
         glaf (np.ndarray, optional): LandAreaFraction. Defaults to None
-        laf_threshold(float): Threshold to remove points. Defaults to 0.1.,
+        laf_threshold(float): Threshold to remove points. Defaults to 0.1.
+
     Returns:
         list: List of observation objects
+
     """
     n_x = grid_lons.shape[0]
     n_y = grid_lons.shape[1]
@@ -166,17 +169,17 @@ def sm_obs_sentinel(
     """Sentinel.
 
     Args:
-        validtime (_type_): _description_
-        grid_sm_class (_type_): _description_
-        grid_lons (_type_): _description_
-        grid_lats (_type_): _description_
-        step (_type_): _description_
-        fg_geo (_type_): _description_
-        grid_sm_fg (_type_): _description_
-        fg_threshold (_type_, optional): _description_. Defaults to 1..
+        validtime (as_datetime): Valid time
+        grid_sm_class (np.ndarray): Soil moisture class
+        grid_lons (np.ndarray): Grid longitudes
+        grid_lats (np.ndarray): Grid latitudes
+        step (integer):  Step to process grid points.
+        fg_geo (Geo): Geometry
+        grid_sm_fg (_type_): First guess
+        fg_threshold (_type_, optional): First guess threshold. Defaults to 1..
 
     Returns:
-        _type_: _description_
+        list: Observations
 
     """
     n_x = grid_lons.shape[0]

@@ -17,9 +17,8 @@ except:  # noqa
 
 
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, utcfromtimestamp
-from .interpolation import gridpos2points, inside_grid
 from .observation import Observation
-from .titan import QCDataSet, dataset_from_file
+from .titan import dataset_from_file
 
 
 class ObservationSet(object):

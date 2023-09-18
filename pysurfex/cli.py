@@ -64,9 +64,7 @@ from .namelist_legacy import BaseNamelist, Namelist
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
-    read_cryoclim_nc,
     read_first_guess_netcdf_file,
-    read_sentinel_nc,
     write_analysis_netcdf_file,
 )
 from .obs import Observation

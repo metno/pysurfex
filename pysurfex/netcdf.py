@@ -984,8 +984,6 @@ def read_cryoclim_nc(infiles):
             grid_snow_class_read = ncf["classed_product"][:]
             if grid_snow_class is None:
                 grid_snow_class = grid_snow_class_read
-                # grid_snow_class[grid_snow_class_read == 1] = 1  # In the classed product 2=snow
-                # grid_snow_class[grid_snow_class_read == 0] = 0  # In the classed product 1=no snow
             ncf.close()
         else:
             logging.warning("Warning file %s does not exists", filename)
