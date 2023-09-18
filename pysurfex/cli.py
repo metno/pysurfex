@@ -69,9 +69,10 @@ from .netcdf import (
     read_sentinel_nc,
     write_analysis_netcdf_file,
 )
-from .obs import Observation, sm_obs_sentinel, snow_pseudo_obs_cryoclim
+from .obs import Observation
 from .obsmon import write_obsmon_sqlite_file
 from .platform_deps import SystemFilePathsFromFile
+from .pseudoobs import CryoclimObservationSet, SentinelObservationSet
 from .read import ConvertedInput, Converter
 from .run import BatchJob, Masterodb, PerturbedOffline, SURFEXBinary
 from .titan import (
@@ -1257,12 +1258,9 @@ def sentinel_obs(argv=None):
     varname = kwargs["varname"]
     indent = kwargs["indent"]
 
-    grid_lons, grid_lats, grid_sm_class = read_sentinel_nc(infiles)
     fg_geo, validtime, grid_sm_fg, __, __ = read_first_guess_netcdf_file(fg_file, varname)
-    q_c = sm_obs_sentinel(
-        validtime, grid_sm_class, grid_lons, grid_lats, step, fg_geo, grid_sm_fg
-    )
-    q_c.write_output(output, indent=indent)
+    obs_set = SentinelObservationSet(infiles, validtime, fg_geo, grid_sm_fg, step=step)
+    obs_set.write_json_file(output, indent=indent)
 
 
 def qc2obsmon(argv=None):
@@ -1612,7 +1610,7 @@ def cryoclim_pseudoobs(argv=None):
         )
     else:
         logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+            format="%(asctime)s %(levelname,)s %(message)s", level=logging.INFO
         )
     logging.info("************ cryoclim_pseudoobs ******************")
 
@@ -1622,15 +1620,22 @@ def cryoclim_pseudoobs(argv=None):
     output = kwargs["output"]
     varname = kwargs["varname"]
     indent = kwargs["indent"]
+    laf_threshold = kwargs["laf_threshold"]
 
-    grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(infiles)
     fg_geo, validtime, grid_snow_fg, glafs, gelevs = read_first_guess_netcdf_file(
         fg_file, varname
     )
-    q_c = snow_pseudo_obs_cryoclim(
-        validtime, grid_snow_class, grid_lons, grid_lats, step, fg_geo, grid_snow_fg, gelevs
+    obs_set = CryoclimObservationSet(
+        infiles,
+        validtime,
+        fg_geo,
+        grid_snow_fg,
+        gelevs,
+        step=step,
+        glaf=glafs,
+        laf_threshold=laf_threshold,
     )
-    q_c.write_output(output, indent=indent)
+    obs_set.write_json_file(output, indent=indent)
 
 
 def create_namelist(argv=None):

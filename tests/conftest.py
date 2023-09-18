@@ -684,6 +684,77 @@ land_area_fraction =
     return fname
 
 
+@pytest.fixture()
+def data_cryoclim_nc_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write(
+            """
+netcdf cryoclim {
+dimensions:
+        time = 1 ;
+        xc = 2 ;
+        yc = 3 ;
+variables:
+        int lambert_conformal_conic ;
+                lambert_conformal_conic:grid_mapping_name = "lambert_conformal_conic" ;
+                lambert_conformal_conic:standard_parallel = 63., 63. ;
+                lambert_conformal_conic:longitude_of_central_meridian = 15. ;
+                lambert_conformal_conic:latitude_of_projection_origin = 63. ;
+                lambert_conformal_conic:earth_radius = 6371000. ;
+                lambert_conformal_conic:proj4 = "+proj=lcc +lon_0=15 +lat_0=63 +lat_1=63 +lat_2=63 +R=6371000 +no_defs" ;
+        double time(time) ;
+                time:axis = "T" ;
+                time:long_name = "reference time of product" ;
+                time:standard_name = "time" ;
+                time:units = "seconds since 1978-01-01 00:00:00" ;
+                time:calendar = "standard" ;
+                time:bounds = "time_bnds" ;
+       double xc(xc) ;
+                xc:axis = "X" ;
+                xc:long_name = "x-coordinate in Cartesian system" ;
+                xc:standard_name = "projection_x_coordinate" ;
+                xc:units = "m" ;
+        double yc(yc) ;
+                yc:axis = "Y" ;
+                yc:long_name = "y-coordinate in Cartesian system" ;
+                yc:standard_name = "projection_y_coordinate" ;
+                yc:units = "m" ;
+        float lon(yc, xc) ;
+                lon:long_name = "longitude coordinate" ;
+                lon:standard_name = "longitude" ;
+                lon:units = "degrees_east" ;
+        float lat(yc, xc) ;
+                lat:long_name = "latitude coordinate" ;
+                lat:standard_name = "latitude" ;
+                lat:units = "degrees_north" ;
+        int classed_product(time, yc, xc) ;
+                classed_product:_FillValue = -99 ;
+                classed_product:least_significant_digit = 3 ;
+                classed_product:units = "1" ;
+                classed_product:long_name = "-1: ocean, 0: snow free, 1: snow, 3: clouded, 4: no data" ;
+                classed_product:coordinates = "lat lon" ;
+                classed_product:grid_mapping = "lambert_conformal_conic" ;
+
+data:
+
+time = 1425211200;
+
+lon = 10, 10.1, 10.0, 10.1, 10.0, 10.1;
+
+lat = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5;
+
+classed_product = 0, 1, 0, 3, 0, 4;
+}
+"""
+        )
+    Dataset(fname, mode="w").fromcdl(
+        cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
+    )
+    return fname
+
+
 class DummyFrostRequest:
     def __init__(self):
         """Construct dummy Frost request."""

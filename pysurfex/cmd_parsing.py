@@ -2024,6 +2024,15 @@ def parse_cryoclim_pseudoobs(argv):
         default=None,
         required=False,
     )
+    parser.add_argument(
+        "-gt",
+        "--laf_threshold",
+        dest="laf_threshold",
+        type=float,
+        help="LandAreaFraction threshold",
+        default=0.1,
+        required=False,
+    )
 
     if len(argv) == 0:
         parser.print_help()
