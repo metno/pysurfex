@@ -85,8 +85,6 @@ def snow_pseudo_obs_cryoclim(
         p_fg_laf = gridpos2points(
             fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), glaf
         )
-    print(fg_geo.lons)
-    print(fg_geo.lats)
     in_grid = inside_grid(
         np.asarray(fg_geo.lons),
         np.asarray(fg_geo.lats),
