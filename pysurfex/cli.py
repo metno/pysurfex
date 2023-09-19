@@ -1608,7 +1608,7 @@ def cryoclim_pseudoobs(argv=None):
         )
     else:
         logging.basicConfig(
-            format="%(asctime)s %(levelname,)s %(message)s", level=logging.INFO
+            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ cryoclim_pseudoobs ******************")
 
