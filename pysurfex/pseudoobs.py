@@ -65,7 +65,7 @@ def snow_pseudo_obs_cryoclim(
                     (grid_snow_class[0, iii, jjj] == 2)
                     or (grid_snow_class[0, iii, jjj] == 1)
                 )
-                and ((grid_lats[iii, jjj] < 90) and (grid_lats[iii, jjj] > 0.0))
+                and ((grid_lats[iii, jjj] < 90) and (grid_lats[iii, jjj] > -90.0))
                 and ((grid_lons[iii, jjj] < 180) and (grid_lons[iii, jjj] > -180.0))
             ):
                 res_lons.append(np.float64(grid_lons[iii, jjj]))
@@ -75,6 +75,7 @@ def snow_pseudo_obs_cryoclim(
             jjj = jjj + step
         iii = iii + step
 
+    logging.debug("len(grid_snow_fg)=%s", len(grid_snow_fg))
     p_fg_snow_depth = gridpos2points(
         fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_snow_fg
     )
@@ -85,6 +86,10 @@ def snow_pseudo_obs_cryoclim(
         p_fg_laf = gridpos2points(
             fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), glaf
         )
+    logging.debug("fg_geo.lons=%s", fg_geo.lons)
+    logging.debug("fg_geo.lats=%s", fg_geo.lats)
+    logging.debug("res_lons=%s", res_lons)
+    logging.debug("res_lats=%s", res_lats)
     in_grid = inside_grid(
         np.asarray(fg_geo.lons),
         np.asarray(fg_geo.lats),
@@ -99,6 +104,7 @@ def snow_pseudo_obs_cryoclim(
     cis = []
     lafs = []
     providers = []
+    logging.debug("p_fg_snow_depth.shape[0]=%s", p_fg_snow_depth.shape[0])
     for i in range(0, p_fg_snow_depth.shape[0]):
 
         p_snow_fg = p_fg_snow_depth[i]
@@ -134,6 +140,7 @@ def snow_pseudo_obs_cryoclim(
                         obs_value = 0.0
 
                 if not np.isnan(obs_value):
+                    logging.debug("Add observation")
                     flags.append(0)
                     cis.append(0)
                     lafs.append(0)
@@ -148,6 +155,10 @@ def snow_pseudo_obs_cryoclim(
                             varname="totalSnowDepth",
                         )
                     )
+                else:
+                    logging.debug("Value is nan")
+            elif not in_grid[i]:
+                logging.debug("Outside grid")
 
     logging.info("Possible pseudo-observations: %s", n_x * n_y)
     logging.info("Pseudo-observations created: %s", len(obs))
@@ -310,6 +321,7 @@ class CryoclimObservationSet(ObservationSet):
         new_snow_depth=0.1,
         glaf=None,
         laf_threshold=0.1,
+        cryo_varname="classed_value_c",
     ):
         """Construct an observation data set from a json file.
 
@@ -325,9 +337,12 @@ class CryoclimObservationSet(ObservationSet):
             new_snow_depth (float, optional): New snow depth in cryoclim in m.Defaults to 0.1
             glaf (np.ndarray, optional): Land-area-fraction. Defaults to None.
             laf_threshold (float, optional): Threshold for existing land-area-fraction. Defaults to 0.1.
+            cryo_varname (str, optional): Variable name in cryo file. Defaults to "classed_value_c"
 
         """
-        grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(filenames)
+        grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(
+            filenames, cryo_varname=cryo_varname
+        )
         observations = snow_pseudo_obs_cryoclim(
             validtime,
             grid_snow_class,

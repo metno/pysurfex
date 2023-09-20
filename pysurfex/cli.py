@@ -1619,7 +1619,7 @@ def cryoclim_pseudoobs(argv=None):
     varname = kwargs["varname"]
     indent = kwargs["indent"]
     laf_threshold = kwargs["laf_threshold"]
-
+    cryo_varname = kwargs["cryo_varname"]
     fg_geo, validtime, grid_snow_fg, glafs, gelevs = read_first_guess_netcdf_file(
         fg_file, varname
     )
@@ -1632,6 +1632,7 @@ def cryoclim_pseudoobs(argv=None):
         step=step,
         glaf=glafs,
         laf_threshold=laf_threshold,
+        cryo_varname=cryo_varname,
     )
     obs_set.write_json_file(output, indent=indent)
 

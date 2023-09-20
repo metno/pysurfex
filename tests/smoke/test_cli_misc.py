@@ -67,6 +67,26 @@ def test_cryoclim_pseudoobs(tmp_path_factory, data_cryoclim_nc_file, firstguess4
     cryoclim_pseudoobs(argv=argv)
 
 
+def test_cryoclim_pseudoobs_iv(tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp):
+
+    out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim2.json"
+    argv = [
+        "-step",
+        "2",
+        "-fg",
+        firstguess4gridpp,
+        "-i",
+        data_cryoclim_nc_file,
+        "-iv",
+        "classed_product",
+        "-v",
+        "surface_snow_thickness",
+        "-o",
+        out_fname,
+    ]
+    cryoclim_pseudoobs(argv=argv)
+
+
 def test_create_lsm_file_assim(
     tmp_path_factory, conf_proj_domain_file, data_thredds_nc_file
 ):

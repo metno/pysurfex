@@ -729,7 +729,14 @@ variables:
                 lat:long_name = "latitude coordinate" ;
                 lat:standard_name = "latitude" ;
                 lat:units = "degrees_north" ;
-        int classed_product(time, yc, xc) ;
+        byte classed_value_c(time, yc, xc) ;
+                classed_value_c:_FillValue = -99 ;
+                classed_value_c:least_significant_digit = 3 ;
+                classed_value_c:units = "1" ;
+                classed_value_c:long_name = "-1: ocean, 0: snow free, 1: snow, 3: clouded, 4: no data" ;
+                classed_value_c:coordinates = "lat lon" ;
+                classed_value_c:grid_mapping = "lambert_conformal_conic" ;
+        byte classed_product(time, yc, xc) ;
                 classed_product:_FillValue = -99 ;
                 classed_product:least_significant_digit = 3 ;
                 classed_product:units = "1" ;
@@ -741,11 +748,11 @@ data:
 
 time = 1425211200;
 
-lon = 10, 10.1, 10.0, 10.1, 10.0, 10.1;
+lon = 9.90762799,  9.91008278,  9.91255088, 10.08697387, 10.08991356, 10.0928692;
+lat = 59.91072795, 60.00064574, 60.09056224, 59.90937931, 59.99929347, 60.08920632;
 
-lat = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5;
-
-classed_product = 0, 1, 0, 3, 0, 4;
+classed_value_c = 1, 1, 2, 3, 0, 4;
+classed_product = 1, 1, 2, 3, 0, 4;
 }
 """
         )

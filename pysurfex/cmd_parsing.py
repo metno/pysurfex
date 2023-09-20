@@ -1983,7 +1983,7 @@ def parse_cryoclim_pseudoobs(argv):
         "--varname",
         dest="varname",
         type=str,
-        help="Variable name",
+        help="Variable name in first guess file",
         default="surface_snow_thickness",
         required=False,
     )
@@ -2003,6 +2003,14 @@ def parse_cryoclim_pseudoobs(argv):
         help="Infiles",
         default=None,
         required=True,
+    )
+    parser.add_argument(
+        "-iv",
+        dest="cryo_varname",
+        type=str,
+        help="Variable name in cryo file",
+        default="classed_value_c",
+        required=False,
     )
     parser.add_argument(
         "-step",
