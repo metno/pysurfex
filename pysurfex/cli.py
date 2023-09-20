@@ -781,7 +781,7 @@ def run_gridpp(**kwargs):
         elev_gradient = kwargs["elev_gradient"]
     if elev_gradient != -0.0065 and elev_gradient != 0:
         raise RuntimeError("Not a valid elevation gradient")
-    epsilon = 0.25
+    epsilon = None
     if "epsilon" in kwargs:
         epsilon = kwargs["epsilon"]
     minvalue = None
@@ -804,7 +804,6 @@ def run_gridpp(**kwargs):
     # Read OK observations
     observations = dataset_from_file(an_time, obs_file, qc_flag=0)
     logging.info("Found %s observations with QC flag == 0", str(len(observations.lons)))
-
     field = horizontal_oi(
         geo,
         background,

@@ -59,6 +59,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "dt" in settings[obs_set]:
                     deltat = settings[obs_set]["dt"]
                 else:
@@ -87,6 +89,8 @@ def get_datasources(obs_time, settings):
                         pos_t_range = 15
                         if "pos_t_range" in settings[obs_set]:
                             pos_t_range = settings[obs_set]["pos_t_range"]
+                        if "sigmao" in settings[obs_set]:
+                            kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
 
                         dtg = validtime - as_timedelta(seconds=int(neg_t_range) * 60)
                         end_dtg = validtime + as_timedelta(seconds=int(pos_t_range) * 60)
@@ -111,6 +115,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "dt" in settings[obs_set]:
                     kwargs.update({"dt": settings[obs_set]["dt"]})
                 else:
@@ -135,6 +141,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
                 if "unit" in settings[obs_set]:
                     kwargs.update({"unit": settings[obs_set]["unit"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "level" in settings[obs_set]:
                     kwargs.update({"level": settings[obs_set]["level"]})
                 kwargs.update({"validtime": obs_time})
@@ -160,6 +168,8 @@ def get_datasources(obs_time, settings):
                     obtypes = settings[obs_set]["obtypes"]
                 if "subtypes" in settings[obs_set]:
                     subtypes = settings[obs_set]["subtypes"]
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if os.path.exists(filename):
                     datasources.append(
                         ObservationDataSetFromObsoulFile(
@@ -230,7 +240,7 @@ def set_geo_from_obs_set(
 
     logging.debug("%s", settings)
     logging.debug("Get data source")
-    __, lons, lats, __, __, __, __ = get_datasources(obs_time, settings)[0].get_obs()
+    __, lons, lats, __, __, __, __, __ = get_datasources(obs_time, settings)[0].get_obs()
 
     selected_lons = []
     selected_lats = []

@@ -73,6 +73,7 @@ def settings(netatmo_file):
             "lonrange": [-10, 20],
             "latrange": [-10, 70],
             "dt": 1800,
+            "sigmao": 1.2,
         }
     }
     return settings_dict
