@@ -67,7 +67,9 @@ def test_cryoclim_pseudoobs(tmp_path_factory, data_cryoclim_nc_file, firstguess4
     cryoclim_pseudoobs(argv=argv)
 
 
-def test_cryoclim_pseudoobs_iv(tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp):
+def test_cryoclim_pseudoobs_iv(
+    tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp
+):
 
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim2.json"
     argv = [
