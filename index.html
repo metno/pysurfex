@@ -419,6 +419,18 @@ corresponding configuration.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="pysurfex.pseudoobs.SentinelObservationSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysurfex.pseudoobs.</span></span><span class="sig-name descname"><span class="pre">SentinelObservationSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fg_geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_sm_fg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sentinel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fg_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/pseudoobs.html#SentinelObservationSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.pseudoobs.SentinelObservationSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>JSON observation set.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysurfex.pseudoobs.CryoclimObservationSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysurfex.pseudoobs.</span></span><span class="sig-name descname"><span class="pre">CryoclimObservationSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fg_geo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snow_fg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gelevs_fg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fg_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_snow_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">laf_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cryo_varname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'classed_value_c'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/pseudoobs.html#CryoclimObservationSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.pseudoobs.CryoclimObservationSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>JSON observation set.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="pysurfex.platform_deps.SystemFilePaths">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysurfex.platform_deps.</span></span><span class="sig-name descname"><span class="pre">SystemFilePaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system_file_paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/platform_deps.html#SystemFilePaths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.platform_deps.SystemFilePaths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Matches files and paths depending on possibly system specific settings.</p>
@@ -6036,11 +6048,14 @@ Defaults to None.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pysurfex.netcdf.read_cryoclim_nc">
-<span class="sig-prename descclassname"><span class="pre">pysurfex.netcdf.</span></span><span class="sig-name descname"><span class="pre">read_cryoclim_nc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infiles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/netcdf.html#read_cryoclim_nc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.netcdf.read_cryoclim_nc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pysurfex.netcdf.</span></span><span class="sig-name descname"><span class="pre">read_cryoclim_nc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cryo_varname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'classed_value_c'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysurfex/netcdf.html#read_cryoclim_nc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysurfex.netcdf.read_cryoclim_nc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read crycoclim netCDF file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>infiles</strong> (<em>list</em>) – Input files.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>infiles</strong> (<em>list</em>) – Input files.</p></li>
+<li><p><strong>cryo_varname</strong> (<em>str</em><em>, </em><em>optional</em>) – Variable name in cryo file. Defaults to “classed_value_c”</p></li>
+</ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>RuntimeError</strong> – “No files were read properly”</p>
@@ -6930,6 +6945,8 @@ Defaults to None.</p></li>
 <li><a class="reference internal" href="#pysurfex.binary_input.InputDataFromNamelist"><code class="docutils literal notranslate"><span class="pre">InputDataFromNamelist</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.obsoul.ObservationDataSetFromObsoul"><code class="docutils literal notranslate"><span class="pre">ObservationDataSetFromObsoul</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.obsoul.ObservationDataSetFromObsoulFile"><code class="docutils literal notranslate"><span class="pre">ObservationDataSetFromObsoulFile</span></code></a></li>
+<li><a class="reference internal" href="#pysurfex.pseudoobs.SentinelObservationSet"><code class="docutils literal notranslate"><span class="pre">SentinelObservationSet</span></code></a></li>
+<li><a class="reference internal" href="#pysurfex.pseudoobs.CryoclimObservationSet"><code class="docutils literal notranslate"><span class="pre">CryoclimObservationSet</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.platform_deps.SystemFilePaths"><code class="docutils literal notranslate"><span class="pre">SystemFilePaths</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.platform_deps.SystemFilePathsFromFile"><code class="docutils literal notranslate"><span class="pre">SystemFilePathsFromFile</span></code></a></li>
 <li><a class="reference internal" href="#pysurfex.read.ReadData"><code class="docutils literal notranslate"><span class="pre">ReadData</span></code></a></li>

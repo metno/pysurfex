@@ -995,11 +995,12 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;i </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_cryoclim_nc"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_cryoclim_nc">[docs]</a><span class="k">def</span> <span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
+<div class="viewcode-block" id="read_cryoclim_nc"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_cryoclim_nc">[docs]</a><span class="k">def</span> <span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">cryo_varname</span><span class="o">=</span><span class="s2">&quot;classed_value_c&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read crycoclim netCDF file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        infiles (list): Input files.</span>
+<span class="sd">        cryo_varname (str, optional): Variable name in cryo file. Defaults to &quot;classed_value_c&quot;</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        RuntimeError: &quot;No files were read properly&quot;</span>
@@ -1017,11 +1018,9 @@
             <span class="n">ncf</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
             <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">ncf</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">][:]</span>
             <span class="n">grid_lats</span> <span class="o">=</span> <span class="n">ncf</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">][:]</span>
-            <span class="n">grid_snow_class_read</span> <span class="o">=</span> <span class="n">ncf</span><span class="p">[</span><span class="s2">&quot;classed_product&quot;</span><span class="p">][:]</span>
+            <span class="n">grid_snow_class_read</span> <span class="o">=</span> <span class="n">ncf</span><span class="p">[</span><span class="n">cryo_varname</span><span class="p">][:]</span>
             <span class="k">if</span> <span class="n">grid_snow_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">grid_snow_class</span> <span class="o">=</span> <span class="n">grid_snow_class_read</span>
-            <span class="n">grid_snow_class</span><span class="p">[</span><span class="n">grid_snow_class_read</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">grid_snow_class</span><span class="p">[</span><span class="n">grid_snow_class_read</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">ncf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning file </span><span class="si">%s</span><span class="s2"> does not exists&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>

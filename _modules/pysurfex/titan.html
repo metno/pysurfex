@@ -1818,7 +1818,7 @@
 
                     <span class="k">for</span> <span class="n">lmask_ind</span> <span class="ow">in</span> <span class="n">lmask</span><span class="p">:</span>
                         <span class="n">lmask_ind</span> <span class="o">=</span> <span class="n">lmask_ind</span> <span class="o">+</span> <span class="n">findex</span>
-                    <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">+</span> <span class="n">lmask</span>
+                        <span class="n">mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lmask_ind</span><span class="p">)</span>
 
                     <span class="c1"># Set input for this set</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>

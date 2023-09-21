@@ -1,5 +1,5 @@
 .. SURFEX Python API documentation master file, created by
-   auto_sphinx.py on Thu Sep 14 10:34:17 2023
+   auto_sphinx.py on Thu Sep 21 09:33:03 2023
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -31,6 +31,8 @@ Classes
 .. autoclass:: pysurfex.binary_input.InputDataFromNamelist
 .. autoclass:: pysurfex.obsoul.ObservationDataSetFromObsoul
 .. autoclass:: pysurfex.obsoul.ObservationDataSetFromObsoulFile
+.. autoclass:: pysurfex.pseudoobs.SentinelObservationSet
+.. autoclass:: pysurfex.pseudoobs.CryoclimObservationSet
 .. autoclass:: pysurfex.platform_deps.SystemFilePaths
 .. autoclass:: pysurfex.platform_deps.SystemFilePathsFromFile
 .. autoclass:: pysurfex.read.ReadData
