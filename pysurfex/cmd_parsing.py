@@ -1983,7 +1983,7 @@ def parse_cryoclim_pseudoobs(argv):
         "--varname",
         dest="varname",
         type=str,
-        help="Variable name",
+        help="Variable name in first guess file",
         default="surface_snow_thickness",
         required=False,
     )
@@ -2005,6 +2005,14 @@ def parse_cryoclim_pseudoobs(argv):
         required=True,
     )
     parser.add_argument(
+        "-iv",
+        dest="cryo_varname",
+        type=str,
+        help="Variable name in cryo file",
+        default="classed_value_c",
+        required=False,
+    )
+    parser.add_argument(
         "-step",
         dest="thinning",
         type=int,
@@ -2022,6 +2030,15 @@ def parse_cryoclim_pseudoobs(argv):
         type=str,
         help="Output observation set",
         default=None,
+        required=False,
+    )
+    parser.add_argument(
+        "-gt",
+        "--laf_threshold",
+        dest="laf_threshold",
+        type=float,
+        help="LandAreaFraction threshold",
+        default=0.1,
         required=False,
     )
 

@@ -1782,7 +1782,7 @@ class TitanDataSet(QCDataSet):
 
                     for lmask_ind in lmask:
                         lmask_ind = lmask_ind + findex
-                    mask = mask + lmask
+                        mask.append(lmask_ind)
 
                     # Set input for this set
                     logging.info(
