@@ -191,32 +191,22 @@ class PerturbedOffline(SURFEXBinary):
             input_data (_type_): _description_
             surfout (_type_, optional): _description_. Defaults to None.
             archive_data (_type_, optional): _description_. Defaults to None.
-            pgdfile (_type_, optional): _description_. Defaults to None.
+            pgdfile (str, optional): _description_. Defaults to None.
             print_namelist (bool, optional): _description_. Defaults to False.
             negpert (bool, optional): _description_. Defaults to False.
 
         """
-        self.pert_number = pert_number
+        pert_number = int(pert_number)
         settings["nam_io_varassim"]["LPRT"] = True
-        settings["nam_var"]["nivar"] = int(pert_number)
+        settings["nam_var"]["nivar"] = pert_number
         # Handle negative pertubations
         if negpert:
-            nvar = int(settings["nam_var"]["nvar"])
-            ipert = 0
-            npert = 1
-            for nvi in range(0, nvar):
-                key = "nncv(" + str(nvi + 1) + ")"
-                val = int(settings["nam_var"][key])
-                # Check if active
-                if val == 1:
-                    npert = 1
-                else:
-                    npert = npert + 1
-                for __ in range(0, npert):
-                    ipert = ipert + 1
-                    key = "xtprt_m(" + str(ipert) + ")"
-                    val = settings["nam_var"][key]
-                    settings["nam_var"][key] = -val
+            nncv = settings["nam_var"]["nncv"]
+
+            for nvi, _nval in enumerate(nncv):
+                val = settings["nam_var"]["xtprt_m"][nvi]
+                settings["nam_var"]["xtprt_m"][nvi] = -val
+
         SURFEXBinary.__init__(
             self,
             binary,

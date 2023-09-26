@@ -915,7 +915,13 @@ class NCSurfexFile(SurfexIO):
 
             if time_in_file is not None:
                 if validtime != time_in_file:
-                    logging.error("%s %s", time_in_file, validtime)
+                    logging.error(
+                        "time_in_file=%s validtime=%s %s %s",
+                        time_in_file,
+                        validtime,
+                        type(time_in_file),
+                        type(validtime),
+                    )
                     raise RuntimeError("Mismatch in times in file and the wanted time")
 
         geo_in = self.get_geo()

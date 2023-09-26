@@ -6,7 +6,7 @@ import os
 import toml
 
 from .geo import ConfProj
-from .platform import SystemFilePaths
+from .platform_deps import SystemFilePaths
 from .util import merge_toml_env
 
 
@@ -625,13 +625,13 @@ class ConfigurationFromHarmonie(Configuration):
         self.update_setting("SURFEX#TILES#INLAND_WATER", env["SURFEX_LAKES"])
 
         # TOPO_SOURCE Input source for orography. Available are (gmted2010|gtopo30)
-        self.update_setting("SURFEX#ZS#YZS", env["TOPO_SOURCE"] + ".dir")
+        self.update_setting("SURFEX#ZS#YZS", env["TOPO_SOURCE"])
 
         # ECOCLIMAP
         ecoclimap_version = env["ECOCLIMAP_VERSION"]
         if ecoclimap_version == "SG":
             self.update_setting("SURFEX#COVER#SG", True)
-            self.update_setting("SURFEX#COVER#YCOVER", "ecosg_final_map.dir")
+            self.update_setting("SURFEX#COVER#YCOVER", "ecosg_final_map")
         else:
             self.update_setting("SURFEX#COVER#SG", False)
             version1 = ["1.0", "1.2", "1.3", "1.4", "1.5"]
@@ -678,10 +678,14 @@ class ConfigurationFromHarmonie(Configuration):
         # XSCALE_H_TREE  Scale the tree height with this factor
         self.update_setting("SURFEX#TREEDRAG#XSCALE_H_TREE", env["XSCALE_H_TREE"])
         if "LFAKETREE" in env:
-            if env["LFAKETREE"].replace(".", "").strip().lower()[0] == "t":
-                lfaketree = True
-            else:
-                lfaketree = False
+            envsetting = env["LFAKETREE"].replace(".", "").lower()
+            envsetting = envsetting.split(",")
+            lfaketree = [False for i in range(7)]
+            for ii in range(len(envsetting)):
+                if envsetting[ii].strip()[0] == "t":
+                    lfaketree[ii] = True
+                else:
+                    lfaketree[ii] = False
             self.update_setting("SURFEX#TREEDRAG#FAKETREES", lfaketree)
 
         # Heat capacity
@@ -791,11 +795,6 @@ class ConfigurationFromHarmonie(Configuration):
         if "NENS_M" in env:
             nens_m = env["NENS_M"]
             self.update_setting("SURFEX#ASSIM#ISBA#ENKF#NENS_M", int(nens_m))
-
-        # Observations
-        if "NOBSTYPE_M" in env:
-            nobstype_m = env["NOBSTYPE_M"]
-            self.update_setting("SURFEX#ASSIM#ISBA#OBS#NOBSTYPE_M", int(nobstype_m))
 
         # ANASURF_OI_COEFF Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
         # # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments

@@ -17,7 +17,7 @@ except:  # noqa
     cfunits = None
 
 
-from .datetime_utils import fromtimestamp, isdatetime, utcfromtimestamp
+from .datetime_utils import fromtimestamp, isdatetime, offsetaware, utcfromtimestamp
 from .geo import ConfProj, Geo
 from .interpolation import Interpolation
 
@@ -102,6 +102,7 @@ class Netcdf(object):
                 logging.debug("Time provided in call as datetime objects")
                 times_in_var = var.datetimes
                 for i, times_in_var_val in enumerate(times_in_var):
+                    times_in_var_val = offsetaware(times_in_var_val)
                     logging.debug(
                         "i %s times_in_var %s times %s", i, times_in_var_val, times
                     )
@@ -110,7 +111,7 @@ class Netcdf(object):
                         logging.debug(
                             "i=%s, times_in_var_val=%s tval=%s", i, times_in_var_val, tval
                         )
-                        if times_in_var[i] == tval:
+                        if times_in_var_val == tval:
                             times_to_read.append(i)
                             if i > 0:
                                 prev_time_steps.append(i - 1)
@@ -914,7 +915,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
 
         sd_var = sd_fh.variables[s_d["var"]][:]
         sd_var = sd_var.reshape([n_y * n_x], order="C")
-        sd_var = sd_var.filled(fill_value=999.0)
+        sd_var = sd_var.filled(fill_value=-999.0)
         sd_var = sd_var.tolist()
 
     if s_m is not None:
@@ -958,11 +959,12 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
             logging.debug("i %s", i)
 
 
-def read_cryoclim_nc(infiles):
+def read_cryoclim_nc(infiles, cryo_varname="classed_value_c"):
     """Read crycoclim netCDF file.
 
     Args:
         infiles (list): Input files.
+        cryo_varname (str, optional): Variable name in cryo file. Defaults to "classed_value_c"
 
     Raises:
         RuntimeError: "No files were read properly"
@@ -980,11 +982,9 @@ def read_cryoclim_nc(infiles):
             ncf = netCDF4.Dataset(filename, "r")
             grid_lons = ncf["lon"][:]
             grid_lats = ncf["lat"][:]
-            grid_snow_class_read = ncf["classed_product"][:]
+            grid_snow_class_read = ncf[cryo_varname][:]
             if grid_snow_class is None:
                 grid_snow_class = grid_snow_class_read
-            grid_snow_class[grid_snow_class_read == 1] = 1
-            grid_snow_class[grid_snow_class_read == 0] = 0
             ncf.close()
         else:
             logging.warning("Warning file %s does not exists", filename)

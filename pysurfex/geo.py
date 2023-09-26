@@ -14,7 +14,7 @@ except Exception:
     ogr = None
 
 
-from .namelist import BaseNamelist
+from .namelist_legacy import BaseNamelist
 
 
 class Geo(object):
@@ -230,6 +230,9 @@ class ConfProj(SurfexGeo):
             raise KeyError("Missing key4")
 
         earth = 6.37122e6
+        # Work-around for SP cases where projection info in FA header is wrong
+        self.xlat0 = float("{:.5f}".format(self.xlat0))
+        self.xlon0 = float("{:.5f}".format(self.xlon0))
         if self.xlat0 == 90.0 or self.xlat0 == -90.0:
             proj_string = (
                 f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
@@ -283,50 +286,31 @@ class ConfProj(SurfexGeo):
         Returns:
             nml (f90nml.Namelist): Namelist object.
         """
-        if self.ilate is None or self.ilate is None:
-            nml.update(
-                {
-                    "nam_pgd_grid": {"cgrid": self.cgrid},
-                    "nam_conf_proj": {
-                        "xlon0": self.xlon0,
-                        "xlat0": self.xlat0,
-                        "xrpk": math.sin(math.radians(self.xlat0)),
-                        "xbeta": 0,
-                    },
-                    "nam_conf_proj_grid": {
-                        "xlatcen": self.xlatcen,
-                        "xloncen": self.xloncen,
-                        "nimax": self.nimax,
-                        "njmax": self.njmax,
-                        "xdx": self.xdx,
-                        "xdy": self.xdy,
-                        "xtrunc": self.xtrunc,
-                    },
-                }
-            )
-        else:
-            nml.update(
-                {
-                    "nam_pgd_grid": {"cgrid": self.cgrid},
-                    "nam_conf_proj": {
-                        "xlon0": self.xlon0,
-                        "xlat0": self.xlat0,
-                        "xrpk": math.sin(math.radians(self.xlat0)),
-                        "xbeta": 0,
-                    },
-                    "nam_conf_proj_grid": {
-                        "ilone": self.ilone,
-                        "ilate": self.ilate,
-                        "xlatcen": self.xlatcen,
-                        "xloncen": self.xloncen,
-                        "nimax": self.nimax,
-                        "njmax": self.njmax,
-                        "xdx": self.xdx,
-                        "xdy": self.xdy,
-                        "xtrunc": self.xtrunc,
-                    },
-                }
-            )
+        nml.update(
+            {
+                "nam_pgd_grid": {"cgrid": self.cgrid},
+                "nam_conf_proj": {
+                    "xlon0": self.xlon0,
+                    "xlat0": self.xlat0,
+                    "xrpk": math.sin(math.radians(self.xlat0)),
+                    "xbeta": 0,
+                },
+                "nam_conf_proj_grid": {
+                    "xlatcen": self.xlatcen,
+                    "xloncen": self.xloncen,
+                    "nimax": self.nimax,
+                    "njmax": self.njmax,
+                    "xdx": self.xdx,
+                    "xdy": self.xdy,
+                },
+            }
+        )
+        if self.ilone is not None:
+            nml["nam_conf_proj_grid"].update({"ilone": self.ilone})
+        if self.ilate is not None:
+            nml["nam_conf_proj_grid"].update({"ilate": self.ilate})
+        if self.xtrunc is not None:
+            nml["nam_conf_proj_grid"].update({"xtrunc": self.xtrunc})
         return nml
 
     def subset(self, geo):

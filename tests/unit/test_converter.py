@@ -1,9 +1,8 @@
 """Test converter."""
-from datetime import datetime
-
 import numpy as np
 
 from pysurfex.cache import Cache
+from pysurfex.datetime_utils import as_datetime
 from pysurfex.geo import get_geo_object
 from pysurfex.read import ConvertedInput, Converter
 
@@ -32,7 +31,7 @@ def test_converter_meps_nc(conf_proj_2x3_dict, data_thredds_nc_file):
     defs = config[fileformat]
     converter_conf = config[var][fileformat]["converter"]
 
-    validtime = datetime(year=2020, month=2, day=20, hour=6)
+    validtime = as_datetime("2020022006")
     cache = Cache(7200)
     converter = Converter(converter, validtime, defs, converter_conf, fileformat)
     field = ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
