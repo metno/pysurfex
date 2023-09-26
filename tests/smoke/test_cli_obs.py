@@ -26,6 +26,25 @@ def test_bufr2json(tmp_path_factory, obstime_str, bufr_file):
     bufr2json(argv=argv)
 
 
+@pytest.mark.usefixtures("_mockers")
+def test_bufr2json_bad_time(tmp_path_factory, obstime_str, bufr_bad_file):
+    """Test bufr to json conversion."""
+    output = f"{tmp_path_factory.getbasetemp().as_posix()}/bufr2json_t2m_bad.json"
+    argv = [
+        "-v",
+        "airTemperatureAt2M",
+        "-b",
+        bufr_bad_file,
+        "-o",
+        output,
+        "-dtg",
+        obstime_str,
+        "-range",
+        "1800",
+    ]
+    bufr2json(argv=argv)
+
+
 def test_obs2json_obsoul(obstime_str, obsoul_cryoclim_cy43, tmp_path_factory):
     """Test obs2json for obsoul."""
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/obs2json_obsoul.json"
