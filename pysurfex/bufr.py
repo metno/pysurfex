@@ -65,8 +65,8 @@ class BufrObservationSet(ObservationSet):
 
         # open bufr file
         file_handler = open(bufrfile, mode="rb")
-        lines_in_file = file_handler.readlines()
-        number_of_lines = int(len(lines_in_file))
+        number_of_bytes = file_handler.seek(0, 2)
+        logging.info("File size: %s", number_of_bytes)
         file_handler.seek(0)
 
         # define the keys to be printed
@@ -85,6 +85,7 @@ class BufrObservationSet(ObservationSet):
             "stationNumber",
             "blockNumber",
         ]
+        processed_threshold = [0]
         nerror = {}
         ntime = {}
         nundef = {}
@@ -404,15 +405,20 @@ class BufrObservationSet(ObservationSet):
                             ndomain.update({var: ndomain[var] + 1})
 
                 cnt += 1
-                perc5 = int(float(number_of_lines) * 0.05)
-                if cnt > 10 and cnt < number_of_lines and cnt % perc5 == 0:
-                    perc = round((cnt / float(number_of_lines) * 100.0))
-                    logging.info("%s%%", perc)
+                try:
+                    nbytes = file_handler.tell()
+                except ValueError:
+                    nbytes = number_of_bytes
+
+                processed = int(round(float(nbytes) * 100.0 / float(number_of_bytes)))
+                if processed not in processed_threshold:
+                    if processed % 5 == 0:
+                        processed_threshold.append(processed)
+                        logging.info("Read: %s%%", processed)
 
             # delete handle
             eccodes.codes_release(bufr)
 
-        logging.info("100%")
         logging.info("Found %s/%s", str(len(observations)), str(cnt))
         logging.info("Not decoded: %s", str(not_decoded))
         for var in variables:
