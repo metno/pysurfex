@@ -1,5 +1,8 @@
 """Test first guess for OI."""
+import contextlib
 import json
+import os
+from pathlib import Path
 
 import pytest
 from netCDF4 import Dataset
@@ -15,8 +18,20 @@ from pysurfex.cli import (
 from pysurfex.geo import get_geo_object
 
 
-def test_dump_environ():
-    dump_environ(argv=[])
+@contextlib.contextmanager
+def working_directory(path):
+    """Change working directory and returns to previous on exit."""
+    prev_cwd = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
+
+
+def test_dump_environ(tmp_path_factory):
+    with working_directory(tmp_path_factory.getbasetemp()):
+        dump_environ(argv=[])
 
 
 def test_set_geo_from_stationlist(tmp_path_factory):

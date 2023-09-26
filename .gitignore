@@ -1,3 +1,6 @@
+# Lock file
+poetry.lock
+
 # My stuff
 FORCING.nc
 .idea
