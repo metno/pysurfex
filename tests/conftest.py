@@ -448,6 +448,32 @@ def bufr_file(tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
+def bufr_bad_file(tmp_path_factory):
+    keys = {
+        "latitude": 60.0,
+        "localLatitude": 60.0,
+        "longitude": 10.0,
+        "localLongitude": 10.0,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": -2,
+        "minute": 2,
+        "heightOfStationGroundAboveMeanSeaLevel": 230,
+        "heightOfStation": 230,
+        "stationNumber": 479,
+        "blockNumber": 10,
+        "airTemperatureAt2M": 273.15,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
+    }
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
+    with open(fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(keys, fhandler, indent=2)
+    return fname
+
+
+@pytest.fixture(scope="module")
 def obsoul_cryoclim_cy43(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
