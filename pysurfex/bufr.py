@@ -85,7 +85,7 @@ class BufrObservationSet(ObservationSet):
             "stationNumber",
             "blockNumber",
         ]
-        processed_threshold = [0]
+        processed_threshold = 0
         nerror = {}
         ntime = {}
         nundef = {}
@@ -357,7 +357,7 @@ class BufrObservationSet(ObservationSet):
                                     minute=minute,
                                 )
                             except ValueError:
-                                logging.info(
+                                logging.warning(
                                     "Bad observations time: year=%s month=%s day=%s hour=%s minute=%s Position is lon=%s, lat=%s",
                                     year,
                                     month,
@@ -411,10 +411,9 @@ class BufrObservationSet(ObservationSet):
                     nbytes = number_of_bytes
 
                 processed = int(round(float(nbytes) * 100.0 / float(number_of_bytes)))
-                if processed not in processed_threshold:
-                    if processed % 5 == 0:
-                        processed_threshold.append(processed)
-                        logging.info("Read: %s%%", processed)
+                if processed > processed_threshold and processed % 5 == 0:
+                    processed_threshold = processed
+                    logging.info("Read: %s%%", processed)
 
             # delete handle
             eccodes.codes_release(bufr)
