@@ -36,7 +36,6 @@
   <h1>Source code for pysurfex.bufr</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;bufr treatment.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -102,6 +101,9 @@
 
         <span class="c1"># open bufr file</span>
         <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">bufrfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">number_of_bytes</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File size: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">number_of_bytes</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># define the keys to be printed</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
@@ -119,6 +121,7 @@
             <span class="s2">&quot;stationNumber&quot;</span><span class="p">,</span>
             <span class="s2">&quot;blockNumber&quot;</span><span class="p">,</span>
         <span class="p">]</span>
+        <span class="n">processed_threshold</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">nerror</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">ntime</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">nundef</span> <span class="o">=</span> <span class="p">{}</span>
@@ -380,10 +383,28 @@
                             <span class="n">latrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="n">latrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                             <span class="ow">and</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">lon</span> <span class="o">&lt;=</span> <span class="n">lonrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                         <span class="p">):</span>
-                            <span class="n">obs_dtg</span> <span class="o">=</span> <span class="n">as_datetime_args</span><span class="p">(</span>
-                                <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="n">minute</span>
-                            <span class="p">)</span>
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                            <span class="n">obs_dtg</span> <span class="o">=</span> <span class="kc">None</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">obs_dtg</span> <span class="o">=</span> <span class="n">as_datetime_args</span><span class="p">(</span>
+                                    <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span>
+                                    <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span>
+                                    <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span>
+                                    <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span>
+                                    <span class="n">minute</span><span class="o">=</span><span class="n">minute</span><span class="p">,</span>
+                                <span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                    <span class="s2">&quot;Bad observations time: year=</span><span class="si">%s</span><span class="s2"> month=</span><span class="si">%s</span><span class="s2"> day=</span><span class="si">%s</span><span class="s2"> hour=</span><span class="si">%s</span><span class="s2"> minute=</span><span class="si">%s</span><span class="s2"> Position is lon=</span><span class="si">%s</span><span class="s2">, lat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                    <span class="n">year</span><span class="p">,</span>
+                                    <span class="n">month</span><span class="p">,</span>
+                                    <span class="n">day</span><span class="p">,</span>
+                                    <span class="n">hour</span><span class="p">,</span>
+                                    <span class="n">minute</span><span class="p">,</span>
+                                    <span class="n">lon</span><span class="p">,</span>
+                                    <span class="n">lat</span><span class="p">,</span>
+                                <span class="p">)</span>
+                                <span class="n">obs_dtg</span> <span class="o">=</span> <span class="kc">None</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obs_dtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inside_window</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">):</span>
                                     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                                         <span class="s2">&quot;Valid DTG for station </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -420,18 +441,23 @@
                             <span class="n">ndomain</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">var</span><span class="p">:</span> <span class="n">ndomain</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">})</span>
 
                 <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">nbytes</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">nbytes</span> <span class="o">=</span> <span class="n">number_of_bytes</span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">%</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">processed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_of_bytes</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="n">processed</span> <span class="o">&gt;</span> <span class="n">processed_threshold</span> <span class="ow">and</span> <span class="n">processed</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">processed_threshold</span> <span class="o">=</span> <span class="n">processed</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Read: </span><span class="si">%s%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">processed</span><span class="p">)</span>
 
             <span class="c1"># delete handle</span>
             <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">bufr</span><span class="p">)</span>
 
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Found </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cnt</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cnt</span><span class="p">))</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not decoded: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">not_decoded</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Observations for var=</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nobs</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Observations for var=</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nobs</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Observations removed because of domain check: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ndomain</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
             <span class="p">)</span>
