@@ -1079,7 +1079,7 @@ def parse_args_gridpp(argv):
         choices=[0, -0.0065],
     )
     parser.add_argument(
-        "--epsilon", dest="epsilon", type=float, default=0.25, required=False
+        "--epsilon", dest="epsilon", type=float, default=None, required=False
     )
     parser.add_argument(
         "--minvalue", dest="minvalue", type=float, default=None, required=False

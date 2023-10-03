@@ -24,19 +24,27 @@ from .titan import dataset_from_file
 class ObservationSet(object):
     """Set of observations."""
 
-    def __init__(self, observations, label=""):
+    def __init__(self, observations, label="", sigmao=None):
         """Create an observation set.
 
         Args:
             observations (list): Observation objects.
             label (str, optional): Name of set. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         """
-        self.observations = observations
-        self.size = len(self.observations)
+        self.size = len(observations)
         self.label = label
         self.index_pos = {}
         self.index_stid = {}
+
+        if sigmao is not None:
+            logging.info(
+                "Setting sigmao=%s for all observations for label=%s", sigmao, label
+            )
+            for obs in observations:
+                obs.sigmao = sigmao
+        self.observations = observations
 
     def get_stid_index(self, stid):
         """Get station ID index.
@@ -77,12 +85,12 @@ class ObservationSet(object):
 
         Returns:
             (list, list , list, list, list, list, list): times, lons, lats, stids, elevs,
-                                                         values, varnames
+                                                         values, varnames, sigmaos
         """
         obs2vectors = np.vectorize(Observation.obs2vectors)
         logging.debug("Obs dim %s", len(self.observations))
         if len(self.observations) > 0:
-            times, lons, lats, stids, elevs, values, varnames = obs2vectors(
+            times, lons, lats, stids, elevs, values, varnames, sigmaos = obs2vectors(
                 self.observations
             )
 
@@ -103,9 +111,10 @@ class ObservationSet(object):
             elevs = elevs.tolist()
             values = values.tolist()
             varnames = varnames.tolist()
+            sigmaos = sigmaos.tolist()
 
-            return times, lons, lats, stids, elevs, values, varnames
-        return [], [], [], [], [], [], []
+            return times, lons, lats, stids, elevs, values, varnames, sigmaos
+        return [], [], [], [], [], [], [], []
 
     def matching_obs(self, my_obs):
         """Match the observations.
@@ -141,7 +150,7 @@ class ObservationSet(object):
         my_times = []
         my_values = []
         my_stids = []
-        times, lons, lats, stids, __, values, __ = self.get_obs()
+        times, lons, lats, stids, __, values, __, __ = self.get_obs()
 
         for i in range(0, geo.nlons):
             lon = geo.lonlist[i]
@@ -176,7 +185,7 @@ class ObservationSet(object):
         obs2vectors = np.vectorize(Observation.obs2vectors)
         data = {}
         if len(self.observations) > 0:
-            obstimes, lons, lats, stids, elevs, values, varnames = obs2vectors(
+            obstimes, lons, lats, stids, elevs, values, varnames, sigmao = obs2vectors(
                 self.observations
             )
             for obs, lon in enumerate(lons):
@@ -190,6 +199,7 @@ class ObservationSet(object):
                             "stid": stids[obs],
                             "elev": elevs[obs],
                             "value": values[obs],
+                            "sigmao": sigmao[obs],
                         }
                     }
                 )
@@ -210,6 +220,7 @@ class NetatmoObservationSet(ObservationSet):
         lonrange=None,
         latrange=None,
         label="netatmo",
+        sigmao=None,
     ):
         """Construct netatmo obs.
 
@@ -222,6 +233,7 @@ class NetatmoObservationSet(ObservationSet):
             lonrange (_type_, optional): _description_. Defaults to None.
             latrange (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "netatmo".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: Lonrange must be a list with length 2
@@ -368,7 +380,7 @@ class NetatmoObservationSet(ObservationSet):
             extra = ""
         logging.debug("   %d missing elev%s", num_missing_elev, extra)
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
 
 class MetFrostObservations(ObservationSet):
@@ -390,6 +402,7 @@ class MetFrostObservations(ObservationSet):
         latrange=None,
         unit=None,
         label="frost",
+        sigmao=None,
     ):
         """Construct obs set from Frost.
 
@@ -408,6 +421,7 @@ class MetFrostObservations(ObservationSet):
             latrange (_type_, optional): _description_. Defaults to None.
             unit (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "frost".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             KeyError: _description_
@@ -744,13 +758,14 @@ class MetFrostObservations(ObservationSet):
 class JsonObservationSet(ObservationSet):
     """JSON observation set."""
 
-    def __init__(self, filename, label="json", var=None):
+    def __init__(self, filename, label="json", var=None, sigmao=None):
         """Construct an observation data set from a json file.
 
         Args:
             filename (str): Filename
             label (str, optional): Label of set. Defaults to "json".
             var (str, optional): Variable name. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: Varname is not found
@@ -767,6 +782,10 @@ class JsonObservationSet(ObservationSet):
             elev = obs[ind]["elev"]
             value = obs[ind]["value"]
             stid = obs[ind]["stid"]
+            try:
+                lsigmao = obs[ind]["sigmao"]
+            except KeyError:
+                lsigmao = 1.0
             varname = ""
             if "varname" in obs[ind]:
                 varname = obs[ind]["varname"]
@@ -777,23 +796,31 @@ class JsonObservationSet(ObservationSet):
             if var is None or var == varname:
                 observations.append(
                     Observation(
-                        obstime, lon, lat, value, stid=stid, elev=elev, varname=varname
+                        obstime,
+                        lon,
+                        lat,
+                        value,
+                        stid=stid,
+                        elev=elev,
+                        varname=varname,
+                        sigmao=lsigmao,
                     )
                 )
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
 
 class ObservationFromTitanJsonFile(ObservationSet):
     """Observation set from titan json file."""
 
-    def __init__(self, an_time, filename, label=""):
+    def __init__(self, an_time, filename, label="", sigmao=None):
         """Constuct obs set from a titan json file.
 
         Args:
             an_time (_type_): _description_
             filename (_type_): _description_
             label (str, optional): _description_. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         """
         qc_obs = dataset_from_file(an_time, filename)
@@ -806,7 +833,210 @@ class ObservationFromTitanJsonFile(ObservationSet):
                     qc_obs.lats[i],
                     qc_obs.elevs[i],
                     qc_obs.values[i],
+                    sigmao=qc_obs.epsilons[i],
                 )
             )
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+
+
+def snow_pseudo_obs_cryoclim(
+    validtime,
+    grid_snow_class,
+    grid_lons,
+    grid_lats,
+    step,
+    fg_geo,
+    grid_snow_fg,
+    fg_threshold=2.0,
+    new_snow_depth=0.01,
+):
+    """Cryoclim snow.
+
+    Args:
+        validtime (_type_): _description_
+        grid_snow_class (_type_): _description_
+        grid_lons (_type_): _description_
+        grid_lats (_type_): _description_
+        step (_type_): _description_
+        fg_geo (_type_): _description_
+        grid_snow_fg (_type_): _description_
+        fg_threshold (float, optional): _description_. Defaults to 2.0.
+        new_snow_depth (float, optional): _description_. Defaults to 0.01.
+
+    Returns:
+        _type_: _description_
+    """
+    n_x = grid_lons.shape[0]
+    n_y = grid_lons.shape[1]
+
+    n_x = int(n_x / step)
+    n_y = int(n_y / step)
+
+    # TODO rewrite to use lonlatvals geo
+    counter = 0
+    iii = 0
+    res_lons = []
+    res_lats = []
+    p_snow_class = {}
+    for __ in range(0, n_x):
+        jjj = 0
+        for __ in range(0, n_y):
+            res_lons.append(grid_lons[iii, jjj])
+            res_lats.append(grid_lats[iii, jjj])
+            p_snow_class.update({str(counter): grid_snow_class[0, iii, jjj]})
+            counter = counter + 1
+            jjj = jjj + step
+        iii = iii + step
+
+    p_fg_snow_depth = gridpos2points(
+        fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_snow_fg
+    )
+    in_grid = inside_grid(
+        fg_geo.lons,
+        fg_geo.lats,
+        np.asarray(res_lons),
+        np.asarray(res_lats),
+        distance=2500.0,
+    )
+
+    # Ordering of points must be the same.....
+    obs = []
+    flags = []
+    cis = []
+    lafs = []
+    providers = []
+    for i in range(0, p_fg_snow_depth.shape[0]):
+
+        p_snow_fg = p_fg_snow_depth[i]
+        logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
+        if not np.isnan(p_snow_fg):
+            # Check if in grid
+            if in_grid[i]:
+                obs_value = np.nan
+                if p_snow_class[str(i)] == 1:
+                    if p_snow_fg > 0:
+                        if fg_threshold is not None:
+                            if p_snow_fg <= fg_threshold:
+                                obs_value = p_snow_fg
+                        else:
+                            obs_value = p_snow_fg
+                    else:
+                        obs_value = new_snow_depth
+                elif p_snow_class[str(i)] == 0:
+                    if p_snow_fg > 0:
+                        obs_value = 0.0
+
+                if not np.isnan(obs_value):
+                    flags.append(0)
+                    cis.append(0)
+                    lafs.append(0)
+                    providers.append(0)
+                    obs.append(
+                        Observation(validtime, res_lons[i], res_lats[i], obs_value)
+                    )
+
+    logging.info("Possible pseudo-observations: %s", n_x * n_y)
+    logging.info("Pseudo-observations created: %s", len(obs))
+    return QCDataSet(validtime, obs, flags, cis, lafs, providers)
+
+
+def sm_obs_sentinel(
+    validtime,
+    grid_sm_class,
+    grid_lons,
+    grid_lats,
+    step,
+    fg_geo,
+    grid_sm_fg,
+    fg_threshold=1.0,
+):
+    """Sentinel.
+
+    Args:
+        validtime (_type_): _description_
+        grid_sm_class (_type_): _description_
+        grid_lons (_type_): _description_
+        grid_lats (_type_): _description_
+        step (_type_): _description_
+        fg_geo (_type_): _description_
+        grid_sm_fg (_type_): _description_
+        fg_threshold (_type_, optional): _description_. Defaults to 1..
+
+    Returns:
+        _type_: _description_
+
+    """
+    n_x = grid_lons.shape[0]
+    n_y = grid_lons.shape[1]
+
+    n_x = int(n_x / step)
+    n_y = int(n_y / step)
+
+    # TODO rewrite to use lonlatvals geo
+    counter = 0
+    iii = 0
+    res_lons = []
+    res_lats = []
+    p_sm_class = {}
+    for __ in range(0, n_x):
+        jjj = 0
+        for __ in range(0, n_y):
+            res_lons.append(grid_lons[iii, jjj])
+            res_lats.append(grid_lats[iii, jjj])
+            p_sm_class.update({str(counter): grid_sm_class[iii, jjj]})
+            counter = counter + 1
+            jjj = jjj + step
+        iii = iii + step
+
+    p_fg_sm = gridpos2points(
+        fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_sm_fg
+    )
+    in_grid = inside_grid(
+        fg_geo.lons,
+        fg_geo.lats,
+        np.asarray(res_lons),
+        np.asarray(res_lats),
+        distance=2500.0,
+    )
+    # Ordering of points must be the same.....
+    obs = []
+    flags = []
+    cis = []
+    lafs = []
+    providers = []
+    for i in range(0, p_fg_sm.shape[0]):
+
+        p_sm_fg = p_fg_sm[i]
+        if not np.isnan(p_sm_fg):
+            # Check if in grid
+            if in_grid[i]:
+                obs_value = np.nan
+                if (p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0):
+                    if p_sm_fg <= fg_threshold:
+                        obs_value = p_sm_fg
+                    else:
+                        obs_value = 999
+
+                else:
+                    obs_value = p_sm_class[str(i)]
+
+                if not np.isnan(obs_value):
+                    flags.append(0)
+                    cis.append(0)
+                    lafs.append(0)
+                    providers.append(0)
+                    obs.append(
+                        Observation(
+                            validtime,
+                            res_lons[i],
+                            res_lats[i],
+                            obs_value,
+                            varname="surface_soil_moisture",
+                        )
+                    )
+
+    logging.info("Possible pseudo-observations: %s", n_x * n_y)
+    logging.info("Pseudo-observations created: %s", len(obs))
+    return QCDataSet(validtime, obs, flags, cis, lafs, providers)
+>>>>>>> origin/feature/individual_epsilons
