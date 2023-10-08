@@ -158,6 +158,7 @@ def get_datasources(obs_time, settings):
                 pos_dt = None
                 obtypes = None
                 subtypes = None
+                sigmao = None
                 if "obnumber" in settings[obs_set]:
                     obnumber = int(settings[obs_set]["obnumber"])
                 if "neg_dt" in settings[obs_set]:
@@ -169,7 +170,7 @@ def get_datasources(obs_time, settings):
                 if "subtypes" in settings[obs_set]:
                     subtypes = settings[obs_set]["subtypes"]
                 if "sigmao" in settings[obs_set]:
-                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
+                    sigmao = settings[obs_set]["sigmao"]
                 if os.path.exists(filename):
                     datasources.append(
                         ObservationDataSetFromObsoulFile(
@@ -180,6 +181,7 @@ def get_datasources(obs_time, settings):
                             obtypes=obtypes,
                             subtypes=subtypes,
                             obnumber=obnumber,
+                            sigmao=sigmao,
                         )
                     )
                 else:
@@ -195,6 +197,8 @@ def get_datasources(obs_time, settings):
                     varname = settings[obs_set]["varname"]
 
                 kwargs.update({"var": varname})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if os.path.exists(filename):
                     datasources.append(JsonObservationSet(filename, **kwargs))
                 else:
@@ -281,6 +285,7 @@ def get_obsset(
     level=None,
     obtypes=None,
     subtypes=None,
+    sigmao=None,
 ):
     """Create an observation set from an input data set.
 
@@ -298,6 +303,7 @@ def get_obsset(
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
+        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
     Returns:
         obsset (ObservationSet): Observation set
@@ -341,6 +347,7 @@ def get_obsset(
             "level": level,
             "obtypes": obtypes,
             "subtypes": subtypes,
+            "sigmao": sigmao,
             "pos_t_range": pos_t_range_seconds,
             "neg_t_range": neg_t_range_seconds,
         }
@@ -367,6 +374,7 @@ def create_obsset_file(
     level=None,
     obtypes=None,
     subtypes=None,
+    sigmao=None,
 ):
     """Create an observation set from an input data set.
 
@@ -381,11 +389,12 @@ def create_obsset_file(
         lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
         latrange (tuple, optional): Latitude range (min, max). Defaults to None.
         label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
-        indent (int, optional): File indentation. Default to None.
+        indent (int, optional): File indentation. Defaults to None.
         unit (str, optional): Unit (FROST)
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
+        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
     """
     logging.debug("Get data source")
@@ -403,5 +412,6 @@ def create_obsset_file(
         level=level,
         obtypes=obtypes,
         subtypes=subtypes,
+        sigmao=sigmao,
     )
     obsset.write_json_file(output, indent=indent)

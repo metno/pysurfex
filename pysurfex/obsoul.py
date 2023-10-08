@@ -21,6 +21,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
         subtypes=None,
         neg_dt=None,
         pos_dt=None,
+        sigmao=None,
     ):
         """Constuct obs set from a obsoul json file.
 
@@ -33,6 +34,8 @@ class ObservationDataSetFromObsoul(ObservationSet):
             subtypes  (list, optional): Observation sub types. Defaults to None.
             obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+
         """
         observations = []
         lineno = 0
@@ -125,6 +128,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
                             elev=elev,
                             stid=stid,
                             varname=str(obnumber),
+                            sigmao=sigmao,
                         )
                     )
                 lineno += 1
@@ -145,6 +149,7 @@ class ObservationDataSetFromObsoulFile(ObservationDataSetFromObsoul):
         obnumber=None,
         obtypes=None,
         subtypes=None,
+        sigmao=None,
     ):
         """Constuct obs set from a obsoul file.
 
@@ -157,6 +162,8 @@ class ObservationDataSetFromObsoulFile(ObservationDataSetFromObsoul):
             subtypes  (list, optional): Observation sub types. Defaults to None.
             obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+
         """
         logging.info("Opening OBSOUL file %s", filename)
         with open(filename, mode="r", encoding="utf8") as fhandler:
@@ -171,4 +178,5 @@ class ObservationDataSetFromObsoulFile(ObservationDataSetFromObsoul):
                 neg_dt=neg_dt,
                 obtypes=obtypes,
                 subtypes=subtypes,
+                sigmao=sigmao,
             )

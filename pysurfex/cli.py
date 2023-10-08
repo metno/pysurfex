@@ -1811,6 +1811,7 @@ def bufr2json(argv=None):
     output = kwargs.get("output")
     valid_dtg = as_datetime(kwargs.get("dtg"))
     valid_range = as_timedelta(seconds=kwargs.get("valid_range"))
+    sigmao = kwargs.get("sigmao")
     label = kwargs.get("label")
     indent = kwargs.get("indent")
     lonrange = kwargs.get("lonrange")
@@ -1827,6 +1828,7 @@ def bufr2json(argv=None):
         latrange=latrange,
         label=label,
         indent=indent,
+        sigmao=sigmao,
     )
 
 
@@ -1861,6 +1863,7 @@ def obs2json(argv=None):
     level = kwargs.get("level")
     obtypes = kwargs.get("obtypes")
     subtypes = kwargs.get("subtypes")
+    sigmao = kwargs.get("sigmao")
     pos_t_range = kwargs.get("pos_t_range")
     neg_t_range = kwargs.get("neg_t_range")
     indent = kwargs.get("indent")
@@ -1887,6 +1890,7 @@ def obs2json(argv=None):
         indent=indent,
         obtypes=obtypes,
         subtypes=subtypes,
+        sigmao=sigmao,
     )
 
 
