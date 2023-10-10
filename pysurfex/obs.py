@@ -782,10 +782,13 @@ class JsonObservationSet(ObservationSet):
             elev = obs[ind]["elev"]
             value = obs[ind]["value"]
             stid = obs[ind]["stid"]
-            try:
-                lsigmao = obs[ind]["sigmao"]
-            except KeyError:
-                lsigmao = 1.0
+            if sigmao is not None:
+                lsigmao = sigmao
+            else:
+                try:
+                    lsigmao = obs[ind]["sigmao"]
+                except KeyError:
+                    lsigmao = 1.0
             varname = ""
             if "varname" in obs[ind]:
                 varname = obs[ind]["varname"]

@@ -282,6 +282,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "airTemperatureAt2M",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -313,6 +314,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "relativeHumidityAt2M",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -344,6 +346,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "totalSnowDepth",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -434,7 +437,6 @@ def create_obs_data(var, obs_fname):
             ],
         },
     }
-
     json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
 
 
@@ -512,6 +514,8 @@ def _qc_gridpp_obsmon(
     argv += harmonie
     titan(argv=argv)
 
+    qc_titan_obs = json.load(open(qc_fname, "r"))
+    assert qc_titan_obs["0"]["epsilon"] == 0.5
     shutil.copy(qc_fname, f"{qc_fname}-1")
     shutil.copy(qc_fname, f"{qc_fname}-2")
     argv = [

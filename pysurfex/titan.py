@@ -1452,7 +1452,6 @@ class QCDataSet(object):
         varnames = []
         epsilons = []
         for i, observation in enumerate(observations):
-            print(observation.lon, observation.lat, observation.sigmao)
             obstimes.append(observation.obstime)
             lons.append(observation.lon)
             lats.append(observation.lat)
@@ -1612,7 +1611,7 @@ class TitanDataSet(QCDataSet):
         elevs = []
         values = []
         varnames = []
-        epsilons = []
+        sigmaos = []
         providers = []
         passed_tests = []
         self.datasources = datasources
@@ -1636,7 +1635,7 @@ class TitanDataSet(QCDataSet):
             elevs = elevs + lelevs
             values = values + lvalues
             varnames = varnames + lvarnames
-            epsilons = epsilons + lsigmaos
+            sigmaos = sigmaos + lsigmaos
             for __ in range(0, len(llons)):
                 providers.append(obs_set.label)
 
@@ -1656,6 +1655,7 @@ class TitanDataSet(QCDataSet):
                     elev=elevs[i],
                     stid=stids[i],
                     varname=varnames[i],
+                    sigmao=sigmaos[i],
                 )
             )
         points = tit.Points(lats, lons, elevs)
