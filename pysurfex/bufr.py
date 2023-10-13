@@ -36,6 +36,7 @@ class BufrObservationSet(ObservationSet):
         latrange=None,
         label="bufr",
         use_first=False,
+        sigmao=None,
     ):
         """Initialize a bufr observation set.
 
@@ -48,6 +49,7 @@ class BufrObservationSet(ObservationSet):
             latrange (list): Allowed range of latitides [min, max]
             label (str): A label for the resulting observations set
             use_first (bool): Use only the first valid observation for a point if more are found
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: ECCODES not found. Needed for bufr reading
@@ -438,7 +440,7 @@ class BufrObservationSet(ObservationSet):
         # close the file
         file_handler.close()
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
     @staticmethod
     def td2rh(t_d, temp, kelvin=True):

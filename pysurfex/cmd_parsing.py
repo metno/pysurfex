@@ -1079,7 +1079,7 @@ def parse_args_gridpp(argv):
         choices=[0, -0.0065],
     )
     parser.add_argument(
-        "--epsilon", dest="epsilon", type=float, default=0.25, required=False
+        "--epsilon", dest="epsilon", type=float, default=None, required=False
     )
     parser.add_argument(
         "--minvalue", dest="minvalue", type=float, default=None, required=False
@@ -1388,6 +1388,14 @@ def parse_args_bufr2json(argv):
         default=3600,
     )
     parser.add_argument(
+        "--sigmao",
+        dest="sigmao",
+        type=float,
+        required=False,
+        default=None,
+        help="Observation error relative to normal background error.",
+    )
+    parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False
     )
     parser.add_argument("--version", action="version", version=__version__)
@@ -1483,6 +1491,14 @@ def parse_args_obs2json(argv):
         required=False,
         default=None,
         help="Subtypes (obsoul)",
+    )
+    parser.add_argument(
+        "--sigmao",
+        dest="sigmao",
+        type=float,
+        required=False,
+        default=None,
+        help="Observation error relative to normal background error.",
     )
     parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False
@@ -2033,7 +2049,7 @@ def parse_cryoclim_pseudoobs(argv):
         required=False,
     )
     parser.add_argument(
-        "-gt",
+        "-lt",
         "--laf_threshold",
         dest="laf_threshold",
         type=float,
