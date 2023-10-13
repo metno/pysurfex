@@ -694,8 +694,6 @@
                 <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
 
-            <span class="n">dataset</span><span class="o">.</span><span class="n">normalize_ci</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmax</span><span class="p">)</span>
-
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                     <span class="s2">&quot;test=</span><span class="si">%s</span><span class="s2"> i=</span><span class="si">%s</span><span class="s2"> m_i=</span><span class="si">%s</span><span class="s2"> value(m_i)=</span><span class="si">%s</span><span class="s2"> sct(i)=</span><span class="si">%s</span><span class="s2"> rep(i)=</span><span class="si">%s</span><span class="s2"> flag(i)=</span><span class="si">%s</span><span class="s2"> &quot;</span>
@@ -1457,7 +1455,6 @@
         <span class="n">analysis_time</span><span class="p">,</span>
         <span class="n">observations</span><span class="p">,</span>
         <span class="n">flags</span><span class="p">,</span>
-        <span class="n">cis</span><span class="p">,</span>
         <span class="n">lafs</span><span class="p">,</span>
         <span class="n">providers</span><span class="p">,</span>
         <span class="n">passed_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1471,7 +1468,6 @@
 <span class="sd">            analysis_time (datetime.datetime): Analysis time</span>
 <span class="sd">            observations (list): Observation objects.</span>
 <span class="sd">            flags (list): Flags</span>
-<span class="sd">            cis (list): Corep</span>
 <span class="sd">            lafs (list): Land area fraction</span>
 <span class="sd">            providers (list): Providers.</span>
 <span class="sd">            passed_tests (list, optional): Tests which have been passed. Defaults to None.</span>
@@ -1490,6 +1486,7 @@
         <span class="n">stids</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">varnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">epsilons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">observation</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">observations</span><span class="p">):</span>
             <span class="n">obstimes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">obstime</span><span class="p">)</span>
             <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
@@ -1498,6 +1495,7 @@
             <span class="n">elevs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">elev</span><span class="p">)</span>
             <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="n">varnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">varname</span><span class="p">)</span>
+            <span class="n">epsilons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">sigmao</span><span class="p">)</span>
 
             <span class="n">lon</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span><span class="si">:</span><span class="s2">10.5f</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">lat</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">lat</span><span class="p">)</span><span class="si">:</span><span class="s2">10.5f</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1515,6 +1513,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stids</span> <span class="o">=</span> <span class="n">stids</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="o">=</span> <span class="n">varnames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilons</span> <span class="o">=</span> <span class="n">epsilons</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span>
 
@@ -1524,7 +1523,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">101</span>
                 <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cis</span> <span class="o">=</span> <span class="n">cis</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lafs</span> <span class="o">=</span> <span class="n">lafs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">providers</span> <span class="o">=</span> <span class="n">providers</span>
         <span class="k">if</span> <span class="n">passed_tests</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1605,7 +1603,7 @@
                         <span class="s2">&quot;elev&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="s2">&quot;flag&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                        <span class="s2">&quot;ci&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilons</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="s2">&quot;laf&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lafs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">providers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="s2">&quot;fg_dep&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fg_dep</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
@@ -1614,69 +1612,13 @@
                     <span class="p">}</span>
                 <span class="p">}</span>
             <span class="p">)</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="QCDataSet.normalize_ci"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.normalize_ci">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">cmin</span><span class="p">,</span> <span class="n">cmax</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize the cross correlation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            mask (list): Mask of active observations</span>
-<span class="sd">            cmin (float): Minimum corelation</span>
-<span class="sd">            cmax (float): Maximum correaltion.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nsize</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-        <span class="n">corep</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nsize</span><span class="p">):</span>
-            <span class="n">corep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">corep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">corep</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">nsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-
-            <span class="k">def</span> <span class="nf">ecdf</span><span class="p">(</span><span class="n">xxx</span><span class="p">):</span>
-                <span class="n">xxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">xxx</span><span class="p">)</span>
-                <span class="n">nnn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xxx</span><span class="p">)</span>
-
-                <span class="k">def</span> <span class="nf">_ecdf</span><span class="p">(</span><span class="n">vvv</span><span class="p">):</span>
-                    <span class="c1"># side=&#39;right&#39; because we want Pr(x &lt;= v)</span>
-                    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xxx</span><span class="p">,</span> <span class="n">vvv</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">nnn</span>
-
-                <span class="k">return</span> <span class="n">_ecdf</span>
-
-            <span class="n">qmn</span> <span class="o">=</span> <span class="mf">0.25</span>
-            <span class="n">qmx</span> <span class="o">=</span> <span class="mf">0.75</span>
-            <span class="n">qav</span> <span class="o">=</span> <span class="mf">0.5</span>
-
-            <span class="n">acorep</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corep</span><span class="p">)</span>
-            <span class="n">fun</span> <span class="o">=</span> <span class="n">ecdf</span><span class="p">(</span><span class="n">acorep</span><span class="p">)</span>
-            <span class="n">qcorep</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="n">acorep</span><span class="p">)</span>
-
-            <span class="n">qcorep</span><span class="p">[</span><span class="n">qcorep</span> <span class="o">&lt;</span> <span class="n">qmn</span><span class="p">]</span> <span class="o">=</span> <span class="n">qmn</span>
-            <span class="n">qcorep</span><span class="p">[</span><span class="n">qcorep</span> <span class="o">&gt;</span> <span class="n">qmx</span><span class="p">]</span> <span class="o">=</span> <span class="n">qmx</span>
-
-            <span class="n">corep_max</span> <span class="o">=</span> <span class="n">cmax</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nsize</span><span class="p">)</span>
-            <span class="n">corep_mean</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nsize</span><span class="p">)</span>
-            <span class="n">corep_min</span> <span class="o">=</span> <span class="n">cmin</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nsize</span><span class="p">)</span>
-
-            <span class="n">lav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">qcorep</span> <span class="o">&lt;=</span> <span class="n">qav</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lav</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">corep1</span> <span class="o">=</span> <span class="p">(</span><span class="n">qcorep</span><span class="p">[</span><span class="n">lav</span><span class="p">]</span> <span class="o">-</span> <span class="n">qmn</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">qav</span> <span class="o">-</span> <span class="n">qmn</span><span class="p">)</span>
-                <span class="n">corep</span><span class="p">[</span><span class="n">lav</span><span class="p">]</span> <span class="o">=</span> <span class="n">corep_min</span><span class="p">[</span><span class="n">lav</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">corep_mean</span><span class="p">[</span><span class="n">lav</span><span class="p">]</span> <span class="o">-</span> <span class="n">corep_min</span><span class="p">[</span><span class="n">lav</span><span class="p">])</span> <span class="o">*</span> <span class="n">corep1</span>
-
-            <span class="n">gav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">qcorep</span> <span class="o">&gt;</span> <span class="n">qav</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gav</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">corep1</span> <span class="o">=</span> <span class="p">(</span><span class="n">qcorep</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">-</span> <span class="n">qav</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">qmx</span> <span class="o">-</span> <span class="n">qav</span><span class="p">)</span>
-                <span class="n">corep</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">=</span> <span class="n">corep_mean</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">corep_max</span><span class="p">[</span><span class="n">gav</span><span class="p">]</span> <span class="o">-</span> <span class="n">corep_mean</span><span class="p">[</span><span class="n">gav</span><span class="p">])</span> <span class="o">*</span> <span class="n">corep1</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nsize</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cis</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">qcorep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div></div>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="TitanDataSet"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet">[docs]</a><span class="k">class</span> <span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Titan QC data set.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">corep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span>
-    <span class="p">):</span>
+<div class="viewcode-block" id="TitanDataSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Titan Data set.</span>
 
 <span class="sd">        Args:</span>
@@ -1685,7 +1627,6 @@
 <span class="sd">            tests (list): Tests to perform in order.</span>
 <span class="sd">            datasources (list): List of observations sets.</span>
 <span class="sd">            an_time (datetime.datetime): Analysis time</span>
-<span class="sd">            corep (int, optional): Correlations between observations. Defaults to 1.</span>
 <span class="sd">            test_flags (dict, optional): Dictionary to set custom test flags. Defaults to None.</span>
 
 <span class="sd">        Raises:</span>
@@ -1706,6 +1647,7 @@
         <span class="n">elevs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">varnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sigmaos</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">providers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">passed_tests</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datasources</span> <span class="o">=</span> <span class="n">datasources</span>
@@ -1720,6 +1662,7 @@
                 <span class="n">lelevs</span><span class="p">,</span>
                 <span class="n">lvalues</span><span class="p">,</span>
                 <span class="n">lvarnames</span><span class="p">,</span>
+                <span class="n">lsigmaos</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">=</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">get_obs</span><span class="p">()</span>
             <span class="n">obstimes</span> <span class="o">=</span> <span class="n">obstimes</span> <span class="o">+</span> <span class="n">lobstimes</span>
             <span class="n">lons</span> <span class="o">=</span> <span class="n">lons</span> <span class="o">+</span> <span class="n">llons</span>
@@ -1728,13 +1671,13 @@
             <span class="n">elevs</span> <span class="o">=</span> <span class="n">elevs</span> <span class="o">+</span> <span class="n">lelevs</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">+</span> <span class="n">lvalues</span>
             <span class="n">varnames</span> <span class="o">=</span> <span class="n">varnames</span> <span class="o">+</span> <span class="n">lvarnames</span>
+            <span class="n">sigmaos</span> <span class="o">=</span> <span class="n">sigmaos</span> <span class="o">+</span> <span class="n">lsigmaos</span>
             <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">llons</span><span class="p">)):</span>
                 <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
             <span class="n">passed_tests</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span>
-        <span class="n">cis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span> <span class="o">*</span> <span class="n">corep</span>
         <span class="n">lafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span>
 
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1748,6 +1691,7 @@
                     <span class="n">elev</span><span class="o">=</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                     <span class="n">stid</span><span class="o">=</span><span class="n">stids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                     <span class="n">varname</span><span class="o">=</span><span class="n">varnames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">sigmao</span><span class="o">=</span><span class="n">sigmaos</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">tit</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">elevs</span><span class="p">)</span>
@@ -1765,12 +1709,11 @@
             <span class="n">an_time</span><span class="p">,</span>
             <span class="n">observations</span><span class="p">,</span>
             <span class="n">flags</span><span class="p">,</span>
-            <span class="n">cis</span><span class="p">,</span>
             <span class="n">lafs</span><span class="p">,</span>
             <span class="n">providers</span><span class="p">,</span>
             <span class="n">passed_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">remove_invalid_elevs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="TitanDataSet.perform_tests"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.perform_tests">[docs]</a>    <span class="k">def</span> <span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the tests.&quot;&quot;&quot;</span>
@@ -2013,7 +1956,6 @@
     <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">providers</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">flags</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">cis</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">lafs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">fg_deps</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">an_deps</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2038,8 +1980,9 @@
             <span class="n">stid</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;stid&quot;</span><span class="p">]</span>
             <span class="n">elev</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;elev&quot;</span><span class="p">]</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="n">sigmao</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;epsilon&quot;</span><span class="p">]</span>
             <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">)</span>
+                <span class="n">Observation</span><span class="p">(</span><span class="n">obstime</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">stid</span><span class="o">=</span><span class="n">stid</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="n">sigmao</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="s2">&quot;provider&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                 <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;provider&quot;</span><span class="p">])</span>
@@ -2047,7 +1990,6 @@
                 <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;NA&quot;</span><span class="p">)</span>
             <span class="n">flag</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;flag&quot;</span><span class="p">]</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
-            <span class="n">cis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;ci&quot;</span><span class="p">])</span>
             <span class="n">lafs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;laf&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">fg_dep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
@@ -2073,7 +2015,6 @@
         <span class="n">an_time</span><span class="p">,</span>
         <span class="n">observations</span><span class="p">,</span>
         <span class="n">flags</span><span class="p">,</span>
-        <span class="n">cis</span><span class="p">,</span>
         <span class="n">lafs</span><span class="p">,</span>
         <span class="n">providers</span><span class="p">,</span>
         <span class="n">passed_tests</span><span class="o">=</span><span class="n">passed_tests</span><span class="p">,</span>
