@@ -26,6 +26,7 @@
     offline = "pysurfex.cli:offline"
     perturbed_offline = "pysurfex.cli:perturbed_offline"
     pgd = "pysurfex.cli:pgd"
+    plot_field = "pysurfex.cli:plot_field"
     plot_points = "pysurfex.cli:plot_points"
     prep = "pysurfex.cli:prep"
     qc2obsmon = "pysurfex.cli:qc2obsmon"

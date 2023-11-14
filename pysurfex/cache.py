@@ -269,9 +269,12 @@ class Cache:
             _type_: _description_
 
         """
+        datestring = ""
+        if validtime is not None:
+            datestring = validtime.strftime('%Y%m%d%H')
         return (
             f"{varname}{patches}{layers}{filename.split('/')[-1]}"
-            f"{validtime.strftime('%Y%m%d%H')}"
+            f"{datestring}"
         )
 
     @staticmethod

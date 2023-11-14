@@ -39,7 +39,7 @@ class Variable(object):
         elif self.var_type == "grib1":
             mandatory = [
                 "parameter",
-                "type",
+                "levelType",
                 "level",
                 "tri",
                 "fcint",
@@ -115,9 +115,11 @@ class Variable(object):
 
         """
         logging.debug("Set basename for filename")
-        basetime = self.get_basetime(validtime, previoustime=previoustime)
-        if previoustime is not None:
-            validtime = previoustime
+        basetime = None
+        if validtime is not None:
+            basetime = self.get_basetime(validtime, previoustime=previoustime)
+            if previoustime is not None:
+                validtime = previoustime
         return parse_filepattern(self.filepattern, basetime, validtime)
 
     def get_filehandler(self, validtime, cache=None, previoustime=None):
@@ -176,6 +178,55 @@ class Variable(object):
         logging.debug("var_type: %s", self.var_type)
         logging.debug("filename: %s", filename)
         return file_handler, filename
+
+    def read_var_field(self, validtime, cache=None):
+        """Read points for a variable.
+
+        Args:
+            validtime (datetime.datetime): Valid time
+            cache (surfex.Cache, optional): Cache. Defaults to None.
+
+        Returns:
+            numpy.darray: A numpy array with point values for variable
+
+        """
+
+        logging.debug("set basetime from %s", validtime)
+        # TODO put this in a netcdf variable and we don't need this any more
+        kwargs = {}
+        if self.var_type == "netcdf":
+            kwargs.update({"level": None})
+            kwargs.update({"units": None})
+            if "level" in self.var_dict:
+                kwargs.update({"level": [self.var_dict["level"]]})
+            if "units" in self.var_dict:
+                kwargs.update({"units": str([self.var_dict["units"]][0])})
+
+        filehandler, filename = self.get_filehandler(
+            validtime, cache=cache
+        )
+
+        __, __, var = self.set_var(validtime=validtime)
+        id_str = None
+        if cache is not None:
+            id_str = cache.generate_id(self.var_type, var, filename, validtime)
+
+        if cache is not None and cache.is_saved(id_str):
+            field = cache.saved_fields[id_str]
+            logging.info("Using cached value for %s", id_str)
+        else:
+            if self.var_type == "obs":
+                raise NotImplementedError("Field not defined for point data")
+            else:
+                field, geo_read = filehandler.field(var, validtime=validtime)
+
+            if field is not None:
+                logging.debug("field.shape %s", field.shape)
+
+            if cache is not None:
+                logging.debug("ID_STRING %s", id_str)
+                cache.save_field(id_str, field)
+        return field, geo_read
 
     def read_var_points(self, var, geo, validtime, previoustime=None, cache=None):
         """Read points for a variable.
@@ -280,7 +331,7 @@ class Variable(object):
             var = NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
-            typ = self.var_dict["type"]
+            typ = self.var_dict["levelType"]
             level = self.var_dict["level"]
             tri = self.var_dict["tri"]
             if tri == 4:
@@ -315,7 +366,9 @@ class Variable(object):
             if "tiletype" in self.var_dict:
                 tiletype = self.var_dict["tiletype"]
 
-            basetime = self.get_basetime(validtime)
+            basetime = None
+            if validtime is not None:
+                basetime = self.get_basetime(validtime)
             var = SurfexFileVariable(
                 varname,
                 validtime=validtime,

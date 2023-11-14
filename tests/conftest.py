@@ -519,6 +519,8 @@ variables:
         float snowfall_amount_acc(time, height0, y, x) ;
         float precipitation_amount_acc(time, height0, y, x) ;
         float surface_air_pressure(time, height0, y, x) ;
+        float SSO_SLOPE(time, height0, y, x) ;
+        float COVER006(time, height0, y, x) ;
         float air_temperature_ml(time, hybrid, y, x);
         float specific_humidity_ml(time, hybrid, y, x) ;
         float relative_humidity_2m(time, height1, y, x) ;
@@ -552,8 +554,16 @@ latitude = 60.0, 60.1, 60.2, 60.3, 60.4, 60.5, 60.6;
 land_area_fraction = 0, 0, 1, 1, 1, 0;
 
 surface_geopotential =
-100, 200, 300, 400, 500, 600,
-200, 300, 400, 500, 600, 700;
+0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
+0.2, 0.3, 0.4, 0.5, 0.6, 0.7;
+
+SSO_SLOPE =
+0.01, 0.02, 0.03, 0.04, 0.05, 0.06,
+0.01, 0.02, 0.03, 0.04, 0.05, 0.06;
+
+COVER006 =
+0.0, 1.0, 0.8, 0.25, 0.75, 0.1,
+0.0, 1.0, 0.8, 0.25, 0.75, 0.1;
 
 air_temperature_ml =
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0,

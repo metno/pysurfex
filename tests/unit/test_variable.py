@@ -13,7 +13,7 @@ def fixture():
             "offset": 0,
             "timestep": 3600,
             "parameter": -1,
-            "type": 105,
+            "levelType": 105,
             "level": 0,
             "tri": 0,
             "prefer_forecast": True,

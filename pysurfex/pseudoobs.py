@@ -20,6 +20,10 @@ def snow_pseudo_obs_cryoclim(
     fg_geo,
     grid_snow_fg,
     gelevs_fg,
+    grid_perm_snow=None,
+    grid_perm_snow_geo=None,
+    grid_slope=None,
+    grid_slope_geo=None,
     fg_threshold=0.4,
     new_snow_depth=0.1,
     glaf=None,
@@ -82,6 +86,17 @@ def snow_pseudo_obs_cryoclim(
     p_fg_elevs = gridpos2points(
         fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), gelevs_fg
     )
+
+    if grid_perm_snow is not None:
+        p_perm_snow = gridpos2points(
+            grid_perm_snow_geo.lons, grid_perm_snow_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_perm_snow
+        )
+
+    if grid_slope is not None:
+        p_slope = gridpos2points(
+            grid_slope_geo.lons, grid_slope_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_slope
+        )
+
     if glaf is not None:
         p_fg_laf = gridpos2points(
             fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), glaf
@@ -119,8 +134,18 @@ def snow_pseudo_obs_cryoclim(
                         p_fg_laf[i],
                         laf_threshold,
                     )
+            perm_ok = True
+            if grid_perm_snow is not None:
+                if p_perm_snow[i] > 0.0 :
+                    perm_ok = False
+
+            slope_ok = True
+            if grid_slope is not None:
+                if p_slope[i] > .5 :
+                    slope_ok = False
+
             # Check if in grid
-            if in_grid[i] and laf_ok:
+            if in_grid[i] and laf_ok and perm_ok and slope_ok:
                 obs_value = np.nan
                 try:
                     snow_class_val = p_snow_class[str(i)]
@@ -315,6 +340,10 @@ class CryoclimObservationSet(ObservationSet):
         fg_geo,
         snow_fg,
         gelevs_fg,
+        perm_snow=None,
+        perm_snow_geo=None,
+        slope=None,
+        slope_geo=None,
         label="cryo",
         step=2,
         fg_threshold=0.4,
@@ -352,8 +381,12 @@ class CryoclimObservationSet(ObservationSet):
             fg_geo,
             snow_fg,
             gelevs_fg,
-            fg_threshold,
-            new_snow_depth,
+            fg_threshold=fg_threshold,
+            new_snow_depth=new_snow_depth,
+            grid_perm_snow=perm_snow,
+            grid_perm_snow_geo=perm_snow_geo,
+            grid_slope=slope,
+            grid_slope_geo=slope_geo,
             glaf=glaf,
             laf_threshold=laf_threshold,
         )

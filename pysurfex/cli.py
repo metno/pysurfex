@@ -37,6 +37,7 @@ from .cmd_parsing import (
     parse_args_modify_forcing,
     parse_args_obs2json,
     parse_args_oi2soda,
+    parse_args_plot_field,
     parse_args_plot_points,
     parse_args_qc2obsmon,
     parse_args_set_geo_from_obs_set,
@@ -79,6 +80,7 @@ from .titan import (
     define_quality_control,
     merge_json_qc_data_sets,
 )
+from .variable import Variable
 
 
 def get_geo_and_config_from_cmd(**kwargs):
@@ -948,247 +950,6 @@ def run_hm2pysurfex(**kwargs):
             toml.dump(config.settings, fhandler)
 
 
-def run_plot_points(**kwargs):
-    """Point plots."""
-    geo_file = None
-    if "geo" in kwargs:
-        geo_file = kwargs["geo"]
-    validtime = None
-    if kwargs["validtime"] is not None:
-        validtime = as_datetime(kwargs["validtime"])
-    variable = None
-    if "variable" in kwargs:
-        variable = kwargs["variable"]
-    filepattern = None
-    if "inputfile" in kwargs:
-        filepattern = kwargs["inputfile"]
-    inputtype = kwargs["inputtype"]
-    output = kwargs["output"]
-    interpolator = "nearest"
-    if "interpolator" in kwargs:
-        interpolator = kwargs["interpolator"]
-
-    geo = None
-    if geo_file is not None:
-        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
-        geo = get_geo_object(domain_json)
-
-    contour = True
-    if "no_contour" in kwargs:
-        no_contour = kwargs["no_contour"]
-        if no_contour:
-            contour = False
-
-    var = "field_to_read"
-    if inputtype == "grib1":
-
-        if filepattern is None:
-            raise RuntimeError("You must provide a filepattern")
-
-        par = kwargs["indicatorOfParameter"]
-        ltp = kwargs["levelType"]
-        lev = kwargs["level"]
-        tri = kwargs["timeRangeIndicator"]
-
-        gribvar = Grib1Variable(par, ltp, lev, tri)
-        title = (
-            "grib1:" + gribvar.generate_grib_id() + " " + validtime.strftime("%Y%m%d%H")
-        )
-        var_dict = {
-            "filepattern": filepattern,
-            "fcint": 10800,
-            "file_inc": 10800,
-            "offset": 0,
-            "parameter": par,
-            "type": ltp,
-            "level": lev,
-            "tri": tri,
-            "interpolator": interpolator,
-        }
-
-    elif inputtype == "grib2":
-
-        if filepattern is None:
-            raise RuntimeError("You must provide a filepattern")
-
-        discipline = kwargs["discipline"]
-        parameter_category = kwargs["parameterCategory"]
-        parameter_number = kwargs["parameterNumber"]
-        level_type = kwargs["levelType"]
-        level = kwargs["level"]
-        type_of_statistical_processing = kwargs["typeOfStatisticalProcessing"]
-
-        gribvar = Grib2Variable(
-            discipline,
-            parameter_category,
-            parameter_number,
-            level_type,
-            level,
-            tsp=type_of_statistical_processing,
-        )
-        logging.debug(inputtype)
-        logging.debug(gribvar)
-        logging.debug(validtime)
-        title = (
-            f"{inputtype}: {gribvar.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-        )
-
-        var_dict = {
-            "fcint": 10800,
-            "file_inc": 10800,
-            "offset": 0,
-            "filepattern": filepattern,
-            "discipline": discipline,
-            "parameterCategory": parameter_category,
-            "parameterNumber": parameter_number,
-            "levelType": level_type,
-            "level": level,
-            "typeOfStatisticalProcessing": type_of_statistical_processing,
-        }
-
-    elif inputtype == "netcdf":
-
-        if variable is None:
-            raise RuntimeError("You must provide a variable")
-        if filepattern is None:
-            raise RuntimeError("You must provide a filepattern")
-
-        title = "netcdf: " + variable + " " + validtime.strftime("%Y%m%d%H")
-        var_dict = {
-            "name": variable,
-            "filepattern": filepattern,
-            "fcint": 10800,
-            "file_inc": 10800,
-            "offset": 0,
-            "interpolator": interpolator,
-        }
-
-    elif inputtype == "surfex":
-
-        if variable is None:
-            raise RuntimeError("You must provide a variable")
-        if filepattern is None:
-            raise RuntimeError("You must provide a filepattern")
-
-        basetime = kwargs["sfx_basetime"]
-        patches = kwargs["sfx_patches"]
-        layers = kwargs["sfx_layers"]
-        datatype = kwargs["sfx_datatype"]
-        interval = kwargs["sfx_interval"]
-        geo_sfx_input = kwargs["sfx_geo_input"]
-        geo_input = None
-        if geo_sfx_input is not None:
-            domain_json = json.load(open(geo_sfx_input, "r", encoding="utf-8"))
-            geo_input = get_geo_object(domain_json)
-
-        sfx_var = SurfexFileVariable(
-            variable,
-            validtime=validtime,
-            patches=patches,
-            layers=layers,
-            basetime=basetime,
-            interval=interval,
-            datatype=datatype,
-        )
-
-        title = inputtype + ": " + sfx_var.print_var()
-        var_dict = {
-            "varname": variable,
-            "filepattern": filepattern,
-            "patches": patches,
-            "layers": layers,
-            "datatype": datatype,
-            "interval": interval,
-            "basetime": basetime,
-            "geo_input": geo_input,
-            "fcint": 10800,
-            "file_inc": 10800,
-            "offset": 0,
-            "interpolator": interpolator,
-        }
-
-    elif inputtype == "obs":
-
-        contour = False
-        if variable is None:
-            raise RuntimeError("You must provide a variable")
-
-        obs_input_type = kwargs["obs_type"]
-        if obs_input_type is None:
-            raise RuntimeError("You must provide an obs type")
-
-        if geo is None:
-            obs_time = as_datetime(kwargs["validtime"])
-            varname = variable
-            inputfile = kwargs["inputfile"]
-            geo = set_geo_from_obs_set(
-                obs_time, obs_input_type, varname, inputfile, lonrange=None, latrange=None
-            )
-
-        var_dict = {
-            "filetype": obs_input_type,
-            "varname": variable,
-            "filepattern": filepattern,
-            "filenames": [filepattern],
-            "fcint": 10800,
-            "file_inc": 10800,
-            "offset": 0,
-        }
-        title = inputtype + ": var=" + variable + " type=" + obs_input_type
-
-    else:
-        raise NotImplementedError
-
-    defs = {var: {inputtype: {"converter": {"none": var_dict}}}}
-    converter_conf = defs[var][inputtype]["converter"]
-
-    if geo is None:
-        raise RuntimeError("No geo is set")
-
-    cache = Cache(-1)
-    converter = "none"
-    converter = Converter(converter, validtime, defs, converter_conf, inputtype)
-    field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
-
-    if field is None:
-        raise RuntimeError("No field read")
-
-    logging.debug(
-        "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
-        geo.npoints,
-        geo.nlons,
-        geo.nlats,
-        contour,
-        field.shape,
-    )
-    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
-        if contour:
-            field = np.reshape(field, [geo.nlons, geo.nlats])
-    else:
-        contour = False
-
-    if plt is None:
-        raise ModuleNotFoundError("Matplotlib is needed to plot")
-    logging.debug(
-        "lons.shape=%s lats.shape=%s field.shape=%s",
-        geo.lons.shape,
-        geo.lats.shape,
-        field.shape,
-    )
-    if contour:
-        plt.contourf(geo.lons, geo.lats, field)
-    else:
-        plt.scatter(geo.lonlist, geo.latlist, c=field)
-
-    plt.title(title)
-    plt.colorbar()
-    if output is None:
-        plt.show()
-    else:
-        logging.info("Saving figure in %s", output)
-        plt.savefig(output)
-
-
 def set_geo_from_stationlist(**kwargs):
     """Set geometry from station list."""
     stationlist = kwargs["stationlist"]
@@ -1330,7 +1091,209 @@ def plot_points(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ plot_points ******************")
-    run_plot_points(**kwargs)
+    # run_plot_points(**kwargs)
+    validtime = None
+    if kwargs["variable"]["validtime"] is not None:
+        validtime = as_datetime(kwargs["variable"]["validtime"])
+    output = kwargs["output"]
+
+    geo_file = None
+    if "geo" in kwargs:
+        geo_file = kwargs["geo"]
+
+    geo = None
+    if geo_file is not None:
+        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
+        geo = get_geo_object(domain_json)
+
+    contour = True
+    if "no_contour" in kwargs:
+        no_contour = kwargs["no_contour"]
+        if no_contour:
+            contour = False
+
+    var_dict = kwargs["variable"]
+    inputtype = kwargs["variable"]["inputtype"]
+    defs = {"var": {inputtype: {"converter": {"none": var_dict}}}}
+    converter_conf = defs["var"][inputtype]["converter"]
+
+    inputtype =  kwargs["variable"]["inputtype"]
+    var = Variable(inputtype, kwargs["variable"], validtime)
+    __, __, file_var = var.set_var(validtime=validtime)
+
+    cache = Cache(-1)
+    converter = "none"
+    print(validtime)
+    if inputtype == "obs":
+        if geo is None:
+            obs_input_type = kwargs["variable"]["filetype"]
+            variable = kwargs["variable"]["variable"]
+            obs_time = as_datetime(kwargs["variable"]["validtime"])
+            inputfile = kwargs["variable"]["inputfile"]
+            geo = set_geo_from_obs_set(
+                obs_time, obs_input_type, variable, inputfile, lonrange=None, latrange=None
+            )
+    converter = Converter(converter, validtime, defs, converter_conf, inputtype)
+    field = ConvertedInput(geo, "var", converter).read_time_step(validtime, cache)
+
+    if field is None:
+        raise RuntimeError("No field read")
+
+    if inputtype == "grib1" or inputtype == "grib2":
+        title = (
+            f"{inputtype}: {file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
+        )
+    elif inputtype == "netcdf":
+        title = "netcdf: " + file_var.name + " " + validtime.strftime("%Y%m%d%H")
+    elif inputtype == "surfex":
+        title = inputtype + ": " + file_var.print_var()
+    elif inputtype == "obs":
+        obs_input_type = kwargs["variable"]["filetype"]
+        variable = kwargs["variable"]["variable"]
+        title = inputtype + ": var=" + variable + " type=" + obs_input_type
+    else:
+        raise NotImplementedError
+
+    if geo is None:
+        raise RuntimeError("No geo is set")
+
+    if field is None:
+        raise RuntimeError("No field read")
+
+    logging.debug(
+        "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
+        geo.npoints,
+        geo.nlons,
+        geo.nlats,
+        contour,
+        field.shape,
+    )
+    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+        if contour:
+            field = np.reshape(field, [geo.nlons, geo.nlats])
+    else:
+        contour = False
+
+    if plt is None:
+        raise ModuleNotFoundError("Matplotlib is needed to plot")
+    logging.debug(
+        "lons.shape=%s lats.shape=%s field.shape=%s",
+        geo.lons.shape,
+        geo.lats.shape,
+        field.shape,
+    )
+    if contour:
+        plt.contourf(geo.lons, geo.lats, field)
+    else:
+        plt.scatter(geo.lonlist, geo.latlist, c=field)
+
+    plt.title(title)
+    plt.colorbar()
+    if output is None:
+        plt.show()
+    else:
+        logging.info("Saving figure in %s", output)
+        plt.savefig(output)
+
+
+def plot_field(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+    kwargs = parse_args_plot_field(argv)
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
+            level=logging.DEBUG,
+        )
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+        )
+    logging.info("************ plot_field ******************")
+
+    validtime = None
+    if kwargs["validtime"] is not None:
+        validtime = as_datetime(kwargs["validtime"])
+    output = kwargs["output"]
+
+    geo_file = None
+    if "geo" in kwargs:
+        geo_file = kwargs["geo"]
+
+    geo = None
+    if geo_file is not None:
+        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
+        geo = get_geo_object(domain_json)
+
+    contour = True
+    if "no_contour" in kwargs:
+        no_contour = kwargs["no_contour"]
+        if no_contour:
+            contour = False
+
+    inputtype =  kwargs["variable"]["inputtype"]
+    var = Variable(inputtype, kwargs["variable"], validtime)
+    __, __, file_var = var.set_var(validtime=validtime)
+    field, geo = var.read_var_field(validtime)
+
+    if inputtype == "grib1" or inputtype == "grib2":
+        title = (
+            f"{inputtype}: {file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
+        )
+    elif inputtype == "netcdf":
+        title = "netcdf: " + file_var.var_name + " " + validtime.strftime("%Y%m%d%H")
+    elif inputtype == "surfex":
+        title = inputtype + ": " + file_var.print_var()
+    else:
+        raise NotImplementedError
+
+    if geo is None:
+        raise RuntimeError("No geo is set")
+
+    if field is None:
+        raise RuntimeError("No field read")
+
+    logging.debug(
+        "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
+        geo.npoints,
+        geo.nlons,
+        geo.nlats,
+        contour,
+        field.shape,
+    )
+    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+        if contour:
+            field = np.reshape(field, [geo.nlons, geo.nlats])
+    else:
+        contour = False
+
+    if plt is None:
+        raise ModuleNotFoundError("Matplotlib is needed to plot")
+    logging.debug(
+        "lons.shape=%s lats.shape=%s field.shape=%s",
+        geo.lons.shape,
+        geo.lats.shape,
+        field.shape,
+    )
+    if contour:
+        plt.contourf(geo.lons, geo.lats, field)
+    else:
+        plt.scatter(geo.lonlist, geo.latlist, c=field)
+
+    plt.title(title)
+    plt.colorbar()
+    if output is None:
+        plt.show()
+    else:
+        logging.info("Saving figure in %s", output)
+        plt.savefig(output)
 
 
 def pgd(argv=None):
@@ -1612,23 +1575,52 @@ def cryoclim_pseudoobs(argv=None):
         )
     logging.info("************ cryoclim_pseudoobs ******************")
 
-    fg_file = kwargs["fg_file"]
+    fg_file = kwargs["fg"]["inputfile"]
     infiles = kwargs["infiles"]
     step = kwargs["thinning"]
     output = kwargs["output"]
-    varname = kwargs["varname"]
+    varname = kwargs["fg"]["varname"]
     indent = kwargs["indent"]
     laf_threshold = kwargs["laf_threshold"]
     cryo_varname = kwargs["cryo_varname"]
     fg_geo, validtime, grid_snow_fg, glafs, gelevs = read_first_guess_netcdf_file(
         fg_file, varname
     )
+
+    grid_perm_snow = None
+    grid_perm_snow_geo = None
+    if "perm_snow" in kwargs:
+        fileformat = kwargs["perm_snow"].get("inputtype")
+        if fileformat is not None:
+            lvalidtime = kwargs["perm_snow"].get("validtime")
+            if lvalidtime is None:
+                lvalidtime = validtime
+            else:
+                lvalidtime = as_datetime(lvalidtime)
+            grid_perm_snow, grid_perm_snow_geo = Variable(fileformat, kwargs["perm_snow"], lvalidtime).read_var_field(lvalidtime)
+
+    grid_slope = None
+    grid_slope_geo = None
+    if "slope" in kwargs:
+        fileformat = kwargs["slope"].get("inputtype")
+        if fileformat is not None:
+            lvalidtime = kwargs["slope"].get("validtime")
+            if lvalidtime is None:
+                lvalidtime = validtime
+            else:
+                lvalidtime = as_datetime(lvalidtime)
+            grid_slope, grid_slope_geo = Variable(fileformat, kwargs["slope"], lvalidtime).read_var_field(lvalidtime)
+
     obs_set = CryoclimObservationSet(
         infiles,
         validtime,
         fg_geo,
         grid_snow_fg,
         gelevs,
+        perm_snow=grid_perm_snow,
+        perm_snow_geo=grid_perm_snow_geo,
+        slope=grid_slope,
+        slope_geo=grid_slope_geo,
         step=step,
         glaf=glafs,
         laf_threshold=laf_threshold,
