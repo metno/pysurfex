@@ -658,8 +658,6 @@ class Sct(QualityControl):
                 if int(global_flags[mask_ind]) == 0 and flags[i] == 1:
                     global_flags[mask_ind] = code
 
-            dataset.normalize_ci(mask, self.cmin, self.cmax)
-
             for i, mask_ind in enumerate(mask):
                 logging.debug(
                     "test=%s i=%s m_i=%s value(m_i)=%s sct(i)=%s rep(i)=%s flag(i)=%s "
@@ -1421,7 +1419,6 @@ class QCDataSet(object):
         analysis_time,
         observations,
         flags,
-        cis,
         lafs,
         providers,
         passed_tests=None,
@@ -1435,7 +1432,6 @@ class QCDataSet(object):
             analysis_time (datetime.datetime): Analysis time
             observations (list): Observation objects.
             flags (list): Flags
-            cis (list): Corep
             lafs (list): Land area fraction
             providers (list): Providers.
             passed_tests (list, optional): Tests which have been passed. Defaults to None.
@@ -1454,6 +1450,7 @@ class QCDataSet(object):
         stids = []
         values = []
         varnames = []
+        epsilons = []
         for i, observation in enumerate(observations):
             obstimes.append(observation.obstime)
             lons.append(observation.lon)
@@ -1462,6 +1459,7 @@ class QCDataSet(object):
             elevs.append(observation.elev)
             values.append(observation.value)
             varnames.append(observation.varname)
+            epsilons.append(observation.sigmao)
 
             lon = f"{float(observation.lon):10.5f}"
             lat = f"{float(observation.lat):10.5f}"
@@ -1479,6 +1477,7 @@ class QCDataSet(object):
         self.stids = stids
         self.values = values
         self.varnames = varnames
+        self.epsilons = epsilons
 
         self.flags = flags
 
@@ -1488,7 +1487,6 @@ class QCDataSet(object):
                 self.flags[i] = 101
                 metadata = metadata + 1
         self.metadata = metadata
-        self.cis = cis
         self.lafs = lafs
         self.providers = providers
         if passed_tests is None:
@@ -1569,7 +1567,7 @@ class QCDataSet(object):
                         "elev": self.elevs[i],
                         "value": self.values[i],
                         "flag": self.flags[i],
-                        "ci": self.cis[i],
+                        "epsilon": self.epsilons[i],
                         "laf": self.lafs[i],
                         "provider": self.providers[i],
                         "fg_dep": self.fg_dep[i],
@@ -1580,67 +1578,11 @@ class QCDataSet(object):
             )
         json.dump(data, open(filename, mode="w", encoding="utf-8"), indent=indent)
 
-    def normalize_ci(self, mask, cmin, cmax):
-        """Normalize the cross correlation.
-
-        Args:
-            mask (list): Mask of active observations
-            cmin (float): Minimum corelation
-            cmax (float): Maximum correaltion.
-
-        """
-        nsize = len(mask)
-        corep = []
-        for i in range(0, nsize):
-            corep.append(self.cis[mask[i]])
-        corep = np.asarray(corep)
-        if nsize > 0:
-
-            def ecdf(xxx):
-                xxx = np.sort(xxx)
-                nnn = len(xxx)
-
-                def _ecdf(vvv):
-                    # side='right' because we want Pr(x <= v)
-                    return (np.searchsorted(xxx, vvv, side="right") + 1) / nnn
-
-                return _ecdf
-
-            qmn = 0.25
-            qmx = 0.75
-            qav = 0.5
-
-            acorep = abs(corep)
-            fun = ecdf(acorep)
-            qcorep = fun(acorep)
-
-            qcorep[qcorep < qmn] = qmn
-            qcorep[qcorep > qmx] = qmx
-
-            corep_max = cmax * np.ones(nsize)
-            corep_mean = 1 * np.ones(nsize)
-            corep_min = cmin * np.ones(nsize)
-
-            lav = np.where(qcorep <= qav)[0].tolist()
-            if len(lav) > 0:
-                corep1 = (qcorep[lav] - qmn) / (qav - qmn)
-                corep[lav] = corep_min[lav] + (corep_mean[lav] - corep_min[lav]) * corep1
-
-            gav = np.where(qcorep > qav)[0].tolist()
-            if len(gav) > 0:
-                corep1 = (qcorep[gav] - qav) / (qmx - qav)
-                corep[gav] = corep_mean[gav] + (corep_max[gav] - corep_mean[gav]) * corep1
-
-        for i in range(0, nsize):
-            self.cis[mask[i]] = qcorep[i]
-
 
 class TitanDataSet(QCDataSet):
     """Titan QC data set."""
 
-    def __init__(
-        self, var, settings, tests, datasources, an_time, corep=1, test_flags=None
-    ):
+    def __init__(self, var, settings, tests, datasources, an_time, test_flags=None):
         """Titan Data set.
 
         Args:
@@ -1649,7 +1591,6 @@ class TitanDataSet(QCDataSet):
             tests (list): Tests to perform in order.
             datasources (list): List of observations sets.
             an_time (datetime.datetime): Analysis time
-            corep (int, optional): Correlations between observations. Defaults to 1.
             test_flags (dict, optional): Dictionary to set custom test flags. Defaults to None.
 
         Raises:
@@ -1670,6 +1611,7 @@ class TitanDataSet(QCDataSet):
         elevs = []
         values = []
         varnames = []
+        sigmaos = []
         providers = []
         passed_tests = []
         self.datasources = datasources
@@ -1684,6 +1626,7 @@ class TitanDataSet(QCDataSet):
                 lelevs,
                 lvalues,
                 lvarnames,
+                lsigmaos,
             ) = obs_set.get_obs()
             obstimes = obstimes + lobstimes
             lons = lons + llons
@@ -1692,13 +1635,13 @@ class TitanDataSet(QCDataSet):
             elevs = elevs + lelevs
             values = values + lvalues
             varnames = varnames + lvarnames
+            sigmaos = sigmaos + lsigmaos
             for __ in range(0, len(llons)):
                 providers.append(obs_set.label)
 
         for __ in range(0, len(lons)):
             passed_tests.append([])
         flags = np.zeros(len(lons))
-        cis = np.ones(len(lons)) * corep
         lafs = np.ones(len(lons))
 
         observations = []
@@ -1712,6 +1655,7 @@ class TitanDataSet(QCDataSet):
                     elev=elevs[i],
                     stid=stids[i],
                     varname=varnames[i],
+                    sigmao=sigmaos[i],
                 )
             )
         points = tit.Points(lats, lons, elevs)
@@ -1729,7 +1673,6 @@ class TitanDataSet(QCDataSet):
             an_time,
             observations,
             flags,
-            cis,
             lafs,
             providers,
             passed_tests=None,
@@ -1977,7 +1920,6 @@ def dataset_from_json(
     observations = []
     providers = []
     flags = []
-    cis = []
     lafs = []
     fg_deps = []
     an_deps = []
@@ -2002,8 +1944,9 @@ def dataset_from_json(
             stid = data[i]["stid"]
             elev = data[i]["elev"]
             value = data[i]["value"]
+            sigmao = data[i]["epsilon"]
             observations.append(
-                Observation(obstime, lon, lat, value, stid=stid, elev=elev)
+                Observation(obstime, lon, lat, value, stid=stid, elev=elev, sigmao=sigmao)
             )
             if "provider" in data[i]:
                 providers.append(data[i]["provider"])
@@ -2011,7 +1954,6 @@ def dataset_from_json(
                 providers.append("NA")
             flag = data[i]["flag"]
             flags.append(flag)
-            cis.append(data[i]["ci"])
             lafs.append(data[i]["laf"])
             if fg_dep is not None:
                 fg_deps.append(fg_dep[int(i)])
@@ -2037,7 +1979,6 @@ def dataset_from_json(
         an_time,
         observations,
         flags,
-        cis,
         lafs,
         providers,
         passed_tests=passed_tests,

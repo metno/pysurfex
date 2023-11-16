@@ -801,7 +801,7 @@ def run_gridpp(**kwargs):
         elev_gradient = kwargs["elev_gradient"]
     if elev_gradient != -0.0065 and elev_gradient != 0:
         raise RuntimeError("Not a valid elevation gradient")
-    epsilon = 0.25
+    epsilon = None
     if "epsilon" in kwargs:
         epsilon = kwargs["epsilon"]
     minvalue = None
@@ -824,7 +824,6 @@ def run_gridpp(**kwargs):
     # Read OK observations
     observations = dataset_from_file(an_time, obs_file, qc_flag=0)
     logging.info("Found %s observations with QC flag == 0", str(len(observations.lons)))
-
     field = horizontal_oi(
         geo,
         background,
@@ -1804,6 +1803,7 @@ def bufr2json(argv=None):
     output = kwargs.get("output")
     valid_dtg = as_datetime(kwargs.get("dtg"))
     valid_range = as_timedelta(seconds=kwargs.get("valid_range"))
+    sigmao = kwargs.get("sigmao")
     label = kwargs.get("label")
     indent = kwargs.get("indent")
     lonrange = kwargs.get("lonrange")
@@ -1820,6 +1820,7 @@ def bufr2json(argv=None):
         latrange=latrange,
         label=label,
         indent=indent,
+        sigmao=sigmao,
     )
 
 
@@ -1854,6 +1855,7 @@ def obs2json(argv=None):
     level = kwargs.get("level")
     obtypes = kwargs.get("obtypes")
     subtypes = kwargs.get("subtypes")
+    sigmao = kwargs.get("sigmao")
     pos_t_range = kwargs.get("pos_t_range")
     neg_t_range = kwargs.get("neg_t_range")
     indent = kwargs.get("indent")
@@ -1880,6 +1882,7 @@ def obs2json(argv=None):
         indent=indent,
         obtypes=obtypes,
         subtypes=subtypes,
+        sigmao=sigmao,
     )
 
 

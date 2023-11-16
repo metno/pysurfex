@@ -455,7 +455,7 @@ def horizontal_oi(
     elev_gradient=None,
     structure_function="Barnes",
     max_locations=50,
-    epsilon=0.5,
+    epsilon=None,
     minvalue=None,
     maxvalue=None,
     interpol="bilinear",
@@ -503,12 +503,12 @@ def horizontal_oi(
             my_obs.stids,
             my_obs.elevs,
             my_obs.values,
-            my_obs.cis,
+            my_obs.epsilons,
             my_obs.lafs,
         )
 
     vectors = np.vectorize(obs2vectors)
-    lons, lats, __, elevs, values, __, __ = vectors(observations)
+    lons, lats, __, elevs, values, sigmaos, __ = vectors(observations)
 
     bgrid = Grid(glons, glats, gelevs)
     points = Points(lons, lats, elevs)
@@ -523,6 +523,7 @@ def horizontal_oi(
         lats2 = []
         elevs2 = []
         values2 = []
+        sigmaos2 = []
         for point in range(0, len(lons)):
             if np.isnan(pbackground[point]):
                 logging.info(
@@ -530,19 +531,28 @@ def horizontal_oi(
                     lons[point],
                     lats[point],
                     values[point],
+                    sigmaos[point],
                 )
             else:
                 lons2.append(lons[point])
                 lats2.append(lats[point])
                 elevs2.append(elevs[point])
                 values2.append(values[point])
+                sigmaos2.append(sigmaos[point])
         values = values2
+        sigmaos = sigmaos2
         points = Points(lons2, lats2, elevs2)
         pbackground = grid2points(
             bgrid, points, background, operator=interpol, elev_gradient=elev_gradient
         )
 
-    variance_ratios = np.full(points.points.size(), epsilon)
+    # Set relationship between obs/background error
+    if epsilon is None:
+        logging.info("Using epsilon from observation data sets")
+        variance_ratios = sigmaos
+    else:
+        logging.info("Using fixed epsilon %s", epsilon)
+        variance_ratios = np.full(points.points.size(), epsilon)
 
     if structure_function == "Barnes":
         structure = gridpp.BarnesStructure(hlength, vlength, wlength)
