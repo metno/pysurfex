@@ -62,6 +62,7 @@
     requests = "^2.28.2"
     gridpp = "^0.6.0"
     titanlib = "^0.3.3"
+    verif = "^1.2.3"
 
 #[tool.poetry.group.plot.dependencies]
     matplotlib = "^3.7.1"
