@@ -39,7 +39,6 @@ class Variable(object):
         elif self.var_type == "grib1":
             mandatory = [
                 "parameter",
-                "levelType",
                 "level",
                 "tri",
                 "fcint",
@@ -331,7 +330,12 @@ class Variable(object):
             var = NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
             par = self.var_dict["parameter"]
-            typ = self.var_dict["levelType"]
+            if "type" in self.var_dict:
+                typ = self.var_dict["type"]
+            elif "levelType" in self.var_dict:
+                typ = self.var_dict["levelType"]
+            else:
+                raise RuntimeError("grib1 needs type or levelType")
             level = self.var_dict["level"]
             tri = self.var_dict["tri"]
             if tri == 4:

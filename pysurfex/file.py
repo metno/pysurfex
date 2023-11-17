@@ -993,10 +993,6 @@ class FaSurfexFile(SurfexIO):
 
         """
         file_handler = Fa(self.filename)
-        if validtime is None:
-            pass
-        elif isdatetime(validtime):
-            raise RuntimeError("validtime must be a datetime object")
 
         field, geo_in = file_handler.field(var.varname, validtime)
 
