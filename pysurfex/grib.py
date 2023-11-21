@@ -370,14 +370,14 @@ class Grib(object):
 class Grib1Variable:
     """Grib1 variable."""
 
-    def __init__(self, par, typ, level, tri):
+    def __init__(self, par, typ, level, tri=0):
         """Construct grib1 variable.
 
         Args:
             par (int): IndicatorOfParameter
             typ (int): TypeOfLevel
             level (int): NumberOFLevel
-            tri (int): TimeRangeIndicator
+            tri (int, optional): TimeRangeIndicator. Defaults to 0.
 
         """
         self.version = 1

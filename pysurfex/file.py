@@ -9,7 +9,7 @@ import netCDF4
 import numpy as np
 import pyproj
 
-from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, isdatetime
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .fa import Fa
 from .geo import IGN, ConfProj, LonLatReg, LonLatVal
 from .interpolation import Interpolation
@@ -984,9 +984,6 @@ class FaSurfexFile(SurfexIO):
         Args:
             var (SurfexFileVariable): Variable in surfex file.
             validtime (datetime.datetime, optional): Valid time. Defaults to None.
-
-        Raises:
-            RuntimeError: validtime must be a datetime object
 
         Returns:
             np.darray: Field, surfex.Geo in read file

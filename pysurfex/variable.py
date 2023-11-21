@@ -27,70 +27,34 @@ class Variable(object):
             prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.
 
         Raises:
-            NotImplementedError: Variable not implemented
             RuntimeError: No filepattern provided
             RuntimeError: variable must have attribute
             RuntimeError: You can not have larger offset than the frequency of forecasts
 
         """
         self.var_type = var_type
-        if self.var_type == "netcdf":
-            mandatory = ["name", "fcint", "offset", "filepattern"]
-        elif self.var_type == "grib1":
-            mandatory = [
-                "parameter",
-                "level",
-                "tri",
-                "fcint",
-                "offset",
-                "filepattern",
-            ]
-        elif self.var_type == "grib2":
-            mandatory = [
-                "discipline",
-                "parameterCategory",
-                "parameterNumber",
-                "levelType",
-                "level",
-                "typeOfStatisticalProcessing",
-                "fcint",
-                "offset",
-                "filepattern",
-            ]
-        elif self.var_type == "surfex":
-            mandatory = ["varname", "fcint", "offset", "filepattern"]
-        elif self.var_type == "fa":
-            mandatory = ["name", "fcint", "offset", "filepattern"]
-        elif self.var_type == "obs":
-            mandatory = ["filetype", "fcint", "offset"]
-        else:
-            raise NotImplementedError
-
-        for mand_val in mandatory:
-            if mand_val not in var_dict:
-                raise RuntimeError(
-                    var_type
-                    + " variable must have attribute "
-                    + mand_val
-                    + " var_dict:"
-                    + str(var_dict)
-                )
-
         self.var_dict = copy.deepcopy(var_dict)
-        interval = 3600
-        if "timestep" in var_dict:
-            interval = var_dict["timestep"]
-        self.interval = interval
-        if "filepattern" in var_dict:
+        try:
+            self.interval = var_dict["timestep"]
+        except KeyError:
+            self.interval = 3600
+        try:
             self.filepattern = var_dict["filepattern"]
-        else:
-            raise RuntimeError("No filepattern provided")
+        except KeyError:
+            raise RuntimeError("No filepattern provided") from KeyError
         self.initial_basetime = initial_basetime
-        self.fcint = int(self.var_dict["fcint"])
-        self.offset = int(self.var_dict["offset"])
-        self.prefer_forecast = prefer_forecast
-        if "prefer_forecast" in self.var_dict:
+        try:
+            self.fcint = int(self.var_dict["fcint"])
+        except KeyError:
+            self.fcint = 10800
+        try:
+            self.offset = int(self.var_dict["offset"])
+        except KeyError:
+            self.offset = 0
+        try:
             self.prefer_forecast = self.var_dict["prefer_forecast"]
+        except KeyError:
+            self.prefer_forecast = prefer_forecast
 
         if self.offset > self.fcint:
             raise RuntimeError(
@@ -99,7 +63,10 @@ class Variable(object):
                 + " > "
                 + str(self.fcint)
             )
-
+        accumulated, instant, file_var = self.set_var(validtime=self.initial_basetime)
+        self.file_var = file_var
+        self.instant = instant
+        self.accumulated = accumulated
         logging.debug("Constructed variable for %s", str(self.var_dict))
 
     def get_filename(self, validtime, previoustime=None):
@@ -147,12 +114,14 @@ class Variable(object):
             elif self.var_type == "fa":
                 file_handler = Fa(filename)
             elif self.var_type == "surfex":
-                fileformat = None
-                if "fileformat" in self.var_dict:
+                try:
                     fileformat = self.var_dict["fileformat"]
-                filetype = None
-                if "filetype" in self.var_dict:
+                except KeyError:
+                    fileformat = None
+                try:
                     filetype = self.var_dict["filetype"]
+                except KeyError:
+                    filetype = None
                 geo_in = None
                 if "geo_input" in self.var_dict:
                     geo_in = self.var_dict["geo_input"]
@@ -188,27 +157,17 @@ class Variable(object):
         Returns:
             numpy.darray: A numpy array with point values for variable
 
+        Raises:
+            NotImplementedError: "Field not defined for point data"
+
         """
-
         logging.debug("set basetime from %s", validtime)
-        # TODO put this in a netcdf variable and we don't need this any more
-        kwargs = {}
-        if self.var_type == "netcdf":
-            kwargs.update({"level": None})
-            kwargs.update({"units": None})
-            if "level" in self.var_dict:
-                kwargs.update({"level": [self.var_dict["level"]]})
-            if "units" in self.var_dict:
-                kwargs.update({"units": str([self.var_dict["units"]][0])})
 
-        filehandler, filename = self.get_filehandler(
-            validtime, cache=cache
-        )
+        filehandler, filename = self.get_filehandler(validtime, cache=cache)
 
-        __, __, var = self.set_var(validtime=validtime)
         id_str = None
         if cache is not None:
-            id_str = cache.generate_id(self.var_type, var, filename, validtime)
+            id_str = cache.generate_id(self.var_type, self.file_var, filename, validtime)
 
         if cache is not None and cache.is_saved(id_str):
             field = cache.saved_fields[id_str]
@@ -217,7 +176,7 @@ class Variable(object):
             if self.var_type == "obs":
                 raise NotImplementedError("Field not defined for point data")
             else:
-                field, geo_read = filehandler.field(var, validtime=validtime)
+                field, geo_read = filehandler.field(self.file_var, validtime=validtime)
 
             if field is not None:
                 logging.debug("field.shape %s", field.shape)
@@ -248,17 +207,6 @@ class Variable(object):
                 interpolation = self.var_dict["interpolator"]
 
         logging.debug("set basetime from %s", validtime)
-
-        # TODO put this in a netcdf variable and we don't need this any more
-        kwargs = {}
-        if self.var_type == "netcdf":
-            kwargs.update({"level": None})
-            kwargs.update({"units": None})
-            if "level" in self.var_dict:
-                kwargs.update({"level": [self.var_dict["level"]]})
-            if "units" in self.var_dict:
-                kwargs.update({"units": str([self.var_dict["units"]][0])})
-
         filehandler, filename = self.get_filehandler(
             validtime, cache=cache, previoustime=previoustime
         )
@@ -303,6 +251,8 @@ class Variable(object):
 
         Raises:
             NotImplementedError: Variable not implemented
+            RuntimeError: You must provide name
+            RuntimeError: grib1 needs type or levelType
 
         Returns:
             tuple: accumulated, instant, var
@@ -310,46 +260,67 @@ class Variable(object):
         """
         accumulated = False
         if self.var_type == "netcdf":
-            name = self.var_dict["name"]
-            if "accumulated" in self.var_dict:
+            try:
+                name = self.var_dict["name"]
+            except KeyError:
+                raise RuntimeError("You must provide name") from KeyError
+            try:
                 accumulated = self.var_dict["accumulated"]
-            level = None
-            if "level" in self.var_dict:
+            except KeyError:
+                accumulated = False
+            try:
                 level = self.var_dict["level"]
                 if not isinstance(level, list):
                     level = [level]
-            units = None
-            if "units" in self.var_dict:
+            except KeyError:
+                level = None
+            try:
                 units = str([self.var_dict["units"]][0])
-            member = None
-            if "member" in self.var_dict:
+            except KeyError:
+                units = None
+            try:
                 member = self.var_dict["member"]
                 if member is not None:
                     if not isinstance(member, list):
                         member = [member]
+            except KeyError:
+                member = None
+
             var = NetCDFReadVariable(name, level=level, units=units, member=member)
         elif self.var_type == "grib1":
-            par = self.var_dict["parameter"]
-            if "type" in self.var_dict:
+            try:
+                par = self.var_dict["parameter"]
+            except KeyError:
+                raise RuntimeError("You must provide parameter") from KeyError
+            try:
                 typ = self.var_dict["type"]
-            elif "levelType" in self.var_dict:
-                typ = self.var_dict["levelType"]
-            else:
-                raise RuntimeError("grib1 needs type or levelType")
-            level = self.var_dict["level"]
-            tri = self.var_dict["tri"]
+            except KeyError:
+                try:
+                    typ = self.var_dict["levelType"]
+                except KeyError:
+                    raise RuntimeError("grib1 needs type or levelType") from KeyError
+
+            try:
+                level = self.var_dict["level"]
+            except KeyError:
+                raise RuntimeError("grib1 needs level") from KeyError
+            try:
+                tri = self.var_dict["tri"]
+            except KeyError:
+                tri = 0
             if tri == 4:
                 accumulated = True
-            var = Grib1Variable(par, typ, level, tri)
+            var = Grib1Variable(par, typ, level, tri=tri)
         elif self.var_type == "grib2":
             discipline = self.var_dict["discipline"]
             p_c = self.var_dict["parameterCategory"]
             p_n = self.var_dict["parameterNumber"]
             l_t = self.var_dict["levelType"]
             lev = self.var_dict["level"]
-            tsp = -1
-            if "typeOfStatisticalProcessing" in self.var_dict:
+            try:
                 tsp = self.var_dict["typeOfStatisticalProcessing"]
+            except KeyError:
+                tsp = -1
             if tsp == 1:
                 accumulated = True
             var = Grib2Variable(discipline, p_c, p_n, l_t, lev, tsp=tsp)
@@ -422,29 +393,34 @@ class Variable(object):
 
         """
         # Set variable info
-        accumulated, instant, var = self.set_var(validtime=validtime)
         previous_field = None
-        if accumulated:
+        if self.accumulated:
             # Re-read field
             previoustime = validtime - as_timedelta(seconds=self.interval)
             # Don't read if previous time is older than the very first basetime
             if previoustime >= self.initial_basetime:
                 logging.debug("Re-read %s", previoustime)
                 previous_field = self.read_var_points(
-                    var, geo, validtime=validtime, previoustime=previoustime, cache=cache
+                    self.file_var,
+                    geo,
+                    validtime=validtime,
+                    previoustime=previoustime,
+                    cache=cache,
                 )
             else:
                 previous_field = np.zeros([geo.npoints])
-        elif instant > 0:
+        elif self.instant > 0:
             previous_field = np.zeros([geo.npoints])
 
-        field = self.read_var_points(var, geo, validtime=validtime, cache=cache)
+        field = self.read_var_points(self.file_var, geo, validtime=validtime, cache=cache)
 
         # Deaccumulate if either two files are read or if instant is > 0.
-        if accumulated or instant > 0:
-            field = self.deaccumulate(field, previous_field, instant)
+        if self.accumulated or self.instant > 0:
+            field = self.deaccumulate(field, previous_field, self.instant)
             if any(field[field < 0.0]):
-                raise RuntimeError("Negative accumulated value found for " + var)
+                raise RuntimeError(
+                    "Negative accumulated value found for " + self.file_var
+                )
         return field
 
     def print_variable_info(self):
@@ -460,7 +436,7 @@ class Variable(object):
             instant (_type_): _description_
 
         Raises:
-            Exception: _description_
+            RuntimeError: "Should not be negative values"
 
         Returns:
             _type_: _description_
@@ -486,7 +462,7 @@ class Variable(object):
                 )
             field[field < 0.0] = 0
             if any(field[field < 0.0]):
-                raise Exception("Should not be negative values")
+                raise RuntimeError("Should not be negative values")
             if float(instant) != 0.0:
                 field = np.divide(field, float(instant))
 
@@ -502,7 +478,7 @@ class Variable(object):
                                                        Defaults to False.
 
         Raises:
-            Exception: _description_
+            RuntimeError: "Negative offset does not make sense here"
             NotImplementedError: _description_
 
         Returns:
@@ -510,7 +486,7 @@ class Variable(object):
 
         """
         if self.offset < 0:
-            raise Exception("Negative offset does not make sense here")
+            raise RuntimeError("Negative offset does not make sense here")
 
         # Take offset into account
         first = False

@@ -54,10 +54,9 @@ from .configuration import (
     ConfigurationFromTomlFile,
 )
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
-from .file import PGDFile, PREPFile, SurfexFileVariable, SURFFile
+from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
-from .grib import Grib1Variable, Grib2Variable
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
 from .namelist import NamelistGenerator
@@ -1074,6 +1073,13 @@ def plot_points(argv=None):
 
     Args:
         argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        NotImplementedError: "Inputype is not implemented"
+        RuntimeError: "No geo is set"
+        RuntimeError: "No field read"
+        ModuleNotFoundError: "Matplotlib is needed to plot"
+
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -1090,7 +1096,6 @@ def plot_points(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ plot_points ******************")
-    # run_plot_points(**kwargs)
     validtime = None
     if kwargs["variable"]["validtime"] is not None:
         validtime = as_datetime(kwargs["variable"]["validtime"])
@@ -1116,13 +1121,11 @@ def plot_points(argv=None):
     defs = {"var": {inputtype: {"converter": {"none": var_dict}}}}
     converter_conf = defs["var"][inputtype]["converter"]
 
-    inputtype =  kwargs["variable"]["inputtype"]
+    inputtype = kwargs["variable"]["inputtype"]
     var = Variable(inputtype, kwargs["variable"], validtime)
-    __, __, file_var = var.set_var(validtime=validtime)
 
     cache = Cache(-1)
     converter = "none"
-    print(validtime)
     if inputtype == "obs":
         if geo is None:
             obs_input_type = kwargs["variable"]["filetype"]
@@ -1130,7 +1133,12 @@ def plot_points(argv=None):
             obs_time = as_datetime(kwargs["variable"]["validtime"])
             inputfile = kwargs["variable"]["inputfile"]
             geo = set_geo_from_obs_set(
-                obs_time, obs_input_type, variable, inputfile, lonrange=None, latrange=None
+                obs_time,
+                obs_input_type,
+                variable,
+                inputfile,
+                lonrange=None,
+                latrange=None,
             )
     converter = Converter(converter, validtime, defs, converter_conf, inputtype)
     field = ConvertedInput(geo, "var", converter).read_time_step(validtime, cache)
@@ -1139,19 +1147,17 @@ def plot_points(argv=None):
         raise RuntimeError("No field read")
 
     if inputtype == "grib1" or inputtype == "grib2":
-        title = (
-            f"{inputtype}: {file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-        )
+        title = f"{inputtype}: {var.file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
     elif inputtype == "netcdf":
-        title = "netcdf: " + file_var.name + " " + validtime.strftime("%Y%m%d%H")
+        title = "netcdf: " + var.file_var.name + " " + validtime.strftime("%Y%m%d%H")
     elif inputtype == "surfex":
-        title = inputtype + ": " + file_var.print_var()
+        title = inputtype + ": " + var.file_var.print_var()
     elif inputtype == "obs":
         obs_input_type = kwargs["variable"]["filetype"]
         variable = kwargs["variable"]["variable"]
         title = inputtype + ": var=" + variable + " type=" + obs_input_type
     else:
-        raise NotImplementedError
+        raise NotImplementedError("Inputype is not implemented")
 
     if geo is None:
         raise RuntimeError("No geo is set")
@@ -1200,6 +1206,13 @@ def plot_field(argv=None):
 
     Args:
         argv(list, optional): Arguments. Defaults to None.
+
+    Raises:
+        NotImplementedError: "Inputype is not implemented"
+        RuntimeError: "No geo is set"
+        RuntimeError: "No field read"
+        ModuleNotFoundError: "Matplotlib is needed to plot"
+
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -1237,21 +1250,18 @@ def plot_field(argv=None):
         if no_contour:
             contour = False
 
-    inputtype =  kwargs["variable"]["inputtype"]
+    inputtype = kwargs["variable"]["inputtype"]
     var = Variable(inputtype, kwargs["variable"], validtime)
-    __, __, file_var = var.set_var(validtime=validtime)
     field, geo = var.read_var_field(validtime)
 
     if inputtype == "grib1" or inputtype == "grib2":
-        title = (
-            f"{inputtype}: {file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-        )
+        title = f"{inputtype}: {var.file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
     elif inputtype == "netcdf":
-        title = "netcdf: " + file_var.var_name + " " + validtime.strftime("%Y%m%d%H")
+        title = "netcdf: " + var.file_var.var_name + " " + validtime.strftime("%Y%m%d%H")
     elif inputtype == "surfex":
-        title = inputtype + ": " + file_var.print_var()
+        title = inputtype + ": " + var.file_var.print_var()
     else:
-        raise NotImplementedError
+        raise NotImplementedError("Inputype is not implemented")
 
     if geo is None:
         raise RuntimeError("No geo is set")
@@ -1596,7 +1606,9 @@ def cryoclim_pseudoobs(argv=None):
                 lvalidtime = validtime
             else:
                 lvalidtime = as_datetime(lvalidtime)
-            grid_perm_snow, grid_perm_snow_geo = Variable(fileformat, kwargs["perm_snow"], lvalidtime).read_var_field(lvalidtime)
+            grid_perm_snow, grid_perm_snow_geo = Variable(
+                fileformat, kwargs["perm_snow"], lvalidtime
+            ).read_var_field(lvalidtime)
 
     grid_slope = None
     grid_slope_geo = None
@@ -1608,7 +1620,9 @@ def cryoclim_pseudoobs(argv=None):
                 lvalidtime = validtime
             else:
                 lvalidtime = as_datetime(lvalidtime)
-            grid_slope, grid_slope_geo = Variable(fileformat, kwargs["slope"], lvalidtime).read_var_field(lvalidtime)
+            grid_slope, grid_slope_geo = Variable(
+                fileformat, kwargs["slope"], lvalidtime
+            ).read_var_field(lvalidtime)
 
     obs_set = CryoclimObservationSet(
         infiles,

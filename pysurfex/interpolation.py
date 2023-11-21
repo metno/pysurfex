@@ -524,17 +524,17 @@ def horizontal_oi(
         elevs2 = []
         values2 = []
         sigmaos2 = []
-        for point in range(0, len(lons)):
+        for point, lon in enumerate(lons):
             if np.isnan(pbackground[point]):
                 logging.info(
-                    "Undefined background in lon=%s lat=%s value=%s",
-                    lons[point],
+                    "Undefined background in lon=%s lat=%s value=%s sigmao=%s",
+                    lon,
                     lats[point],
                     values[point],
                     sigmaos[point],
                 )
             else:
-                lons2.append(lons[point])
+                lons2.append(lon)
                 lats2.append(lats[point])
                 elevs2.append(elevs[point])
                 values2.append(values[point])

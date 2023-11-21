@@ -373,7 +373,7 @@ class NetCDFFileVariable(object):
 
         Args:
             file_handler (_type_): _description_
-            var_name (_type_): _description_
+            var (_type_): _description_
 
         """
         self.file = file_handler

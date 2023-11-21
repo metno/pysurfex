@@ -618,6 +618,187 @@ liquid_water_content_of_surface_snow =
 
 
 @pytest.fixture()
+def data_surfex_pgd_nc_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write(
+            """
+netcdf PGD {
+dimensions:
+        xx = 2 ;
+        yy = 3 ;
+        char_len = 40 ;
+        Nb_of_input_data = 720 ;
+        Number_of_covers = 33 ;
+        Nground_layers = 14 ;
+variables:
+        int VERSION ;
+                VERSION:long_name = "VERSION" ;
+                VERSION:comment = "(-)" ;
+        int BUG ;
+                BUG:long_name = "BUG" ;
+                BUG:comment = "(-)" ;
+        char STORAGETYPE(char_len) ;
+                STORAGETYPE:len = 3 ;
+                STORAGETYPE:long_name = "STORAGETYPE" ;
+                STORAGETYPE:comment = "(-)" ;
+        char SPLIT_PATCH ;
+                SPLIT_PATCH:long_name = "SPLIT_PATCH" ;
+                SPLIT_PATCH:comment = "(-)" ;
+        char GRID_TYPE(char_len) ;
+                GRID_TYPE:len = 9 ;
+                GRID_TYPE:long_name = "GRID_TYPE" ;
+                GRID_TYPE:comment = "GRID TYPE" ;
+        double LAT0 ;
+                LAT0:long_name = "LAT0" ;
+                LAT0:comment = "" ;
+        double LON0 ;
+                LON0:long_name = "LON0" ;
+                LON0:comment = "" ;
+        double RPK ;
+                RPK:long_name = "RPK" ;
+                RPK:comment = "" ;
+        double BETA ;
+                BETA:long_name = "BETA" ;
+                BETA:comment = "" ;
+        double LATORI ;
+                LATORI:long_name = "LATORI" ;
+                LATORI:comment = "" ;
+        double LONORI ;
+                LONORI:long_name = "LONORI" ;
+                LONORI:comment = "" ;
+        int IMAX ;
+                IMAX:long_name = "IMAX" ;
+                IMAX:comment = "" ;
+        int JMAX ;
+                JMAX:long_name = "JMAX" ;
+                JMAX:comment = "" ;
+        double XX(yy, xx) ;
+                XX:_FillValue = 1.e+20 ;
+                XX:long_name = "XX" ;
+                XX:comment = "" ;
+        double YY(yy, xx) ;
+                YY:_FillValue = 1.e+20 ;
+                YY:long_name = "YY" ;
+                YY:comment = "" ;
+        double DX(yy, xx) ;
+                DX:_FillValue = 1.e+20 ;
+                DX:long_name = "DX" ;
+                DX:comment = "" ;
+        double DY(yy, xx) ;
+                DY:_FillValue = 1.e+20 ;
+                DY:long_name = "DY" ;
+                DY:comment = "" ;
+        char SEA(char_len) ;
+                SEA:len = 6 ;
+                SEA:long_name = "SEA" ;
+                SEA:comment = "(-)" ;
+        char WATER(char_len) ;
+                WATER:len = 5 ;
+                WATER:long_name = "WATER" ;
+                WATER:comment = "(-)" ;
+       char NATURE(char_len) ;
+                NATURE:len = 4 ;
+                NATURE:long_name = "NATURE" ;
+                NATURE:comment = "(-)" ;
+        char TOWN(char_len) ;
+                TOWN:len = 3 ;
+                TOWN:long_name = "TOWN" ;
+                TOWN:comment = "(-)" ;
+        int DIM_FULL ;
+                DIM_FULL:long_name = "DIM_FULL" ;
+                DIM_FULL:comment = "(-)" ;
+        int DIM_SEA ;
+                DIM_SEA:long_name = "DIM_SEA" ;
+                DIM_SEA:comment = "(-)" ;
+        int DIM_NATURE ;
+                DIM_NATURE:long_name = "DIM_NATURE" ;
+                DIM_NATURE:comment = "(-)" ;
+        int DIM_WATER ;
+                DIM_WATER:long_name = "DIM_WATER" ;
+                DIM_WATER:comment = "(-)" ;
+        int DIM_TOWN ;
+                DIM_TOWN:long_name = "DIM_TOWN" ;
+                DIM_TOWN:comment = "(-)" ;
+        char ECOCLIMAP ;
+                ECOCLIMAP:long_name = "ECOCLIMAP" ;
+                ECOCLIMAP:comment = "(-)" ;
+        char ECOSG ;
+                ECOSG:long_name = "ECOSG" ;
+                ECOSG:comment = "(-)" ;
+        double COVER006(yy, xx) ;
+                COVER006:_FillValue = 1.e+20 ;
+                COVER006:long_name = "COVER006" ;
+                COVER006:comment = "X_Y_COVER006" ;
+        double SSO_SLOPE(yy, xx) ;
+                SSO_SLOPE:_FillValue = 1.e+20 ;
+                SSO_SLOPE:long_name = "SSO_SLOPE" ;
+                SSO_SLOPE:comment = "X_Y_SSO_SLOPE (-)" ;
+
+
+data:
+
+GRID_TYPE = "CONF PROJ";
+
+ECOCLIMAP = "T";
+
+ECOSG = "T";
+
+LAT0 = 60;
+
+LON0 = 10;
+
+IMAX = 2;
+
+JMAX = 3;
+
+LATORI = 59.3094419577209;
+
+LONORI = 8.87679909964606;
+
+BETA = 0;
+
+RPK = 0;
+
+XX = 2500, 5000, 2500, 5000, 2500, 5000;
+
+YY = 2500, 2500, 5000, 5000, 7500, 7500;
+
+DX = 2500, 2500, 2500, 2500, 2500, 2500;
+
+DY = 2500, 2500, 2500, 2500, 2500, 2500;
+
+SSO_SLOPE =
+0.01, 0.02, 0.03, 0.04, 0.05, 0.06,
+0.01, 0.02, 0.03, 0.04, 0.05, 0.06;
+
+COVER006 =
+0.0, 1.0, 0.8, 0.25, 0.75, 0.1,
+0.0, 1.0, 0.8, 0.25, 0.75, 0.1;
+
+}
+"""
+        )
+    Dataset(fname, mode="w").fromcdl(
+        cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
+    )
+    return fname
+
+
+@pytest.fixture()
+def surfex_fa_file_sfx(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.sfx"
+    return fname
+
+
+@pytest.fixture()
+def surfex_fa_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.fa"
+    return fname
+
+
+@pytest.fixture()
 def firstguess4gridpp(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.cdl"

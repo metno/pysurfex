@@ -54,7 +54,6 @@ class NamelistGenerator(object):
             self.config.update_setting("SURFEX#SODA#LAESNM", laesnm)
 
         macros = self.flatten_config()
-        print(macros)
         self.macros = macros
         if assemble is None:
             self.assemble = self.namelist_blocks()

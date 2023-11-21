@@ -40,6 +40,10 @@ def snow_pseudo_obs_cryoclim(
         fg_geo (Geo): Geometry
         grid_snow_fg (np.ndarray): First guess snow
         gelevs_fg (np.ndarray): Grid elevations
+        grid_perm_snow (np.ndarray): Permanent snow
+        grid_perm_snow_geo (pysurfex.geo.Geo): Permant snow field geometry
+        grid_slope (np.ndarray): Slope array
+        grid_slope_geo (pysurfex.geo.Geo): Slope field geometry
         fg_threshold (float, optional): First guess threshold. Defaults to 2.0.
         new_snow_depth (float, optional): New snow depth. Defaults to 0.01.
         glaf (np.ndarray, optional): LandAreaFraction. Defaults to None
@@ -89,12 +93,20 @@ def snow_pseudo_obs_cryoclim(
 
     if grid_perm_snow is not None:
         p_perm_snow = gridpos2points(
-            grid_perm_snow_geo.lons, grid_perm_snow_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_perm_snow
+            grid_perm_snow_geo.lons,
+            grid_perm_snow_geo.lats,
+            np.asarray(res_lons),
+            np.asarray(res_lats),
+            grid_perm_snow,
         )
 
     if grid_slope is not None:
         p_slope = gridpos2points(
-            grid_slope_geo.lons, grid_slope_geo.lats, np.asarray(res_lons), np.asarray(res_lats), grid_slope
+            grid_slope_geo.lons,
+            grid_slope_geo.lats,
+            np.asarray(res_lons),
+            np.asarray(res_lats),
+            grid_slope,
         )
 
     if glaf is not None:
@@ -136,12 +148,12 @@ def snow_pseudo_obs_cryoclim(
                     )
             perm_ok = True
             if grid_perm_snow is not None:
-                if p_perm_snow[i] > 0.0 :
+                if p_perm_snow[i] > 0.0:
                     perm_ok = False
 
             slope_ok = True
             if grid_slope is not None:
-                if p_slope[i] > .5 :
+                if p_slope[i] > 0.5:
                     slope_ok = False
 
             # Check if in grid
@@ -359,7 +371,11 @@ class CryoclimObservationSet(ObservationSet):
             validtime (as_datetime): Valdid time
             fg_geo (Geo): Surfex geometry
             snow_fg (np.ndarray): Snow first guess field
-            gelevs_fg: Grid elevations
+            gelevs_fg (np.ndarray): Grid elevations
+            perm_snow (np.ndarray): Permanent snow
+            perm_snow_geo (pysurfex.geo.Geo): Permant snow field geometry
+            slope (np.ndarray): Slope array
+            slope_geo (pysurfex.geo.Geo): Slope field geometry
             label (str, optional): Label of set. Defaults to "cryo".
             step (int, optional): Step to process grid points. Defaults to 2.
             fg_threshold (float, optional): First guess threshold. Defaults to 0.4

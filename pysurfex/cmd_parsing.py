@@ -1604,6 +1604,16 @@ def parse_args_plot_field(argv):
 
 
 def get_variables_from_args(parser, argv, variables):
+    """Get the variables from user arguments.
+
+    Args:
+        parser (ArgumentParser): The existing parser.
+        argv (list): User arguments.
+        variables (list): Variables to get setttings for.
+
+    Returns:
+        dict: Parsed keyword arguments.
+    """
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
@@ -1999,17 +2009,28 @@ def parse_cryoclim_pseudoobs(argv):
 
 
 def variable_parser(needles, argv, parser):
-    subparsers = parser.add_subparsers(help='sub-help', dest='variables')
+    """Create parser entries for a variable.
+
+    Args:
+        needles (list): The variables to create.
+        argv (list): User arguments.
+        parser (ArgumentParser): The existing parser object.
+
+    Returns:
+        dict: Parser keyword arguments
+    """
+    subparsers = parser.add_subparsers(help="sub-help", dest="variables")
     for needle in needles:
-        parser_variable = subparsers.add_parser(needle, help='Variable settings')
+        parser_variable = subparsers.add_parser(needle, help="Variable settings")
         # Add some arguments exclusively for parser_create
-        parser_variable.add_argument( "-if",
+        parser_variable.add_argument(
+            "-if",
             "--inputfile",
             dest="inputfile",
             type=str,
             help="Input file",
             default=None,
-            required=False
+            required=False,
         )
         parser_variable.add_argument(
             "-v",
@@ -2054,9 +2075,15 @@ def variable_parser(needles, argv, parser):
             required=False,
         )
         parser_variable.add_argument(
-            "--interpolator", type=str, default="nearest", required=False, help="Interpolator"
+            "--interpolator",
+            type=str,
+            default="nearest",
+            required=False,
+            help="Interpolator",
         )
-        grib = parser_variable.add_argument_group("grib", "Grib1/2 settings (-it grib1 or -it grib2)")
+        grib = parser_variable.add_argument_group(
+            "grib", "Grib1/2 settings (-it grib1 or -it grib2)"
+        )
         grib.add_argument(
             "--indicatorOfParameter",
             dest="parameter",
@@ -2065,15 +2092,28 @@ def variable_parser(needles, argv, parser):
             default=None,
         )
         grib.add_argument(
-            "--timeRangeIndicator", type=int, help="Time range indicator [grib1]", default=0, dest="tri"
+            "--timeRangeIndicator",
+            type=int,
+            help="Time range indicator [grib1]",
+            default=0,
+            dest="tri",
         )
         grib.add_argument(
-            "--levelType", type=str, help="Level type [grib1/grib2]", default="sfc", dest="levelType"
+            "--levelType",
+            type=str,
+            help="Level type [grib1/grib2]",
+            default="sfc",
+            dest="levelType",
         )
         grib.add_argument("--level", type=int, help="Level [grib1/grib2]", default=0)
-        grib.add_argument("--discipline", type=int, help="Discipline [grib2]", default=None)
         grib.add_argument(
-            "--parameterCategory", type=int, help="Parameter category [grib2]", default=None
+            "--discipline", type=int, help="Discipline [grib2]", default=None
+        )
+        grib.add_argument(
+            "--parameterCategory",
+            type=int,
+            help="Parameter category [grib2]",
+            default=None,
         )
         grib.add_argument(
             "--parameterNumber", type=int, help="ParameterNumber [grib2]", default=None
@@ -2094,8 +2134,12 @@ def variable_parser(needles, argv, parser):
             choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
         )
 
-        sfx.add_argument("--sfx_patches", type=int, help="Patches [ascii/texte]", default=-1)
-        sfx.add_argument("--sfx_layers", type=int, help="Layers [ascii/texte]", default=-1)
+        sfx.add_argument(
+            "--sfx_patches", type=int, help="Patches [ascii/texte]", default=-1
+        )
+        sfx.add_argument(
+            "--sfx_layers", type=int, help="Layers [ascii/texte]", default=-1
+        )
         sfx.add_argument(
             "--sfx_datatype",
             type=str,
@@ -2103,8 +2147,12 @@ def variable_parser(needles, argv, parser):
             choices=["string", "float", "integer"],
             default="float",
         )
-        sfx.add_argument("--sfx_interval", type=str, help="Interval [texte]", default=None)
-        sfx.add_argument("--sfx_basetime", type=str, help="Basetime [texte]", default=None)
+        sfx.add_argument(
+            "--sfx_interval", type=str, help="Interval [texte]", default=None
+        )
+        sfx.add_argument(
+            "--sfx_basetime", type=str, help="Basetime [texte]", default=None
+        )
         sfx.add_argument(
             "--sfx_geo_input",
             type=str,
@@ -2128,7 +2176,7 @@ def variable_parser(needles, argv, parser):
     for needle in needles:
         start_indices.update({needle: argv_string.find(needle)})
 
-    sorted_start_indices = sorted(start_indices.items(), key=lambda x:x[1])
+    sorted_start_indices = sorted(start_indices.items(), key=lambda x: x[1])
     prev_needle = ""
     last_needle = ""
     for needle, index in sorted_start_indices:
@@ -2145,7 +2193,7 @@ def variable_parser(needles, argv, parser):
     kwargs = {}
     for needle in needles:
 
-        argv = argv_string[start_indices[needle]:end_indices[needle]].split()
+        argv = argv_string[start_indices[needle] : end_indices[needle]].split()
         opt = parser.parse_args(argv)
         vargs = {}
         for arg in vars(opt):
