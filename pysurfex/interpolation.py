@@ -460,6 +460,7 @@ def horizontal_oi(
     maxvalue=None,
     interpol="bilinear",
     only_diff=False,
+    allow_extrapolation=False,
 ):
     """Do horizontal OI.
 
@@ -479,6 +480,7 @@ def horizontal_oi(
         maxvalue (_type_, optional): _description_. Defaults to None.
         interpol (str, optional): _description_. Defaults to "bilinear".
         only_diff (bool, optional): _description_. Defaults to False.
+        allow_extrapolation (bool, optional): Allow extrapolations in OI. Default to False.
 
     Raises:
         NotImplementedError: Structure function not implemented
@@ -569,6 +571,7 @@ def horizontal_oi(
         pbackground,
         structure,
         max_locations,
+        allow_extrapolation,
     )
     field = np.asarray(field)
     if minvalue is not None:
@@ -578,3 +581,16 @@ def horizontal_oi(
     if only_diff:
         field[field == background] = np.nan
     return np.transpose(field)
+
+
+def sum_neighbour_points(twodfield, radius):
+    """Sum up points in neighbourhood.
+
+    Args:
+        twodfield (np.ndarray): Field to sum
+        radius (int): Radius
+
+    Returns:
+        np.ndarray: Array with neighbourhood sums.
+    """
+    return gridpp.neighbourhood(twodfield, radius, gridpp.Sum)

@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 
-from .interpolation import gridpos2points, inside_grid
+from .interpolation import gridpos2points, inside_grid, sum_neighbour_points
 from .netcdf import read_cryoclim_nc, read_sentinel_nc
 from .obs import ObservationSet
 from .observation import Observation
@@ -28,6 +28,7 @@ def snow_pseudo_obs_cryoclim(
     new_snow_depth=0.1,
     glaf=None,
     laf_threshold=0.1,
+    neighbourhood=True,
 ):
     """Cryoclim snow.
 
@@ -48,6 +49,7 @@ def snow_pseudo_obs_cryoclim(
         new_snow_depth (float, optional): New snow depth. Defaults to 0.01.
         glaf (np.ndarray, optional): LandAreaFraction. Defaults to None
         laf_threshold(float): Threshold to remove points. Defaults to 0.1.
+        neighbourhood(bool): Use neighbourhood. Default to True.
 
     Returns:
         list: List of observation objects
@@ -64,7 +66,21 @@ def snow_pseudo_obs_cryoclim(
     iii = 0
     res_lons = []
     res_lats = []
+
+    if neighbourhood:
+        cryo_radius = 2
+        neighbour_snow_cryo = grid_snow_class[0, :, :].copy()
+        neighbour_snow_cryo[neighbour_snow_cryo != 2] = 0
+        neighbour_snow_cryo[neighbour_snow_cryo == 2] = 1
+        neighbour_snow_cryo = sum_neighbour_points(neighbour_snow_cryo, cryo_radius)
+        neighbour_cryo_extra = grid_snow_class[0, :, :].copy()
+        neighbour_cryo_extra[neighbour_cryo_extra == 4] = -4
+        neighbour_cryo_extra[neighbour_cryo_extra >= 0] = 0
+        neighbour_cryo_extra[neighbour_cryo_extra == -1] = 1
+        neighbour_cryo_extra[neighbour_cryo_extra == -4] = 1
+        neighbour_cryo_extra = sum_neighbour_points(neighbour_cryo_extra, cryo_radius)
     p_snow_class = {}
+    p_neighbours = {}
     for __ in range(0, n_x):
         jjj = 0
         for __ in range(0, n_y):
@@ -79,6 +95,13 @@ def snow_pseudo_obs_cryoclim(
                 res_lons.append(np.float64(grid_lons[iii, jjj]))
                 res_lats.append(np.float64(grid_lats[iii, jjj]))
                 p_snow_class.update({str(counter): grid_snow_class[0, iii, jjj]})
+                if neighbourhood:
+                    p_neighbours.update(
+                        {
+                            str(counter): neighbour_snow_cryo[iii, jjj]
+                            + neighbour_cryo_extra[iii, jjj]
+                        }
+                    )
                 counter = counter + 1
             jjj = jjj + step
         iii = iii + step
@@ -90,6 +113,21 @@ def snow_pseudo_obs_cryoclim(
     p_fg_elevs = gridpos2points(
         fg_geo.lons, fg_geo.lats, np.asarray(res_lons), np.asarray(res_lats), gelevs_fg
     )
+
+    if neighbourhood:
+        fg_snow_radius = 3
+        p_fg_snow_depth_has_snow = grid_snow_fg
+        p_fg_snow_depth_has_snow[p_fg_snow_depth_has_snow > 0] = 1
+        p_fg_snow_depth_has_snow[p_fg_snow_depth_has_snow <= 0] = 0
+        grid_having_snow = sum_neighbour_points(p_fg_snow_depth_has_snow, fg_snow_radius)
+        points_having_snow = gridpos2points(
+            fg_geo.lons,
+            fg_geo.lats,
+            np.asarray(res_lons),
+            np.asarray(res_lats),
+            grid_having_snow,
+            operator="nearest",
+        )
 
     if grid_perm_snow is not None:
         p_perm_snow = gridpos2points(
@@ -164,17 +202,31 @@ def snow_pseudo_obs_cryoclim(
                 except KeyError:
                     continue
                 if snow_class_val == 2:
-                    if p_snow_fg > 0:
-                        if fg_threshold is not None:
-                            if p_snow_fg <= fg_threshold:
+                    do = False
+                    if neighbourhood:
+                        if (
+                            points_having_snow[i] < (fg_snow_radius * 2 + 1) ** 2
+                            or p_neighbours[str(i)] < (cryo_radius * 2 + 1) ** 2
+                        ):
+                            do = True
+                    else:
+                        do = True
+                    if do:
+                        if p_snow_fg > 0:
+                            if fg_threshold is not None:
+                                if p_snow_fg <= fg_threshold:
+                                    obs_value = p_snow_fg
+                            else:
                                 obs_value = p_snow_fg
                         else:
-                            obs_value = p_snow_fg
-                    else:
-                        obs_value = new_snow_depth
+                            obs_value = new_snow_depth
                 elif snow_class_val == 1:
-                    if p_snow_fg >= 0.0:
-                        obs_value = 0.0
+                    if neighbourhood:
+                        if points_having_snow[i] > 0:
+                            obs_value = 0.0
+                    else:
+                        if p_snow_fg >= 0.0:
+                            obs_value = 0.0
 
                 if not np.isnan(obs_value):
                     logging.debug("Add observation")
