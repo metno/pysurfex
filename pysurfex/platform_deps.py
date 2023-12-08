@@ -304,6 +304,9 @@ class SystemFilePaths(object):
                     f"{micro}YYYY_LL{micro}", validtime.strftime("%Y")
                 )
                 setting = str(setting).replace(
+                    f"{micro}YY_LL{micro}", validtime.strftime("%y")
+                )
+                setting = str(setting).replace(
                     f"{micro}MM_LL{micro}", validtime.strftime("%m")
                 )
                 setting = str(setting).replace(
