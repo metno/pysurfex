@@ -132,7 +132,6 @@ class Netcdf(object):
 
         logging.debug("times to read %s", times_to_read)
         levels_to_read = []
-        print(levels)
         if levels is None:
             for i in range(0, var.levels.shape[0]):
                 levels_to_read.append(i)
