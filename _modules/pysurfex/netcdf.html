@@ -187,7 +187,8 @@
                             <span class="nb">float</span><span class="p">(</span><span class="n">level_ind</span><span class="p">),</span> <span class="mi">5</span>
                         <span class="p">):</span>
                             <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels_to_read</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">levels_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">members_to_read</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">members</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -263,7 +264,7 @@
         <span class="k">if</span> <span class="n">deaccumulate</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deaccumulate previous dimensions: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prev_dims</span><span class="p">))</span>
 
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;var.varname: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;var.var_name: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;dims </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;self.file[var.var_name] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">])</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">][</span><span class="n">dims</span><span class="p">]</span>
@@ -402,16 +403,19 @@
 <div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable">[docs]</a><span class="k">class</span> <span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NetDF file variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NetCDFFileVariable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFFileVariable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            file_handler (_type_): _description_</span>
-<span class="sd">            var_name (_type_): _description_</span>
+<span class="sd">            var (_type_): _description_</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file_handler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

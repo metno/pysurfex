@@ -406,14 +406,14 @@
 <span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib1 variable.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct grib1 variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            par (int): IndicatorOfParameter</span>
 <span class="sd">            typ (int): TypeOfLevel</span>
 <span class="sd">            level (int): NumberOFLevel</span>
-<span class="sd">            tri (int): TimeRangeIndicator</span>
+<span class="sd">            tri (int, optional): TimeRangeIndicator. Defaults to 0.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>

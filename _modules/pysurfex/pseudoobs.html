@@ -41,7 +41,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.interpolation</span> <span class="kn">import</span> <span class="n">gridpos2points</span><span class="p">,</span> <span class="n">inside_grid</span>
+<span class="kn">from</span> <span class="nn">.interpolation</span> <span class="kn">import</span> <span class="n">gridpos2points</span><span class="p">,</span> <span class="n">inside_grid</span><span class="p">,</span> <span class="n">sum_neighbour_points</span>
 <span class="kn">from</span> <span class="nn">.netcdf</span> <span class="kn">import</span> <span class="n">read_cryoclim_nc</span><span class="p">,</span> <span class="n">read_sentinel_nc</span>
 <span class="kn">from</span> <span class="nn">.obs</span> <span class="kn">import</span> <span class="n">ObservationSet</span>
 <span class="kn">from</span> <span class="nn">.observation</span> <span class="kn">import</span> <span class="n">Observation</span>
@@ -56,10 +56,15 @@
     <span class="n">fg_geo</span><span class="p">,</span>
     <span class="n">grid_snow_fg</span><span class="p">,</span>
     <span class="n">gelevs_fg</span><span class="p">,</span>
+    <span class="n">grid_perm_snow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">grid_perm_snow_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">grid_slope</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">grid_slope_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
     <span class="n">new_snow_depth</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">glaf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">laf_threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">neighbourhood</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cryoclim snow.</span>
 
@@ -72,10 +77,15 @@
 <span class="sd">        fg_geo (Geo): Geometry</span>
 <span class="sd">        grid_snow_fg (np.ndarray): First guess snow</span>
 <span class="sd">        gelevs_fg (np.ndarray): Grid elevations</span>
+<span class="sd">        grid_perm_snow (np.ndarray): Permanent snow</span>
+<span class="sd">        grid_perm_snow_geo (pysurfex.geo.Geo): Permant snow field geometry</span>
+<span class="sd">        grid_slope (np.ndarray): Slope array</span>
+<span class="sd">        grid_slope_geo (pysurfex.geo.Geo): Slope field geometry</span>
 <span class="sd">        fg_threshold (float, optional): First guess threshold. Defaults to 2.0.</span>
 <span class="sd">        new_snow_depth (float, optional): New snow depth. Defaults to 0.01.</span>
 <span class="sd">        glaf (np.ndarray, optional): LandAreaFraction. Defaults to None</span>
 <span class="sd">        laf_threshold(float): Threshold to remove points. Defaults to 0.1.</span>
+<span class="sd">        neighbourhood(bool): Use neighbourhood. Default to True.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        list: List of observation objects</span>
@@ -92,7 +102,21 @@
     <span class="n">iii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">res_lons</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">res_lats</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">neighbourhood</span><span class="p">:</span>
+        <span class="n">cryo_radius</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">neighbour_snow_cryo</span> <span class="o">=</span> <span class="n">grid_snow_class</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">neighbour_snow_cryo</span><span class="p">[</span><span class="n">neighbour_snow_cryo</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">neighbour_snow_cryo</span><span class="p">[</span><span class="n">neighbour_snow_cryo</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">neighbour_snow_cryo</span> <span class="o">=</span> <span class="n">sum_neighbour_points</span><span class="p">(</span><span class="n">neighbour_snow_cryo</span><span class="p">,</span> <span class="n">cryo_radius</span><span class="p">)</span>
+        <span class="n">neighbour_cryo_extra</span> <span class="o">=</span> <span class="n">grid_snow_class</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">neighbour_cryo_extra</span><span class="p">[</span><span class="n">neighbour_cryo_extra</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
+        <span class="n">neighbour_cryo_extra</span><span class="p">[</span><span class="n">neighbour_cryo_extra</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">neighbour_cryo_extra</span><span class="p">[</span><span class="n">neighbour_cryo_extra</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">neighbour_cryo_extra</span><span class="p">[</span><span class="n">neighbour_cryo_extra</span> <span class="o">==</span> <span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">neighbour_cryo_extra</span> <span class="o">=</span> <span class="n">sum_neighbour_points</span><span class="p">(</span><span class="n">neighbour_cryo_extra</span><span class="p">,</span> <span class="n">cryo_radius</span><span class="p">)</span>
     <span class="n">p_snow_class</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">p_neighbours</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_x</span><span class="p">):</span>
         <span class="n">jjj</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_y</span><span class="p">):</span>
@@ -107,6 +131,13 @@
                 <span class="n">res_lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">[</span><span class="n">iii</span><span class="p">,</span> <span class="n">jjj</span><span class="p">]))</span>
                 <span class="n">res_lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">grid_lats</span><span class="p">[</span><span class="n">iii</span><span class="p">,</span> <span class="n">jjj</span><span class="p">]))</span>
                 <span class="n">p_snow_class</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">counter</span><span class="p">):</span> <span class="n">grid_snow_class</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">iii</span><span class="p">,</span> <span class="n">jjj</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="n">neighbourhood</span><span class="p">:</span>
+                    <span class="n">p_neighbours</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">counter</span><span class="p">):</span> <span class="n">neighbour_snow_cryo</span><span class="p">[</span><span class="n">iii</span><span class="p">,</span> <span class="n">jjj</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="n">neighbour_cryo_extra</span><span class="p">[</span><span class="n">iii</span><span class="p">,</span> <span class="n">jjj</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
                 <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">jjj</span> <span class="o">=</span> <span class="n">jjj</span> <span class="o">+</span> <span class="n">step</span>
         <span class="n">iii</span> <span class="o">=</span> <span class="n">iii</span> <span class="o">+</span> <span class="n">step</span>
@@ -118,6 +149,40 @@
     <span class="n">p_fg_elevs</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
         <span class="n">fg_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">fg_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">),</span> <span class="n">gelevs_fg</span>
     <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">neighbourhood</span><span class="p">:</span>
+        <span class="n">fg_snow_radius</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">p_fg_snow_depth_has_snow</span> <span class="o">=</span> <span class="n">grid_snow_fg</span>
+        <span class="n">p_fg_snow_depth_has_snow</span><span class="p">[</span><span class="n">p_fg_snow_depth_has_snow</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">p_fg_snow_depth_has_snow</span><span class="p">[</span><span class="n">p_fg_snow_depth_has_snow</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">grid_having_snow</span> <span class="o">=</span> <span class="n">sum_neighbour_points</span><span class="p">(</span><span class="n">p_fg_snow_depth_has_snow</span><span class="p">,</span> <span class="n">fg_snow_radius</span><span class="p">)</span>
+        <span class="n">points_having_snow</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
+            <span class="n">fg_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">fg_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">),</span>
+            <span class="n">grid_having_snow</span><span class="p">,</span>
+            <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">grid_perm_snow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p_perm_snow</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
+            <span class="n">grid_perm_snow_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">grid_perm_snow_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">),</span>
+            <span class="n">grid_perm_snow</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">grid_slope</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p_slope</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
+            <span class="n">grid_slope_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">grid_slope_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">),</span>
+            <span class="n">grid_slope</span><span class="p">,</span>
+        <span class="p">)</span>
+
     <span class="k">if</span> <span class="n">glaf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">p_fg_laf</span> <span class="o">=</span> <span class="n">gridpos2points</span><span class="p">(</span>
             <span class="n">fg_geo</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="n">fg_geo</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res_lats</span><span class="p">),</span> <span class="n">glaf</span>
@@ -155,25 +220,49 @@
                         <span class="n">p_fg_laf</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                         <span class="n">laf_threshold</span><span class="p">,</span>
                     <span class="p">)</span>
+            <span class="n">perm_ok</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">grid_perm_snow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p_perm_snow</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">perm_ok</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">slope_ok</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">grid_slope</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p_slope</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                    <span class="n">slope_ok</span> <span class="o">=</span> <span class="kc">False</span>
+
             <span class="c1"># Check if in grid</span>
-            <span class="k">if</span> <span class="n">in_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">laf_ok</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">in_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">laf_ok</span> <span class="ow">and</span> <span class="n">perm_ok</span> <span class="ow">and</span> <span class="n">slope_ok</span><span class="p">:</span>
                 <span class="n">obs_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">snow_class_val</span> <span class="o">=</span> <span class="n">p_snow_class</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">snow_class_val</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">fg_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&lt;=</span> <span class="n">fg_threshold</span><span class="p">:</span>
+                    <span class="n">do</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">neighbourhood</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">points_having_snow</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">fg_snow_radius</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="ow">or</span> <span class="n">p_neighbours</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">cryo_radius</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+                        <span class="p">):</span>
+                            <span class="n">do</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">do</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">fg_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&lt;=</span> <span class="n">fg_threshold</span><span class="p">:</span>
+                                    <span class="n">obs_value</span> <span class="o">=</span> <span class="n">p_snow_fg</span>
+                            <span class="k">else</span><span class="p">:</span>
                                 <span class="n">obs_value</span> <span class="o">=</span> <span class="n">p_snow_fg</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="n">obs_value</span> <span class="o">=</span> <span class="n">p_snow_fg</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">obs_value</span> <span class="o">=</span> <span class="n">new_snow_depth</span>
+                            <span class="n">obs_value</span> <span class="o">=</span> <span class="n">new_snow_depth</span>
                 <span class="k">elif</span> <span class="n">snow_class_val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-                        <span class="n">obs_value</span> <span class="o">=</span> <span class="mf">0.0</span>
+                    <span class="k">if</span> <span class="n">neighbourhood</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">points_having_snow</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">obs_value</span> <span class="o">=</span> <span class="mf">0.0</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">p_snow_fg</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                            <span class="n">obs_value</span> <span class="o">=</span> <span class="mf">0.0</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">obs_value</span><span class="p">):</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Add observation&quot;</span><span class="p">)</span>
@@ -351,6 +440,10 @@
         <span class="n">fg_geo</span><span class="p">,</span>
         <span class="n">snow_fg</span><span class="p">,</span>
         <span class="n">gelevs_fg</span><span class="p">,</span>
+        <span class="n">perm_snow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">perm_snow_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">slope</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">slope_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cryo&quot;</span><span class="p">,</span>
         <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">fg_threshold</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
@@ -366,7 +459,11 @@
 <span class="sd">            validtime (as_datetime): Valdid time</span>
 <span class="sd">            fg_geo (Geo): Surfex geometry</span>
 <span class="sd">            snow_fg (np.ndarray): Snow first guess field</span>
-<span class="sd">            gelevs_fg: Grid elevations</span>
+<span class="sd">            gelevs_fg (np.ndarray): Grid elevations</span>
+<span class="sd">            perm_snow (np.ndarray): Permanent snow</span>
+<span class="sd">            perm_snow_geo (pysurfex.geo.Geo): Permant snow field geometry</span>
+<span class="sd">            slope (np.ndarray): Slope array</span>
+<span class="sd">            slope_geo (pysurfex.geo.Geo): Slope field geometry</span>
 <span class="sd">            label (str, optional): Label of set. Defaults to &quot;cryo&quot;.</span>
 <span class="sd">            step (int, optional): Step to process grid points. Defaults to 2.</span>
 <span class="sd">            fg_threshold (float, optional): First guess threshold. Defaults to 0.4</span>
@@ -388,8 +485,12 @@
             <span class="n">fg_geo</span><span class="p">,</span>
             <span class="n">snow_fg</span><span class="p">,</span>
             <span class="n">gelevs_fg</span><span class="p">,</span>
-            <span class="n">fg_threshold</span><span class="p">,</span>
-            <span class="n">new_snow_depth</span><span class="p">,</span>
+            <span class="n">fg_threshold</span><span class="o">=</span><span class="n">fg_threshold</span><span class="p">,</span>
+            <span class="n">new_snow_depth</span><span class="o">=</span><span class="n">new_snow_depth</span><span class="p">,</span>
+            <span class="n">grid_perm_snow</span><span class="o">=</span><span class="n">perm_snow</span><span class="p">,</span>
+            <span class="n">grid_perm_snow_geo</span><span class="o">=</span><span class="n">perm_snow_geo</span><span class="p">,</span>
+            <span class="n">grid_slope</span><span class="o">=</span><span class="n">slope</span><span class="p">,</span>
+            <span class="n">grid_slope_geo</span><span class="o">=</span><span class="n">slope_geo</span><span class="p">,</span>
             <span class="n">glaf</span><span class="o">=</span><span class="n">glaf</span><span class="p">,</span>
             <span class="n">laf_threshold</span><span class="o">=</span><span class="n">laf_threshold</span><span class="p">,</span>
         <span class="p">)</span>

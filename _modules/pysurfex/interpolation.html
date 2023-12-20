@@ -496,6 +496,7 @@
     <span class="n">maxvalue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">interpol</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
     <span class="n">only_diff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">allow_extrapolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Do horizontal OI.</span>
 
@@ -515,6 +516,7 @@
 <span class="sd">        maxvalue (_type_, optional): _description_. Defaults to None.</span>
 <span class="sd">        interpol (str, optional): _description_. Defaults to &quot;bilinear&quot;.</span>
 <span class="sd">        only_diff (bool, optional): _description_. Defaults to False.</span>
+<span class="sd">        allow_extrapolation (bool, optional): Allow extrapolations in OI. Default to False.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: Structure function not implemented</span>
@@ -560,17 +562,17 @@
         <span class="n">elevs2</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">values2</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">sigmaos2</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">point</span><span class="p">,</span> <span class="n">lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lons</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pbackground</span><span class="p">[</span><span class="n">point</span><span class="p">]):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                    <span class="s2">&quot;Undefined background in lon=</span><span class="si">%s</span><span class="s2"> lat=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">lons</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
+                    <span class="s2">&quot;Undefined background in lon=</span><span class="si">%s</span><span class="s2"> lat=</span><span class="si">%s</span><span class="s2"> value=</span><span class="si">%s</span><span class="s2"> sigmao=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">lon</span><span class="p">,</span>
                     <span class="n">lats</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
                     <span class="n">values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
                     <span class="n">sigmaos</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">lons2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lons</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
+                <span class="n">lons2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
                 <span class="n">lats2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lats</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
                 <span class="n">elevs2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elevs</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
                 <span class="n">values2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">point</span><span class="p">])</span>
@@ -605,6 +607,7 @@
         <span class="n">pbackground</span><span class="p">,</span>
         <span class="n">structure</span><span class="p">,</span>
         <span class="n">max_locations</span><span class="p">,</span>
+        <span class="n">allow_extrapolation</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">minvalue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -614,6 +617,19 @@
     <span class="k">if</span> <span class="n">only_diff</span><span class="p">:</span>
         <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">==</span> <span class="n">background</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sum_neighbour_points"><a class="viewcode-back" href="../../index.html#pysurfex.interpolation.sum_neighbour_points">[docs]</a><span class="k">def</span> <span class="nf">sum_neighbour_points</span><span class="p">(</span><span class="n">twodfield</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sum up points in neighbourhood.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        twodfield (np.ndarray): Field to sum</span>
+<span class="sd">        radius (int): Radius</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Array with neighbourhood sums.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">(</span><span class="n">twodfield</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Sum</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
