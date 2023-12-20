@@ -1540,31 +1540,40 @@ def parse_args_plot_points(argv):
         required=False,
     )
     parser.add_argument(
-        "-v",
-        "--variable",
-        dest="variable",
+        "-o",
+        "--output",
+        dest="output",
         type=str,
-        help="Variable name",
-        required=False,
-    )
-    parser.add_argument(
-        "-i",
-        "--inputfile",
-        dest="inputfile",
-        type=str,
-        help="Input file",
+        help="Output file",
         default=None,
         required=False,
     )
+    parser.add_argument("--no-contour", dest="no_contour", action="store_true")
     parser.add_argument(
-        "-it",
-        "--inputtype",
-        dest="inputtype",
-        type=str,
-        help="Filetype",
-        default="surfex",
-        required=False,
-        choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
+        "--interpolator", type=str, default="nearest", required=False, help="Interpolator"
+    )
+    parser.add_argument(
+        "--debug", action="store_true", help="Debug", required=False, default=False
+    )
+    parser.add_argument("--version", action="version", version=__version__)
+    variables = ["variable"]
+    kwargs = get_variables_from_args(parser, argv, variables)
+    return kwargs
+
+
+def parse_args_plot_field(argv):
+    """Parse the command line input arguments for plotting a field.
+
+    Args:
+        argv (list): List with arguments.
+
+    Returns:
+        dict: Parsed arguments.
+
+    """
+    parser = ArgumentParser("Plot field")
+    parser.add_argument(
+        "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
     parser.add_argument(
         "-t",
@@ -1584,86 +1593,38 @@ def parse_args_plot_points(argv):
         default=None,
         required=False,
     )
-    parser.add_argument("--no-contour", dest="no_contour", action="store_true")
-    parser.add_argument(
-        "--interpolator", type=str, default="nearest", required=False, help="Interpolator"
-    )
-    grib = parser.add_argument_group("grib", "Grib1/2 settings (-it grib1 or -it grib2)")
-    grib.add_argument(
-        "--indicatorOfParameter",
-        type=int,
-        help="Indicator of parameter [grib1]",
-        default=None,
-    )
-    grib.add_argument(
-        "--timeRangeIndicator", type=int, help="Time range indicator [grib1]", default=0
-    )
-    grib.add_argument(
-        "--levelType", type=str, help="Level type [grib1/grib2]", default="sfc"
-    )
-    grib.add_argument("--level", type=int, help="Level [grib1/grib2]", default=0)
-    grib.add_argument("--discipline", type=int, help="Discipline [grib2]", default=None)
-    grib.add_argument(
-        "--parameterCategory", type=int, help="Parameter category [grib2]", default=None
-    )
-    grib.add_argument(
-        "--parameterNumber", type=int, help="ParameterNumber [grib2]", default=None
-    )
-    grib.add_argument(
-        "--typeOfStatisticalProcessing",
-        type=int,
-        help="TypeOfStatisticalProcessing [grib2]",
-        default=-1,
-    )
-
-    sfx = parser.add_argument_group("Surfex", "Surfex settings (-it surfex)")
-    sfx.add_argument(
-        "--sfx_type",
-        type=str,
-        help="Surfex file type",
-        default=None,
-        choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
-    )
-
-    sfx.add_argument("--sfx_patches", type=int, help="Patches [ascii/texte]", default=-1)
-    sfx.add_argument("--sfx_layers", type=int, help="Layers [ascii/texte]", default=-1)
-    sfx.add_argument(
-        "--sfx_datatype",
-        type=str,
-        help="Datatype [ascii]",
-        choices=["string", "float", "integer"],
-        default="float",
-    )
-    sfx.add_argument("--sfx_interval", type=str, help="Interval [texte]", default=None)
-    sfx.add_argument("--sfx_basetime", type=str, help="Basetime [texte]", default=None)
-    sfx.add_argument(
-        "--sfx_geo_input",
-        type=str,
-        default=None,
-        help="JSON file with domain defintion [forcing/netcdf/texte]",
-    )
-
-    obs = parser.add_argument_group("Observations", "Observation settings (scatter plot)")
-    obs.add_argument(
-        "--obs_type",
-        type=str,
-        help="Observation source type (-it obs)",
-        choices=[None, "json", "bufr", "frost", "netatmo"],
-        default=None,
-    )
     parser.add_argument(
         "--debug", action="store_true", help="Debug", required=False, default=False
     )
     parser.add_argument("--version", action="version", version=__version__)
 
+    variables = ["variable"]
+    kwargs = get_variables_from_args(parser, argv, variables)
+    return kwargs
+
+
+def get_variables_from_args(parser, argv, variables):
+    """Get the variables from user arguments.
+
+    Args:
+        parser (ArgumentParser): The existing parser.
+        argv (list): User arguments.
+        variables (list): Variables to get setttings for.
+
+    Returns:
+        dict: Parsed keyword arguments.
+    """
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args(argv)
+    options, argv = parser.parse_known_args(argv)
     kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
+    for arg in vars(options):
+        kwargs.update({arg: getattr(options, arg)})
+
+    parser2 = ArgumentParser(description="Variables")
+    kwargs.update(variable_parser(variables, argv, parser2))
     return kwargs
 
 
@@ -1994,25 +1955,9 @@ def parse_cryoclim_pseudoobs(argv):
     parser.add_argument(
         "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
+
     parser.add_argument(
-        "-v",
-        "--varname",
-        dest="varname",
-        type=str,
-        help="Variable name in first guess file",
-        default="surface_snow_thickness",
-        required=False,
-    )
-    parser.add_argument(
-        "-fg",
-        dest="fg_file",
-        type=str,
-        help="First guess file",
-        default=None,
-        required=True,
-    )
-    parser.add_argument(
-        "-i",
+        "--infiles",
         dest="infiles",
         type=str,
         nargs="+",
@@ -2058,14 +2003,208 @@ def parse_cryoclim_pseudoobs(argv):
         required=False,
     )
 
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit()
+    variables = ["fg", "slope", "perm_snow"]
+    kwargs = get_variables_from_args(parser, argv, variables)
+    return kwargs
 
-    args = parser.parse_args(argv)
+
+def variable_parser(needles, argv, parser):
+    """Create parser entries for a variable.
+
+    Args:
+        needles (list): The variables to create.
+        argv (list): User arguments.
+        parser (ArgumentParser): The existing parser object.
+
+    Returns:
+        dict: Parser keyword arguments
+    """
+    subparsers = parser.add_subparsers(help="sub-help", dest="variables")
+    for needle in needles:
+        parser_variable = subparsers.add_parser(needle, help="Variable settings")
+        # Add some arguments exclusively for parser_create
+        parser_variable.add_argument(
+            "-if",
+            "--inputfile",
+            dest="inputfile",
+            type=str,
+            help="Input file",
+            default=None,
+            required=False,
+        )
+        parser_variable.add_argument(
+            "-v",
+            "--variable",
+            dest="variable",
+            type=str,
+            help="Variable name",
+            required=False,
+        )
+        parser_variable.add_argument(
+            "-t",
+            "--validtime",
+            dest="validtime",
+            type=str,
+            help="Variable name",
+            required=False,
+        )
+        parser_variable.add_argument(
+            "-it",
+            "--inputtype",
+            dest="inputtype",
+            type=str,
+            help="Filetype",
+            default="surfex",
+            required=False,
+            choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
+        )
+        parser_variable.add_argument(
+            "--fcint",
+            dest="fcint",
+            type=int,
+            default=10800,
+            help="Forecast interval",
+            required=False,
+        )
+        parser_variable.add_argument(
+            "--offset",
+            dest="offset",
+            type=int,
+            default=0,
+            help="Forecast offset",
+            required=False,
+        )
+        parser_variable.add_argument(
+            "--interpolator",
+            type=str,
+            default="nearest",
+            required=False,
+            help="Interpolator",
+        )
+        grib = parser_variable.add_argument_group(
+            "grib", "Grib1/2 settings (-it grib1 or -it grib2)"
+        )
+        grib.add_argument(
+            "--indicatorOfParameter",
+            dest="parameter",
+            type=int,
+            help="Indicator of parameter [grib1]",
+            default=None,
+        )
+        grib.add_argument(
+            "--timeRangeIndicator",
+            type=int,
+            help="Time range indicator [grib1]",
+            default=0,
+            dest="tri",
+        )
+        grib.add_argument(
+            "--levelType",
+            type=str,
+            help="Level type [grib1/grib2]",
+            default="sfc",
+            dest="levelType",
+        )
+        grib.add_argument("--level", type=int, help="Level [grib1/grib2]", default=0)
+        grib.add_argument(
+            "--discipline", type=int, help="Discipline [grib2]", default=None
+        )
+        grib.add_argument(
+            "--parameterCategory",
+            type=int,
+            help="Parameter category [grib2]",
+            default=None,
+        )
+        grib.add_argument(
+            "--parameterNumber", type=int, help="ParameterNumber [grib2]", default=None
+        )
+        grib.add_argument(
+            "--typeOfStatisticalProcessing",
+            type=int,
+            help="TypeOfStatisticalProcessing [grib2]",
+            default=-1,
+        )
+
+        sfx = parser_variable.add_argument_group("Surfex", "Surfex settings (-it surfex)")
+        sfx.add_argument(
+            "--sfx_type",
+            type=str,
+            help="Surfex file type",
+            default=None,
+            choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
+        )
+
+        sfx.add_argument(
+            "--sfx_patches", type=int, help="Patches [ascii/texte]", default=-1
+        )
+        sfx.add_argument(
+            "--sfx_layers", type=int, help="Layers [ascii/texte]", default=-1
+        )
+        sfx.add_argument(
+            "--sfx_datatype",
+            type=str,
+            help="Datatype [ascii]",
+            choices=["string", "float", "integer"],
+            default="float",
+        )
+        sfx.add_argument(
+            "--sfx_interval", type=str, help="Interval [texte]", default=None
+        )
+        sfx.add_argument(
+            "--sfx_basetime", type=str, help="Basetime [texte]", default=None
+        )
+        sfx.add_argument(
+            "--sfx_geo_input",
+            type=str,
+            default=None,
+            help="JSON file with domain defintion [forcing/netcdf/texte]",
+        )
+
+        obs = parser_variable.add_argument_group("Observations", "Observation settings")
+        obs.add_argument(
+            "--obs_type",
+            type=str,
+            dest="filetype",
+            help="Observation source type (-it obs)",
+            choices=[None, "json", "bufr", "frost", "netatmo"],
+            default=None,
+        )
+
+    argv_string = " ".join(argv)
+    start_indices = {}
+    end_indices = {}
+    for needle in needles:
+        start_indices.update({needle: argv_string.find(needle)})
+
+    sorted_start_indices = sorted(start_indices.items(), key=lambda x: x[1])
+    prev_needle = ""
+    last_needle = ""
+    for needle, index in sorted_start_indices:
+        if index < 0:
+            end_indices.update({needle: index})
+        else:
+            if prev_needle != "":
+                end_indices.update({prev_needle: index})
+        prev_needle = needle
+        last_needle = needle
+    if last_needle != "":
+        end_indices.update({last_needle: len(argv_string)})
+
     kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
+    for needle in needles:
+
+        argv = argv_string[start_indices[needle] : end_indices[needle]].split()
+        opt = parser.parse_args(argv)
+        vargs = {}
+        for arg in vars(opt):
+            vargs.update({arg: getattr(opt, arg)})
+            if arg == "variable":
+                vargs.update({"varname": vargs["variable"]})
+                vargs.update({"name": vargs["variable"]})
+            if arg == "inputfile":
+                vargs.update({"filepattern": vargs["inputfile"]})
+                vargs.update({"filenames": [vargs["inputfile"]]})
+        kwargs.update({needle: vargs})
     return kwargs
 
 

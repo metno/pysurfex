@@ -151,7 +151,8 @@ class Netcdf(object):
                             float(level_ind), 5
                         ):
                             levels_to_read.append(i)
-
+        if len(levels_to_read) == 0:
+            levels_to_read = [0]
         members_to_read = []
         if members is None:
             for i in range(0, var.members.shape[0]):
@@ -227,7 +228,7 @@ class Netcdf(object):
         if deaccumulate:
             logging.debug("Deaccumulate previous dimensions: %s", str(prev_dims))
 
-        logging.debug("var.varname: %s", var.var_name)
+        logging.debug("var.var_name: %s", var.var_name)
         logging.debug("dims %s", dims)
         logging.debug("self.file[var.var_name] %s", self.file[var.var_name])
         field = self.file[var.var_name][dims]
@@ -366,16 +367,19 @@ class NetCDFReadVariable(object):
 class NetCDFFileVariable(object):
     """NetDF file variable."""
 
-    def __init__(self, file_handler, var_name):
+    def __init__(self, file_handler, var):
         """Construct object.
 
         Args:
             file_handler (_type_): _description_
-            var_name (_type_): _description_
+            var (_type_): _description_
 
         """
         self.file = file_handler
-        self.var_name = var_name
+        if isinstance(var, str):
+            self.var_name = var
+        else:
+            self.var_name = var.name
 
     @property
     def axis_types(self):

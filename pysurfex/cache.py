@@ -269,10 +269,10 @@ class Cache:
             _type_: _description_
 
         """
-        return (
-            f"{varname}{patches}{layers}{filename.split('/')[-1]}"
-            f"{validtime.strftime('%Y%m%d%H')}"
-        )
+        datestring = ""
+        if validtime is not None:
+            datestring = validtime.strftime("%Y%m%d%H")
+        return f"{varname}{patches}{layers}{filename.split('/')[-1]}" f"{datestring}"
 
     @staticmethod
     def generate_obs_id(varname, filename, validtime):

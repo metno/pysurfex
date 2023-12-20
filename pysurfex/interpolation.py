@@ -460,6 +460,7 @@ def horizontal_oi(
     maxvalue=None,
     interpol="bilinear",
     only_diff=False,
+    allow_extrapolation=False,
 ):
     """Do horizontal OI.
 
@@ -479,6 +480,7 @@ def horizontal_oi(
         maxvalue (_type_, optional): _description_. Defaults to None.
         interpol (str, optional): _description_. Defaults to "bilinear".
         only_diff (bool, optional): _description_. Defaults to False.
+        allow_extrapolation (bool, optional): Allow extrapolations in OI. Default to False.
 
     Raises:
         NotImplementedError: Structure function not implemented
@@ -524,17 +526,17 @@ def horizontal_oi(
         elevs2 = []
         values2 = []
         sigmaos2 = []
-        for point in range(0, len(lons)):
+        for point, lon in enumerate(lons):
             if np.isnan(pbackground[point]):
                 logging.info(
-                    "Undefined background in lon=%s lat=%s value=%s",
-                    lons[point],
+                    "Undefined background in lon=%s lat=%s value=%s sigmao=%s",
+                    lon,
                     lats[point],
                     values[point],
                     sigmaos[point],
                 )
             else:
-                lons2.append(lons[point])
+                lons2.append(lon)
                 lats2.append(lats[point])
                 elevs2.append(elevs[point])
                 values2.append(values[point])
@@ -569,6 +571,7 @@ def horizontal_oi(
         pbackground,
         structure,
         max_locations,
+        allow_extrapolation,
     )
     field = np.asarray(field)
     if minvalue is not None:
@@ -578,3 +581,16 @@ def horizontal_oi(
     if only_diff:
         field[field == background] = np.nan
     return np.transpose(field)
+
+
+def sum_neighbour_points(twodfield, radius):
+    """Sum up points in neighbourhood.
+
+    Args:
+        twodfield (np.ndarray): Field to sum
+        radius (int): Radius
+
+    Returns:
+        np.ndarray: Array with neighbourhood sums.
+    """
+    return gridpp.neighbourhood(twodfield, radius, gridpp.Sum)

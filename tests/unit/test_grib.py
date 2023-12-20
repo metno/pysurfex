@@ -19,7 +19,7 @@ def converter_config(lambert_t2m_grib1, lambert_t1_grib2):
                 "converter": {
                     "none": {
                         "parameter": 11,
-                        "type": 105,
+                        "levelType": 105,
                         "level": 2,
                         "tri": 0,
                         "filepattern": lambert_t2m_grib1,
@@ -50,7 +50,7 @@ def get_var(edition, conf):
     kwargs = conf["none"]
     if edition == 1:
         parameter = kwargs["parameter"]
-        typ = kwargs["type"]
+        typ = kwargs["levelType"]
         level = kwargs["level"]
         tri = kwargs["tri"]
         var = Grib1Variable(parameter, typ, level, tri)

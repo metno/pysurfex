@@ -1,7 +1,7 @@
 """Test variable."""
 import pytest
 
-from pysurfex.datetime_utils import as_datetime_args, as_timedelta
+from pysurfex.datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from pysurfex.variable import Variable
 
 
@@ -13,7 +13,7 @@ def fixture():
             "offset": 0,
             "timestep": 3600,
             "parameter": -1,
-            "type": 105,
+            "levelType": 105,
             "level": 0,
             "tri": 0,
             "prefer_forecast": True,
@@ -271,3 +271,80 @@ def test_open_new_file_fail(fixture):
         var_type = "netcdf"
     with pytest.raises(RuntimeError):
         Variable(var_type, var_dict, initialtime)
+
+
+def test_variable_grib1(rotated_ll_t2m_grib1):
+
+    var_dict = {
+        "filepattern": rotated_ll_t2m_grib1,
+        "parameter": 11,
+        "levelType": 105,
+        "level": 2,
+        "tri": 0,
+        "fcint": 10800,
+        "offset": 0,
+    }
+    var_type = "grib1"
+    initialtime = as_datetime("2020022006")
+    var = Variable(var_type, var_dict, initialtime)
+    assert var.file_var.par == 11
+    assert var.file_var.typ == 105
+    assert var.file_var.level == 2
+    assert var.file_var.tri == 0
+
+
+def test_variable_grib2(rotated_ll_t1_grib2):
+
+    var_dict = {
+        "filepattern": rotated_ll_t1_grib2,
+        "discipline": 0,
+        "parameterCategory": 0,
+        "parameterNumber": 0,
+        "levelType": 103,
+        "level": 2,
+        "fcint": 10800,
+        "offset": 0,
+    }
+    var_type = "grib2"
+    initialtime = as_datetime("2020022006")
+    var = Variable(var_type, var_dict, initialtime)
+
+    assert var.file_var.discipline == 0
+    assert var.file_var.parameter_category == 0
+    assert var.file_var.level_type == 103
+    assert var.file_var.level == 2
+    assert var.file_var.type_of_statistical_processing == -1
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_variable_surfex_fa(surfex_fa_file):
+
+    var_dict = {
+        "filepattern": surfex_fa_file,
+        "varname": "SFX.T2M",
+        "fcint": 10800,
+        "offset": 0,
+        "filetype": "surf",
+    }
+    var_type = "surfex"
+    initialtime = as_datetime("2020022006")
+    var = Variable(var_type, var_dict, initialtime)
+    assert var.file_var.varname == "SFX.T2M"
+    validtime = initialtime
+    var.read_var_field(validtime, cache=None)
+
+
+@pytest.mark.usefixtures("_mockers")
+def test_variable_surfex_fa_sfx(surfex_fa_file_sfx):
+
+    var_dict = {
+        "filepattern": surfex_fa_file_sfx,
+        "varname": "SFX.T2M",
+        "filetype": "surf",
+    }
+    var_type = "surfex"
+    initialtime = as_datetime("2020022006")
+    var = Variable(var_type, var_dict, initialtime)
+    assert var.file_var.varname == "SFX.T2M"
+    validtime = initialtime
+    var.read_var_field(validtime, cache=None)
