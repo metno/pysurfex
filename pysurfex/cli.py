@@ -167,6 +167,13 @@ def run_first_guess_for_oi(**kwargs):
                 fileformat = kwargs["sd_format"]
             if "sd_converter" in kwargs and kwargs["sd_converter"] is not None:
                 converter = kwargs["sd_converter"]
+        elif var == "sea_ice_thickness":
+            if "icetk_file" in kwargs and kwargs["icetk_file"] is not None:
+                inputfile = kwargs["icetk_file"]
+            if "icetk_format" in kwargs and kwargs["icetk_format"] is not None:
+                fileformat = kwargs["icetk_format"]
+            if "icetk_converter" in kwargs and kwargs["icetk_converter"] is not None:
+                converter = kwargs["icetk_converter"]
         elif var == "cloud_base":
             if "cb_file" in kwargs and kwargs["cb_file"] is not None:
                 inputfile = kwargs["cb_file"]
