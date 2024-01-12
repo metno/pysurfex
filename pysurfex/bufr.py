@@ -1,5 +1,6 @@
 """bufr treatment."""
 import logging
+import sys
 from math import exp
 
 import numpy as np
@@ -36,7 +37,6 @@ class BufrObservationSet(ObservationSet):
         latrange=None,
         label="bufr",
         use_first=False,
-        sigmao=None,
     ):
         """Initialize a bufr observation set.
 
@@ -49,7 +49,6 @@ class BufrObservationSet(ObservationSet):
             latrange (list): Allowed range of latitides [min, max]
             label (str): A label for the resulting observations set
             use_first (bool): Use only the first valid observation for a point if more are found
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: ECCODES not found. Needed for bufr reading
@@ -67,9 +66,6 @@ class BufrObservationSet(ObservationSet):
 
         # open bufr file
         file_handler = open(bufrfile, mode="rb")
-        number_of_bytes = file_handler.seek(0, 2)
-        logging.info("File size: %s", number_of_bytes)
-        file_handler.seek(0)
 
         # define the keys to be printed
         keys = [
@@ -86,8 +82,8 @@ class BufrObservationSet(ObservationSet):
             "heightOfStation",
             "stationNumber",
             "blockNumber",
+            "stationOrSiteName",
         ]
-        processed_threshold = 0
         nerror = {}
         ntime = {}
         nundef = {}
@@ -112,6 +108,10 @@ class BufrObservationSet(ObservationSet):
                 keys.append(
                     "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
                     "/dewpointTemperature"
+                )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                    "/relativeHumidity"
                 )
             elif var == "airTemperatureAt2M":
                 keys.append("airTemperatureAt2M")
@@ -171,7 +171,9 @@ class BufrObservationSet(ObservationSet):
                 stid = "NA"
                 station_number = -1
                 block_number = -1
+                site_name = "NA"
                 t2m = np.nan
+                rh2m = np.nan
                 td2m = np.nan
                 s_d = np.nan
                 temp = np.nan
@@ -223,6 +225,8 @@ class BufrObservationSet(ObservationSet):
                             station_number = val
                         if key == "blockNumber":
                             block_number = val
+                        if key == "stationOrSiteName":
+                            site_name = val
                         if key == "airTemperatureAt2M":
                             t2m = val
                         if (
@@ -234,6 +238,12 @@ class BufrObservationSet(ObservationSet):
                             "/airTemperature"
                         ):
                             temp = val
+                        if (
+                            key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            "/relativeHumidity"
+                        ):
+                            rh2m = val
                         if key == "dewpointTemperatureAt2M":
                             td2m = val
                         if (
@@ -279,24 +289,29 @@ class BufrObservationSet(ObservationSet):
                         if not exists:
                             logging.debug("Pos does not exist %s %s", pos, var)
                             if var == "relativeHumidityAt2M":
-                                if not np.isnan(t2m) and not np.isnan(td2m):
+                                if not np.isnan(t2m) and not np.isnan(td2m) and np.isnan(rh2m):
                                     try:
                                         value = self.td2rh(td2m, t2m)
-                                        value = value * 0.01
+                                        value = value * 0.01                                        
                                     except Exception:
                                         logging.debug("Got exception for %s:", var)
                                         value = np.nan
+                                elif not np.isnan(temp) and not np.isnan(t_d) and np.isnan(rh2m):                                    
+                                    try:
+                                        value = self.td2rh(t_d, temp)
+                                        value = value * 0.01
+                                    except Exception:
+                                        logging.debug(
+                                            "Got exception for %s",
+                                            var,
+                                        )
+                                        value = np.nan
                                 else:
-                                    if not np.isnan(temp) and not np.isnan(t_d):
-                                        try:
-                                            value = self.td2rh(t_d, temp)
-                                            value = value * 0.01
-                                        except Exception:
-                                            logging.debug(
-                                                "Got exception for %s",
-                                                var,
-                                            )
-                                            value = np.nan
+                                    value = np.nan
+
+                                if np.isnan(value) and not np.isnan(rh2m):
+                                    value = 0.01 * rh2m
+                                            
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
                                     if not np.isnan(temp):
@@ -349,28 +364,10 @@ class BufrObservationSet(ObservationSet):
                             latrange[0] <= lat <= latrange[1]
                             and lonrange[0] <= lon <= lonrange[1]
                         ):
-                            obs_dtg = None
-                            try:
-                                obs_dtg = as_datetime_args(
-                                    year=year,
-                                    month=month,
-                                    day=day,
-                                    hour=hour,
-                                    minute=minute,
-                                )
-                            except ValueError:
-                                logging.warning(
-                                    "Bad observations time: year=%s month=%s day=%s hour=%s minute=%s Position is lon=%s, lat=%s",
-                                    year,
-                                    month,
-                                    day,
-                                    hour,
-                                    minute,
-                                    lon,
-                                    lat,
-                                )
-                                obs_dtg = None
-                            if not np.isnan(value) and obs_dtg is not None:
+                            obs_dtg = as_datetime_args(
+                                year=year, month=month, day=day, hour=hour, minute=minute
+                            )
+                            if not np.isnan(value):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
                                     logging.debug(
                                         "Valid DTG for station %s %s %s %s %s %s %s %s",
@@ -385,6 +382,9 @@ class BufrObservationSet(ObservationSet):
                                     )
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
+                                    if stid == "NA" and site_name != "NA" and site_name.isnumeric():
+                                        stid = site_name
+                                    
                                     observations.append(
                                         Observation(
                                             obs_dtg,
@@ -407,23 +407,18 @@ class BufrObservationSet(ObservationSet):
                             ndomain.update({var: ndomain[var] + 1})
 
                 cnt += 1
-                try:
-                    nbytes = file_handler.tell()
-                except ValueError:
-                    nbytes = number_of_bytes
 
-                processed = int(round(float(nbytes) * 100.0 / float(number_of_bytes)))
-                if processed > processed_threshold and processed % 5 == 0:
-                    processed_threshold = processed
-                    logging.info("Read: %s%%", processed)
+                if (cnt % 1000) == 0:
+                    print(".", end="")
+                    sys.stdout.flush()
 
             # delete handle
             eccodes.codes_release(bufr)
 
-        logging.info("Found %s/%s", str(len(observations)), str(cnt))
+        logging.info("\nFound %s/%s", str(len(observations)), str(cnt))
         logging.info("Not decoded: %s", str(not_decoded))
         for var in variables:
-            logging.info("Observations for var=%s: %s", var, str(nobs[var]))
+            logging.info("\nObservations for var=%s: %s", var, str(nobs[var]))
             logging.info(
                 "Observations removed because of domain check: %s", str(ndomain[var])
             )
@@ -440,7 +435,7 @@ class BufrObservationSet(ObservationSet):
         # close the file
         file_handler.close()
 
-        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+        ObservationSet.__init__(self, observations, label=label)
 
     @staticmethod
     def td2rh(t_d, temp, kelvin=True):
