@@ -619,6 +619,25 @@ def parse_args_first_guess_for_oi(argv):
     )
 
     parser.add_argument(
+        "-icetk_file", type=str, default=None, help="Ice thickness file", nargs="?"
+    )
+    parser.add_argument(
+        "-icetk_format",
+        type=str,
+        default=None,
+        help="Ice thickness file format",
+        nargs="?",
+        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
+    )
+    parser.add_argument(
+        "--icetk_converter",
+        type=str,
+        default="none",
+        help="",
+        nargs="?",
+    )
+
+    parser.add_argument(
         "-cb_file", type=str, default=None, help="Cloud base file", nargs="?"
     )
     parser.add_argument(
@@ -721,6 +740,7 @@ def parse_args_first_guess_for_oi(argv):
             "air_temperature_2m",
             "relative_humidity_2m",
             "surface_snow_thickness",
+            "sea_ice_thickness",
             "cloud_base",
             "surface_soil_moisture",
         ],
