@@ -627,7 +627,7 @@ def parse_args_first_guess_for_oi(argv):
         default=None,
         help="Ice thickness file format",
         nargs="?",
-        choices=["fa"],
+        choices=["grib1", "grib2", "netcdf", "surfex", "fa"],
     )
     parser.add_argument(
         "--icetk_converter",
@@ -635,7 +635,6 @@ def parse_args_first_guess_for_oi(argv):
         default="none",
         help="",
         nargs="?",
-        choices=["none"],
     )
 
     parser.add_argument(
