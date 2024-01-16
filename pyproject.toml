@@ -61,7 +61,7 @@
 
 #[tool.poetry.group.points.dependencies]
     requests = "^2.28.2"
-    gridpp = "^0.6.0"
+    gridpp = "0.7.0.dev7"
     titanlib = "^0.3.3"
 
 #[tool.poetry.group.plot.dependencies]
