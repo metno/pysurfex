@@ -1,6 +1,5 @@
 """bufr treatment."""
 import logging
-import sys
 from math import exp
 
 import numpy as np
@@ -295,14 +294,22 @@ class BufrObservationSet(ObservationSet):
                         if not exists:
                             logging.debug("Pos does not exist %s %s", pos, var)
                             if var == "relativeHumidityAt2M":
-                                if not np.isnan(t2m) and not np.isnan(td2m) and np.isnan(rh2m):
+                                if (
+                                    not np.isnan(t2m)
+                                    and not np.isnan(td2m)
+                                    and np.isnan(rh2m)
+                                ):
                                     try:
                                         value = self.td2rh(td2m, t2m)
-                                        value = value * 0.01                                        
+                                        value = value * 0.01
                                     except Exception:
                                         logging.debug("Got exception for %s:", var)
                                         value = np.nan
-                                elif not np.isnan(temp) and not np.isnan(t_d) and np.isnan(rh2m):                                    
+                                elif (
+                                    not np.isnan(temp)
+                                    and not np.isnan(t_d)
+                                    and np.isnan(rh2m)
+                                ):
                                     try:
                                         value = self.td2rh(t_d, temp)
                                         value = value * 0.01
@@ -317,7 +324,7 @@ class BufrObservationSet(ObservationSet):
 
                                 if np.isnan(value) and not np.isnan(rh2m):
                                     value = 0.01 * rh2m
-                                            
+
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
                                     if not np.isnan(temp):
@@ -406,9 +413,13 @@ class BufrObservationSet(ObservationSet):
                                     )
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
-                                    if stid == "NA" and site_name != "NA" and site_name.isnumeric():
+                                    if (
+                                        stid == "NA"
+                                        and site_name != "NA"
+                                        and site_name.isnumeric()
+                                    ):
                                         stid = site_name
-                                    
+
                                     observations.append(
                                         Observation(
                                             obs_dtg,
