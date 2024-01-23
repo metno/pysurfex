@@ -37,7 +37,6 @@ class BufrObservationSet(ObservationSet):
         latrange=None,
         label="bufr",
         use_first=False,
-        sigmao=None,
     ):
         """Initialize a bufr observation set.
 
@@ -50,7 +49,6 @@ class BufrObservationSet(ObservationSet):
             latrange (list): Allowed range of latitides [min, max]
             label (str): A label for the resulting observations set
             use_first (bool): Use only the first valid observation for a point if more are found
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: ECCODES not found. Needed for bufr reading
@@ -68,9 +66,6 @@ class BufrObservationSet(ObservationSet):
 
         # open bufr file
         file_handler = open(bufrfile, mode="rb")
-        number_of_bytes = file_handler.seek(0, 2)
-        logging.info("File size: %s", number_of_bytes)
-        file_handler.seek(0)
 
         # define the keys to be printed
         keys = [
@@ -86,10 +81,8 @@ class BufrObservationSet(ObservationSet):
             "heightOfStationGroundAboveMeanSeaLevel",
             "heightOfStation",
             "stationNumber",
-            "blockNumber",
-            "stationOrSiteName",
+            "blockNumber"
         ]
-        processed_threshold = 0
         nerror = {}
         ntime = {}
         nundef = {}
@@ -232,7 +225,7 @@ class BufrObservationSet(ObservationSet):
                         if key == "blockNumber":
                             block_number = val
                         if key == "stationOrSiteName":
-                            site_name = val
+                            site_name = str(val)
                         if key == "airTemperatureAt2M":
                             t2m = val
                         if (
@@ -328,6 +321,8 @@ class BufrObservationSet(ObservationSet):
                                 value = s_d
                             elif var == "heightOfBaseOfCloud":
                                 value = c_b
+                            elif var == "stationOrSiteName":
+                                site_name = site_name
                             else:
                                 raise NotImplementedError(
                                     f"Var {var} is not coded! Please do it!"
@@ -370,28 +365,10 @@ class BufrObservationSet(ObservationSet):
                             latrange[0] <= lat <= latrange[1]
                             and lonrange[0] <= lon <= lonrange[1]
                         ):
-                            obs_dtg = None
-                            try:
-                                obs_dtg = as_datetime_args(
-                                    year=year,
-                                    month=month,
-                                    day=day,
-                                    hour=hour,
-                                    minute=minute,
-                                )
-                            except ValueError:
-                                logging.warning(
-                                    "Bad observations time: year=%s month=%s day=%s hour=%s minute=%s Position is lon=%s, lat=%s",
-                                    year,
-                                    month,
-                                    day,
-                                    hour,
-                                    minute,
-                                    lon,
-                                    lat,
-                                )
-                                obs_dtg = None
-                            if not np.isnan(value) and obs_dtg is not None:
+                            obs_dtg = as_datetime_args(
+                                year=year, month=month, day=day, hour=hour, minute=minute
+                            )
+                            if not np.isnan(value):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
                                     logging.debug(
                                         "Valid DTG for station %s %s %s %s %s %s %s %s",
@@ -404,10 +381,14 @@ class BufrObservationSet(ObservationSet):
                                         elev,
                                         stid,
                                     )
+                                    
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
+                                    
+
                                     if stid == "NA" and site_name != "NA" and site_name.isnumeric():
                                         stid = site_name
+                                    
                                     
                                     observations.append(
                                         Observation(
@@ -431,23 +412,18 @@ class BufrObservationSet(ObservationSet):
                             ndomain.update({var: ndomain[var] + 1})
 
                 cnt += 1
-                try:
-                    nbytes = file_handler.tell()
-                except ValueError:
-                    nbytes = number_of_bytes
 
-                processed = int(round(float(nbytes) * 100.0 / float(number_of_bytes)))
-                if processed > processed_threshold and processed % 5 == 0:
-                    processed_threshold = processed
-                    logging.info("Read: %s%%", processed)
+                if (cnt % 1000) == 0:
+                    print(".", end="")
+                    sys.stdout.flush()
 
             # delete handle
             eccodes.codes_release(bufr)
 
-        logging.info("Found %s/%s", str(len(observations)), str(cnt))
+        logging.info("\nFound %s/%s", str(len(observations)), str(cnt))
         logging.info("Not decoded: %s", str(not_decoded))
         for var in variables:
-            logging.info("Observations for var=%s: %s", var, str(nobs[var]))
+            logging.info("\nObservations for var=%s: %s", var, str(nobs[var]))
             logging.info(
                 "Observations removed because of domain check: %s", str(ndomain[var])
             )
@@ -464,7 +440,7 @@ class BufrObservationSet(ObservationSet):
         # close the file
         file_handler.close()
 
-        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+        ObservationSet.__init__(self, observations, label=label)
 
     @staticmethod
     def td2rh(t_d, temp, kelvin=True):
