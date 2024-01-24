@@ -149,6 +149,10 @@
                     <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
                     <span class="s2">&quot;/dewpointTemperature&quot;</span>
                 <span class="p">)</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                    <span class="s2">&quot;/relativeHumidity&quot;</span>
+                <span class="p">)</span>
             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">)</span>
                 <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -207,7 +211,9 @@
                 <span class="n">stid</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
                 <span class="n">station_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                 <span class="n">block_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">site_name</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
                 <span class="n">t2m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">rh2m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">td2m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">s_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -259,6 +265,8 @@
                             <span class="n">station_number</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;blockNumber&quot;</span><span class="p">:</span>
                             <span class="n">block_number</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;stationOrSiteName&quot;</span><span class="p">:</span>
+                            <span class="n">site_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">t2m</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="p">(</span>
@@ -270,6 +278,12 @@
                             <span class="s2">&quot;/airTemperature&quot;</span>
                         <span class="p">):</span>
                             <span class="n">temp</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">key</span>
+                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                            <span class="s2">&quot;/relativeHumidity&quot;</span>
+                        <span class="p">):</span>
+                            <span class="n">rh2m</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;dewpointTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">td2m</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="p">(</span>
@@ -315,24 +329,37 @@
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">:</span>
                             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pos does not exist </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;relativeHumidityAt2M&quot;</span><span class="p">:</span>
-                                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t2m</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">td2m</span><span class="p">):</span>
+                                <span class="k">if</span> <span class="p">(</span>
+                                    <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t2m</span><span class="p">)</span>
+                                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">td2m</span><span class="p">)</span>
+                                    <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rh2m</span><span class="p">)</span>
+                                <span class="p">):</span>
                                     <span class="k">try</span><span class="p">:</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">td2m</span><span class="p">,</span> <span class="n">t2m</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
                                     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                                <span class="k">elif</span> <span class="p">(</span>
+                                    <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+                                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t_d</span><span class="p">)</span>
+                                    <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rh2m</span><span class="p">)</span>
+                                <span class="p">):</span>
+                                    <span class="k">try</span><span class="p">:</span>
+                                        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+                                        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
+                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                            <span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                            <span class="n">var</span><span class="p">,</span>
+                                        <span class="p">)</span>
+                                        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                                 <span class="k">else</span><span class="p">:</span>
-                                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t_d</span><span class="p">):</span>
-                                        <span class="k">try</span><span class="p">:</span>
-                                            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
-                                            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
-                                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                                <span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                                                <span class="n">var</span><span class="p">,</span>
-                                            <span class="p">)</span>
-                                            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                                    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+                                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rh2m</span><span class="p">):</span>
+                                    <span class="n">value</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">rh2m</span>
+
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t2m</span><span class="p">):</span>
                                     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">temp</span><span class="p">):</span>
@@ -343,6 +370,8 @@
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">s_d</span>
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">c_b</span>
+                            <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;stationOrSiteName&quot;</span><span class="p">:</span>
+                                <span class="n">site_name</span> <span class="o">=</span> <span class="n">site_name</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                                     <span class="sa">f</span><span class="s2">&quot;Var </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> is not coded! Please do it!&quot;</span>
@@ -421,6 +450,14 @@
                                     <span class="p">)</span>
                                     <span class="k">if</span> <span class="n">station_number</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">block_number</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                                         <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">block_number</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">+</span> <span class="n">station_number</span><span class="p">)</span>
+
+                                    <span class="k">if</span> <span class="p">(</span>
+                                        <span class="n">stid</span> <span class="o">==</span> <span class="s2">&quot;NA&quot;</span>
+                                        <span class="ow">and</span> <span class="n">site_name</span> <span class="o">!=</span> <span class="s2">&quot;NA&quot;</span>
+                                        <span class="ow">and</span> <span class="n">site_name</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">()</span>
+                                    <span class="p">):</span>
+                                        <span class="n">stid</span> <span class="o">=</span> <span class="n">site_name</span>
+
                                     <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                                         <span class="n">Observation</span><span class="p">(</span>
                                             <span class="n">obs_dtg</span><span class="p">,</span>
