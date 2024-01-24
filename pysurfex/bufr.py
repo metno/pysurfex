@@ -308,7 +308,7 @@ class BufrObservationSet(ObservationSet):
                                     not np.isnan(temp)
                                     and not np.isnan(t_d)
                                     and np.isnan(rh2m)
-                                ):                                    
+                                ):
                                     try:
                                         value = self.td2rh(t_d, temp)
                                         value = value * 0.01
@@ -323,7 +323,7 @@ class BufrObservationSet(ObservationSet):
 
                                 if np.isnan(value) and not np.isnan(rh2m):
                                     value = 0.01 * rh2m
-                                            
+
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
                                     if not np.isnan(temp):
@@ -414,7 +414,6 @@ class BufrObservationSet(ObservationSet):
                                     )
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
-                                    
 
                                     if (
                                         stid == "NA"
@@ -422,8 +421,7 @@ class BufrObservationSet(ObservationSet):
                                         and site_name.isnumeric()
                                     ):
                                         stid = site_name
-                                    
-                                    
+
                                     observations.append(
                                         Observation(
                                             obs_dtg,
