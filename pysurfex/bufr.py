@@ -113,6 +113,10 @@ class BufrObservationSet(ObservationSet):
                     "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
                     "/dewpointTemperature"
                 )
+                keys.append(
+                    "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                    "/relativeHumidity"
+                )
             elif var == "airTemperatureAt2M":
                 keys.append("airTemperatureAt2M")
                 keys.append(
@@ -171,7 +175,9 @@ class BufrObservationSet(ObservationSet):
                 stid = "NA"
                 station_number = -1
                 block_number = -1
+                site_name = "NA"
                 t2m = np.nan
+                rh2m = np.nan
                 td2m = np.nan
                 s_d = np.nan
                 temp = np.nan
@@ -223,6 +229,8 @@ class BufrObservationSet(ObservationSet):
                             station_number = val
                         if key == "blockNumber":
                             block_number = val
+                        if key == "stationOrSiteName":
+                            site_name = str(val)
                         if key == "airTemperatureAt2M":
                             t2m = val
                         if (
@@ -234,6 +242,12 @@ class BufrObservationSet(ObservationSet):
                             "/airTemperature"
                         ):
                             temp = val
+                        if (
+                            key
+                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            "/relativeHumidity"
+                        ):
+                            rh2m = val
                         if key == "dewpointTemperatureAt2M":
                             td2m = val
                         if (
@@ -279,24 +293,37 @@ class BufrObservationSet(ObservationSet):
                         if not exists:
                             logging.debug("Pos does not exist %s %s", pos, var)
                             if var == "relativeHumidityAt2M":
-                                if not np.isnan(t2m) and not np.isnan(td2m):
+                                if (
+                                    not np.isnan(t2m)
+                                    and not np.isnan(td2m)
+                                    and np.isnan(rh2m)
+                                ):
                                     try:
                                         value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
                                     except Exception:
                                         logging.debug("Got exception for %s:", var)
                                         value = np.nan
+                                elif (
+                                    not np.isnan(temp)
+                                    and not np.isnan(t_d)
+                                    and np.isnan(rh2m)
+                                ):
+                                    try:
+                                        value = self.td2rh(t_d, temp)
+                                        value = value * 0.01
+                                    except Exception:
+                                        logging.debug(
+                                            "Got exception for %s",
+                                            var,
+                                        )
+                                        value = np.nan
                                 else:
-                                    if not np.isnan(temp) and not np.isnan(t_d):
-                                        try:
-                                            value = self.td2rh(t_d, temp)
-                                            value = value * 0.01
-                                        except Exception:
-                                            logging.debug(
-                                                "Got exception for %s",
-                                                var,
-                                            )
-                                            value = np.nan
+                                    value = np.nan
+
+                                if np.isnan(value) and not np.isnan(rh2m):
+                                    value = 0.01 * rh2m
+
                             elif var == "airTemperatureAt2M":
                                 if np.isnan(t2m):
                                     if not np.isnan(temp):
@@ -307,6 +334,8 @@ class BufrObservationSet(ObservationSet):
                                 value = s_d
                             elif var == "heightOfBaseOfCloud":
                                 value = c_b
+                            elif var == "stationOrSiteName":
+                                site_name = site_name
                             else:
                                 raise NotImplementedError(
                                     f"Var {var} is not coded! Please do it!"
@@ -385,6 +414,14 @@ class BufrObservationSet(ObservationSet):
                                     )
                                     if station_number > 0 and block_number > 0:
                                         stid = str((block_number * 1000) + station_number)
+
+                                    if (
+                                        stid == "NA"
+                                        and site_name != "NA"
+                                        and site_name.isnumeric()
+                                    ):
+                                        stid = site_name
+
                                     observations.append(
                                         Observation(
                                             obs_dtg,
