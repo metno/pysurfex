@@ -275,9 +275,14 @@ class BufrObservationSet(surfex.obs.ObservationSet):
                         if debug:
                             print("Check on position in space and time", lon, lonrange[0], lonrange[1], lat, latrange[0],latrange[1])
                         if latrange[0] <= lat <= latrange[1] and lonrange[0] <= lon <= lonrange[1]:
-                            obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+                            # Try to solve datetime problem, e.g. 2023-06-31 !!!
+                            obs_dtg = None
+                            try:
+                                obs_dtg = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+                            except:
+                                pass 
                             # print(value)
-                            if not np.isnan(value):
+                            if (not np.isnan(value)) and ( obs_dtg is not None):
                                 if self.inside_window(obs_dtg, valid_dtg, valid_range):
                                     if debug:
                                         print("Valid DTG for station", obs_dtg, valid_dtg, valid_range, lon, lat, value, elev, stid)
