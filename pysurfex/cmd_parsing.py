@@ -851,6 +851,14 @@ def parse_args_masterodb(argv):
         nargs="?",
         help="Full path of MASTERODB binary",
     )
+    parser.add_argument("--no-consistency",  dest="no_consistency",
+                        action="store_true", required=False
+    )
+    parser.add_argument(
+        "--assemble", type=str, required=False,
+        help="Path to file containing list of namelist blocks",
+        default=None
+    )
 
     if len(argv) == 0:
         parser.print_help()
@@ -985,6 +993,14 @@ def parse_args_surfex_binary(argv, mode):
         help="JSON file with archive output",
     )
     parser.add_argument("binary", type=str, help="Command to run")
+    parser.add_argument("--no-consistency", dest="no_consistency",
+                        action="store_true", required=False
+    )
+    parser.add_argument(
+        "--assemble", type=str, required=False,
+        help="Path to file containing list of namelist blocks",
+        default=None
+    )
 
     if len(argv) == 0:
         parser.print_help()
