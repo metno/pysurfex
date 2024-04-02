@@ -184,88 +184,98 @@ class BufrObservationSet(ObservationSet):
                 t_d = np.nan
                 c_b = np.nan
                 for key in keys:
-                    try:
-                        logging.debug("Decode: %s", key)
-                        val = eccodes.codes_get(bufr, key)
-                        logging.debug("Got: %s=%s", key, val)
-                        if (
-                            val == eccodes.CODES_MISSING_DOUBLE
-                            or val == eccodes.CODES_MISSING_LONG
-                        ):
-                            val = np.nan
-                        if key == "latitude":
-                            lat = val
-                            if lat < -90 or lat > 90:
-                                lat = np.nan
-                        if key == "longitude":
-                            lon = val
-                            if lon < -180 or lon > 180:
-                                lon = np.nan
-                        if key == "localLatitude":
-                            local_lat = val
-                            if local_lat < -90 or local_lat > 90:
-                                local_lat = np.nan
-                        if key == "localLongitude":
-                            local_lon = val
-                            if local_lon < -180 or local_lon > 180:
-                                local_lon = np.nan
-                        if key == "year":
-                            year = val
-                        if key == "month":
-                            month = val
-                        if key == "day":
-                            day = val
-                        if key == "hour":
-                            hour = val
-                        if key == "minute":
-                            minute = val
-                        if key == "heightOfStation":
-                            if not np.isnan(val):
-                                elev = val
-                        if key == "heightOfStationGroundAboveMeanSeaLevel":
-                            if not np.isnan(val):
-                                elev = val
-                        if key == "stationNumber":
-                            station_number = val
-                        if key == "blockNumber":
-                            block_number = val
-                        if key == "stationOrSiteName":
-                            site_name = str(val)
-                        if key == "airTemperatureAt2M":
-                            t2m = val
-                        if (
-                            key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/airTemperature"
-                            or key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/airTemperature"
-                        ):
-                            temp = val
-                        if (
-                            key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/relativeHumidity"
-                        ):
-                            rh2m = val
-                        if key == "dewpointTemperatureAt2M":
-                            td2m = val
-                        if (
-                            key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/dewpointTemperature"
-                            or key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/dewpointTemperature"
-                        ):
-                            t_d = val
-                        if key == "totalSnowDepth":
-                            s_d = val
-                        if key == "heightOfBaseOfCloud":
-                            c_b = val
+                    val = np.nan
+                    if key == "heightOfBaseOfCloud":
+                        logging.debug("Decode array: %s", key)
+                        try:
+                            vals = eccodes.codes_get_array(bufr, key) #Read key as array (works if key is repeated in message)
+                            val = self.get_heightOfBaseOfCloud(vals, bufr) #Get the cloud base height we want from array
+                        except eccodes.CodesInternalError:
+                            logging.debug('Report does not contain array of key="%s"' % (key))
+                    
+                    if np.isnan(val): 
+                        try:
+                            logging.debug("Decode: ", key)
+                            val = eccodes.codes_get(bufr, key) #Read key as scalar
+                            logging.debug("Got:", key,"=",val)
+                            if val == eccodes.CODES_MISSING_DOUBLE or val == eccodes.CODES_MISSING_LONG:
+                                val = np.nan
+                        except eccodes.CodesInternalError:
+                            logging.debug('Report does not contain key="%s"' % (key))
+                                
+                    
+                    if key == "latitude":
+                        lat = val
+                        if lat < -90 or lat > 90:
+                            lat = np.nan
+                    if key == "longitude":
+                        lon = val
+                        if lon < -180 or lon > 180:
+                            lon = np.nan
+                    if key == "localLatitude":
+                        local_lat = val
+                        if local_lat < -90 or local_lat > 90:
+                            local_lat = np.nan
+                    if key == "localLongitude":
+                        local_lon = val
+                        if local_lon < -180 or local_lon > 180:
+                            local_lon = np.nan
+                    if key == "year":
+                        year = val
+                    if key == "month":
+                        month = val
+                    if key == "day":
+                        day = val
+                    if key == "hour":
+                        hour = val
+                    if key == "minute":
+                        minute = val
+                    if key == "heightOfStation":
+                        if not np.isnan(val):
+                            elev = val
+                    if key == "heightOfStationGroundAboveMeanSeaLevel":
+                        if not np.isnan(val):
+                            elev = val
+                    if key == "stationNumber":
+                        station_number = val
+                    if key == "blockNumber":
+                        block_number = val
+                    if key == "stationOrSiteName":
+                        site_name = str(val)
+                    if key == "airTemperatureAt2M":
+                        t2m = val
+                    if (
+                        key
+                        == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                        "/airTemperature"
+                        or key
+                        == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                        "/airTemperature"
+                    ):
+                        temp = val
+                    if (
+                        key
+                        == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                        "/relativeHumidity"
+                    ):
+                        rh2m = val
+                    if key == "dewpointTemperatureAt2M":
+                        td2m = val
+                    if (
+                        key
+                        == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                        "/dewpointTemperature"
+                        or key
+                        == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                        "/dewpointTemperature"
+                    ):
+                        t_d = val
+                    if key == "totalSnowDepth":
+                        s_d = val
+                    if key == "heightOfBaseOfCloud":
+                        c_b = val
 
-                    except eccodes.CodesInternalError:
-                        logging.debug('Report does not contain key="%s"', key)
+                   
 
                 got_pos = True
                 if np.isnan(lat):
@@ -545,3 +555,38 @@ class BufrObservationSet(ObservationSet):
                 return True
             else:
                 return False
+    
+    @staticmethod    
+    def get_heightOfBaseOfCloud(height_vals, bufr):
+        #Most of the time the bufr messages contain one of bufr code [302004 - General cloud information], plus one [302005 - Cloud layer] per cloud layer
+        #We want to look at the cloud layers to find the base height of the lowest layer with matching cloud amount (octa) > limit, or alternatively the layer with the largest cloud amount.
+        #If we cannot get any (valid) cloud amount(s), just choose the lowest cloud layer
+                
+        val_cloudBase = np.nan #Value to be set (cloud base height
+        valid_heights = [v for v in height_vals if v != eccodes.CODES_MISSING_DOUBLE and v != eccodes.CODES_MISSING_LONG] #Find valid cloud base height values
+        if len(valid_heights) == 1 or len(list(set(valid_heights))) == 1: #Only one valid cloud height, or same value in general cloud information and first layer
+            val_cloudBase = valid_heights[0] 
+        elif len(valid_heights) > 1:  #More than one valid cloud base height found: Check cloud amount per layer
+            try:
+                cloudAmount_vals = eccodes.codes_get_array(bufr, 'cloudAmount')  #Get cloud amount (in almost-octa)
+                ind_valid_cloudAmounts = [i for i,v in enumerate(cloudAmount_vals) if i>0 and v >0 and v <11]  #Ignore first cloud base height - this is the general cloud information. Use cloud layers.
+                ind_valid_heights = [i for i,v in enumerate(height_vals) if i>0 and v != eccodes.CODES_MISSING_DOUBLE and v != eccodes.CODES_MISSING_LONG]
+                if np.size(cloudAmount_vals) != np.size(height_vals): val_cloudBase = np.min(valid_heights)  #If different number of cloud heights and amounts, just use bottom cloud layer
+                elif len(ind_valid_cloudAmounts) == 0: val_cloudBase = np.min(valid_heights) #If no valid cloudAmounts, just use bottom cloud layer
+                elif len(ind_valid_heights) != len(ind_valid_cloudAmounts): val_cloudBase = np.min(valid_heights)  #If different number of valid heights and amounts, just use bottom cloud layer
+                else: #Valid cloud amounts found
+                    indices_cloudamount_over_limit = [i for i,v in enumerate(cloudAmount_vals) if i>0 and v > 4 and v <11] #Look for cloud layers with cloud amount over limit
+                    if len(indices_cloudamount_over_limit) > 0: #If any cloud layer over cloud amount limit
+                        ind_val = np.argmin([height_vals[i] for i in indices_cloudamount_over_limit]) #Get index of lowest cloud layer with cloud amount over cloud amount limit
+                        val_cloudBase  = height_vals[indices_cloudamount_over_limit[ind_val]]
+                    elif len(indices_cloudamount_over_limit)==0: #No layer thicker than limit. Just look for cloud layer with max cloud amount 
+                        indices_max = np.argmax([cloudAmount_vals[i] for i in ind_valid_cloudAmounts]) #Get index/indices of max cloud amount
+                        val_cloudBase = height_vals[ind_valid_cloudAmounts[indices_max]]
+            except eccodes.CodesInternalError:
+                val_cloudBase = np.min(valid_heights)
+                
+        if val_cloudBase < 0: #Something has gone wrong! Set back to default.
+            val_cloudBase = np.nan
+                
+                
+        return val_cloudBase
