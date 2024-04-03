@@ -562,12 +562,12 @@ class BufrObservationSet(ObservationSet):
 
     @staticmethod
     def get_height_of_base_of_cloud(height_vals, bufr):
-        """Return one value for height of base of cloud. 
+        """Return one value for height of base of cloud.
 
         Args:
             height_vals: Array of height of base of cloud
             bufr: bufr message handle
-            
+
         Returns:
             val_cloud_base: Correct height of base of cloud
 
