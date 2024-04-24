@@ -130,6 +130,7 @@ class NetCDFOutput(SurfexOutputForcing):
         cache,
         time_step,
         fmt="netcdf",
+        diskless_write=False,
     ):
         """Construct netcdf forcing.
 
@@ -144,6 +145,7 @@ class NetCDFOutput(SurfexOutputForcing):
             cache (_type_): _description_
             time_step (_type_): _description_
             fmt (str, optional): _description_. Defaults to "netcdf".
+            diskless_write: sets diskelss=True and persist=True
 
         Raises:
             NotImplementedError: NotImplementedError
@@ -163,7 +165,8 @@ class NetCDFOutput(SurfexOutputForcing):
         self.fname = fname
         self.tmp_fname = self.fname + ".tmp"
         self.file_handler = netCDF4.Dataset(
-            self.tmp_fname, "w", format=self.output_format
+            self.tmp_fname, "w", format=self.output_format, 
+            diskless=diskless_write, persist=diskless_write
         )
         self._define_forcing(geo, att_objs, att_time, cache)
 
@@ -547,6 +550,7 @@ def run_time_loop(options, var_objs, att_objs):
             cache,
             time_step,
             fmt=str.lower(options["output_format"]),
+            diskless_write=options["diskless_write"],
         )
     elif str.lower(options["output_format"]) == "ascii":
         att_time = options["start"]
@@ -768,6 +772,7 @@ def set_forcing_config(**kwargs):
         input_format = kwargs["input_format"]
         output_format = kwargs["output_format"]
         outfile = kwargs["of"]
+        diskless_write = kwargs["diskless_write"]
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
@@ -1017,6 +1022,7 @@ def set_forcing_config(**kwargs):
     options = dict()
     options["output_format"] = output_format
     options["output_file"] = outfile
+    options["diskless_write"] = diskless_write
     options["start"] = start
     options["stop"] = stop
     options["timestep"] = timestep

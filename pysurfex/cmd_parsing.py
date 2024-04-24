@@ -114,6 +114,7 @@ def parse_args_create_forcing(argv):
         choices=["netcdf", "nc4", "ascii"],
         nargs="?",
     )
+    parser.add_argument("--diskless_write", action="store_true", default=False)
     parser.add_argument("-a", dest="analysis", action="store_true", default=False)
     parser.add_argument(
         "--interpolation",
