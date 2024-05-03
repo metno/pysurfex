@@ -59,7 +59,7 @@ class NamelistGenerator(object):
             self.assemble = self.namelist_blocks()
         else:
             self.assemble = assemble
-        logging.debug(self.assemble)
+        logging.info("Namelist blocks: %s", self.assemble)
         nlres = self.assemble_namelist()
         self.nml = f90nml.Namelist(nlres)
         if consistency:
