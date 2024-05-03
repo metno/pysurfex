@@ -195,23 +195,7 @@ def rmse(predictions, targets):
 
     """
     if len(predictions) > 0:
-        return np.sqrt(np.nanmin(((predictions - targets) ** 2)))
-    else:
-        return "NULL"
-
-
-def bias(predictions):
-    """Bias.
-
-    Args:
-        predictions (_type_): _description_
-
-    Returns:
-        _type_: _description_
-
-    """
-    if len(predictions) > 0:
-        return np.nanmean(np.subtract(predictions, np.nanmean(predictions)))
+        return np.sqrt(np.nanmean(((predictions - targets) ** 2)))
     else:
         return "NULL"
 
@@ -227,7 +211,7 @@ def absbias(predictions):
 
     """
     if len(predictions) > 0:
-        return np.nanmean(np.subtract(abs(predictions), np.nanmean(predictions)))
+        return np.nanmean(abs(predictions))
     else:
         return "NULL"
 
@@ -303,7 +287,7 @@ def calculate_statistics(observations, modes, stat_cols):
             if col == "nobs":
                 statistics.update({tab: len(obs)})
             elif col == "fg_bias":
-                statistics.update({tab: bias(fg_dep)})
+                statistics.update({tab: mean(fg_dep)})
             elif col == "fg_abs_bias":
                 statistics.update({tab: absbias(fg_dep)})
             elif col == "fg_rms":
@@ -315,7 +299,7 @@ def calculate_statistics(observations, modes, stat_cols):
             elif col == "bc":
                 statistics.update({tab: 0})
             elif col == "an_bias":
-                statistics.update({tab: bias(an_dep)})
+                statistics.update({tab: mean(an_dep)})
             elif col == "an_abs_bias":
                 statistics.update({tab: absbias(an_dep)})
             elif col == "an_rms":
