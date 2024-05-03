@@ -231,23 +231,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(((</span><span class="n">predictions</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
-
-
-<div class="viewcode-block" id="bias"><a class="viewcode-back" href="../../index.html#pysurfex.obsmon.bias">[docs]</a><span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bias.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        predictions (_type_): _description_</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        _type_: _description_</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(((</span><span class="n">predictions</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
@@ -263,7 +247,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">predictions</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">predictions</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;NULL&quot;</span></div>
 
@@ -339,7 +323,7 @@
             <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;nobs&quot;</span><span class="p">:</span>
                 <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs</span><span class="p">)})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_bias&quot;</span><span class="p">:</span>
-                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">bias</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">mean</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_abs_bias&quot;</span><span class="p">:</span>
                 <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">absbias</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;fg_rms&quot;</span><span class="p">:</span>
@@ -351,7 +335,7 @@
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;bc&quot;</span><span class="p">:</span>
                 <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_bias&quot;</span><span class="p">:</span>
-                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">bias</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
+                <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">mean</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_abs_bias&quot;</span><span class="p">:</span>
                 <span class="n">statistics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">tab</span><span class="p">:</span> <span class="n">absbias</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)})</span>
             <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s2">&quot;an_rms&quot;</span><span class="p">:</span>
