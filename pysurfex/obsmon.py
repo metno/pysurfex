@@ -200,22 +200,6 @@ def rmse(predictions, targets):
         return "NULL"
 
 
-def bias(predictions):
-    """Bias.
-
-    Args:
-        predictions (_type_): _description_
-
-    Returns:
-        _type_: _description_
-
-    """
-    if len(predictions) > 0:
-        return np.nanmean(np.subtract(predictions, np.nanmean(predictions)))
-    else:
-        return "NULL"
-
-
 def absbias(predictions):
     """Absolute bias.
 
@@ -227,7 +211,7 @@ def absbias(predictions):
 
     """
     if len(predictions) > 0:
-        return np.nanmean(np.subtract(abs(predictions), np.nanmean(predictions)))
+        return np.nanmean(abs(predictions))
     else:
         return "NULL"
 
