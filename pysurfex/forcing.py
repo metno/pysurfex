@@ -1,4 +1,5 @@
 """Forcing."""
+
 import abc
 import copy
 import json
@@ -310,9 +311,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "DIR_SWdown"
-                ].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
+                self.forcing_file["DIR_SWdown"].longname = (
+                    "Surface_Incident_Downwelling_Shortwave_Radiation"
+                )
                 self.forcing_file["DIR_SWdown"].units = "W/m2"
             elif this_var == "SCA_SW":
                 self.forcing_file["SCA_SWdown"] = self.file_handler.createVariable(
@@ -323,9 +324,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "SCA_SWdown"
-                ].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
+                self.forcing_file["SCA_SWdown"].longname = (
+                    "Surface_Incident_Diffuse_Shortwave_Radiation"
+                )
                 self.forcing_file["SCA_SWdown"].units = "W/m2"
             elif this_var == "LW":
                 self.forcing_file["LWdown"] = self.file_handler.createVariable(
@@ -336,9 +337,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "LWdown"
-                ].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
+                self.forcing_file["LWdown"].longname = (
+                    "Surface_Incident_Diffuse_Longwave_Radiation"
+                )
                 self.forcing_file["LWdown"].units = "W/m2"
             elif this_var == "RAIN":
                 self.forcing_file["Rainf"] = self.file_handler.createVariable(
@@ -764,6 +765,7 @@ def set_forcing_config(**kwargs):
     co2 = "default"
     co2_converter = "none"
 
+    diskless_write = False
     analysis = False
     interpolation = None
     try:
@@ -772,7 +774,6 @@ def set_forcing_config(**kwargs):
         input_format = kwargs["input_format"]
         output_format = kwargs["output_format"]
         outfile = kwargs["of"]
-        diskless_write = kwargs["diskless_write"]
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
@@ -848,6 +849,8 @@ def set_forcing_config(**kwargs):
             co2 = kwargs["co2"]
         if "co2_converter" in kwargs:
             co2_converter = kwargs["co2_converter"]
+        if "diskless_write" in kwargs:
+            diskless_write = kwargs["diskless_write"]
 
     except ValueError:
         raise Exception("Needed input is missing") from ValueError
