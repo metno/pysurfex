@@ -358,8 +358,9 @@ class InputDataFromNamelist(JsonInputData):
         pkey = key
         pval = val
         for spath_key, spath_val in self.platform.system_file_paths.items():
-            pkey = pkey.replace(f"{micro}{spath_key}{micro}", spath_val)
-            pval = pval.replace(f"{micro}{spath_key}{micro}", spath_val)
+            if isinstance(spath_val, str):
+                pkey = pkey.replace(f"{micro}{spath_key}{micro}", spath_val)
+                pval = pval.replace(f"{micro}{spath_key}{micro}", spath_val)
         if macros is not None:
             for macro_key, macro_val in macros.items():
                 pkey = pkey.replace(f"{micro}{macro_key}{micro}", macro_val)
