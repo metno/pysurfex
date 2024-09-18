@@ -171,7 +171,6 @@ def snow_pseudo_obs_cryoclim(
     providers = []
     logging.debug("p_fg_snow_depth.shape[0]=%s", p_fg_snow_depth.shape[0])
     for i in range(0, p_fg_snow_depth.shape[0]):
-
         p_snow_fg = p_fg_snow_depth[i]
         logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
@@ -319,7 +318,6 @@ def sm_obs_sentinel(
     lafs = []
     providers = []
     for i in range(0, p_fg_sm.shape[0]):
-
         p_sm_fg = p_fg_sm[i]
         if not np.isnan(p_sm_fg):
             # Check if in grid

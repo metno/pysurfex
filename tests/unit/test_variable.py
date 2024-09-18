@@ -274,7 +274,6 @@ def test_open_new_file_fail(fixture):
 
 
 def test_variable_grib1(rotated_ll_t2m_grib1):
-
     var_dict = {
         "filepattern": rotated_ll_t2m_grib1,
         "parameter": 11,
@@ -294,7 +293,6 @@ def test_variable_grib1(rotated_ll_t2m_grib1):
 
 
 def test_variable_grib2(rotated_ll_t1_grib2):
-
     var_dict = {
         "filepattern": rotated_ll_t1_grib2,
         "discipline": 0,
@@ -318,7 +316,6 @@ def test_variable_grib2(rotated_ll_t1_grib2):
 
 @pytest.mark.usefixtures("_mockers")
 def test_variable_surfex_fa(surfex_fa_file):
-
     var_dict = {
         "filepattern": surfex_fa_file,
         "varname": "SFX.T2M",
@@ -336,7 +333,6 @@ def test_variable_surfex_fa(surfex_fa_file):
 
 @pytest.mark.usefixtures("_mockers")
 def test_variable_surfex_fa_sfx(surfex_fa_file_sfx):
-
     var_dict = {
         "filepattern": surfex_fa_file_sfx,
         "varname": "SFX.T2M",

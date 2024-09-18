@@ -1323,7 +1323,6 @@ class TexteSurfexFile(SurfexIO):
         tstep = 0
         col = 0
         for line in self.file.read().splitlines():
-
             words = line.split()
             if len(words) > 0:
                 for i, word in enumerate(words):

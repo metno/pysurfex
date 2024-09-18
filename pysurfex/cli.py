@@ -139,7 +139,6 @@ def run_first_guess_for_oi(**kwargs):
     cache = Cache(3600)
     f_g = None
     for var in variables:
-
         inputfile = kwargs.get("inputfile")
         fileformat = kwargs.get("inputformat")
         logging.debug("inputfile: %s", inputfile)
@@ -417,7 +416,6 @@ def run_masterodb(**kwargs):
         if output is not None:
             exists = os.path.exists(output)
         if not exists or force:
-
             if binary is None:
                 my_batch = None
 

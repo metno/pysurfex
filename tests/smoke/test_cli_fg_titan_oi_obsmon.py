@@ -583,7 +583,6 @@ def _qc_gridpp_obsmon(
 
 
 def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
-
     translation = {
         "t2m": "air_temperature_2m",
         "rh2m": "relative_humidity_2m",

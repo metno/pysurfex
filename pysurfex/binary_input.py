@@ -49,7 +49,6 @@ class JsonOutputData(OutputDataFromSurfexBinaries):
     def archive_files(self):
         """Archive files."""
         for output_file, target in self.data.items():
-
             logging.info("%s -> %s", output_file, target)
             command = "mv"
             if isinstance(target, dict):
@@ -95,7 +94,6 @@ class JsonInputData(InputDataToSurfexBinaries):
     def prepare_input(self):
         """Prepare input."""
         for target, input_file in self.data.items():
-
             logging.info("%s -> %s", target, input_file)
             logging.debug(os.path.realpath(target))
             command = None

@@ -12,7 +12,6 @@ from pysurfex.variable import Variable
 
 @pytest.mark.usefixtures("_mockers")
 def test_ekf_fa(surfex_fa_file):
-
     var_dict = {
         "filepattern": surfex_fa_file,
         "varname": "SFX.T2M",

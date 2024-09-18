@@ -18,7 +18,6 @@ def test_read_cryo_nc(data_cryoclim_nc_file):
 
 
 def test_get_cryo_obs_set(tmp_path_factory, data_cryoclim_nc_file, conf_proj_2x3):
-
     validtime = as_datetime("202303010600")
 
     fg_geo = conf_proj_2x3
@@ -43,7 +42,6 @@ def test_get_cryo_obs_set(tmp_path_factory, data_cryoclim_nc_file, conf_proj_2x3
 
 
 def test_get_cryo_obs_set_varname(data_cryoclim_nc_file, conf_proj_2x3):
-
     validtime = as_datetime("202303010600")
 
     fg_geo = conf_proj_2x3

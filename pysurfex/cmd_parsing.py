@@ -851,13 +851,15 @@ def parse_args_masterodb(argv):
         nargs="?",
         help="Full path of MASTERODB binary",
     )
-    parser.add_argument("--no-consistency",  dest="no_consistency",
-                        action="store_true", required=False
+    parser.add_argument(
+        "--no-consistency", dest="no_consistency", action="store_true", required=False
     )
     parser.add_argument(
-        "--assemble", type=str, required=False,
+        "--assemble",
+        type=str,
+        required=False,
         help="Path to file containing list of namelist blocks",
-        default=None
+        default=None,
     )
 
     if len(argv) == 0:
@@ -993,13 +995,15 @@ def parse_args_surfex_binary(argv, mode):
         help="JSON file with archive output",
     )
     parser.add_argument("binary", type=str, help="Command to run")
-    parser.add_argument("--no-consistency", dest="no_consistency",
-                        action="store_true", required=False
+    parser.add_argument(
+        "--no-consistency", dest="no_consistency", action="store_true", required=False
     )
     parser.add_argument(
-        "--assemble", type=str, required=False,
+        "--assemble",
+        type=str,
+        required=False,
         help="Path to file containing list of namelist blocks",
-        default=None
+        default=None,
     )
 
     if len(argv) == 0:
@@ -2228,7 +2232,6 @@ def variable_parser(needles, argv, parser):
 
     kwargs = {}
     for needle in needles:
-
         argv = argv_string[start_indices[needle] : end_indices[needle]].split()
         opt = parser.parse_args(argv)
         vargs = {}
