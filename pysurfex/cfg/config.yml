@@ -58,6 +58,11 @@ ZS:
   grib2:
     converter:
       none:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 5
+          levelType: 1
+          level: 0
       phi2m:
         phi:
           discipline: 0
