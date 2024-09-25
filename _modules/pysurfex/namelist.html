@@ -95,7 +95,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist_blocks</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="n">assemble</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Namelist blocks: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
         <span class="n">nlres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble_namelist</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Namelist</span><span class="p">(</span><span class="n">nlres</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">consistency</span><span class="p">:</span>
@@ -154,7 +154,6 @@
 
         <span class="c1"># Program specific settings</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;pgd&quot;</span><span class="p">:</span>
-
             <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="s2">&quot;pgd_cover&quot;</span><span class="p">,</span> <span class="s2">&quot;pgd_zs&quot;</span><span class="p">]</span>
             <span class="n">eco_sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">eco_sg</span><span class="p">:</span>
@@ -412,7 +411,6 @@
 
         <span class="c1"># Program specific settings</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;pgd&quot;</span><span class="p">:</span>
-
             <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
                 <span class="n">problems</span><span class="p">,</span>
                 <span class="n">nml</span><span class="p">,</span>
@@ -442,7 +440,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TOWN#LTOWN_TO_ROCK&quot;</span><span class="p">):</span>
-
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                         <span class="s2">&quot;WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. &quot;</span>

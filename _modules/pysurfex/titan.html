@@ -1088,7 +1088,6 @@
         <span class="n">blacklist_stid</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="s2">&quot;lons&quot;</span> <span class="ow">in</span> <span class="n">blacklist</span> <span class="ow">and</span> <span class="s2">&quot;lats&quot;</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">])):</span>
-
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lats&quot;</span><span class="p">]):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="s2">&quot;Blacklist must have the same length for both lons and lats&quot;</span>
@@ -1128,7 +1127,6 @@
         <span class="n">flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lon_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mask</span><span class="p">:</span>
-
                 <span class="n">lon</span> <span class="o">=</span> <span class="n">Observation</span><span class="o">.</span><span class="n">format_lon</span><span class="p">(</span><span class="n">lon_val</span><span class="p">)</span>
                 <span class="n">lat</span> <span class="o">=</span> <span class="n">Observation</span><span class="o">.</span><span class="n">format_lat</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                 <span class="n">stid</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -1378,7 +1376,6 @@
             <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Buddy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">qct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;climatology&quot;</span><span class="p">:</span>
-
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;minval&quot;</span><span class="p">,</span> <span class="s2">&quot;maxval&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
@@ -1387,7 +1384,6 @@
             <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Climatology</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">qct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;sct&quot;</span><span class="p">:</span>
-
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="s2">&quot;num_min&quot;</span><span class="p">,</span>
@@ -1723,7 +1719,6 @@
             <span class="n">mask</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">findex</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">obs_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasources</span><span class="p">:</span>
-
                 <span class="k">if</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="s2">&quot;Observations set for quality control are &quot;</span>
@@ -2039,7 +2034,6 @@
     <span class="n">index_pos</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
                 <span class="n">data1</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>

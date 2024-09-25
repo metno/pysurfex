@@ -689,7 +689,6 @@
                 <span class="ow">and</span> <span class="s2">&quot;ncols&quot;</span>
                 <span class="ow">and</span> <span class="s2">&quot;nrows&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_ign&quot;</span><span class="p">]</span>
             <span class="p">):</span>
-
                 <span class="bp">self</span><span class="o">.</span><span class="n">clambert</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_ign&quot;</span><span class="p">][</span><span class="s2">&quot;clambert&quot;</span><span class="p">]</span>
                 <span class="n">npoints</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_ign&quot;</span><span class="p">][</span><span class="s2">&quot;npoints&quot;</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">x_x</span> <span class="o">=</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_ign&quot;</span><span class="p">][</span><span class="s2">&quot;xx&quot;</span><span class="p">]</span>
@@ -847,7 +846,6 @@
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pxall_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pxall</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">pyall_val</span> <span class="ow">in</span> <span class="n">pyall</span><span class="p">:</span>
-
                 <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">xval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xxx</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">xval</span> <span class="o">==</span> <span class="n">pxall_val</span> <span class="ow">and</span> <span class="n">yyy</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">pyall_val</span><span class="p">:</span>
@@ -969,7 +967,6 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">domain</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">hm_mode</span><span class="p">:</span>
-
                 <span class="n">ezone</span> <span class="o">=</span> <span class="mi">11</span>
                 <span class="k">if</span> <span class="s2">&quot;EZONE&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">]:</span>
                     <span class="n">ezone</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;EZONE&quot;</span><span class="p">]</span>

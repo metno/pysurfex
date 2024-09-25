@@ -1479,7 +1479,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TOWN#LTOWN_TO_ROCK&quot;</span><span class="p">):</span>
-
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. &quot;</span>
@@ -1944,7 +1943,6 @@
         <span class="n">merged_dict</span><span class="p">[</span><span class="s2">&quot;NAM_VAR&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;NIVAR&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
         <span class="n">merged_dict</span><span class="p">[</span><span class="s2">&quot;NAM_IO_VARASSIM&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;LPRT&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
-
             <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span>
                 <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/offline_assim_pert.json&quot;</span>
             <span class="p">)</span>
@@ -1977,7 +1975,6 @@
             <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="s2">&quot;NAM_VAR&quot;</span><span class="p">,</span> <span class="s2">&quot;NVAR&quot;</span><span class="p">,</span> <span class="n">nvar</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
-
             <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span>
                 <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/offline_assim_pert.json&quot;</span>
             <span class="p">)</span>
