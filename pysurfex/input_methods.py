@@ -33,7 +33,6 @@ def get_datasources(obs_time, settings):
     """
     datasources = []
     for obs_set in settings:
-
         kwargs = {}
         kwargs.update({"label": obs_set})
 

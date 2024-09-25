@@ -115,7 +115,6 @@ def test_grib2_from_converter(converter_config, conf_proj_domain):
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_rotated_ll_grib1(converter_config, rotated_ll_t2m_grib1):
-
     converter_conf = converter_config["t2m"]["grib1"]["converter"]
     var = get_var(1, converter_conf)
     grib_file = Grib(rotated_ll_t2m_grib1)
@@ -127,7 +126,6 @@ def test_read_rotated_ll_grib1(converter_config, rotated_ll_t2m_grib1):
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_rotated_ll_grib2(converter_config, rotated_ll_t1_grib2):
-
     converter_conf = converter_config["t1"]["grib2"]["converter"]
     var = get_var(2, converter_conf)
     grib_file = Grib(rotated_ll_t1_grib2)
@@ -139,7 +137,6 @@ def test_read_rotated_ll_grib2(converter_config, rotated_ll_t1_grib2):
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_regular_ll_grib1(converter_config, regular_ll_t2m_grib1):
-
     converter_conf = converter_config["t2m"]["grib1"]["converter"]
     var = get_var(1, converter_conf)
 
@@ -152,7 +149,6 @@ def test_read_regular_ll_grib1(converter_config, regular_ll_t2m_grib1):
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_regular_ll_grib2(converter_config, regular_ll_t1_grib2):
-
     converter_conf = converter_config["t1"]["grib2"]["converter"]
     var = get_var(2, converter_conf)
 

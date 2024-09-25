@@ -139,7 +139,6 @@ def run_first_guess_for_oi(**kwargs):
     cache = Cache(3600)
     f_g = None
     for var in variables:
-
         inputfile = kwargs.get("inputfile")
         fileformat = kwargs.get("inputformat")
         logging.debug("inputfile: %s", inputfile)
@@ -289,6 +288,16 @@ def run_masterodb(**kwargs):
     archive = kwargs["archive"]
     only_archive = kwargs["only_archive"]
     print_namelist = kwargs["print_namelist"]
+    try:
+        consistency = kwargs["no_consistency"]
+        if consistency:
+            consistency = False
+    except KeyError:
+        consistency = True
+    try:
+        assemble = kwargs["assemble_file"]
+    except KeyError:
+        assemble = None
 
     check_existence = True
     if "tolerate_missing" in kwargs:
@@ -346,7 +355,12 @@ def run_masterodb(**kwargs):
     if os.path.isfile(namelist_path):
         with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
             nam_defs = yaml.safe_load(file_handler)
-        nam_gen = NamelistGenerator(mode, config, nam_defs)
+        if assemble is not None:
+            with open(assemble, mode="r", encoding="utf8") as fh:
+                assemble = json.load(fh)
+        nam_gen = NamelistGenerator(
+            mode, config, nam_defs, assemble=assemble, consistency=consistency
+        )
         my_settings = nam_gen.nml
         if input_binary_data is None:
             raise RuntimeError("input_binary_data not set")
@@ -402,7 +416,6 @@ def run_masterodb(**kwargs):
         if output is not None:
             exists = os.path.exists(output)
         if not exists or force:
-
             if binary is None:
                 my_batch = None
 
@@ -532,6 +545,17 @@ def run_surfex_binary(mode, **kwargs):
     if "forc_zs" in kwargs:
         forc_zs = kwargs["forc_zs"]
 
+    try:
+        consistency = kwargs["no_consistency"]
+        if consistency:
+            consistency = False
+    except KeyError:
+        consistency = True
+    try:
+        assemble = kwargs["assemble_file"]
+    except KeyError:
+        assemble = None
+
     if mode == "pgd":
         pgd = True
         need_pgd = False
@@ -593,7 +617,12 @@ def run_surfex_binary(mode, **kwargs):
         if os.path.isfile(namelist_path):
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
-            nam_gen = NamelistGenerator(mode, config, nam_defs)
+            if assemble is not None:
+                with open(assemble, mode="r", encoding="utf8") as fh:
+                    assemble = json.load(fh)
+            nam_gen = NamelistGenerator(
+                mode, config, nam_defs, assemble=assemble, consistency=consistency
+            )
 
             my_settings = nam_gen.nml
             if mode == "pgd":

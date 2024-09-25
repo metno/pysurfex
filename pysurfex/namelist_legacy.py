@@ -1443,7 +1443,6 @@ class Namelist(object):
             self.config.get_setting("SURFEX#TILES#TOWN"),
         )
         if self.config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
-
             if self.config.get_setting("SURFEX#TILES#TOWN") != "NONE":
                 logging.warning(
                     "WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "
@@ -1908,7 +1907,6 @@ class Namelist(object):
         merged_dict["NAM_VAR"].update({"NIVAR": 0})
         merged_dict["NAM_IO_VARASSIM"].update({"LPRT": False})
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "EKF":
-
             merged_dict = self.merge_json_namelist_file(
                 merged_dict, self.input_path + "/offline_assim_pert.json"
             )
@@ -1941,7 +1939,6 @@ class Namelist(object):
             merged_dict = self.sub(merged_dict, "NAM_VAR", "NVAR", nvar)
 
         if self.config.get_setting("SURFEX#ASSIM#SCHEMES#ISBA") == "ENKF":
-
             merged_dict = self.merge_json_namelist_file(
                 merged_dict, self.input_path + "/offline_assim_pert.json"
             )

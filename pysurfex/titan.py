@@ -1052,7 +1052,6 @@ class Blacklist(QualityControl):
         blacklist_stid = {}
         if "lons" in blacklist and "lats" in blacklist:
             for i in range(0, len(blacklist["lons"])):
-
                 if len(blacklist["lons"]) != len(blacklist["lats"]):
                     raise RuntimeError(
                         "Blacklist must have the same length for both lons and lats"
@@ -1092,7 +1091,6 @@ class Blacklist(QualityControl):
         flags = dataset.flags
         for i, lon_val in enumerate(dataset.lons):
             if i in mask:
-
                 lon = Observation.format_lon(lon_val)
                 lat = Observation.format_lat(dataset.lats[i])
                 stid = dataset.stids[i]
@@ -1342,7 +1340,6 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             tests.append(Buddy(**kwargs))
 
         elif qct.lower() == "climatology":
-
             if test_options is not None:
                 opts = ["minval", "maxval", "offset"]
                 for opt in opts:
@@ -1351,7 +1348,6 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             tests.append(Climatology(an_time, **kwargs))
 
         elif qct.lower() == "sct":
-
             if test_options is not None:
                 opts = [
                     "num_min",
@@ -1687,7 +1683,6 @@ class TitanDataSet(QCDataSet):
             mask = []
             findex = 0
             for obs_set in self.datasources:
-
                 if obs_set.label == "":
                     raise RuntimeError(
                         "Observations set for quality control are "
@@ -2003,7 +1998,6 @@ def merge_json_qc_data_sets(an_time, filenames, qc_flag=None, skip_flags=None):
     index_pos = {}
     data = {}
     for filename in filenames:
-
         if os.path.exists(filename):
             with open(filename, mode="r", encoding="utf-8") as file_handler:
                 data1 = json.load(file_handler)

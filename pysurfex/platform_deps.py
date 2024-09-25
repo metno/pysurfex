@@ -288,7 +288,6 @@ class SystemFilePaths(object):
         """
         # Check on arguments
         if isinstance(setting, str):
-
             if basedtg is not None:
                 if isinstance(basedtg, str):
                     basedtg = as_datetime(basedtg)

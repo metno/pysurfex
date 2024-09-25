@@ -18,7 +18,6 @@ from pysurfex.titan import (
 
 
 def obs_set(an_time):
-
     obs_set = {
         "0": {
             "varname": "airTemperatureAt2M",

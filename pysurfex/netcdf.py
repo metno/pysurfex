@@ -848,7 +848,6 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
     """
 
     def check_input_to_soda_dimensions(my_nx, my_ny, nx1, ny1):
-
         if my_nx < 0:
             my_nx = nx1
         if my_ny < 0:

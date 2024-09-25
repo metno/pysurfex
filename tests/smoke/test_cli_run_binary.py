@@ -165,7 +165,6 @@ def test_run_prep(
     tmp_path_factory,
     input_binary_data_file,
 ):
-
     # PREP
 
     pgd = tmp_path_factory.getbasetemp() / "PGD_input.nc"
@@ -209,7 +208,6 @@ def test_run_prep_old(
     conf_proj_2x3_file,
     tmp_path_factory,
 ):
-
     # PREP
     wrk = tmp_path_factory.getbasetemp() / "nam_old"
     wrk.mkdir(exist_ok=True)

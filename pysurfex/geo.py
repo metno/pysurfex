@@ -653,7 +653,6 @@ class IGN(SurfexGeo):
                 and "ncols"
                 and "nrows" in domain_dict["nam_ign"]
             ):
-
                 self.clambert = domain_dict["nam_ign"]["clambert"]
                 npoints = domain_dict["nam_ign"]["npoints"]
                 self.x_x = domain_dict["nam_ign"]["xx"]
@@ -811,7 +810,6 @@ class IGN(SurfexGeo):
 
         for i, pxall_val in enumerate(pxall):
             for pyall_val in pyall:
-
                 count = count + 1
                 for k, xval in enumerate(xxx):
                     if xval == pxall_val and yyy[k] == pyall_val:
@@ -933,7 +931,6 @@ def set_domain(settings, domain, hm_mode=False):
     if isinstance(settings, dict):
         if domain in settings:
             if hm_mode:
-
                 ezone = 11
                 if "EZONE" in settings[domain]:
                     ezone = settings[domain]["EZONE"]
