@@ -186,6 +186,12 @@ class Converter(object):
                 fileformat, defs, conf[self.name]["altitude"]
             )
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
+        elif name == "rh2q_z":
+            self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.altitude = self.create_variable(
+                fileformat, defs, conf[self.name]["altitude"]
+            )
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -336,7 +342,7 @@ class Converter(object):
             elif self.name == "winddir":
                 field = np.mod(90 - np.rad2deg(np.arctan2(field_y, field_x)), 360)
 
-        elif self.name == "rh2q" or self.name == "rh2q_mslp":
+        elif self.name == "rh2q" or self.name == "rh2q_mslp" or self.name == "rh2q_z":
             """
             ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
             ZE = ZRH * ZES
@@ -345,8 +351,12 @@ class Converter(object):
             """
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
-            field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
-            if self.name == "rh2q_mslp":
+            if self.name == "rh2q_z":
+                field_pres = np.array(field_r_h.shape)
+                field_pres.fill(101325.0)
+            else:
+                field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
+            if self.name == "rh2q_mslp" or self.name == "rh2q_z":
                 field_altitude = self.altitude.read_variable(
                     geo, validtime, cache
                 )  # In m

@@ -251,7 +251,18 @@ QA:
           mslp:
             name: air_pressure_at_sea_level
             units: "Pa"
-
+        rh2q_z:
+          rh:
+            name: relative_humidity_2m
+            level: 2
+            units: "%"
+          t:
+            name: air_temperature_2m
+            level: 2
+            units: "K"
+          altitude:
+            name: altitude
+            units: "m"
     grib1:
       converter:
         none:
