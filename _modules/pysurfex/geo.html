@@ -948,6 +948,21 @@
     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;nam_pgd_grid not set!&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="get_geo_object_from_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object_from_json_file">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object_from_json_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a surfex geometry object from a dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fname (str): Domain definition file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        surfex.Geo: Surfex geometry.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.geo.set_domain">[docs]</a><span class="k">def</span> <span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set domain.</span>
 

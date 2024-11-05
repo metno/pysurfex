@@ -771,6 +771,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;EKF&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anasurf</span> <span class="o">==</span> <span class="s2">&quot;ISBA_NONE&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;NONE&quot;</span><span class="p">)</span>
 
         <span class="c1"># Active EKF control variables from CVAR_M</span>
         <span class="k">if</span> <span class="s2">&quot;NNCV&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
