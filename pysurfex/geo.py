@@ -912,6 +912,21 @@ def get_geo_object(from_json):
     raise KeyError("nam_pgd_grid not set!")
 
 
+def get_geo_object_from_json_file(fname):
+    """Get a surfex geometry object from a dictionary.
+
+    Args:
+        fname (str): Domain definition file.
+
+    Returns:
+        surfex.Geo: Surfex geometry.
+
+    """
+    with open(fname, mode="r", encoding="utf8") as fh:
+        domain_dict = json.load(fh)
+    return get_geo_object(domain_dict)
+
+
 def set_domain(settings, domain, hm_mode=False):
     """Set domain.
 

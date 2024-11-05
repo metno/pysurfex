@@ -735,6 +735,8 @@ class ConfigurationFromHarmonie(Configuration):
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
         if anasurf == "ENKF":
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF")
+        if anasurf == "ISBA_NONE":
+            self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "NONE")
 
         # Active EKF control variables from CVAR_M
         if "NNCV" in env:

@@ -7,7 +7,7 @@ import numpy as np
 from .datetime_utils import as_timedelta
 from .fa import Fa
 from .file import SurfexFileVariable, get_surfex_io_object
-from .geo import get_geo_object
+from .geo import get_geo_object_from_json_file
 from .grib import Grib, Grib1Variable, Grib2Variable
 from .input_methods import get_datasources
 from .netcdf import Netcdf, NetCDFReadVariable
@@ -127,7 +127,7 @@ class Variable(object):
                     geo_in = self.var_dict["geo_input"]
                 elif "geo_input_file" in self.var_dict:
                     geo_in_file = self.var_dict["geo_input_file"]
-                    geo_in = get_geo_object(open(geo_in_file, "r", encoding="utf-8"))
+                    geo_in = get_geo_object_from_json_file(geo_in_file)
 
                 file_handler = get_surfex_io_object(
                     filename, fileformat=fileformat, filetype=filetype, geo=geo_in
