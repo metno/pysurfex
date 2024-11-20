@@ -124,8 +124,6 @@ def populate_usage_db(conn, dtg, varname, observations):
         lon = Observation.format_lon(lon_val)
         lat = Observation.format_lat(lats[i])
         stid = str(stids[i])
-        if stid == "NA":
-            stid = "NULL"
         value = str(values[i])
         if value == "nan":
             value = "NULL"
@@ -163,9 +161,9 @@ def populate_usage_db(conn, dtg, varname, observations):
             + lat
             + ","
             + lon
-            + ","
+            + ',"'
             + stid
-            + ","
+            + '",'
             + value
             + ","
             + fg_dep
