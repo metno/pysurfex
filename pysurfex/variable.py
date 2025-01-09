@@ -423,7 +423,9 @@ class Variable(object):
             deaccumulate = False
             field = np.zeros([geo.npoints])
         else:
-            field = self.read_var_points(self.file_var, geo, validtime=validtime, cache=cache)
+            field = self.read_var_points(
+                self.file_var, geo, validtime=validtime, cache=cache
+            )
 
         # Deaccumulate if either two files are read or if instant is > 0.
         if deaccumulate:
