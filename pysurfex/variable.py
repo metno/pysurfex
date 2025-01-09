@@ -394,6 +394,7 @@ class Variable(object):
         """
         # Set variable info
         previous_field = None
+        first_time = False
         if self.accumulated:
             # Re-read field
             previoustime = validtime - as_timedelta(seconds=self.interval)
@@ -408,14 +409,24 @@ class Variable(object):
                     cache=cache,
                 )
             else:
+                first_time = True
                 previous_field = np.zeros([geo.npoints])
         elif self.instant > 0:
             previous_field = np.zeros([geo.npoints])
 
-        field = self.read_var_points(self.file_var, geo, validtime=validtime, cache=cache)
+        deaccumulate = False
+        if self.accumulated or self.instant > 0:
+            deaccumulate = True
+
+        # Always set accumulated values to zero the first time
+        if first_time:
+            deaccumulate = False
+            field = np.zeros([geo.npoints])
+        else:
+            field = self.read_var_points(self.file_var, geo, validtime=validtime, cache=cache)
 
         # Deaccumulate if either two files are read or if instant is > 0.
-        if self.accumulated or self.instant > 0:
+        if deaccumulate:
             field = self.deaccumulate(field, previous_field, self.instant)
             if any(field[field < 0.0]):
                 raise RuntimeError(
