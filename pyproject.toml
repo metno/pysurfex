@@ -43,7 +43,7 @@
     requires = ["poetry-core > 1.2.0"]
 
 [tool.poetry.dependencies]
-    python = "^3.8"
+    python = "^3.9"
     dateutils = "^0.6.12"
     f90nml = "^1.4.3"
     humanize = ">=3.14.0"
