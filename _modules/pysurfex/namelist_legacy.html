@@ -35,22 +35,22 @@
             
   <h1>Source code for pysurfex.namelist_legacy</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Legacy namelist module.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">f90nml</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">f90nml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.ecoclimap</span> <span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.ecoclimap</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span>
 
 
-<div class="viewcode-block" id="BaseNamelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist">[docs]</a><span class="k">class</span> <span class="nc">BaseNamelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseNamelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">program</span><span class="p">,</span>
         <span class="n">config</span><span class="p">,</span>
@@ -133,7 +133,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">epilog</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">()</span>
 
-<div class="viewcode-block" id="BaseNamelist.prolog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.prolog">[docs]</a>    <span class="k">def</span> <span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_parsing</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.prolog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.prolog">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_parsing</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prolog.</span>
 
 <span class="sd">        Args:</span>
@@ -252,7 +252,7 @@
             <span class="p">}</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseNamelist.set_pgd_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_pgd_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.set_pgd_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_pgd_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
         <span class="c1"># PGS schemes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -421,7 +421,7 @@
         <span class="c1"># Sea</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/sea.json&quot;</span><span class="p">})</span></div>
 
-    <span class="k">def</span> <span class="nf">set_prep_namelist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_prep_namelist</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_filetype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prep_pgdfiletype</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set prep namelist.</span>
@@ -518,7 +518,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;CRO&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/snow_crocus.json&quot;</span><span class="p">})</span>
 
-<div class="viewcode-block" id="BaseNamelist.set_offline_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_offline_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.set_offline_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_offline_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set offline namelist.</span>
 
 <span class="sd">        Raises:</span>
@@ -638,7 +638,7 @@
                 <span class="p">}</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseNamelist.set_soda_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_soda_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.set_soda_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_soda_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
 
 <span class="sd">        Raises:</span>
@@ -951,7 +951,7 @@
         <span class="n">town_setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;NAM_ASSIM&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;CASSIM_TEB&quot;</span><span class="p">:</span> <span class="n">town_setting</span><span class="p">}}})</span></div>
 
-<div class="viewcode-block" id="BaseNamelist.epilog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.epilog">[docs]</a>    <span class="k">def</span> <span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.epilog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.epilog">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
         <span class="c1"># Always set these</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
@@ -965,7 +965,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/flake.json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="BaseNamelist.override"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.override">[docs]</a>    <span class="k">def</span> <span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.override"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.override">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
         <span class="c1"># Override posssibility</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/override.json&quot;</span><span class="p">):</span>
@@ -976,7 +976,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">input_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/override.json&quot;</span><span class="p">})</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.set_direct_data_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.set_direct_data_namelist">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -1020,7 +1020,7 @@
             <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">linput_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">ldname</span><span class="p">}</span></div>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span>
         <span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
@@ -1063,7 +1063,7 @@
         <span class="p">}</span>
 
 <div class="viewcode-block" id="BaseNamelist.capitalize_namelist_dict"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.capitalize_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -1082,7 +1082,7 @@
         <span class="k">return</span> <span class="n">new_dict</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.lower_case_namelist_dict"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.lower_case_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -1101,7 +1101,7 @@
         <span class="k">return</span> <span class="n">new_dict</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.merge_namelist_dicts"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.merge_namelist_dicts">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
 
 <span class="sd">        Args:</span>
@@ -1131,7 +1131,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.ascii2nml"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.ascii2nml">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
 
 <span class="sd">        Args:</span>
@@ -1144,7 +1144,7 @@
         <span class="k">return</span> <span class="n">output_data</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.ascii_file2nml"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.ascii_file2nml">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
 
 <span class="sd">        Args:</span>
@@ -1165,7 +1165,7 @@
         <span class="k">return</span> <span class="n">output_data</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.nml2ascii"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.nml2ascii">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
 
 <span class="sd">        Args:</span>
@@ -1188,7 +1188,7 @@
             <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BaseNamelist.merge_json_namelist_file"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.merge_json_namelist_file">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
 
 <span class="sd">        Args:</span>
@@ -1211,7 +1211,7 @@
 
         <span class="k">return</span> <span class="n">Namelist</span><span class="o">.</span><span class="n">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseNamelist.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.get_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNamelist.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.BaseNamelist.get_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructing namelist:&quot;</span><span class="p">)</span>
         <span class="n">merged_json_settings</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1237,10 +1237,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ascii2nml</span><span class="p">(</span><span class="n">merged_json_settings</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="Namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist">[docs]</a><span class="k">class</span> <span class="nc">Namelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Namelist</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base namelist.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">program</span><span class="p">,</span>
         <span class="n">config</span><span class="p">,</span>
@@ -1354,7 +1354,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">namelist_dict</span> <span class="o">=</span> <span class="n">merged_dict</span>
 
-<div class="viewcode-block" id="Namelist.prolog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.prolog">[docs]</a>    <span class="k">def</span> <span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.prolog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.prolog">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prolog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">,</span> <span class="n">check_parsing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prolog.</span>
 
 <span class="sd">        Args:</span>
@@ -1449,7 +1449,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.set_pgd_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_pgd_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.set_pgd_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_pgd_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_pgd_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set pgd namelist.&quot;&quot;&quot;</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span>
             <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/pgd.json&quot;</span>
@@ -1713,7 +1713,7 @@
 
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-    <span class="k">def</span> <span class="nf">set_prep_namelist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_prep_namelist</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">merged_dict</span><span class="p">,</span>
         <span class="n">prep_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1848,7 +1848,7 @@
 
         <span class="k">return</span> <span class="n">merged_dict</span>
 
-<div class="viewcode-block" id="Namelist.set_offline_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_offline_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.set_offline_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_offline_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_offline_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set offline namelist.&quot;&quot;&quot;</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_json_namelist_file</span><span class="p">(</span>
             <span class="n">merged_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/offline.json&quot;</span>
@@ -1926,7 +1926,7 @@
 
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.prepare_offline_perturbation"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.prepare_offline_perturbation">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_offline_perturbation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.prepare_offline_perturbation"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.prepare_offline_perturbation">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_offline_perturbation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare for offline pertubations.</span>
 
 <span class="sd">        Args:</span>
@@ -1999,7 +1999,7 @@
             <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="s2">&quot;NAM_VAR&quot;</span><span class="p">,</span> <span class="s2">&quot;NVAR&quot;</span><span class="p">,</span> <span class="n">nvar</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.set_obs"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_obs">[docs]</a>    <span class="k">def</span> <span class="nf">set_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.set_obs"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_obs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set obs.</span>
 
 <span class="sd">        Args:</span>
@@ -2051,7 +2051,7 @@
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="s2">&quot;NAM_OBS&quot;</span><span class="p">,</span> <span class="s2">&quot;LSWE&quot;</span><span class="p">,</span> <span class="n">lswe</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.set_soda_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_soda_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.set_soda_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_soda_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_soda_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set SODA namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -2281,7 +2281,7 @@
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="s2">&quot;NAM_ASSIM&quot;</span><span class="p">,</span> <span class="s2">&quot;CASSIM_TEB&quot;</span><span class="p">,</span> <span class="n">town_setting</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.epilog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.epilog">[docs]</a>    <span class="k">def</span> <span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.epilog"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.epilog">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">epilog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Epilog.&quot;&quot;&quot;</span>
         <span class="c1"># Always set these</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
@@ -2302,7 +2302,7 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
-<div class="viewcode-block" id="Namelist.override"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.override">[docs]</a>    <span class="k">def</span> <span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.override"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.override">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">override</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overide.&quot;&quot;&quot;</span>
         <span class="c1"># Override posssibility</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">+</span> <span class="s2">&quot;/override.json&quot;</span><span class="p">):</span>
@@ -2316,7 +2316,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.sub"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.sub">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute key with value.</span>
 
 <span class="sd">        Args:</span>
@@ -2374,7 +2374,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.delete"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.delete">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">merged_dict</span><span class="p">,</span> <span class="n">nam_block</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete key from namelist block.</span>
 
 <span class="sd">        Args:</span>
@@ -2394,7 +2394,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.get_filetype_from_suffix"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.get_filetype_from_suffix">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file type from suffix.</span>
 
 <span class="sd">        Args:</span>
@@ -2413,7 +2413,7 @@
         <span class="k">return</span> <span class="n">fname</span><span class="p">,</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Namelist.set_direct_data_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.set_direct_data_namelist">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_direct_data_namelist</span><span class="p">(</span><span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">linput_path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set direct data namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -2449,7 +2449,7 @@
             <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">linput_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">ldname</span><span class="p">}</span></div>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dirtyp_data_namelist</span><span class="p">(</span>
         <span class="n">lnamelist_section</span><span class="p">,</span> <span class="n">ldtype</span><span class="p">,</span> <span class="n">ldname</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decade</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dirtyp data namelist.</span>
@@ -2492,7 +2492,7 @@
         <span class="p">}</span>
 
 <div class="viewcode-block" id="Namelist.capitalize_namelist_dict"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.capitalize_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">capitalize_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Capitalize namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -2511,7 +2511,7 @@
         <span class="k">return</span> <span class="n">new_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.lower_case_namelist_dict"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.lower_case_namelist_dict">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -2530,7 +2530,7 @@
         <span class="k">return</span> <span class="n">new_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.merge_namelist_dicts"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.merge_namelist_dicts">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge namelist dicts.</span>
 
 <span class="sd">        Args:</span>
@@ -2560,7 +2560,7 @@
         <span class="k">return</span> <span class="n">merged_dict</span></div>
 
 <div class="viewcode-block" id="Namelist.ascii2nml"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.ascii2nml">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ascii2nml</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dict to a namelist object.</span>
 
 <span class="sd">        Args:</span>
@@ -2573,7 +2573,7 @@
         <span class="k">return</span> <span class="n">output_data</span></div>
 
 <div class="viewcode-block" id="Namelist.ascii_file2nml"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.ascii_file2nml">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ascii_file2nml</span><span class="p">(</span><span class="n">input_fname</span><span class="p">,</span> <span class="n">input_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a file wih namelist settings to a Namelist object.</span>
 
 <span class="sd">        Args:</span>
@@ -2594,7 +2594,7 @@
         <span class="k">return</span> <span class="n">output_data</span></div>
 
 <div class="viewcode-block" id="Namelist.nml2ascii"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.nml2ascii">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nml2ascii</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_fmt</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump a namelist object as a dict in a json or yaml file.</span>
 
 <span class="sd">        Args:</span>
@@ -2617,7 +2617,7 @@
             <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Namelist.merge_json_namelist_file"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.merge_json_namelist_file">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_json_namelist_file</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">my_file</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge json files with namelists.</span>
 
 <span class="sd">        Args:</span>
@@ -2638,7 +2638,7 @@
 
         <span class="k">return</span> <span class="n">Namelist</span><span class="o">.</span><span class="n">merge_namelist_dicts</span><span class="p">(</span><span class="n">old_dict</span><span class="p">,</span> <span class="n">new_dict</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Namelist.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.get_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Namelist.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist_legacy.Namelist.get_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructing namelist:&quot;</span><span class="p">)</span>
         <span class="n">merged_json_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist_dict</span>

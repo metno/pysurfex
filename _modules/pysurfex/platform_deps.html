@@ -35,20 +35,20 @@
             
   <h1>Source code for pysurfex.platform_deps</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Platform dependent settings.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span>
 
 
-<div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Matches files and paths depending on possibly system specific settings.</span>
 
 <span class="sd">    User can provide a default system dir to nest dependencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SystemFilePaths.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePaths.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct SystemFilePaths.</span>
 
 <span class="sd">        Args:</span>
@@ -56,7 +56,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span></div>
 
-    <span class="k">def</span> <span class="nf">get_system_path</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_system_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">,</span>
         <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -130,7 +130,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data_dir </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data_dir</span>
 
-    <span class="k">def</span> <span class="nf">find_matching_data_dir</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_matching_data_dir</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">,</span>
         <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -202,7 +202,7 @@
                 <span class="k">return</span> <span class="n">data_dir</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">get_system_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_system_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">,</span>
         <span class="n">fname</span><span class="p">,</span>
@@ -287,7 +287,7 @@
         <span class="k">return</span> <span class="n">fname</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">parse_setting</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_setting</span><span class="p">(</span>
         <span class="n">setting</span><span class="p">,</span>
         <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -432,7 +432,7 @@
         <span class="k">return</span> <span class="n">setting</span>
 
 <div class="viewcode-block" id="SystemFilePaths.substitute_string"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.substitute_string">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">substitute_string</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">substitute_string</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute setting if string with OS values of values from system_variables.</span>
 
 <span class="sd">        Args:</span>
@@ -465,7 +465,7 @@
 
         <span class="k">return</span> <span class="n">setting</span></div>
 
-    <span class="k">def</span> <span class="nf">add_system_file_path</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_system_file_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">path</span><span class="p">,</span>
@@ -512,10 +512,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span></div>
 
 
-<div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile">[docs]</a><span class="k">class</span> <span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;System file paths.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SystemFilePathsFromFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePathsFromFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;System file path from a file.</span>
 
 <span class="sd">        Args:</span>

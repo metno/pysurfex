@@ -35,15 +35,15 @@
             
   <h1>Source code for pysurfex.obs</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;obs.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">cfunits</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cfunits</span>
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
     <span class="n">cfunits</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
@@ -52,15 +52,15 @@
     <span class="n">cfunits</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_datetime_args</span><span class="p">,</span> <span class="n">as_timedelta</span><span class="p">,</span> <span class="n">utcfromtimestamp</span>
-<span class="kn">from</span> <span class="nn">.observation</span> <span class="kn">import</span> <span class="n">Observation</span>
-<span class="kn">from</span> <span class="nn">.titan</span> <span class="kn">import</span> <span class="n">dataset_from_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_datetime_args</span><span class="p">,</span> <span class="n">as_timedelta</span><span class="p">,</span> <span class="n">utcfromtimestamp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.observation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.titan</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataset_from_file</span>
 
 
-<div class="viewcode-block" id="ObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet">[docs]</a><span class="k">class</span> <span class="nc">ObservationSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ObservationSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set of observations.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ObservationSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an observation set.</span>
 
 <span class="sd">        Args:</span>
@@ -82,7 +82,7 @@
                 <span class="n">obs</span><span class="o">.</span><span class="n">sigmao</span> <span class="o">=</span> <span class="n">sigmao</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observations</span> <span class="o">=</span> <span class="n">observations</span></div>
 
-<div class="viewcode-block" id="ObservationSet.get_stid_index"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_stid_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_stid_index"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_stid_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get station ID index.</span>
 
 <span class="sd">        Args:</span>
@@ -98,7 +98,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="ObservationSet.get_pos_index"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_pos_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_pos_index"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_pos_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get position index.</span>
 
 <span class="sd">        Args:</span>
@@ -116,7 +116,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="ObservationSet.get_obs"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_obs">[docs]</a>    <span class="k">def</span> <span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.get_obs"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.get_obs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get observations.</span>
 
 <span class="sd">        Returns:</span>
@@ -152,7 +152,7 @@
             <span class="k">return</span> <span class="n">times</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">stids</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">varnames</span><span class="p">,</span> <span class="n">sigmaos</span>
         <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="ObservationSet.matching_obs"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.matching_obs">[docs]</a>    <span class="k">def</span> <span class="nf">matching_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_obs</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.matching_obs"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.matching_obs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">matching_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_obs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Match the observations.</span>
 
 <span class="sd">        Args:</span>
@@ -173,7 +173,7 @@
                     <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">found</span></div>
 
-<div class="viewcode-block" id="ObservationSet.points"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.points"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.points">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract points from observations.</span>
 
 <span class="sd">        Args:</span>
@@ -211,7 +211,7 @@
         <span class="n">my_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">my_values</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">my_times</span><span class="p">,</span> <span class="n">my_values</span><span class="p">,</span> <span class="n">my_stids</span></div>
 
-<div class="viewcode-block" id="ObservationSet.write_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.write_json_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationSet.write_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationSet.write_json_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a json file.</span>
 
 <span class="sd">        Args:</span>
@@ -243,10 +243,10 @@
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="NetatmoObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.NetatmoObservationSet">[docs]</a><span class="k">class</span> <span class="nc">NetatmoObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
+<div class="viewcode-block" id="NetatmoObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.NetatmoObservationSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NetatmoObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Observation set from netatmo.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filenames</span><span class="p">,</span>
         <span class="n">variable</span><span class="p">,</span>
@@ -419,10 +419,10 @@
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="n">sigmao</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="MetFrostObservations"><a class="viewcode-back" href="../../index.html#pysurfex.obs.MetFrostObservations">[docs]</a><span class="k">class</span> <span class="nc">MetFrostObservations</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
+<div class="viewcode-block" id="MetFrostObservations"><a class="viewcode-back" href="../../index.html#pysurfex.obs.MetFrostObservations">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MetFrostObservations</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Observations from MET-Norway obs API (frost).&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">varname</span><span class="p">,</span>
         <span class="n">stations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -791,10 +791,10 @@
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="JsonObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.JsonObservationSet">[docs]</a><span class="k">class</span> <span class="nc">JsonObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.obs.JsonObservationSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">JsonObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;JSON observation set.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="JsonObservationSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.JsonObservationSet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonObservationSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.JsonObservationSet.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an observation data set from a json file.</span>
 
 <span class="sd">        Args:</span>
@@ -849,10 +849,10 @@
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="n">sigmao</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="ObservationFromTitanJsonFile"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationFromTitanJsonFile">[docs]</a><span class="k">class</span> <span class="nc">ObservationFromTitanJsonFile</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationFromTitanJsonFile"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationFromTitanJsonFile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ObservationFromTitanJsonFile</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Observation set from titan json file.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ObservationFromTitanJsonFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationFromTitanJsonFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ObservationFromTitanJsonFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.obs.ObservationFromTitanJsonFile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constuct obs set from a titan json file.</span>
 
 <span class="sd">        Args:</span>

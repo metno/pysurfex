@@ -35,18 +35,18 @@
             
   <h1>Source code for pysurfex.ecoclimap</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Ecoclimap handling.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 
-<div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile">[docs]</a><span class="k">class</span> <span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ExternalSurfexInputFile"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ExternalSurfexInputFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper around external input data to surfex.</span>
 
 <span class="sd">    Can have special treatment for each format.</span>
 <span class="sd">    Uses internally the SystemFilePaths class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ExternalSurfexInputFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<div class="viewcode-block" id="ExternalSurfexInputFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.ExternalSurfexInputFile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ExternalSurfexInputFile.</span>
 
 <span class="sd">        Args:</span>
@@ -55,7 +55,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input_data_from_format</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_data_from_format</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">,</span>
         <span class="n">fname</span><span class="p">,</span>
@@ -140,10 +140,10 @@
             <span class="k">return</span> <span class="p">{</span><span class="n">fname</span><span class="p">:</span> <span class="n">fname_with_path</span><span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap">[docs]</a><span class="k">class</span> <span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Ecoclimap"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Ecoclimap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Ecoclimap.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Ecoclimap.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap data object.</span>
 
 <span class="sd">        Args:</span>
@@ -164,7 +164,7 @@
         <span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decadal_data_types</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Ecoclimap.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Ecoclimap.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -191,7 +191,7 @@
             <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">fname</span><span class="p">:</span> <span class="n">fname_data</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
-<div class="viewcode-block" id="Ecoclimap.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Ecoclimap.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.Ecoclimap.set_bin_files">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set bin files.</span>
 
 <span class="sd">        Args:</span>
@@ -204,10 +204,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG">[docs]</a><span class="k">class</span> <span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
+<div class="viewcode-block" id="EcoclimapSG"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">EcoclimapSG</span><span class="p">(</span><span class="n">Ecoclimap</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ecoclimap SG.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="EcoclimapSG.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">veg_types</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">decades</span><span class="o">=</span><span class="mi">36</span><span class="p">):</span>
+<div class="viewcode-block" id="EcoclimapSG.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">veg_types</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">decades</span><span class="o">=</span><span class="mi">36</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct ecoclimap SG.</span>
 
 <span class="sd">        Args:</span>
@@ -230,10 +230,10 @@
             <span class="s2">&quot;LAI&quot;</span><span class="p">,</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="EcoclimapSG.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_bin_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="EcoclimapSG.set_bin_files"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_bin_files">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_bin_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;set_bin_files not used for SG.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="EcoclimapSG.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="EcoclimapSG.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input data.</span>
 
 <span class="sd">        Args:</span>
@@ -283,7 +283,7 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="EcoclimapSG.parse_fnames"><a class="viewcode-back" href="../../index.html#pysurfex.ecoclimap.EcoclimapSG.parse_fnames">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">parse_fnames</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">decade</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_fnames</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">decade</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse file names.&quot;&quot;&quot;</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepattern</span>
         <span class="n">decade</span> <span class="o">=</span> <span class="n">decade</span> <span class="o">-</span> <span class="mi">1</span>

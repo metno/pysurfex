@@ -35,19 +35,19 @@
             
   <h1>Source code for pysurfex.input_methods</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Input methods.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">.bufr</span> <span class="kn">import</span> <span class="n">BufrObservationSet</span>
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">LonLatVal</span>
-<span class="kn">from</span> <span class="nn">.obs</span> <span class="kn">import</span> <span class="n">JsonObservationSet</span><span class="p">,</span> <span class="n">MetFrostObservations</span><span class="p">,</span> <span class="n">NetatmoObservationSet</span>
-<span class="kn">from</span> <span class="nn">.obsoul</span> <span class="kn">import</span> <span class="n">ObservationDataSetFromObsoulFile</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">parse_filepattern</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.bufr</span><span class="w"> </span><span class="kn">import</span> <span class="n">BufrObservationSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">LonLatVal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.obs</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonObservationSet</span><span class="p">,</span> <span class="n">MetFrostObservations</span><span class="p">,</span> <span class="n">NetatmoObservationSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.obsoul</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservationDataSetFromObsoulFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_filepattern</span>
 
 
-<div class="viewcode-block" id="get_datasources"><a class="viewcode-back" href="../../index.html#pysurfex.input_methods.get_datasources">[docs]</a><span class="k">def</span> <span class="nf">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<div class="viewcode-block" id="get_datasources"><a class="viewcode-back" href="../../index.html#pysurfex.input_methods.get_datasources">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get data sources.</span>
 
 <span class="sd">    Main data source interface setting data ObservationSet objects based on settings dictionary</span>
@@ -247,7 +247,7 @@
     <span class="k">return</span> <span class="n">datasources</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_geo_from_obs_set</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_geo_from_obs_set</span><span class="p">(</span>
     <span class="n">obs_time</span><span class="p">,</span> <span class="n">obs_type</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">inputfile</span><span class="p">,</span> <span class="n">lonrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latrange</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set geometry from obs file.</span>
@@ -306,7 +306,7 @@
     <span class="k">return</span> <span class="n">geo</span>
 
 
-<span class="k">def</span> <span class="nf">get_obsset</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_obsset</span><span class="p">(</span>
     <span class="n">obs_time</span><span class="p">,</span>
     <span class="n">obs_type</span><span class="p">,</span>
     <span class="n">varname</span><span class="p">,</span>
@@ -393,7 +393,7 @@
     <span class="k">return</span> <span class="n">get_datasources</span><span class="p">(</span><span class="n">obs_time</span><span class="p">,</span> <span class="n">settings</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">create_obsset_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_obsset_file</span><span class="p">(</span>
     <span class="n">obs_time</span><span class="p">,</span>
     <span class="n">obs_type</span><span class="p">,</span>
     <span class="n">varname</span><span class="p">,</span>

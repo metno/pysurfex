@@ -35,19 +35,19 @@
             
   <h1>Source code for pysurfex.util</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Misc.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">toml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">toml</span>
 
 
-<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#pysurfex.util.merge_toml_env">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env"><a class="viewcode-back" href="../../index.html#pysurfex.util.merge_toml_env">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">merge_toml_env</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">old_env</span><span class="p">,</span> <span class="n">mods</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#pysurfex.util.merge_toml_env_from_files">[docs]</a><span class="k">def</span> <span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_toml_env_from_files"><a class="viewcode-back" href="../../index.html#pysurfex.util.merge_toml_env_from_files">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">merge_toml_env_from_files</span><span class="p">(</span><span class="n">toml_files</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge.&quot;&quot;&quot;</span>
     <span class="n">merged_env</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">toml_file</span> <span class="ow">in</span> <span class="n">toml_files</span><span class="p">:</span>
@@ -60,7 +60,7 @@
     <span class="k">return</span> <span class="n">merged_env</span></div>
 
 
-<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#pysurfex.util.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
+<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../index.html#pysurfex.util.deep_update">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update a nested dictionary or similar mapping.</span>
 
 <span class="sd">    Modify ``source`` in place.</span>
@@ -82,7 +82,7 @@
     <span class="k">return</span> <span class="n">source</span></div>
 
 
-<div class="viewcode-block" id="remove_existing_file"><a class="viewcode-back" href="../../index.html#pysurfex.util.remove_existing_file">[docs]</a><span class="k">def</span> <span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
+<div class="viewcode-block" id="remove_existing_file"><a class="viewcode-back" href="../../index.html#pysurfex.util.remove_existing_file">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove existing file.</span>
 
 <span class="sd">    Args:</span>
@@ -112,7 +112,7 @@
             <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f_out</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#pysurfex.util.parse_filepattern">[docs]</a><span class="k">def</span> <span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_filepattern"><a class="viewcode-back" href="../../index.html#pysurfex.util.parse_filepattern">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the file pattern.</span>
 
 <span class="sd">    Args:</span>

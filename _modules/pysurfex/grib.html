@@ -35,14 +35,14 @@
             
   <h1>Source code for pysurfex.grib</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Grib treatment.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pyproj</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyproj</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">eccodes</span>
-    <span class="kn">import</span> <span class="nn">gribapi</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">eccodes</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">gribapi</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">eccodes</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">gribapi</span> <span class="o">=</span> <span class="kc">None</span>
@@ -55,14 +55,14 @@
     <span class="n">gribapi</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">ConfProj</span><span class="p">,</span> <span class="n">Geo</span><span class="p">,</span> <span class="n">LonLatReg</span>
-<span class="kn">from</span> <span class="nn">.interpolation</span> <span class="kn">import</span> <span class="n">Interpolation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfProj</span><span class="p">,</span> <span class="n">Geo</span><span class="p">,</span> <span class="n">LonLatReg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolation</span>
 
 
-<div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib">[docs]</a><span class="k">class</span> <span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Grib.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct grib object.</span>
 
 <span class="sd">        Args:</span>
@@ -77,7 +77,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Grib constructor&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib.field"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.field">[docs]</a>    <span class="k">def</span> <span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib.field"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.field">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field in grib file.</span>
 
 <span class="sd">        Args:</span>
@@ -320,7 +320,7 @@
                     <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Grib.read_geo_info"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_geo_info">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set geo keys in dict.</span>
 
 <span class="sd">        Args:</span>
@@ -343,7 +343,7 @@
         <span class="k">return</span> <span class="n">geo_dict</span></div>
 
 <div class="viewcode-block" id="Grib.read_field_in_message"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_field_in_message">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">read_field_in_message</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_field_in_message</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get field.</span>
 
 <span class="sd">        Args:</span>
@@ -384,7 +384,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error with key=&quot;missingValue&quot; : </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Grib.points"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib.points"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.points">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a 2-D field and interpolates it to requested positions.</span>
 
 <span class="sd">        Args:</span>
@@ -403,10 +403,10 @@
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">Grib1Variable</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Grib1Variable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib1 variable.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">tri</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct grib1 variable.</span>
 
 <span class="sd">        Args:</span>
@@ -422,7 +422,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if accumulated.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Value is accumulated&quot;</span><span class="p">)</span>
@@ -430,7 +430,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if matchees.</span>
 
 <span class="sd">        Args:</span>
@@ -471,7 +471,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib1&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
@@ -480,7 +480,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timeRangeIndicator:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grib1 ID.&quot;&quot;&quot;</span>
         <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span>
         <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span>
@@ -489,10 +489,10 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib1:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
 
-<div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable">[docs]</a><span class="k">class</span> <span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib2 variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Grib2Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pca</span><span class="p">,</span> <span class="n">pnr</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pca</span><span class="p">,</span> <span class="n">pnr</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a grib2 variable.</span>
 
 <span class="sd">        Args:</span>
@@ -511,7 +511,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lev</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tsp</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.matches"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.matches"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.matches">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if matches.</span>
 
 <span class="sd">        Args:</span>
@@ -574,7 +574,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib2&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.is_accumulated"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.is_accumulated">[docs]</a>    <span class="k">def</span> <span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.is_accumulated"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.is_accumulated">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if accumulated.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parameter is accumulated&quot;</span><span class="p">)</span>
@@ -582,7 +582,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.print_keys"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.print_keys">[docs]</a>    <span class="k">def</span> <span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.print_keys"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.print_keys">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
@@ -593,7 +593,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.generate_grib_id"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.generate_grib_id">[docs]</a>    <span class="k">def</span> <span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.generate_grib_id"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.generate_grib_id">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grib2 ID.&quot;&quot;&quot;</span>
         <span class="n">dis</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
         <span class="n">pca</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>

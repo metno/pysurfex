@@ -138,8 +138,8 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
 </section>
 <section id="id1">
 <h2>Run pysurfex client applications<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">pysurfex.cli</span> <span class="kn">import</span> <span class="n">parse_args_surfex_binary</span><span class="p">,</span> <span class="n">run_surfex_binary</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysurfex.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_args_surfex_binary</span><span class="p">,</span> <span class="n">run_surfex_binary</span>
 
 <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_surfex_binary</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="s2">&quot;pgd&quot;</span><span class="p">)</span>

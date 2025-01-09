@@ -35,19 +35,19 @@
             
   <h1>Source code for pysurfex.run</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Run time methods.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">Popen</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">subprocess</span><span class="w"> </span><span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">Popen</span>
 
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">remove_existing_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">remove_existing_file</span>
 
 
-<div class="viewcode-block" id="BatchJob"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob">[docs]</a><span class="k">class</span> <span class="nc">BatchJob</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BatchJob</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch job.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BatchJob.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rte</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct batch job.</span>
 
 <span class="sd">        Args:</span>
@@ -59,7 +59,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span> <span class="o">=</span> <span class="n">wrapper</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed BatchJob&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BatchJob.run"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchJob.run"><a class="viewcode-back" href="../../index.html#pysurfex.run.BatchJob.run">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run command.</span>
 
 <span class="sd">        Args:</span>
@@ -100,10 +100,10 @@
             <span class="k">raise</span> <span class="n">CalledProcessError</span><span class="p">(</span><span class="n">return_code</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SURFEXBinary"><a class="viewcode-back" href="../../index.html#pysurfex.run.SURFEXBinary">[docs]</a><span class="k">class</span> <span class="nc">SURFEXBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFEXBinary"><a class="viewcode-back" href="../../index.html#pysurfex.run.SURFEXBinary">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SURFEXBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SURFEX binary class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SURFEXBinary.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.run.SURFEXBinary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="SURFEXBinary.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.run.SURFEXBinary.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">iofile</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Surfex binary task.</span>
 
 <span class="sd">        Args:</span>
@@ -157,7 +157,7 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PGD </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pgdfile</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> not found!&quot;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not set PGD&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">FileNotFoundError</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not set PGD&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">FileNotFoundError</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PREP is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
@@ -169,14 +169,14 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
                         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PREP </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iofile</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> not found!&quot;</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not set PREP&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">FileNotFoundError</span>
+                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not set PREP&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">FileNotFoundError</span>
 
         <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running </span><span class="si">%s</span><span class="s2"> with settings OPTIONS.nam&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">Exception</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Exception</span>
 
         <span class="n">listings</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;LISTING_PGD0.txt&quot;</span><span class="p">,</span>
@@ -199,10 +199,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">archive_data</span><span class="o">.</span><span class="n">archive_files</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="PerturbedOffline"><a class="viewcode-back" href="../../index.html#pysurfex.run.PerturbedOffline">[docs]</a><span class="k">class</span> <span class="nc">PerturbedOffline</span><span class="p">(</span><span class="n">SURFEXBinary</span><span class="p">):</span>
+<div class="viewcode-block" id="PerturbedOffline"><a class="viewcode-back" href="../../index.html#pysurfex.run.PerturbedOffline">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PerturbedOffline</span><span class="p">(</span><span class="n">SURFEXBinary</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pertubed offline.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">binary</span><span class="p">,</span>
         <span class="n">batch</span><span class="p">,</span>
@@ -257,10 +257,10 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.run.Masterodb">[docs]</a><span class="k">class</span> <span class="nc">Masterodb</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.run.Masterodb">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Masterodb</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Masterodb.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pgdfile</span><span class="p">,</span>
         <span class="n">prepfile</span><span class="p">,</span>
@@ -342,7 +342,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run binary with namelist EXSEG1.nam: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Masterodb.archive_output"><a class="viewcode-back" href="../../index.html#pysurfex.run.Masterodb.archive_output">[docs]</a>    <span class="k">def</span> <span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Masterodb.archive_output"><a class="viewcode-back" href="../../index.html#pysurfex.run.Masterodb.archive_output">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">archive_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Archive output.&quot;&quot;&quot;</span>
         <span class="c1"># Archive output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surfout</span><span class="o">.</span><span class="n">archive_output_file</span><span class="p">()</span>
@@ -351,7 +351,7 @@
 
 
 <span class="c1"># TODO is it used?</span>
-<div class="viewcode-block" id="create_working_dir"><a class="viewcode-back" href="../../index.html#pysurfex.run.create_working_dir">[docs]</a><span class="k">def</span> <span class="nf">create_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">enter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="create_working_dir"><a class="viewcode-back" href="../../index.html#pysurfex.run.create_working_dir">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">enter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create working dir.&quot;&quot;&quot;</span>
     <span class="c1"># Create work directory</span>
     <span class="k">if</span> <span class="n">workdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -363,7 +363,7 @@
 
 
 <span class="c1"># TODO is it used?</span>
-<div class="viewcode-block" id="clean_working_dir"><a class="viewcode-back" href="../../index.html#pysurfex.run.clean_working_dir">[docs]</a><span class="k">def</span> <span class="nf">clean_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">):</span>
+<div class="viewcode-block" id="clean_working_dir"><a class="viewcode-back" href="../../index.html#pysurfex.run.clean_working_dir">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">clean_working_dir</span><span class="p">(</span><span class="n">workdir</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean working dir.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">exit</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>

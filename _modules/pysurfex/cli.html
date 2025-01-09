@@ -35,31 +35,31 @@
             
   <h1>Source code for pysurfex.cli</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Command line interfaces.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">toml</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">toml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
     <span class="n">plt</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span> <span class="nn">.binary_input</span> <span class="kn">import</span> <span class="n">JsonOutputDataFromFile</span>
-<span class="kn">from</span> <span class="nn">.binary_input_legacy</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.binary_input</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonOutputDataFromFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.binary_input_legacy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">InlineForecastInputData</span><span class="p">,</span>
     <span class="n">OfflineInputData</span><span class="p">,</span>
     <span class="n">PgdInputData</span><span class="p">,</span>
     <span class="n">PrepInputData</span><span class="p">,</span>
     <span class="n">SodaInputData</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.cache</span> <span class="kn">import</span> <span class="n">Cache</span>
-<span class="kn">from</span> <span class="nn">.cmd_parsing</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cmd_parsing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">parse_args_bufr2json</span><span class="p">,</span>
     <span class="n">parse_args_create_forcing</span><span class="p">,</span>
     <span class="n">parse_args_create_namelist</span><span class="p">,</span>
@@ -85,40 +85,40 @@
     <span class="n">parse_sentinel_obs</span><span class="p">,</span>
     <span class="n">parse_set_domain</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.configuration</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConfigurationFromHarmonieAndConfigFile</span><span class="p">,</span>
     <span class="n">ConfigurationFromTomlFile</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_datetime_args</span><span class="p">,</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">PGDFile</span><span class="p">,</span> <span class="n">PREPFile</span><span class="p">,</span> <span class="n">SURFFile</span>
-<span class="kn">from</span> <span class="nn">.forcing</span> <span class="kn">import</span> <span class="n">modify_forcing</span><span class="p">,</span> <span class="n">run_time_loop</span><span class="p">,</span> <span class="n">set_forcing_config</span>
-<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">LonLatVal</span><span class="p">,</span> <span class="n">get_geo_object</span><span class="p">,</span> <span class="n">set_domain</span><span class="p">,</span> <span class="n">shape2ign</span>
-<span class="kn">from</span> <span class="nn">.input_methods</span> <span class="kn">import</span> <span class="n">create_obsset_file</span><span class="p">,</span> <span class="n">get_datasources</span><span class="p">,</span> <span class="n">set_geo_from_obs_set</span>
-<span class="kn">from</span> <span class="nn">.interpolation</span> <span class="kn">import</span> <span class="n">horizontal_oi</span>
-<span class="kn">from</span> <span class="nn">.namelist</span> <span class="kn">import</span> <span class="n">NamelistGenerator</span>
-<span class="kn">from</span> <span class="nn">.namelist_legacy</span> <span class="kn">import</span> <span class="n">BaseNamelist</span><span class="p">,</span> <span class="n">Namelist</span>
-<span class="kn">from</span> <span class="nn">.netcdf</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_datetime_args</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.file</span><span class="w"> </span><span class="kn">import</span> <span class="n">PGDFile</span><span class="p">,</span> <span class="n">PREPFile</span><span class="p">,</span> <span class="n">SURFFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.forcing</span><span class="w"> </span><span class="kn">import</span> <span class="n">modify_forcing</span><span class="p">,</span> <span class="n">run_time_loop</span><span class="p">,</span> <span class="n">set_forcing_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">LonLatVal</span><span class="p">,</span> <span class="n">get_geo_object</span><span class="p">,</span> <span class="n">set_domain</span><span class="p">,</span> <span class="n">shape2ign</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.input_methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_obsset_file</span><span class="p">,</span> <span class="n">get_datasources</span><span class="p">,</span> <span class="n">set_geo_from_obs_set</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">horizontal_oi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namelist</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamelistGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namelist_legacy</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNamelist</span><span class="p">,</span> <span class="n">Namelist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.netcdf</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">create_netcdf_first_guess_template</span><span class="p">,</span>
     <span class="n">oi2soda</span><span class="p">,</span>
     <span class="n">read_first_guess_netcdf_file</span><span class="p">,</span>
     <span class="n">write_analysis_netcdf_file</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.obs</span> <span class="kn">import</span> <span class="n">Observation</span>
-<span class="kn">from</span> <span class="nn">.obsmon</span> <span class="kn">import</span> <span class="n">write_obsmon_sqlite_file</span>
-<span class="kn">from</span> <span class="nn">.platform_deps</span> <span class="kn">import</span> <span class="n">SystemFilePathsFromFile</span>
-<span class="kn">from</span> <span class="nn">.pseudoobs</span> <span class="kn">import</span> <span class="n">CryoclimObservationSet</span><span class="p">,</span> <span class="n">SentinelObservationSet</span>
-<span class="kn">from</span> <span class="nn">.read</span> <span class="kn">import</span> <span class="n">ConvertedInput</span><span class="p">,</span> <span class="n">Converter</span>
-<span class="kn">from</span> <span class="nn">.run</span> <span class="kn">import</span> <span class="n">BatchJob</span><span class="p">,</span> <span class="n">Masterodb</span><span class="p">,</span> <span class="n">PerturbedOffline</span><span class="p">,</span> <span class="n">SURFEXBinary</span>
-<span class="kn">from</span> <span class="nn">.titan</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.obs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.obsmon</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_obsmon_sqlite_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.platform_deps</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemFilePathsFromFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pseudoobs</span><span class="w"> </span><span class="kn">import</span> <span class="n">CryoclimObservationSet</span><span class="p">,</span> <span class="n">SentinelObservationSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.read</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvertedInput</span><span class="p">,</span> <span class="n">Converter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchJob</span><span class="p">,</span> <span class="n">Masterodb</span><span class="p">,</span> <span class="n">PerturbedOffline</span><span class="p">,</span> <span class="n">SURFEXBinary</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.titan</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TitanDataSet</span><span class="p">,</span>
     <span class="n">dataset_from_file</span><span class="p">,</span>
     <span class="n">define_quality_control</span><span class="p">,</span>
     <span class="n">merge_json_qc_data_sets</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.variable</span> <span class="kn">import</span> <span class="n">Variable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.variable</span><span class="w"> </span><span class="kn">import</span> <span class="n">Variable</span>
 
 
-<div class="viewcode-block" id="get_geo_and_config_from_cmd"><a class="viewcode-back" href="../../index.html#pysurfex.cli.get_geo_and_config_from_cmd">[docs]</a><span class="k">def</span> <span class="nf">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_geo_and_config_from_cmd"><a class="viewcode-back" href="../../index.html#pysurfex.cli.get_geo_and_config_from_cmd">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get geo and config from cmd.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
         <span class="n">config_exp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -154,7 +154,7 @@
     <span class="k">return</span> <span class="n">config</span><span class="p">,</span> <span class="n">geo</span></div>
 
 
-<div class="viewcode-block" id="run_first_guess_for_oi"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_first_guess_for_oi">[docs]</a><span class="k">def</span> <span class="nf">run_first_guess_for_oi</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_first_guess_for_oi"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_first_guess_for_oi">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_first_guess_for_oi</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run first guess for oi.&quot;&quot;&quot;</span>
     <span class="n">config</span><span class="p">,</span> <span class="n">geo</span> <span class="o">=</span> <span class="n">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -299,7 +299,7 @@
         <span class="n">f_g</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="run_masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_masterodb">[docs]</a><span class="k">def</span> <span class="nf">run_masterodb</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_masterodb">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_masterodb</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run masterodb.&quot;&quot;&quot;</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="n">config</span><span class="p">,</span> <span class="n">geo</span> <span class="o">=</span> <span class="n">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -499,7 +499,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Masterodb is None&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_surfex_binary"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_surfex_binary">[docs]</a><span class="k">def</span> <span class="nf">run_surfex_binary</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_surfex_binary"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_surfex_binary">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_surfex_binary</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a surfex binary.&quot;&quot;&quot;</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ARGS: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="n">config</span><span class="p">,</span> <span class="n">geo</span> <span class="o">=</span> <span class="n">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -850,7 +850,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> already exists!&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_gridpp"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_gridpp">[docs]</a><span class="k">def</span> <span class="nf">run_gridpp</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_gridpp"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_gridpp">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_gridpp</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gridpp.&quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
     <span class="n">input_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_file&quot;</span><span class="p">]</span>
@@ -919,7 +919,7 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_titan"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_titan">[docs]</a><span class="k">def</span> <span class="nf">run_titan</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_titan"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_titan">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_titan</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Titan.&quot;&quot;&quot;</span>
     <span class="n">__</span><span class="p">,</span> <span class="n">domain_geo</span> <span class="o">=</span> <span class="n">get_geo_and_config_from_cmd</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;domain_geo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -972,7 +972,7 @@
         <span class="n">data_set</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_oi2soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_oi2soda">[docs]</a><span class="k">def</span> <span class="nf">run_oi2soda</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_oi2soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_oi2soda">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_oi2soda</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Oi2soda.&quot;&quot;&quot;</span>
     <span class="n">t2m_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;t2m_file&quot;</span><span class="p">]</span>
     <span class="n">rh2m_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;rh2m_file&quot;</span><span class="p">]</span>
@@ -997,7 +997,7 @@
     <span class="n">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="n">t2m</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="n">rh2m</span><span class="p">,</span> <span class="n">s_d</span><span class="o">=</span><span class="n">s_d</span><span class="p">,</span> <span class="n">s_m</span><span class="o">=</span><span class="n">s_m</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_hm2pysurfex"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_hm2pysurfex">[docs]</a><span class="k">def</span> <span class="nf">run_hm2pysurfex</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_hm2pysurfex"><a class="viewcode-back" href="../../index.html#pysurfex.cli.run_hm2pysurfex">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_hm2pysurfex</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Harmonie to pysurfex.&quot;&quot;&quot;</span>
     <span class="n">pysurfex_config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
 
@@ -1020,7 +1020,7 @@
             <span class="n">toml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">fhandler</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="set_geo_from_stationlist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.set_geo_from_stationlist">[docs]</a><span class="k">def</span> <span class="nf">set_geo_from_stationlist</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="set_geo_from_stationlist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.set_geo_from_stationlist">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_geo_from_stationlist</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set geometry from station list.&quot;&quot;&quot;</span>
     <span class="n">stationlist</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stationlist&quot;</span><span class="p">]</span>
     <span class="n">lonrange</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1059,7 +1059,7 @@
     <span class="k">return</span> <span class="n">LonLatVal</span><span class="p">(</span><span class="n">geo_json</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="sentinel_obs"><a class="viewcode-back" href="../../index.html#pysurfex.cli.sentinel_obs">[docs]</a><span class="k">def</span> <span class="nf">sentinel_obs</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="sentinel_obs"><a class="viewcode-back" href="../../index.html#pysurfex.cli.sentinel_obs">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sentinel_obs</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1092,7 +1092,7 @@
     <span class="n">obs_set</span><span class="o">.</span><span class="n">write_json_file</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="qc2obsmon"><a class="viewcode-back" href="../../index.html#pysurfex.cli.qc2obsmon">[docs]</a><span class="k">def</span> <span class="nf">qc2obsmon</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="qc2obsmon"><a class="viewcode-back" href="../../index.html#pysurfex.cli.qc2obsmon">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">qc2obsmon</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1116,7 +1116,7 @@
     <span class="n">write_obsmon_sqlite_file</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="prep"><a class="viewcode-back" href="../../index.html#pysurfex.cli.prep">[docs]</a><span class="k">def</span> <span class="nf">prep</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="prep"><a class="viewcode-back" href="../../index.html#pysurfex.cli.prep">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">prep</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1140,7 +1140,7 @@
     <span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;prep&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="plot_points"><a class="viewcode-back" href="../../index.html#pysurfex.cli.plot_points">[docs]</a><span class="k">def</span> <span class="nf">plot_points</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_points"><a class="viewcode-back" href="../../index.html#pysurfex.cli.plot_points">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_points</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1273,7 +1273,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="plot_field"><a class="viewcode-back" href="../../index.html#pysurfex.cli.plot_field">[docs]</a><span class="k">def</span> <span class="nf">plot_field</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_field"><a class="viewcode-back" href="../../index.html#pysurfex.cli.plot_field">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_field</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1377,7 +1377,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="pgd"><a class="viewcode-back" href="../../index.html#pysurfex.cli.pgd">[docs]</a><span class="k">def</span> <span class="nf">pgd</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="pgd"><a class="viewcode-back" href="../../index.html#pysurfex.cli.pgd">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">pgd</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1401,7 +1401,7 @@
     <span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="perturbed_offline"><a class="viewcode-back" href="../../index.html#pysurfex.cli.perturbed_offline">[docs]</a><span class="k">def</span> <span class="nf">perturbed_offline</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="perturbed_offline"><a class="viewcode-back" href="../../index.html#pysurfex.cli.perturbed_offline">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">perturbed_offline</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1425,7 +1425,7 @@
     <span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;perturbed&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="offline"><a class="viewcode-back" href="../../index.html#pysurfex.cli.offline">[docs]</a><span class="k">def</span> <span class="nf">offline</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="offline"><a class="viewcode-back" href="../../index.html#pysurfex.cli.offline">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">offline</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1449,7 +1449,7 @@
     <span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;offline&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_oi2soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_oi2soda">[docs]</a><span class="k">def</span> <span class="nf">cli_oi2soda</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_oi2soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_oi2soda">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_oi2soda</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1473,7 +1473,7 @@
     <span class="n">run_oi2soda</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_modify_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_modify_forcing">[docs]</a><span class="k">def</span> <span class="nf">cli_modify_forcing</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_modify_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_modify_forcing">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_modify_forcing</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1497,7 +1497,7 @@
     <span class="n">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_merge_qc_data"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_merge_qc_data">[docs]</a><span class="k">def</span> <span class="nf">cli_merge_qc_data</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_merge_qc_data"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_merge_qc_data">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_merge_qc_data</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1523,7 +1523,7 @@
     <span class="n">qc_data</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;indent&quot;</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.cli.masterodb">[docs]</a><span class="k">def</span> <span class="nf">masterodb</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="masterodb"><a class="viewcode-back" href="../../index.html#pysurfex.cli.masterodb">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">masterodb</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1547,7 +1547,7 @@
     <span class="n">run_masterodb</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="hm2pysurfex"><a class="viewcode-back" href="../../index.html#pysurfex.cli.hm2pysurfex">[docs]</a><span class="k">def</span> <span class="nf">hm2pysurfex</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="hm2pysurfex"><a class="viewcode-back" href="../../index.html#pysurfex.cli.hm2pysurfex">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">hm2pysurfex</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1571,7 +1571,7 @@
     <span class="n">run_hm2pysurfex</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="gridpp"><a class="viewcode-back" href="../../index.html#pysurfex.cli.gridpp">[docs]</a><span class="k">def</span> <span class="nf">gridpp</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="gridpp"><a class="viewcode-back" href="../../index.html#pysurfex.cli.gridpp">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">gridpp</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1595,7 +1595,7 @@
     <span class="n">run_gridpp</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="dump_environ"><a class="viewcode-back" href="../../index.html#pysurfex.cli.dump_environ">[docs]</a><span class="k">def</span> <span class="nf">dump_environ</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="dump_environ"><a class="viewcode-back" href="../../index.html#pysurfex.cli.dump_environ">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">dump_environ</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1609,7 +1609,7 @@
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">file_handler</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="first_guess_for_oi"><a class="viewcode-back" href="../../index.html#pysurfex.cli.first_guess_for_oi">[docs]</a><span class="k">def</span> <span class="nf">first_guess_for_oi</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="first_guess_for_oi"><a class="viewcode-back" href="../../index.html#pysurfex.cli.first_guess_for_oi">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">first_guess_for_oi</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1634,7 +1634,7 @@
     <span class="n">run_first_guess_for_oi</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cryoclim_pseudoobs"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cryoclim_pseudoobs">[docs]</a><span class="k">def</span> <span class="nf">cryoclim_pseudoobs</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cryoclim_pseudoobs"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cryoclim_pseudoobs">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cryoclim_pseudoobs</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1714,7 +1714,7 @@
     <span class="n">obs_set</span><span class="o">.</span><span class="n">write_json_file</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_namelist">[docs]</a><span class="k">def</span> <span class="nf">create_namelist</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="create_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_namelist">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_namelist</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1769,7 +1769,7 @@
     <span class="n">my_settings</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create_lsm_file_assim"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_lsm_file_assim">[docs]</a><span class="k">def</span> <span class="nf">create_lsm_file_assim</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="create_lsm_file_assim"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_lsm_file_assim">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_lsm_file_assim</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1837,7 +1837,7 @@
                 <span class="n">file_handler</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_forcing">[docs]</a><span class="k">def</span> <span class="nf">create_forcing</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="create_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.cli.create_forcing">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_forcing</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1862,7 +1862,7 @@
     <span class="n">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="bufr2json"><a class="viewcode-back" href="../../index.html#pysurfex.cli.bufr2json">[docs]</a><span class="k">def</span> <span class="nf">bufr2json</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="bufr2json"><a class="viewcode-back" href="../../index.html#pysurfex.cli.bufr2json">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">bufr2json</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1910,7 +1910,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="obs2json"><a class="viewcode-back" href="../../index.html#pysurfex.cli.obs2json">[docs]</a><span class="k">def</span> <span class="nf">obs2json</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="obs2json"><a class="viewcode-back" href="../../index.html#pysurfex.cli.obs2json">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">obs2json</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -1972,7 +1972,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_domain">[docs]</a><span class="k">def</span> <span class="nf">cli_set_domain</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_domain">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_set_domain</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -2017,7 +2017,7 @@
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span></div>
 
 
-<div class="viewcode-block" id="cli_set_geo_from_obs_set"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_geo_from_obs_set">[docs]</a><span class="k">def</span> <span class="nf">cli_set_geo_from_obs_set</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_set_geo_from_obs_set"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_geo_from_obs_set">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_set_geo_from_obs_set</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -2054,7 +2054,7 @@
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">json</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_set_geo_from_stationlist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_geo_from_stationlist">[docs]</a><span class="k">def</span> <span class="nf">cli_set_geo_from_stationlist</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_set_geo_from_stationlist"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_set_geo_from_stationlist">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_set_geo_from_stationlist</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -2082,7 +2082,7 @@
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">json</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cli_shape2ign"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_shape2ign">[docs]</a><span class="k">def</span> <span class="nf">cli_shape2ign</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cli_shape2ign"><a class="viewcode-back" href="../../index.html#pysurfex.cli.cli_shape2ign">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">cli_shape2ign</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -2113,7 +2113,7 @@
     <span class="n">shape2ign</span><span class="p">(</span><span class="n">catchment</span><span class="p">,</span> <span class="n">infile</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">ref_proj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.soda">[docs]</a><span class="k">def</span> <span class="nf">soda</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="soda"><a class="viewcode-back" href="../../index.html#pysurfex.cli.soda">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">soda</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>
@@ -2138,7 +2138,7 @@
     <span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;soda&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="titan"><a class="viewcode-back" href="../../index.html#pysurfex.cli.titan">[docs]</a><span class="k">def</span> <span class="nf">titan</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="titan"><a class="viewcode-back" href="../../index.html#pysurfex.cli.titan">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">titan</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line interface.</span>
 
 <span class="sd">    Args:</span>

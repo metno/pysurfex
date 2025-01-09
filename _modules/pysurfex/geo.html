@@ -35,28 +35,28 @@
             
   <h1>Source code for pysurfex.geo</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Geometry.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pyproj</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyproj</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">ogr</span>  <span class="c1"># type: ignore</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ogr</span>  <span class="c1"># type: ignore</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">ogr</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span> <span class="nn">.namelist_legacy</span> <span class="kn">import</span> <span class="n">BaseNamelist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namelist_legacy</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNamelist</span>
 
 
-<div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo">[docs]</a><span class="k">class</span> <span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Geometry.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Geo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -104,7 +104,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;lats=</span><span class="si">%s</span><span class="s2"> shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">can_interpolate</span> <span class="o">=</span> <span class="n">can_interpolate</span></div>
 
-<div class="viewcode-block" id="Geo.identifier"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.identifier">[docs]</a>    <span class="k">def</span> <span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo.identifier"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.identifier">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create identifier.&quot;&quot;&quot;</span>
         <span class="n">f_lon</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">l_lon</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -138,7 +138,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TAG: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tag</span></div>
 
-<div class="viewcode-block" id="Geo.is_identical"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.is_identical">[docs]</a>    <span class="k">def</span> <span class="nf">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_to_check</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo.is_identical"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.is_identical">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_to_check</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if geometries are identical.</span>
 
 <span class="sd">        Args:</span>
@@ -154,7 +154,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Geo.write_proj_info"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.write_proj_info">[docs]</a>    <span class="k">def</span> <span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo.write_proj_info"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.write_proj_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write proj info.</span>
 
 <span class="sd">        Returns:</span>
@@ -163,7 +163,7 @@
         <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
-<div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo">[docs]</a><span class="k">class</span> <span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract surfex geometry class.</span>
 
 <span class="sd">    Args:</span>
@@ -171,7 +171,7 @@
 <span class="sd">        Geo (_type_): _description_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SurfexGeo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexGeo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a surfex geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -185,7 +185,7 @@
         <span class="n">Geo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SurfexGeo.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.update_namelist">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -197,7 +197,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="SurfexGeo.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.subset">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -206,10 +206,10 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj">[docs]</a><span class="k">class</span> <span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conf proj.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ConfProj.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct conf proj geo.</span>
 
 <span class="sd">        Args:</span>
@@ -313,7 +313,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;lats.shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ConfProj.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.update_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -349,7 +349,7 @@
             <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
-<div class="viewcode-block" id="ConfProj.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -396,10 +396,10 @@
         <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
 
 
-<div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal">[docs]</a><span class="k">class</span> <span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LonLatVal.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LonLatVal.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a LonLatVal geometry.</span>
 
 <span class="sd">        Used also for points/observations.</span>
@@ -431,7 +431,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LonLatVal.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.update_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -453,7 +453,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
-<div class="viewcode-block" id="LonLatVal.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -468,10 +468,10 @@
         <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
 
 
-<div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian">[docs]</a><span class="k">class</span> <span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cartesian.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Cartesian.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Cartesian geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -515,7 +515,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Cartesian.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.update_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -540,7 +540,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
-<div class="viewcode-block" id="Cartesian.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -556,10 +556,10 @@
         <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
 
 
-<div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg">[docs]</a><span class="k">class</span> <span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LonLatReg.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LonLatReg.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the LonLatReg geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -615,7 +615,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;longitudes=</span><span class="si">%s</span><span class="s2"> latitudes=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">longitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LonLatReg.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.update_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -639,7 +639,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
-<div class="viewcode-block" id="LonLatReg.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -655,10 +655,10 @@
         <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
 
 
-<div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN">[docs]</a><span class="k">class</span> <span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;IGN.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="IGN.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a IGN geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -737,7 +737,7 @@
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="IGN.get_coord"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.get_coord">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_coord</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">pdin</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_coord</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">pdin</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the IGN coordinates.</span>
 
 <span class="sd">        Args:</span>
@@ -810,7 +810,7 @@
         <span class="k">return</span> <span class="n">pout</span></div>
 
 <div class="viewcode-block" id="IGN.ign_mask"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.ign_mask">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">ign_mask</span><span class="p">(</span><span class="n">pxall</span><span class="p">,</span> <span class="n">pyall</span><span class="p">,</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">recreate</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ign_mask</span><span class="p">(</span><span class="n">pxall</span><span class="p">,</span> <span class="n">pyall</span><span class="p">,</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">recreate</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the IGN mask.</span>
 
 <span class="sd">        Args:</span>
@@ -862,7 +862,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created mask: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mask</span></div>
 
-<div class="viewcode-block" id="IGN.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.update_namelist">[docs]</a>    <span class="k">def</span> <span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
@@ -891,7 +891,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">nml</span></div>
 
-<div class="viewcode-block" id="IGN.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -907,7 +907,7 @@
         <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
 
 
-<div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a surfex geometry object from a dictionary.</span>
 
 <span class="sd">    Args:</span>
@@ -948,7 +948,7 @@
     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;nam_pgd_grid not set!&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_geo_object_from_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object_from_json_file">[docs]</a><span class="k">def</span> <span class="nf">get_geo_object_from_json_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="get_geo_object_from_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object_from_json_file">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object_from_json_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a surfex geometry object from a dictionary.</span>
 
 <span class="sd">    Args:</span>
@@ -963,7 +963,7 @@
     <span class="k">return</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.geo.set_domain">[docs]</a><span class="k">def</span> <span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.geo.set_domain">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set domain.</span>
 
 <span class="sd">    Args:</span>
@@ -1013,7 +1013,7 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="shape2ign"><a class="viewcode-back" href="../../index.html#pysurfex.geo.shape2ign">[docs]</a><span class="k">def</span> <span class="nf">shape2ign</span><span class="p">(</span><span class="n">catchment</span><span class="p">,</span> <span class="n">infile</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">ref_proj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="shape2ign"><a class="viewcode-back" href="../../index.html#pysurfex.geo.shape2ign">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">shape2ign</span><span class="p">(</span><span class="n">catchment</span><span class="p">,</span> <span class="n">infile</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">ref_proj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a shape file and convert to IGN geo.</span>
 
 <span class="sd">    Args:</span>

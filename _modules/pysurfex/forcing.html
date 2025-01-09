@@ -36,50 +36,50 @@
   <h1>Source code for pysurfex.forcing</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Forcing.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="kn">import</span> <span class="nn">netCDF4</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">toml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">netCDF4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">toml</span>
 
-<span class="kn">from</span> <span class="nn">.cache</span> <span class="kn">import</span> <span class="n">Cache</span>
-<span class="kn">from</span> <span class="nn">.configuration</span> <span class="kn">import</span> <span class="n">ConfigurationFromHarmonie</span>
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">ForcingFileNetCDF</span>
-<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">get_geo_object</span>
-<span class="kn">from</span> <span class="nn">.read</span> <span class="kn">import</span> <span class="n">ConstantValue</span><span class="p">,</span> <span class="n">ConvertedInput</span><span class="p">,</span> <span class="n">Converter</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">deep_update</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationFromHarmonie</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.file</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForcingFileNetCDF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_geo_object</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.read</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantValue</span><span class="p">,</span> <span class="n">ConvertedInput</span><span class="p">,</span> <span class="n">Converter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">deep_update</span>
 
 
 <span class="c1"># TODO: should be abstract?</span>
-<div class="viewcode-block" id="SurfexForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexForcing">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SurfexForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Surfex forcing class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SurfexForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexForcing.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.&quot;&quot;&quot;</span></div></div>
 
 
-<div class="viewcode-block" id="SurfexNetCDFForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexNetCDFForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexNetCDFForcing</span><span class="p">(</span><span class="n">SurfexForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexNetCDFForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexNetCDFForcing">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SurfexNetCDFForcing</span><span class="p">(</span><span class="n">SurfexForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NetCDF surfex forcing.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SurfexNetCDFForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexNetCDFForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexNetCDFForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexNetCDFForcing.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct netcdf forcing.&quot;&quot;&quot;</span>
         <span class="n">SurfexForcing</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io_object</span> <span class="o">=</span> <span class="n">ForcingFileNetCDF</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SurfexOutputForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing">[docs]</a><span class="k">class</span> <span class="nc">SurfexOutputForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SurfexOutputForcing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main output class for SURFEX forcing.&quot;&quot;&quot;</span>
 
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
 
-<div class="viewcode-block" id="SurfexOutputForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step_intervall</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_time</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">ntimes</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">time_step_intervall</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct output forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -99,7 +99,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span> <span class="o">=</span> <span class="n">var_objs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_sanity</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="SurfexOutputForcing._check_sanity"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing._check_sanity">[docs]</a>    <span class="k">def</span> <span class="nf">_check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexOutputForcing._check_sanity"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing._check_sanity">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nparameters</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Inconsistent number of parameter. </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_objs</span><span class="p">))</span><span class="si">}</span><span class="s2"> != &quot;</span>
@@ -131,12 +131,12 @@
     <span class="p">}</span>
 
 <div class="viewcode-block" id="SurfexOutputForcing.write_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.SurfexOutputForcing.write_forcing">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;users must define writeForcing to use this base class&quot;</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="NetCDFOutput"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput">[docs]</a><span class="k">class</span> <span class="nc">NetCDFOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NetCDFOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Forcing in NetCDF format.&quot;&quot;&quot;</span>
 
     <span class="n">forcing_file</span> <span class="o">=</span> <span class="p">{}</span>
@@ -155,7 +155,7 @@
         <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="s2">&quot;CO2air&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_time</span><span class="p">,</span>
         <span class="n">geo</span><span class="p">,</span>
@@ -210,7 +210,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NetCDFOutput.write_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput.write_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput.write_forcing">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -232,7 +232,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_value</span></div>
 
-<div class="viewcode-block" id="NetCDFOutput._define_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput._define_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput._define_forcing">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Define netcdf forcing&quot;</span><span class="p">)</span>
 
         <span class="n">zs_oro</span> <span class="o">=</span> <span class="kc">None</span>
@@ -436,17 +436,17 @@
                     <span class="sa">f</span><span class="s2">&quot;This should never happen! </span><span class="si">{</span><span class="n">this_var</span><span class="si">}</span><span class="s2"> is not defined!&quot;</span>
                 <span class="p">)</span></div>
 
-<div class="viewcode-block" id="NetCDFOutput.finalize"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFOutput.finalize"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.NetCDFOutput.finalize">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Finalize the forcing. Close the file.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Close file&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fname</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AsciiOutput"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput">[docs]</a><span class="k">class</span> <span class="nc">AsciiOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">AsciiOutput</span><span class="p">(</span><span class="n">SurfexOutputForcing</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Forcing in ASCII format.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_time</span><span class="p">,</span>
         <span class="n">geo</span><span class="p">,</span>
@@ -469,7 +469,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_define_forcing</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AsciiOutput.write_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput.write_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput.write_forcing">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">this_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write forcing.</span>
 
 <span class="sd">        Args:</span>
@@ -486,7 +486,7 @@
             <span class="n">cols</span> <span class="o">=</span> <span class="mi">50</span>
             <span class="n">write_formatted_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">this_var</span><span class="p">],</span> <span class="n">field</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AsciiOutput._define_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput._define_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput._define_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput._define_forcing">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_define_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">,</span> <span class="n">att_time</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">zs_oro</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">zref</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">uref</span> <span class="o">=</span> <span class="kc">None</span>
@@ -527,14 +527,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Forc_&quot;</span> <span class="o">+</span> <span class="n">nam</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forcing_file</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AsciiOutput.finalize"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AsciiOutput.finalize"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.AsciiOutput.finalize">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Finalize forcing.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Close file&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="write_formatted_array"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.write_formatted_array">[docs]</a><span class="k">def</span> <span class="nf">write_formatted_array</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
+<div class="viewcode-block" id="write_formatted_array"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.write_formatted_array">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">write_formatted_array</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a formatted array.&quot;&quot;&quot;</span>
     <span class="n">astr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">%</span> <span class="n">columns</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
     <span class="n">astr</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">astr</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
@@ -548,7 +548,7 @@
     <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">astr_end</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_time_loop"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.run_time_loop">[docs]</a><span class="k">def</span> <span class="nf">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">):</span>
+<div class="viewcode-block" id="run_time_loop"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.run_time_loop">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_time_loop</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run time loop.&quot;&quot;&quot;</span>
     <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">this_time</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
@@ -635,7 +635,7 @@
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing generation took </span><span class="si">%s</span><span class="s2"> seconds&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span><span class="p">))</span></div>
 
 
-<span class="k">def</span> <span class="nf">set_input_object</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_input_object</span><span class="p">(</span>
     <span class="n">sfx_var</span><span class="p">,</span>
     <span class="n">merged_conf</span><span class="p">,</span>
     <span class="n">geo</span><span class="p">,</span>
@@ -746,7 +746,7 @@
     <span class="k">return</span> <span class="n">obj</span>
 
 
-<div class="viewcode-block" id="set_forcing_config"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.set_forcing_config">[docs]</a><span class="k">def</span> <span class="nf">set_forcing_config</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="set_forcing_config"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.set_forcing_config">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_forcing_config</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the forcing config.&quot;&quot;&quot;</span>
     <span class="n">file_base</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="s2">&quot;harmonie&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harmonie&quot;</span><span class="p">]:</span>
@@ -889,7 +889,7 @@
             <span class="n">diskless_write</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;diskless_write&quot;</span><span class="p">]</span>
 
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Needed input is missing&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">ValueError</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Needed input is missing&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ValueError</span>
 
     <span class="c1"># Time information</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dtg_start</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">dtg_stop</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">1000010100</span><span class="p">:</span>
@@ -1072,7 +1072,7 @@
     <span class="k">return</span> <span class="n">options</span><span class="p">,</span> <span class="n">var_objs</span><span class="p">,</span> <span class="n">att_objs</span></div>
 
 
-<div class="viewcode-block" id="modify_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.modify_forcing">[docs]</a><span class="k">def</span> <span class="nf">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="modify_forcing"><a class="viewcode-back" href="../../index.html#pysurfex.forcing.modify_forcing">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">modify_forcing</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify forcing.&quot;&quot;&quot;</span>
     <span class="n">infile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;input_file&quot;</span><span class="p">]</span>
     <span class="n">outfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;output_file&quot;</span><span class="p">]</span>

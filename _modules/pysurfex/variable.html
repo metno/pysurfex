@@ -35,25 +35,25 @@
             
   <h1>Source code for pysurfex.variable</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Variable.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.fa</span> <span class="kn">import</span> <span class="n">Fa</span>
-<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">SurfexFileVariable</span><span class="p">,</span> <span class="n">get_surfex_io_object</span>
-<span class="kn">from</span> <span class="nn">.geo</span> <span class="kn">import</span> <span class="n">get_geo_object_from_json_file</span>
-<span class="kn">from</span> <span class="nn">.grib</span> <span class="kn">import</span> <span class="n">Grib</span><span class="p">,</span> <span class="n">Grib1Variable</span><span class="p">,</span> <span class="n">Grib2Variable</span>
-<span class="kn">from</span> <span class="nn">.input_methods</span> <span class="kn">import</span> <span class="n">get_datasources</span>
-<span class="kn">from</span> <span class="nn">.netcdf</span> <span class="kn">import</span> <span class="n">Netcdf</span><span class="p">,</span> <span class="n">NetCDFReadVariable</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">parse_filepattern</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.fa</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.file</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurfexFileVariable</span><span class="p">,</span> <span class="n">get_surfex_io_object</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_geo_object_from_json_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.grib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grib</span><span class="p">,</span> <span class="n">Grib1Variable</span><span class="p">,</span> <span class="n">Grib2Variable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.input_methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_datasources</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.netcdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Netcdf</span><span class="p">,</span> <span class="n">NetCDFReadVariable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_filepattern</span>
 
 
-<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;New combined variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">initial_basetime</span><span class="p">,</span> <span class="n">prefer_forecast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">initial_basetime</span><span class="p">,</span> <span class="n">prefer_forecast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct variable.</span>
 
 <span class="sd">        Args:</span>
@@ -77,7 +77,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span> <span class="o">=</span> <span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No filepattern provided&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No filepattern provided&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span> <span class="o">=</span> <span class="n">initial_basetime</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">])</span>
@@ -105,7 +105,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">accumulated</span> <span class="o">=</span> <span class="n">accumulated</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed variable for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Variable.get_filename"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filename">[docs]</a>    <span class="k">def</span> <span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.get_filename"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filename">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the filename.</span>
 
 <span class="sd">        Args:</span>
@@ -124,7 +124,7 @@
                 <span class="n">validtime</span> <span class="o">=</span> <span class="n">previoustime</span>
         <span class="k">return</span> <span class="n">parse_filepattern</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Variable.get_filehandler"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filehandler">[docs]</a>    <span class="k">def</span> <span class="nf">get_filehandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.get_filehandler"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_filehandler">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_filehandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file handler.</span>
 
 <span class="sd">        Args:</span>
@@ -183,7 +183,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">filename</span></div>
 
-<div class="viewcode-block" id="Variable.read_var_field"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_var_field">[docs]</a>    <span class="k">def</span> <span class="nf">read_var_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.read_var_field"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_var_field">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_var_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points for a variable.</span>
 
 <span class="sd">        Args:</span>
@@ -222,7 +222,7 @@
                 <span class="n">cache</span><span class="o">.</span><span class="n">save_field</span><span class="p">(</span><span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_read</span></div>
 
-<div class="viewcode-block" id="Variable.read_var_points"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_var_points">[docs]</a>    <span class="k">def</span> <span class="nf">read_var_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.read_var_points"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_var_points">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_var_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read points for a variable.</span>
 
 <span class="sd">        Args:</span>
@@ -279,7 +279,7 @@
                     <span class="n">cache</span><span class="o">.</span><span class="n">save_field</span><span class="p">(</span><span class="n">id_str</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span></div>
 
-<div class="viewcode-block" id="Variable.set_var"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.set_var">[docs]</a>    <span class="k">def</span> <span class="nf">set_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.set_var"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.set_var">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the variable.</span>
 
 <span class="sd">        Args:</span>
@@ -299,7 +299,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide name&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide name&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">accumulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;accumulated&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -327,19 +327,19 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;parameter&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide parameter&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide parameter&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;levelType&quot;</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;grib1 needs type or levelType&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;grib1 needs type or levelType&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;grib1 needs level&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">KeyError</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;grib1 needs level&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">tri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;tri&quot;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -413,7 +413,7 @@
 
         <span class="k">return</span> <span class="n">accumulated</span><span class="p">,</span> <span class="n">instant</span><span class="p">,</span> <span class="n">var</span></div>
 
-<div class="viewcode-block" id="Variable.read_variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_variable">[docs]</a>    <span class="k">def</span> <span class="nf">read_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.read_variable"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.read_variable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the variable.</span>
 
 <span class="sd">        Args:</span>
@@ -430,6 +430,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set variable info</span>
         <span class="n">previous_field</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">first_time</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulated</span><span class="p">:</span>
             <span class="c1"># Re-read field</span>
             <span class="n">previoustime</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span>
@@ -444,14 +445,26 @@
                     <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="n">first_time</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">previous_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">previous_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">])</span>
 
-        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_var_points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+        <span class="n">deaccumulate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulated</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">deaccumulate</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Always set accumulated values to zero the first time</span>
+        <span class="k">if</span> <span class="n">first_time</span><span class="p">:</span>
+            <span class="n">deaccumulate</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_var_points</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">file_var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span>
+            <span class="p">)</span>
 
         <span class="c1"># Deaccumulate if either two files are read or if instant is &gt; 0.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulated</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">instant</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">deaccumulate</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deaccumulate</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instant</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -459,11 +472,11 @@
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span></div>
 
-<div class="viewcode-block" id="Variable.print_variable_info"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.print_variable_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.print_variable_info"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.print_variable_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_variable_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print variable.&quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;:</span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Variable.deaccumulate"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.deaccumulate">[docs]</a>    <span class="k">def</span> <span class="nf">deaccumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.deaccumulate"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.deaccumulate">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">deaccumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">previous_field</span><span class="p">,</span> <span class="n">instant</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deaccumulate variable.</span>
 
 <span class="sd">        Args:</span>
@@ -504,7 +517,7 @@
 
             <span class="k">return</span> <span class="n">field</span></div>
 
-<div class="viewcode-block" id="Variable.get_basetime"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_basetime">[docs]</a>    <span class="k">def</span> <span class="nf">get_basetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_different_basetime</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.get_basetime"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.get_basetime">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_basetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">previoustime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_different_basetime</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the basetime of the file.</span>
 
 <span class="sd">        Args:</span>
@@ -588,7 +601,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;           Basetime is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basetime</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">basetime</span></div>
 
-<div class="viewcode-block" id="Variable.rotate_geographic_wind"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.rotate_geographic_wind">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_geographic_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.rotate_geographic_wind"><a class="viewcode-back" href="../../index.html#pysurfex.variable.Variable.rotate_geographic_wind">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">rotate_geographic_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate wind.</span>
 
 <span class="sd">        Args:</span>

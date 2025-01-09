@@ -35,20 +35,20 @@
             
   <h1>Source code for pysurfex.binary_input_legacy</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Input data for surfex binaries.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">from</span> <span class="nn">.binary_input</span> <span class="kn">import</span> <span class="n">JsonInputData</span>
-<span class="kn">from</span> <span class="nn">.datetime_utils</span> <span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
-<span class="kn">from</span> <span class="nn">.ecoclimap</span> <span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span><span class="p">,</span> <span class="n">ExternalSurfexInputFile</span>
-<span class="kn">from</span> <span class="nn">.file</span> <span class="kn">import</span> <span class="n">AsciiSurfexFile</span><span class="p">,</span> <span class="n">FaSurfexFile</span><span class="p">,</span> <span class="n">NCSurfexFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.binary_input</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonInputData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span><span class="p">,</span> <span class="n">as_timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.ecoclimap</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ecoclimap</span><span class="p">,</span> <span class="n">EcoclimapSG</span><span class="p">,</span> <span class="n">ExternalSurfexInputFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.file</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsciiSurfexFile</span><span class="p">,</span> <span class="n">FaSurfexFile</span><span class="p">,</span> <span class="n">NCSurfexFile</span>
 
 
-<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData">[docs]</a><span class="k">class</span> <span class="nc">PgdInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="PgdInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PgdInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PGD input.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PgdInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="PgdInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PgdInputData.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct PD input.</span>
 
 <span class="sd">        Args:</span>
@@ -137,10 +137,10 @@
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PrepInputData">[docs]</a><span class="k">class</span> <span class="nc">PrepInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.PrepInputData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PrepInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for PREP.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">config</span><span class="p">,</span>
         <span class="n">system_file_paths</span><span class="p">,</span>
@@ -193,10 +193,10 @@
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData">[docs]</a><span class="k">class</span> <span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="OfflineInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OfflineInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for offline.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="OfflineInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="OfflineInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.OfflineInputData.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for offline.</span>
 
 <span class="sd">        Args:</span>
@@ -232,10 +232,10 @@
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData">[docs]</a><span class="k">class</span> <span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="InlineForecastInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">InlineForecastInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Inline forecast input data.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="InlineForecastInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="InlineForecastInputData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.InlineForecastInputData.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct input data for inline forecast.</span>
 
 <span class="sd">        Args:</span>
@@ -255,10 +255,10 @@
         <span class="n">JsonInputData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData">[docs]</a><span class="k">class</span> <span class="nc">SodaInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
+<div class="viewcode-block" id="SodaInputData"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SodaInputData</span><span class="p">(</span><span class="n">JsonInputData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Input data for SODA.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">config</span><span class="p">,</span>
         <span class="n">system_file_paths</span><span class="p">,</span>
@@ -338,7 +338,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
             <span class="k">pass</span>
 
-<div class="viewcode-block" id="SodaInputData.set_input_observations"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_observations">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="SodaInputData.set_input_observations"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_observations">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for observations.</span>
 
 <span class="sd">        Args:</span>
@@ -377,7 +377,7 @@
         <span class="n">obssettings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">obsfile</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">obssettings</span></div>
 
-<div class="viewcode-block" id="SodaInputData.set_input_sea_assimilation"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_sea_assimilation">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_sea_assimilation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="SodaInputData.set_input_sea_assimilation"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_sea_assimilation">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_sea_assimilation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for sea assimilation.</span>
 
 <span class="sd">        Args:</span>
@@ -409,7 +409,7 @@
         <span class="n">sea_settings</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">sstfile</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">sea_settings</span></div>
 
-<div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_oi"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_vertical_soil_oi">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_vertical_soil_oi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SodaInputData.set_input_vertical_soil_oi"><a class="viewcode-back" href="../../index.html#pysurfex.binary_input_legacy.SodaInputData.set_input_vertical_soil_oi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_vertical_soil_oi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for OI in soil.</span>
 
 <span class="sd">        Raises:</span>
@@ -501,7 +501,7 @@
         <span class="n">oi_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">oi_settings</span></div>
 
-    <span class="k">def</span> <span class="nf">set_input_vertical_soil_ekf</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_vertical_soil_ekf</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for EKF in soil.</span>
@@ -651,7 +651,7 @@
             <span class="n">ekf_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">target</span><span class="p">:</span> <span class="n">lsmfile</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">ekf_settings</span>
 
-    <span class="k">def</span> <span class="nf">set_input_vertical_soil_enkf</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input_vertical_soil_enkf</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masterodb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pert_fp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Input data for ENKF in soil.</span>
