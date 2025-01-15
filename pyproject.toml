@@ -14,6 +14,9 @@
     create_lsm_file = "pysurfex.cli:create_lsm_file_assim"
     create_namelist = "pysurfex.cli:create_namelist"
     cryoclim_pseudoobs = "pysurfex.cli:cryoclim_pseudoobs"
+    concat_datasets = "pysurfex.verification:concat_datasets"
+    converter2ds = "pysurfex.verification:converter2ds"
+    ds2verif =  "pysurfex.verification:ds2verif"
     FirstGuess4gridpp = "pysurfex.cli:first_guess_for_oi"
     dump_environ = "pysurfex.cli:dump_environ"
     gridpp = "pysurfex.cli:gridpp"
@@ -36,6 +39,7 @@
     shape2ign = "pysurfex.cli:cli_shape2ign"
     soda = "pysurfex.cli:soda"
     titan = "pysurfex.cli:titan"
+    vfld2ds = "pysurfex.verification:vfld2ds"
 
 [build-system]
     build-backend = "poetry.core.masonry.api"

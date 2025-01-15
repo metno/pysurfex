@@ -165,8 +165,7 @@ class Variable(object):
             elif self.var_type == "obs":
                 var_dict = self.var_dict
                 var_dict = {"set": var_dict}
-                basetime = self.get_basetime(validtime)
-                file_handler = get_datasources(basetime, var_dict)[0]
+                file_handler = get_datasources(validtime, var_dict)[0]
             else:
                 raise NotImplementedError
 
@@ -403,7 +402,7 @@ class Variable(object):
             instant (_type_): _description_
 
         Raises:
-            Exception: _description_
+            ValueError: _description_
 
         Returns:
             _type_: _description_
@@ -429,7 +428,7 @@ class Variable(object):
                 )
             field[field < 0.0] = 0
             if any(field[field < 0.0]):
-                raise Exception("Should not be negative values")
+                raise ValueError("Should not be negative values")
             if float(instant) != 0.0:
                 field = np.divide(field, float(instant))
 
