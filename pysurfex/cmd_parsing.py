@@ -176,7 +176,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Converter function to specific humidity",
         default="none",
-        choices=["none", "rh2q", "rh2q_mslp", "rh2q_z"],
+        choices=["none", "rh2q", "rh2q_mslp", "rh2q_z", "td2q"],
     )
 
     group_ps = parser.add_argument_group("PS", description="Surface air pressure [Pa]")

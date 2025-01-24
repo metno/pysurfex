@@ -701,6 +701,9 @@ def set_input_object(
         obj = ConstantValue(geo, sfx_var, const_dict)
     else:
         # Construct the converter
+        print(sfx_var)
+        print("conf_dict", conf_dict)
+        print("defs:", defs)
         converter = Converter(
             selected_converter, first_base_time, defs, conf_dict, forcingformat
         )

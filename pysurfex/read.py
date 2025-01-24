@@ -192,6 +192,9 @@ class Converter(object):
             self.altitude = self.create_variable(
                 fileformat, defs, conf[self.name]["altitude"]
             )
+        elif name == "td2q":
+            self.td = self.create_variable(fileformat, defs, conf[self.name]["td"])
+            self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -308,6 +311,34 @@ class Converter(object):
 
         return pres
 
+    @staticmethod
+    def saturation_mixing_ratio(total_press, temperature):
+        return Converter.mixing_ratio(Converter.saturation_vapor_pressure(temperature), total_press)
+
+    @staticmethod
+    def mixing_ratio(partial_press, total_press, molecular_weight_ratio=0.622):
+        return np.multiply(molecular_weight_ratio, np.divide(partial_press, np.subtract(total_press, partial_press)))
+
+    @staticmethod
+    def specific_humidity_from_dewpoint(pressure, dewpoint):
+        mixing_ratio = Converter.saturation_mixing_ratio(pressure, dewpoint)
+        return Converter.specific_humidity_from_mixing_ratio(mixing_ratio)
+
+    @staticmethod
+    def mixing_ratio_from_specific_humidity(specific_humidity):
+        return np.divide(specific_humidity, np.subtract(1, specific_humidity))
+
+    @staticmethod
+    def specific_humidity_from_mixing_ratio(mixing_ratio):
+        return np.divide(mixing_ratio, np.subtract(1, mixing_ratio))
+
+    @staticmethod
+    def saturation_vapor_pressure(temperature_kelvin):
+         field_t_c = np.subtract(temperature_kelvin, 273.15)
+         exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
+         esat = np.multiply(6.112, np.exp(exp))
+         return esat
+
     def read_time_step(self, geo, validtime, cache):
         """Read time step.
 
@@ -368,6 +399,25 @@ class Converter(object):
             exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
             esat = np.multiply(6.112, np.exp(exp))
             field = np.divide(np.multiply(0.622, field_r_h / 100.0) * esat, field_p_mb)
+
+        elif self.name == "td2q" or self.name == "td2q_z" or self.name == "td2q_mslp":
+            
+            field_td = self.td.read_variable(geo, validtime, cache)  # %
+            if self.name == "td2q_z":
+                field_pres = np.array(field_td.shape)
+                field_pres.fill(101325.0)
+            else:
+                field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
+            if self.name == "td2q_mslp" or self.name == "td2q_z":
+                field_altitude = self.altitude.read_variable(
+                    geo, validtime, cache
+                )  # In m
+                field_pres = self.mslp2ps(field_pres, field_altitude, field_td)
+
+            field_p_mb = np.divide(field_pres, 100.0)
+            print(field_td)
+            print(field_p_mb)
+            field = Converter.specific_humidity_from_dewpoint(field_p_mb, field_td)
 
         elif self.name == "mslp2ps":
             field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
