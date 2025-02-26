@@ -52,6 +52,7 @@ from .cmd_parsing import (
 from .configuration import (
     ConfigurationFromHarmonieAndConfigFile,
     ConfigurationFromTomlFile,
+    Configuration,
 )
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .file import PGDFile, PREPFile, SURFFile
@@ -97,24 +98,30 @@ def get_geo_and_config_from_cmd(**kwargs):
         config = ConfigurationFromHarmonieAndConfigFile(os.environ, config_exp)
         geo = config.geo
     else:
-        if "domain" in kwargs:
+        try:
             domain = kwargs["domain"]
-            if os.path.exists(domain):
-                with open(domain, mode="r", encoding="utf-8") as fhandler:
-                    geo = get_geo_object(json.load(fhandler))
+            if domain is not None:
+                if os.path.exists(domain):
+                    with open(domain, mode="r", encoding="utf-8") as fhandler:
+                        geo = get_geo_object(json.load(fhandler))
+                else:
+                    raise FileNotFoundError(domain)
             else:
-                raise FileNotFoundError(domain)
-        else:
+                geo = None
+        except KeyError:
             geo = None
 
-        if "config" in kwargs:
+        try:
             config = kwargs["config"]
-            if os.path.exists(config):
-                config = ConfigurationFromTomlFile(config)
-            else:
-                raise FileNotFoundError("File not found: " + config)
-        else:
+            if config is not None:
+                if os.path.exists(config):
+                    config = ConfigurationFromTomlFile(config)
+                else:
+                    raise FileNotFoundError(config)
+        except KeyError:
             config = None
+        if config is None:
+            raise RuntimeError("You must provide a configuration")
     return config, geo
 
 
@@ -494,6 +501,7 @@ def run_surfex_binary(mode, **kwargs):
     basename = prep_input_file
     if basename is not None:
         basename = os.path.basename(basename)
+        basename = "".join(basename.split(".")[:-1])
     config.update_setting("SURFEX#PREP#FILE", basename)
     prep_input_pgdfile = None
     if "prep_pgdfile" in kwargs:
@@ -502,6 +510,7 @@ def run_surfex_binary(mode, **kwargs):
     basename = prep_input_pgdfile
     if basename is not None:
         basename = os.path.basename(basename)
+        basename = "".join(basename.split(".")[:-1])
     config.update_setting("SURFEX#PREP#FILEPGD", basename)
     prep_input_filetype = None
     if "prep_filetype" in kwargs:
@@ -626,6 +635,8 @@ def run_surfex_binary(mode, **kwargs):
 
             my_settings = nam_gen.nml
             if mode == "pgd":
+                if geo is None:
+                    raise RuntimeError("A geometry is required for PGD")
                 my_settings = geo.update_namelist(my_settings)
             if input_binary_data is None:
                 raise RuntimeError("input_binary_data not set")
