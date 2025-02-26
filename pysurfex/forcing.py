@@ -643,6 +643,16 @@ def set_input_object(
         defs = copy.deepcopy(conf[forcingformat])
         defs.update({"timestep": timestep})
 
+    # Macros
+    try:
+        macros = defs["macros"]
+    except KeyError:
+        try:
+            macros = conf["macros"]
+        except KeyError:
+            macros = {}
+    defs["macros"] = macros
+
     # All objects with converters, find converter dict entry
     conf_dict = {}
     if forcingformat != "constant":
@@ -701,9 +711,6 @@ def set_input_object(
         obj = ConstantValue(geo, sfx_var, const_dict)
     else:
         # Construct the converter
-        print(sfx_var)
-        print("conf_dict", conf_dict)
-        print("defs:", defs)
         converter = Converter(
             selected_converter, first_base_time, defs, conf_dict, forcingformat
         )
@@ -876,6 +883,8 @@ def set_forcing_config(**kwargs):
 
     # Replace global settings from
     fileformat = input_format
+    if fileformat not in merged_conf:
+        merged_conf.update({fileformat: {}})
     if pattern is not None:
         merged_conf[fileformat]["filepattern"] = pattern
 
@@ -888,16 +897,20 @@ def set_forcing_config(**kwargs):
         merged_conf[fileformat]["fcint"] = 3600.0
         merged_conf[fileformat]["offset"] = 0
 
+    geo_input = None
     if "geo_input" in kwargs:
         geo_input = kwargs["geo_input"]
-        if geo_input is not None:
-            if os.path.exists(geo_input):
+        merged_conf[fileformat]["geo_input"] = geo_input
+    if geo_input is None:
+        if "geo_input_file" in kwargs:
+            geo_input_file = kwargs["geo_input_file"]
+            if os.path.exists(geo_input_file):
                 geo_input = get_geo_object(
-                    json.load(open(geo_input, "r", encoding="utf-8"))
+                    json.load(open(geo_input_file, "r", encoding="utf-8"))
                 )
-                merged_conf[fileformat]["geo_input"] = geo_input
+                merged_conf[fileformat]["geo_input_file"] = geo_input_file
             else:
-                logging.info("Input geometry %s does not exist", geo_input)
+                logging.warning("Input geometry %s does not exist", geo_input_file)
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
