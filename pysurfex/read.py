@@ -195,6 +195,9 @@ class Converter(object):
         elif name == "td2q":
             self.td = self.create_variable(fileformat, defs, conf[self.name]["td"])
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
+        elif name == "td2rh":
+            self.dewpoint = self.create_variable(fileformat, defs, conf[self.name]["td"])
+            self.temperature = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -400,8 +403,15 @@ class Converter(object):
             esat = np.multiply(6.112, np.exp(exp))
             field = np.divide(np.multiply(0.622, field_r_h / 100.0) * esat, field_p_mb)
 
+        elif self.name == "td2rh":
+            dewpoint = self.dewpoint.read_variable(geo, validtime, cache)  # In K
+            temperature = self.temperature.read_variable(geo, validtime, cache)  # In K
+            td_e = Converter.saturation_vapor_pressure(dewpoint)
+            t_e = Converter.saturation_vapor_pressure(temperature)
+            field = np.divide(td_e, t_e)
+
         elif self.name == "td2q" or self.name == "td2q_z" or self.name == "td2q_mslp":
-            
+
             field_td = self.td.read_variable(geo, validtime, cache)  # %
             if self.name == "td2q_z":
                 field_pres = np.array(field_td.shape)
