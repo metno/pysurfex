@@ -857,6 +857,7 @@ def parse_args_masterodb(argv):
     )
     parser.add_argument(
         "--assemble",
+        dest="assemble_file",
         type=str,
         required=False,
         help="Path to file containing list of namelist blocks",
@@ -975,8 +976,11 @@ def parse_args_surfex_binary(argv, mode):
         help="Input file paths on your system",
     )
     parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
+    domain_required = False
+    if mode == "pgd":
+        domain_required = True
     parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
+        "--domain", type=str, required=domain_required, help="JSON file with domain"
     )
     parser.add_argument("--output", "-o", type=str, required=False, default=None)
     parser.add_argument("--dtg", type=str, required=False, default=None)
@@ -1001,6 +1005,7 @@ def parse_args_surfex_binary(argv, mode):
     )
     parser.add_argument(
         "--assemble",
+        dest="assemble_file",
         type=str,
         required=False,
         help="Path to file containing list of namelist blocks",
