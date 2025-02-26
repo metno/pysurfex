@@ -39,7 +39,7 @@ class Variable(object):
         except KeyError:
             self.interval = 3600
         try:
-            self.filepattern = var_dict["filepattern"]
+            self.filepattern = self.substitute_macros("filepattern")
         except KeyError:
             raise RuntimeError("No filepattern provided") from KeyError
         self.initial_basetime = initial_basetime
@@ -68,6 +68,24 @@ class Variable(object):
         self.instant = instant
         self.accumulated = accumulated
         logging.debug("Constructed variable for %s", str(self.var_dict))
+
+    def substitute_macros(self, key, micro="@"):
+        try:
+            value = self.var_dict[key]
+        except:
+            raise KeyError
+        logging.debug("Substitute key %s, value: %s", key, value)
+        try:
+            macros = self.var_dict["macros"]
+        except KeyError:
+            logging.debug("No macros found")
+            return value
+
+        for mkey, mvalue in macros.items():
+            if isinstance(value, str):
+                logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
+                value = value.replace(f"{micro}{mkey}{micro}", mvalue)
+        return value
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
