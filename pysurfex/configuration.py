@@ -25,6 +25,10 @@ class Configuration(object):
         """
         self.settings = conf
         # Set default file names
+        if "SURFEX" not in self.settings:
+            self.settings.update({"SURFEX": {}})
+        if "IO" not in self.settings["SURFEX"]:
+            self.settings["SURFEX"].update({"IO": {}})
         if "CPGDFILE" not in self.settings["SURFEX"]["IO"]:
             self.settings["SURFEX"]["IO"].update({"CPGDFILE": "PGD"})
         if "CPREPFILE" not in self.settings["SURFEX"]["IO"]:
