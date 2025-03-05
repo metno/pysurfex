@@ -6,17 +6,20 @@ import numpy as np
 class Observation(object):
     """Observation class."""
 
-    def __init__(self, obstime, lon, lat, value, elev=np.nan, stid="NA", varname=None):
+    def __init__(
+        self, obstime, lon, lat, value, elev=np.nan, stid="NA", varname=None, sigmao=1.0
+    ):
         """Construct an observation.
 
         Args:
-            obstime (_type_): _description_
-            lon (_type_): _description_
-            lat (_type_): _description_
-            value (_type_): _description_
-            elev (_type_, optional): _description_. Defaults to np.nan.
-            stid (str, optional): _description_. Defaults to "NA".
-            varname (_type_, optional): _description_. Defaults to None.
+            obstime (as_datetime): Observation time
+            lon (float): Longitude
+            lat (float): Latitude
+            value (float): Observation value
+            elev (float, optional): Elevation. Defaults to np.nan.
+            stid (str, optional): Staation ID. Defaults to "NA".
+            varname (str, optional): _description_. Defaults to None.
+            sigmao (float, optional): Observation error relative to a normalized background error (1). Defaults to 1.0
 
         """
         self.obstime = obstime
@@ -27,6 +30,7 @@ class Observation(object):
         self.elev = float(elev)
         self.value = float(value)
         self.varname = varname
+        self.sigmao = sigmao
 
     def print_obs(self):
         """Print observation."""
@@ -38,10 +42,11 @@ class Observation(object):
             self.stid,
             self.value,
             self.elev,
+            self.sigmao,
         )
 
     @staticmethod
-    def vectors2obs(obstime, lon, lat, stid, elev, value, varname):
+    def vectors2obs(obstime, lon, lat, stid, elev, value, varname, sigmao):
         """Convert vectors to observations.
 
         Args:
@@ -52,12 +57,13 @@ class Observation(object):
             elev (_type_): _description_
             value (_type_): _description_
             varname (_type_): _description_
+            sigmao(float): Observation error
 
         Returns:
             Observation: Observation object.
         """
         return Observation(
-            obstime, lon, lat, value, elev=elev, varname=varname, stid=stid
+            obstime, lon, lat, value, elev=elev, varname=varname, stid=stid, sigmao=sigmao
         )
 
     @staticmethod
@@ -65,10 +71,10 @@ class Observation(object):
         """Convert observations to vectors.
 
         Args:
-            my_obs (_type_): _description_
+            my_obs (Observation): Observation object
 
         Returns:
-            _type_: _description_
+            tuple: _description_
         """
         return (
             my_obs.obstime,
@@ -78,6 +84,7 @@ class Observation(object):
             my_obs.elev,
             my_obs.value,
             my_obs.varname,
+            my_obs.sigmao,
         )
 
     @staticmethod

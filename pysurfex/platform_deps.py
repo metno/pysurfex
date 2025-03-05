@@ -288,7 +288,6 @@ class SystemFilePaths(object):
         """
         # Check on arguments
         if isinstance(setting, str):
-
             if basedtg is not None:
                 if isinstance(basedtg, str):
                     basedtg = as_datetime(basedtg)
@@ -302,6 +301,9 @@ class SystemFilePaths(object):
                 lead_time = validtime - basedtg
                 setting = str(setting).replace(
                     f"{micro}YYYY_LL{micro}", validtime.strftime("%Y")
+                )
+                setting = str(setting).replace(
+                    f"{micro}YY_LL{micro}", validtime.strftime("%y")
                 )
                 setting = str(setting).replace(
                     f"{micro}MM_LL{micro}", validtime.strftime("%m")

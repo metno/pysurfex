@@ -38,7 +38,6 @@ def get_datasources(obs_time, settings):
     """
     datasources = []
     for obs_set in settings:
-
         kwargs = {}
         kwargs.update({"label": obs_set})
 
@@ -64,6 +63,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "dt" in settings[obs_set]:
                     deltat = settings[obs_set]["dt"]
                 else:
@@ -92,6 +93,8 @@ def get_datasources(obs_time, settings):
                         pos_t_range = 15
                         if "pos_t_range" in settings[obs_set]:
                             pos_t_range = settings[obs_set]["pos_t_range"]
+                        if "sigmao" in settings[obs_set]:
+                            kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
 
                         dtg = validtime - as_timedelta(seconds=int(neg_t_range) * 60)
                         end_dtg = validtime + as_timedelta(seconds=int(pos_t_range) * 60)
@@ -116,6 +119,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"lonrange": settings[obs_set]["lonrange"]})
                 if "latrange" in settings[obs_set]:
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "dt" in settings[obs_set]:
                     kwargs.update({"dt": settings[obs_set]["dt"]})
                 else:
@@ -140,6 +145,8 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
                 if "unit" in settings[obs_set]:
                     kwargs.update({"unit": settings[obs_set]["unit"]})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if "level" in settings[obs_set]:
                     kwargs.update({"level": settings[obs_set]["level"]})
                 kwargs.update({"validtime": obs_time})
@@ -155,6 +162,7 @@ def get_datasources(obs_time, settings):
                 pos_dt = None
                 obtypes = None
                 subtypes = None
+                sigmao = None
                 if "obnumber" in settings[obs_set]:
                     obnumber = int(settings[obs_set]["obnumber"])
                 if "neg_dt" in settings[obs_set]:
@@ -165,6 +173,8 @@ def get_datasources(obs_time, settings):
                     obtypes = settings[obs_set]["obtypes"]
                 if "subtypes" in settings[obs_set]:
                     subtypes = settings[obs_set]["subtypes"]
+                if "sigmao" in settings[obs_set]:
+                    sigmao = settings[obs_set]["sigmao"]
                 if os.path.exists(filename):
                     datasources.append(
                         ObservationDataSetFromObsoulFile(
@@ -175,6 +185,7 @@ def get_datasources(obs_time, settings):
                             obtypes=obtypes,
                             subtypes=subtypes,
                             obnumber=obnumber,
+                            sigmao=sigmao,
                         )
                     )
                 else:
@@ -213,6 +224,8 @@ def get_datasources(obs_time, settings):
                     varname = varname[0]
 
                 kwargs.update({"var": varname})
+                if "sigmao" in settings[obs_set]:
+                    kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
                 if os.path.exists(filename):
                     datasources.append(JsonObservationSet(filename, **kwargs))
                 else:
@@ -258,7 +271,7 @@ def set_geo_from_obs_set(
 
     logging.debug("%s", settings)
     logging.debug("Get data source")
-    __, lons, lats, __, __, __, __ = get_datasources(obs_time, settings)[0].get_obs()
+    __, lons, lats, __, __, __, __, __ = get_datasources(obs_time, settings)[0].get_obs()
 
     selected_lons = []
     selected_lats = []
@@ -299,6 +312,7 @@ def get_obsset(
     level=None,
     obtypes=None,
     subtypes=None,
+    sigmao=None,
 ):
     """Create an observation set from an input data set.
 
@@ -316,6 +330,7 @@ def get_obsset(
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
+        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
     Returns:
         obsset (ObservationSet): Observation set
@@ -359,6 +374,7 @@ def get_obsset(
             "level": level,
             "obtypes": obtypes,
             "subtypes": subtypes,
+            "sigmao": sigmao,
             "pos_t_range": pos_t_range_seconds,
             "neg_t_range": neg_t_range_seconds,
         }
@@ -385,6 +401,7 @@ def create_obsset_file(
     level=None,
     obtypes=None,
     subtypes=None,
+    sigmao=None,
 ):
     """Create an observation set from an input data set.
 
@@ -399,11 +416,12 @@ def create_obsset_file(
         lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
         latrange (tuple, optional): Latitude range (min, max). Defaults to None.
         label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
-        indent (int, optional): File indentation. Default to None.
+        indent (int, optional): File indentation. Defaults to None.
         unit (str, optional): Unit (FROST)
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
+        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
     """
     logging.debug("Get data source")
@@ -421,5 +439,6 @@ def create_obsset_file(
         level=level,
         obtypes=obtypes,
         subtypes=subtypes,
+        sigmao=sigmao,
     )
     obsset.write_json_file(output, indent=indent)

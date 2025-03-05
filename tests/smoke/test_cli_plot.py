@@ -9,23 +9,24 @@ def test_plot_grib1(tmp_path_factory, conf_proj_2x3_file, lambert_t2m_grib1):
     """Test plotting from grib1."""
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib1.png"
     argv = [
+        "-g",
+        conf_proj_2x3_file,
+        "-o",
+        output_file,
+        "--debug",
+        "variable",
         "-it",
         "grib1",
         "-t",
         "2020022006",
-        "-g",
-        conf_proj_2x3_file,
         "--indicatorOfParameter",
         "11",
         "--level",
         "2",
         "--levelType",
         "105",
-        "-i",
+        "-if",
         lambert_t2m_grib1,
-        "-o",
-        output_file,
-        "--debug",
     ]
     plot_points(argv=argv)
 
@@ -35,12 +36,16 @@ def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2):
     """Test plotting from grib2."""
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib2.png"
     argv = [
+        "-g",
+        conf_proj_2x3_file,
+        "-o",
+        output_file,
+        "--debug",
+        "variable",
         "-it",
         "grib2",
         "-t",
         "2020022006",
-        "-g",
-        conf_proj_2x3_file,
         "--levelType",
         "103",
         "--discipline",
@@ -51,11 +56,8 @@ def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2):
         "0",
         "--level",
         "2",
-        "-i",
+        "-if",
         lambert_t1_grib2,
-        "-o",
-        output_file,
-        "--debug",
     ]
     plot_points(argv=argv)
 
@@ -65,19 +67,20 @@ def test_plot_netcdf(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file)
     """Test plotting from netcdf."""
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_nc.png"
     argv = [
+        "-g",
+        conf_proj_2x3_file,
+        "-o",
+        output_file,
+        "--debug",
+        "variable",
         "-it",
         "netcdf",
         "-t",
         "2020022006",
-        "-g",
-        conf_proj_2x3_file,
         "-v",
         "air_temperature_2m",
-        "-i",
+        "-if",
         data_thredds_nc_file,
-        "-o",
-        output_file,
-        "--debug",
     ]
     plot_points(argv=argv)
 
@@ -89,6 +92,10 @@ def test_plot_obs_frost_json(tmp_path_factory, obsset_fname, obstime_str):
         f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_obs_frost_json.png"
     )
     argv = [
+        "-o",
+        output_file,
+        "--debug",
+        "variable",
         "-it",
         "obs",
         "--obs_type",
@@ -97,10 +104,7 @@ def test_plot_obs_frost_json(tmp_path_factory, obsset_fname, obstime_str):
         obstime_str,
         "-v",
         "air_temperature",
-        "-i",
+        "-if",
         obsset_fname,
-        "-o",
-        output_file,
-        "--debug",
     ]
     plot_points(argv=argv)

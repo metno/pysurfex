@@ -550,7 +550,7 @@ class ConfigurationFromHarmonie(Configuration):
             gsize = float(env["LGSIZE"])
         trunc = 2  # linear
         if "TRUNC" in env:
-            trunc = int(env["TRUNC"])
+            trunc = float(env["TRUNC"])
         domain_dict = {
             "nam_pgd_grid": {"cgrid": "CONF PROJ"},
             "nam_conf_proj": {
@@ -735,6 +735,8 @@ class ConfigurationFromHarmonie(Configuration):
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "EKF")
         if anasurf == "ENKF":
             self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF")
+        if anasurf == "ISBA_NONE":
+            self.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "NONE")
 
         # Active EKF control variables from CVAR_M
         if "NNCV" in env:

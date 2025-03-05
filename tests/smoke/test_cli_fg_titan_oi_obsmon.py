@@ -282,6 +282,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "airTemperatureAt2M",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -313,6 +314,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "relativeHumidityAt2M",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -344,6 +346,7 @@ def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_
                     "filetype": "json",
                     "varname": "totalSnowDepth",
                     "tests": {"firstguess": {"do_test": True}},
+                    "sigmao": 0.5,
                 }
             },
         },
@@ -376,7 +379,7 @@ def create_obs_data(var, obs_fname):
             "elev": 900.0,
             "value": val,
             "flag": 0.0,
-            "ci": 1.0,
+            "epsilon": 0.8,
             "laf": 1.0,
             "provider": "bufr",
             "fg_dep": np.nan,
@@ -401,15 +404,39 @@ def create_obs_data(var, obs_fname):
             "elev": 1340.0,
             "value": val,
             "flag": 199.0,
-            "ci": 1.0,
+            "epsilon": 1.2,
             "laf": 1.0,
             "provider": "bufr",
             "fg_dep": np.nan,
             "an_dep": np.nan,
             "passed_tests": [],
         },
+        "2": {
+            "varname": name,
+            "obstime": "202002200600",
+            "lon": 9.99,
+            "lat": 60.191,
+            "stid": "NA",
+            "elev": 900.0,
+            "value": val,
+            "flag": 0.0,
+            "epsilon": 0.9,
+            "laf": 1.0,
+            "provider": "bufr",
+            "fg_dep": np.nan,
+            "an_dep": np.nan,
+            "passed_tests": [
+                "domain",
+                "blacklist",
+                "nometa",
+                "plausibility",
+                "redundancy",
+                "firstguess",
+                "fraction",
+                "sct",
+            ],
+        },
     }
-
     json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
 
 
@@ -452,7 +479,7 @@ def _qc_gridpp_obsmon(
     qc_settings_fname = (
         f"{tmp_path_factory.getbasetemp().as_posix()}/qc_settings_{var}.json"
     )
-    qc_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc _{var}.json"
+    qc_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/qc_{var}.json"
     blacklist_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/blacklist_{var}.json"
     create_titan_settings(qc_settings_fname, first_guess_file, blacklist_fname, obs_fname)
 
@@ -487,6 +514,8 @@ def _qc_gridpp_obsmon(
     argv += harmonie
     titan(argv=argv)
 
+    qc_titan_obs = json.load(open(qc_fname, "r"))
+    assert qc_titan_obs["0"]["epsilon"] == 0.5
     shutil.copy(qc_fname, f"{qc_fname}-1")
     shutil.copy(qc_fname, f"{qc_fname}-2")
     argv = [
@@ -511,7 +540,7 @@ def _qc_gridpp_obsmon(
         "-o",
         analysis_file,
         "-obs",
-        qc_fname,
+        obs_fname,
         "-hor",
         translation[var]["hor"],
         "-vert",
@@ -521,6 +550,7 @@ def _qc_gridpp_obsmon(
         "--elevGradient",
         translation[var]["elevGradient"],
     ]
+    print(qc_fname)
     gridpp(argv=argv)
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/OBSERVATIONS_200330H06.DAT"
@@ -549,11 +579,10 @@ def _qc_gridpp_obsmon(
 
     # Obsmon
     db_file = f"{tmp_path_factory.getbasetemp().as_posix()}/ecma.db"
-    obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file)
+    obsmon_test(var, obs_fname, first_guess_file, analysis_file, db_file)
 
 
 def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
-
     translation = {
         "t2m": "air_temperature_2m",
         "rh2m": "relative_humidity_2m",

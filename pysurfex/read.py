@@ -163,6 +163,13 @@ class Converter(object):
 
         if self.name == "none" or self.name == "analysis":
             self.var = self.create_variable(fileformat, defs, conf[self.name])
+        elif name == "diff":
+            self.field1 = self.create_variable(
+                fileformat, defs, conf[self.name]["field1"]
+            )
+            self.field2 = self.create_variable(
+                fileformat, defs, conf[self.name]["field2"]
+            )
         elif name == "rh2q":
             self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
             self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
@@ -180,6 +187,12 @@ class Converter(object):
                 fileformat, defs, conf[self.name]["altitude"]
             )
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["mslp"])
+        elif name == "rh2q_z":
+            self.r_h = self.create_variable(fileformat, defs, conf[self.name]["rh"])
+            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.altitude = self.create_variable(
+                fileformat, defs, conf[self.name]["altitude"]
+            )
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -317,6 +330,10 @@ class Converter(object):
         # Specific reading for each converter
         if self.name == "none" or self.name == "analysis":
             field = self.var.read_variable(geo, validtime, cache)
+        elif self.name == "diff":
+            field = self.field1.read_variable(
+                geo, validtime, cache
+            ) - self.field2.read_variable(geo, validtime, cache)
         elif self.name == "windspeed" or self.name == "winddir":
             field_x = self.x_wind.read_variable(geo, validtime, cache)
             field_y = self.y_wind.read_variable(geo, validtime, cache)
@@ -326,7 +343,7 @@ class Converter(object):
             elif self.name == "winddir":
                 field = np.mod(90 - np.rad2deg(np.arctan2(field_y, field_x)), 360)
 
-        elif self.name == "rh2q" or self.name == "rh2q_mslp":
+        elif self.name == "rh2q" or self.name == "rh2q_mslp" or self.name == "rh2q_z":
             """
             ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))
             ZE = ZRH * ZES
@@ -335,8 +352,12 @@ class Converter(object):
             """
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
-            field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
-            if self.name == "rh2q_mslp":
+            if self.name == "rh2q_z":
+                field_pres = np.array(field_r_h.shape)
+                field_pres.fill(101325.0)
+            else:
+                field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
+            if self.name == "rh2q_mslp" or self.name == "rh2q_z":
                 field_altitude = self.altitude.read_variable(
                     geo, validtime, cache
                 )  # In m

@@ -293,7 +293,6 @@ class Masterodb(object):
         if self.prepfile.input_file is not None and os.path.abspath(
             self.prepfile.filename
         ) != os.path.abspath(self.prepfile.input_file):
-
             logging.info("Input PREP file is: %s", self.prepfile.input_file)
             remove_existing_file(self.prepfile.input_file, self.prepfile.filename)
             os.symlink(self.prepfile.input_file, self.prepfile.filename)

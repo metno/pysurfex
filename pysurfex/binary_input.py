@@ -49,7 +49,6 @@ class JsonOutputData(OutputDataFromSurfexBinaries):
     def archive_files(self):
         """Archive files."""
         for output_file, target in self.data.items():
-
             logging.info("%s -> %s", output_file, target)
             command = "mv"
             if isinstance(target, dict):
@@ -95,7 +94,6 @@ class JsonInputData(InputDataToSurfexBinaries):
     def prepare_input(self):
         """Prepare input."""
         for target, input_file in self.data.items():
-
             logging.info("%s -> %s", target, input_file)
             logging.debug(os.path.realpath(target))
             command = None
@@ -358,8 +356,9 @@ class InputDataFromNamelist(JsonInputData):
         pkey = key
         pval = val
         for spath_key, spath_val in self.platform.system_file_paths.items():
-            pkey = pkey.replace(f"{micro}{spath_key}{micro}", spath_val)
-            pval = pval.replace(f"{micro}{spath_key}{micro}", spath_val)
+            if isinstance(spath_val, str):
+                pkey = pkey.replace(f"{micro}{spath_key}{micro}", spath_val)
+                pval = pval.replace(f"{micro}{spath_key}{micro}", spath_val)
         if macros is not None:
             for macro_key, macro_val in macros.items():
                 pkey = pkey.replace(f"{micro}{macro_key}{micro}", macro_val)

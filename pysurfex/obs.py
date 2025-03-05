@@ -26,19 +26,27 @@ from .titan import dataset_from_file
 class ObservationSet(object):
     """Set of observations."""
 
-    def __init__(self, observations, label=""):
+    def __init__(self, observations, label="", sigmao=None):
         """Create an observation set.
 
         Args:
             observations (list): Observation objects.
             label (str, optional): Name of set. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         """
-        self.observations = observations
-        self.size = len(self.observations)
+        self.size = len(observations)
         self.label = label
         self.index_pos = {}
         self.index_stid = {}
+
+        if sigmao is not None:
+            logging.info(
+                "Setting sigmao=%s for all observations for label=%s", sigmao, label
+            )
+            for obs in observations:
+                obs.sigmao = sigmao
+        self.observations = observations
 
     def get_stid_index(self, stid):
         """Get station ID index.
@@ -79,12 +87,12 @@ class ObservationSet(object):
 
         Returns:
             (list, list , list, list, list, list, list): times, lons, lats, stids, elevs,
-                                                         values, varnames
+                                                         values, varnames, sigmaos
         """
         obs2vectors = np.vectorize(Observation.obs2vectors)
         logging.debug("Obs dim %s", len(self.observations))
         if len(self.observations) > 0:
-            times, lons, lats, stids, elevs, values, varnames = obs2vectors(
+            times, lons, lats, stids, elevs, values, varnames, sigmaos = obs2vectors(
                 self.observations
             )
 
@@ -105,9 +113,10 @@ class ObservationSet(object):
             elevs = elevs.tolist()
             values = values.tolist()
             varnames = varnames.tolist()
+            sigmaos = sigmaos.tolist()
 
-            return times, lons, lats, stids, elevs, values, varnames
-        return [], [], [], [], [], [], []
+            return times, lons, lats, stids, elevs, values, varnames, sigmaos
+        return [], [], [], [], [], [], [], []
 
     def matching_obs(self, my_obs):
         """Match the observations.
@@ -143,7 +152,7 @@ class ObservationSet(object):
         my_times = []
         my_values = []
         my_stids = []
-        times, lons, lats, stids, __, values, __ = self.get_obs()
+        times, lons, lats, stids, __, values, __, __ = self.get_obs()
 
         for i in range(0, geo.nlons):
             lon = geo.lonlist[i]
@@ -178,7 +187,7 @@ class ObservationSet(object):
         obs2vectors = np.vectorize(Observation.obs2vectors)
         data = {}
         if len(self.observations) > 0:
-            obstimes, lons, lats, stids, elevs, values, varnames = obs2vectors(
+            obstimes, lons, lats, stids, elevs, values, varnames, sigmao = obs2vectors(
                 self.observations
             )
             for obs, lon in enumerate(lons):
@@ -192,6 +201,7 @@ class ObservationSet(object):
                             "stid": stids[obs],
                             "elev": elevs[obs],
                             "value": values[obs],
+                            "sigmao": sigmao[obs],
                         }
                     }
                 )
@@ -310,6 +320,7 @@ class NetatmoObservationSet(ObservationSet):
         lonrange=None,
         latrange=None,
         label="netatmo",
+        sigmao=None,
     ):
         """Construct netatmo obs.
 
@@ -322,6 +333,7 @@ class NetatmoObservationSet(ObservationSet):
             lonrange (_type_, optional): _description_. Defaults to None.
             latrange (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "netatmo".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: Lonrange must be a list with length 2
@@ -468,7 +480,7 @@ class NetatmoObservationSet(ObservationSet):
             extra = ""
         logging.debug("   %d missing elev%s", num_missing_elev, extra)
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
 
 class MetFrostObservations(ObservationSet):
@@ -490,6 +502,7 @@ class MetFrostObservations(ObservationSet):
         latrange=None,
         unit=None,
         label="frost",
+        sigmao=None,
     ):
         """Construct obs set from Frost.
 
@@ -508,6 +521,7 @@ class MetFrostObservations(ObservationSet):
             latrange (_type_, optional): _description_. Defaults to None.
             unit (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "frost".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             KeyError: _description_
@@ -844,13 +858,14 @@ class MetFrostObservations(ObservationSet):
 class JsonObservationSet(ObservationSet):
     """JSON observation set."""
 
-    def __init__(self, filename, label="json", var=None):
+    def __init__(self, filename, label="json", var=None, sigmao=None):
         """Construct an observation data set from a json file.
 
         Args:
             filename (str): Filename
             label (str, optional): Label of set. Defaults to "json".
             var (str, optional): Variable name. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         Raises:
             RuntimeError: Varname is not found
@@ -868,6 +883,13 @@ class JsonObservationSet(ObservationSet):
             elev = obs[ind]["elev"]
             value = obs[ind]["value"]
             stid = obs[ind]["stid"]
+            if sigmao is not None:
+                lsigmao = sigmao
+            else:
+                try:
+                    lsigmao = obs[ind]["sigmao"]
+                except KeyError:
+                    lsigmao = 1.0
             varname = ""
             if "varname" in obs[ind]:
                 varname = obs[ind]["varname"]
@@ -878,23 +900,31 @@ class JsonObservationSet(ObservationSet):
             if var is None or var == varname:
                 observations.append(
                     Observation(
-                        obstime, lon, lat, value, stid=stid, elev=elev, varname=varname
+                        obstime,
+                        lon,
+                        lat,
+                        value,
+                        stid=stid,
+                        elev=elev,
+                        varname=varname,
+                        sigmao=lsigmao,
                     )
                 )
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
 
 class ObservationFromTitanJsonFile(ObservationSet):
     """Observation set from titan json file."""
 
-    def __init__(self, an_time, filename, label=""):
+    def __init__(self, an_time, filename, label="", sigmao=None):
         """Constuct obs set from a titan json file.
 
         Args:
             an_time (_type_): _description_
             filename (_type_): _description_
             label (str, optional): _description_. Defaults to "".
+            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
 
         """
         qc_obs = dataset_from_file(an_time, filename)
@@ -907,16 +937,17 @@ class ObservationFromTitanJsonFile(ObservationSet):
                     qc_obs.lats[i],
                     qc_obs.elevs[i],
                     qc_obs.values[i],
+                    sigmao=qc_obs.epsilons[i],
                 )
             )
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
 
 class ObsSetFromVobs(ObservationSet):
     """Create observation set from vobs files."""
 
-    def __init__(self, fname, validtime, varname=None, label="vobs"):
+    def __init__(self, fname, validtime, varname=None, label="vobs", sigmao=None):
         """Construct obs set from vobs."""
         logging.info("Processing %s", fname)
         observations = []
@@ -946,7 +977,7 @@ class ObsSetFromVobs(ObservationSet):
                         )
                     )
 
-        ObservationSet.__init__(self, observations, label=label)
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
 
     @staticmethod
     def read_vfld(fnam):
@@ -1137,3 +1168,4 @@ class StationList:
         """
         lons, lats, __ = self.get_pos_from_stid(self.stids)
         return self.posids(lons, lats, pos_decimals=pos_decimals)
+

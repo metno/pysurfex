@@ -100,7 +100,6 @@ def working_directory(path):
 
 
 def test_json_output(tmp_path_factory):
-
     target = tmp_path_factory.getbasetemp() / "target_output_file"
     target2 = tmp_path_factory.getbasetemp() / "target_output_file2"
     destination = tmp_path_factory.getbasetemp() / "destination_output_file"
@@ -266,7 +265,6 @@ def test_new_binary_input(
     input_binary_data_file,
     input_binary_data_file_single,
 ):
-
     system_paths = {
         "first_guess_dir": "/fg",
         "ecoclimap_sg": "/ecoclimap",

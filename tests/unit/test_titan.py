@@ -18,7 +18,6 @@ from pysurfex.titan import (
 
 
 def obs_set(an_time):
-
     obs_set = {
         "0": {
             "varname": "airTemperatureAt2M",
@@ -29,7 +28,7 @@ def obs_set(an_time):
             "elev": 900.0,
             "value": 273,
             "flag": 0.0,
-            "ci": 1.0,
+            "epsilon": 0.8,
             "laf": 1.0,
             "provider": "bufr",
             "fg_dep": np.nan,
@@ -45,7 +44,7 @@ def obs_set(an_time):
             "elev": 1340.0,
             "value": 274,
             "flag": 0.0,
-            "ci": 1.0,
+            "epsilon": 1.2,
             "laf": 1.0,
             "provider": "bufr",
             "fg_dep": np.nan,

@@ -54,13 +54,12 @@ class NamelistGenerator(object):
             self.config.update_setting("SURFEX#SODA#LAESNM", laesnm)
 
         macros = self.flatten_config()
-        print(macros)
         self.macros = macros
         if assemble is None:
             self.assemble = self.namelist_blocks()
         else:
             self.assemble = assemble
-        logging.debug(self.assemble)
+        logging.info("Namelist blocks: %s", self.assemble)
         nlres = self.assemble_namelist()
         self.nml = f90nml.Namelist(nlres)
         if consistency:
@@ -119,7 +118,6 @@ class NamelistGenerator(object):
 
         # Program specific settings
         if self.program == "pgd":
-
             input_blocks += ["pgd", "pgd_cover", "pgd_zs"]
             eco_sg = self.config.get_setting("SURFEX#COVER#SG")
             if eco_sg:
@@ -377,7 +375,6 @@ class NamelistGenerator(object):
 
         # Program specific settings
         if self.program == "pgd":
-
             problems = self.check_nml_setting(
                 problems,
                 nml,
@@ -407,7 +404,6 @@ class NamelistGenerator(object):
                 self.config.get_setting("SURFEX#TILES#TOWN"),
             )
             if self.config.get_setting("SURFEX#TOWN#LTOWN_TO_ROCK"):
-
                 if self.config.get_setting("SURFEX#TILES#TOWN") != "NONE":
                     logging.warning(
                         "WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. "

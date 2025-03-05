@@ -65,19 +65,19 @@ def test_cli_set_geo_from_obs_set(obsset_fname, tmp_path_factory):
 
 
 def test_cryoclim_pseudoobs(tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp):
-
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim.json"
     argv = [
         "-step",
         "1",
-        "-fg",
-        firstguess4gridpp,
-        "-i",
+        "--infiles",
         data_cryoclim_nc_file,
-        "-v",
-        "surface_snow_thickness",
         "-o",
         out_fname,
+        "fg",
+        "-if",
+        firstguess4gridpp,
+        "-v",
+        "surface_snow_thickness",
     ]
     cryoclim_pseudoobs(argv=argv)
 
@@ -85,21 +85,61 @@ def test_cryoclim_pseudoobs(tmp_path_factory, data_cryoclim_nc_file, firstguess4
 def test_cryoclim_pseudoobs_iv(
     tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp
 ):
-
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim2.json"
     argv = [
         "-step",
         "2",
-        "-fg",
-        firstguess4gridpp,
-        "-i",
+        "--infiles",
         data_cryoclim_nc_file,
         "-iv",
         "classed_product",
-        "-v",
-        "surface_snow_thickness",
         "-o",
         out_fname,
+        "fg",
+        "-if",
+        firstguess4gridpp,
+        "-v",
+        "surface_snow_thickness",
+    ]
+    cryoclim_pseudoobs(argv=argv)
+
+
+def test_cryoclim_pseudoobs_iv_slope_glacier_mask_netcdf(
+    tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp, data_surfex_pgd_nc_file
+):
+    out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim4.json"
+    argv = [
+        "-step",
+        "2",
+        "--infiles",
+        data_cryoclim_nc_file,
+        "-iv",
+        "classed_product",
+        "-o",
+        out_fname,
+        "fg",
+        "-if",
+        firstguess4gridpp,
+        "-v",
+        "surface_snow_thickness",
+        "slope",
+        "-if",
+        data_surfex_pgd_nc_file,
+        "-v",
+        "SSO_SLOPE",
+        "-it",
+        "surfex",
+        "-t",
+        "2020022006",
+        "perm_snow",
+        "-if",
+        data_surfex_pgd_nc_file,
+        "-v",
+        "COVER006",
+        "-it",
+        "surfex",
+        "-t",
+        "2020022006",
     ]
     cryoclim_pseudoobs(argv=argv)
 
@@ -161,7 +201,6 @@ surface_soil_moisture = 0.01, 0.01, 0.01, 0.03, 0.001, 0.001;
 
 
 def test_sentinel(tmp_path_factory, data_sentinel_nc_file, firstguess4gridpp):
-
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_sentinel.json"
     argv = [
         "-step",
