@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import json
 from argparse import ArgumentParser
 from datetime import datetime
 
@@ -10,6 +11,7 @@ import numpy as np
 import xarray as xr
 
 from pysurfex.datetime_utils import as_datetime, as_timedelta
+from pysurfex.geo import get_geo_object, ConfProj
 from pysurfex.obs import ObservationSet, ObsSetFromVobs, StationList
 from pysurfex.observation import Observation
 from pysurfex.read import ConvertedInput, converter_parser, kwargs2converter
@@ -177,6 +179,66 @@ class VerificationDataFromSurfexConverter:
                 location=(["location"], posids2),
             ),
             attrs={"long_name": var.name, "units": var.unit},
+        )
+        self.ds = ds
+
+
+class DataFromSurfexConverter:
+    """Create verif data from pysurfex converter."""
+
+    def __init__(self, converter, var, geo, validtime, cache=None):
+        """Construct verification data from a converter.
+
+        Args:
+            converter (_type_): _description_
+            var (_type_): _description_
+            geo (_type_): _description_
+            validtime (_type_): _description_
+            basetime (_type_): _description_
+            cache (_type_, optional): _description_. Defaults to None.
+
+        """
+        pvalues = ConvertedInput(geo, var.name, converter).read_time_step(
+            validtime, cache
+        )
+
+        pvalues = pvalues.reshape([1, geo.nlats, geo.nlons], order="F")
+
+        validtime = datetime.strptime(validtime.strftime("%Y%m%d%H"), "%Y%m%d%H")
+        cvalidtime = np.array([validtime]).astype(np.datetime64)
+
+        print(geo.nlons, geo.nlats)
+        #print(len(geo.xxx), len(geo.yyy))
+        #pvalues = np.transpose(pvalues)
+        #pvalues = pvalues.reshape(1, geo.nlons, geo.nlats)
+        #pvalues = np.transpose(pvalues)
+        attrs={"long_name": var.name, "units": var.unit}
+        if isinstance(geo, ConfProj):
+            attrs.update({
+                 "gridtype": "lambert",
+                 "dlon": float(geo.xdx),
+                 "dlat": float(geo.xdy),
+                 "projlat": float(geo.xlat0),
+                 "projlat2": float(geo.xlat0),
+                 "projlon": float(geo.xlon0),
+                 "lonc": float(geo.xloncen),
+                 "latc": float(geo.xlatcen)
+            })
+        print(var.name, type(var.name))
+        data_vars={f"{var.name}": (["time","y","x"], pvalues), "longitude": (["y","x"], geo.lons), "latitude": (["y","x"], geo.lats)}
+        #print(dict(air_temperature_2m=(["time","lats","lons"],  pvalues)))
+        ds = xr.Dataset(
+            data_vars=data_vars,
+            #data_vars=dict(f"{var.name}"=(["time","y","x"],  pvalues),
+            #               longitude=(["y","x"], geo.lons),
+            #               latitude=(["y","x"], geo.lats)
+            #),
+            coords=dict(
+                time=(["time"], cvalidtime),
+                y=(["y"], geo.yyy),
+                x=(["x"], geo.xxx)
+            ),
+            attrs=attrs,
         )
         self.ds = ds
 
@@ -486,6 +548,7 @@ def converter2ds(argv=None):
         basetime = None
     variable = kwargs["variable"]
     verif_variable = kwargs.get("verif_variable")
+    unit = kwargs.get("unit")
     try:
         output = kwargs["output"]
     except KeyError:
@@ -494,24 +557,32 @@ def converter2ds(argv=None):
     if "force" in kwargs:
         force = kwargs["force"]
 
-    stationlist = StationList(kwargs["geo"])
+    if "stationlist" in kwargs:
+        stationlist = StationList(kwargs["stationlist"])
+    elif "geo" in kwargs:
+        print(kwargs["geo"])
+        geo_json = json.load(open(kwargs["geo"]))
+        geo = get_geo_object(geo_json)
     cache = None
 
-    verif_variable = "T2M"
-    unit = "K"
+    #verif_variable = "T2M"
+    #unit = "K"
     if verif_variable is None:
         verif_variable = variable
 
     force = True
     variable = VerifVariable(verif_variable, unit=unit)
-    if basetime is None:
-        vdata = ObsDataFromSurfexConverter(
-            converter, variable, stationlist, validtime, cache=cache
-        )
+    if geo is not None:
+        vdata = DataFromSurfexConverter(converter, variable, geo, validtime, cache=cache)
     else:
-        vdata = VerificationDataFromSurfexConverter(
-            converter, variable, stationlist, validtime, basetime, cache=cache
-        )
+        if basetime is None:
+            vdata = ObsDataFromSurfexConverter(
+                converter, variable, stationlist, validtime, cache=cache
+            )
+        else:
+            vdata = VerificationDataFromSurfexConverter(
+                converter, variable, stationlist, validtime, basetime, cache=cache
+            )
     if output is not None:
         if os.path.exists(output) and not force:
             raise FileExistsError
@@ -531,7 +602,7 @@ def parse_args_ds2verif(argv):
 
     """
     # Same main parser as usual
-    parser = ArgumentParser("converter2ds")
+    parser = ArgumentParser("ds2verif")
 
     # Usual arguments which are applicable for the whole script / top-level args
     parser.add_argument(
@@ -686,8 +757,13 @@ def concat_datasets(argv=None):
     datasets = kwargs["datasets"]
     dsets = []
     for dset in datasets:
-        dsets.append(xr.open_dataarray(dset, engine="netcdf4"))
-    ds = xr.concat(dsets, dim="obstime")
+        print(dset)
+        #dsets.append(xr.open_dataarray(dset, drop_variables=["longitude", "latitude"], engine="netcdf4"))
+        
+        dsets.append(xr.open_dataset(dset, engine="netcdf4"))
+    #ds = xr.concat(dsets, dim="time")
+    ds = xr.merge(dsets, compat='override')
+
     ds.to_netcdf(output)
 
 
