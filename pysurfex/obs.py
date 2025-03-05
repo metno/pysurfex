@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 import requests
+import xarray as xr
 
 try:
     import cfunits
@@ -17,6 +18,7 @@ except:  # noqa
 
 
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, utcfromtimestamp
+from .geo import LonLatVal
 from .observation import Observation
 from .titan import dataset_from_file
 
@@ -205,6 +207,104 @@ class ObservationSet(object):
                 )
         with open(filename, mode="w", encoding="utf-8") as file_handler:
             json.dump(data, file_handler, indent=indent)
+
+    def get_data_set(self, varname):
+        """Get data set.
+
+        Args:
+            varname (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        data = {}
+        posids = []
+        locations = {}
+        times = []
+        ctimes = []
+        lons = {}
+        lats = {}
+        elevs = {}
+        for obs in self.observations:
+            if obs.varname == varname:
+                time = obs.obstime
+                logging.info("time: %s", time)
+                ctime = f"{time.strftime('%Y%m%d%H%M')}"
+                posid = obs.posid
+                stid = obs.stid
+                if stid != "NA":
+                    posid = stid
+
+                posid = posid.replace("SN", "")
+                posid = int(posid)
+
+                ident = f"{time.strftime('%Y%m%d%H%M')}#{posid}"
+                if ctime not in ctimes:
+                    ctimes.append(ctime)
+                    times.append(time)
+
+                if posid not in posids:
+                    posids.append(posid)
+
+                stid = obs.stid
+                if stid == "NA":
+                    stid = posid
+                locations.update({posid: stid})
+                data.update({ident: obs.value})
+                lons.update({posid: obs.lon})
+                lats.update({posid: obs.lat})
+                elevs.update({posid: obs.elev})
+
+        ntimes = len(times)
+        nlocations = len(posids)
+        values = np.nan * np.zeros(
+            [
+                ntimes,
+                nlocations,
+            ],
+            np.float32,
+        )
+
+        dtimes = np.nan * np.zeros([ntimes], np.double)
+        dlons = np.nan * np.zeros([nlocations], np.float32)
+        dlats = np.nan * np.zeros([nlocations], np.float32)
+        delevs = np.nan * np.zeros([nlocations], np.float32)
+        dtimes = np.array(times).astype("datetime64[s]").astype("int")
+        for t, time in enumerate(times):
+            ctime = time.strftime("%Y%m%d%H%M")
+            for pos, posid in enumerate(posids):
+                ident = f"{ctime}#{posid}"
+                values[t][pos] = data[ident]
+                dlons[pos] = lons[posid]
+                dlats[pos] = lats[posid]
+                delevs[pos] = elevs[posid]
+
+        print("posids", posids)
+        coords = dict()
+
+        dtimes = np.array(times)
+        coords["obstime"] = (["obstime"], [], {}, {"dtype": np.datetime64})
+        coords["location"] = (["location"], posids)
+        coords["lat"] = (
+            ["location"],
+            dlats,
+            {"units": "degrees_east"},
+        )
+        coords["lon"] = (
+            ["location"],
+            dlons,
+            {"units": "degrees_north"},
+        )
+        coords["altitude"] = (
+            ["location"],
+            delevs,
+            {"units": "m"},
+        )
+
+        ds = xr.Dataset(coords=coords)
+        ds["obstime"] = dtimes
+        ds["obs"] = (["obstime", "location"], values)
+        return ds
 
 
 class NetatmoObservationSet(ObservationSet):
@@ -773,6 +873,7 @@ class JsonObservationSet(ObservationSet):
         """
         with open(filename, mode="r", encoding="utf-8") as file_handler:
             obs = json.load(file_handler)
+
         observations = []
         for i in range(0, len(obs)):
             ind = str(i)
@@ -841,3 +942,230 @@ class ObservationFromTitanJsonFile(ObservationSet):
             )
 
         ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+
+
+class ObsSetFromVobs(ObservationSet):
+    """Create observation set from vobs files."""
+
+    def __init__(self, fname, validtime, varname=None, label="vobs", sigmao=None):
+        """Construct obs set from vobs."""
+        logging.info("Processing %s", fname)
+        observations = []
+        obpars, obsx = self.read_vfld(fname)
+
+        for obname in obpars:
+            for stid, odata in obsx.items():
+                lon = odata["lon"]
+                lat = odata["lat"]
+                elev = odata["hgt"]
+                obs = np.nan
+                if obname in obsx[stid]:
+                    obs = obsx[stid][obname]
+                if obs == -99:
+                    obs = np.nan
+                value = obsx[stid][obname]
+                if varname is None or varname == obname:
+                    observations.append(
+                        Observation(
+                            validtime,
+                            lon,
+                            lat,
+                            value,
+                            elev=elev,
+                            stid=stid,
+                            varname=obname,
+                        )
+                    )
+
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+
+    @staticmethod
+    def read_vfld(fnam):
+        """Read vfld file."""
+        with open(fnam, mode="r", encoding="utf-8") as f:
+            h1 = f.readline().split()
+            h2 = f.readline()
+            nst, __, __ = (int(i) for i in h1)
+            npar = int(h2)
+            pars = {}
+            for i in range(npar):
+                l = f.readline().split()  # noqa
+                pars[l[0]] = {"index": i, "val": int(l[1])}
+            if "FI" in pars:
+                extra = 3
+            else:
+                extra = 4
+            x = {}
+            for i in range(nst):  # noqa
+                l = f.readline().split()  # noqa
+                lat, lon, hgt = l[1:4]
+                stnr = l[0][-5:]
+                x[stnr] = {"lat": float(lat), "lon": float(lon), "hgt": float(hgt)}
+                for par, val in pars.items():
+                    if par != "FI":
+                        x[stnr][par] = float(l[val["index"] + extra])
+
+        return pars, x
+
+
+class StationList:
+    """Station list."""
+
+    def __init__(self, fname):
+        """Construct."""
+        self.fname = fname
+        index_pos = {}
+        aliases = {}
+        try:
+            with open(fname, mode="r", encoding="utf-8") as file_handler:
+                ids_from_file = json.load(file_handler)
+        except FileNotFoundError:
+            raise FileNotFoundError("Station list does not exist!") from FileNotFoundError
+        self.stids = ids_from_file
+        for stid in ids_from_file:
+            lon = ids_from_file[stid]["lon"]
+            lat = ids_from_file[stid]["lat"]
+            pos = self.posid(lon, lat)
+            index_pos.update({pos: stid})
+            if "aliases" in ids_from_file[stid]:
+                aliases.update({pos: ids_from_file[stid]["aliases"]})
+        self.index_pos = index_pos
+        self.geo = self.get_geo()
+
+    def get_geo(self, lonrange=None, latrange=None, xdx="0.3", xdy="0.3"):
+        """Set geometry from station list."""
+        if lonrange is None:
+            lonrange = [-180, 180]
+        if latrange is None:
+            latrange = [-90, 90]
+
+        lons = []
+        lats = []
+        for stid in self.stids:
+            lon, lat, __ = self.get_pos_from_stid([stid])
+            print(stid, lon, lat)
+            lon = lon[0]
+            lat = lat[0]
+            if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
+                lon = round(lon, 5)
+                lat = round(lat, 5)
+                lons.append(lon)
+                lats.append(lat)
+
+        d_x = [xdx] * len(lons)
+        d_y = [xdy] * len(lats)
+        geo_json = {
+            "nam_pgd_grid": {"cgrid": "LONLATVAL"},
+            "nam_lonlatval": {"xx": lons, "xy": lats, "xdx": d_x, "xdy": d_y},
+        }
+        print(geo_json)
+        return LonLatVal(geo_json)
+
+    def get_pos_from_stid(self, stids):
+        """Get pos from station ID.
+
+        Args:
+            stids (list): _description_
+
+        Raises:
+            RuntimeError: _description_
+
+        Returns:
+            tuple: longitudes, latitudes
+
+        """
+        lons = []
+        lats = []
+        elevs = []
+        if isinstance(stids, str):
+            stids = [stids]
+
+        found = False
+        for stid in self.stids:
+            for stid1 in stids:
+                if stid == stid1:
+                    found = True
+                    lon = float(self.stids[stid1]["lon"])
+                    lat = float(self.stids[stid1]["lat"])
+                    if "elev" in self.stids[stid1]:
+                        elev = self.stids[stid1]["elev"]
+                    else:
+                        elev = "NA"
+                    lons.append(lon)
+                    lats.append(lat)
+                    if elev == "NA":
+                        elev = np.nan
+                    elevs.append(elev)
+        if not found:
+            raise RuntimeError(
+                "Could not find station id " + stid + " in file " + self.fname
+            )
+        return lons, lats, elevs
+
+    def get_stid_from_stationlist(self, lons, lats):
+        """Get station ID from station list.
+
+        Args:
+            lons (list): Longitudes
+            lats (list): Latitudes
+
+        Returns:
+            list: Station IDs
+
+        """
+        stids = []
+        for i, lon in enumerate(lons):
+            lat = lats[i]
+            pos = self.posid(lon, lat)
+            if pos in self.index_pos:
+                stids.append(self.index_pos[pos])
+            else:
+                stids.append("NA")
+        return stids
+
+    @staticmethod
+    def posid(lon, lat, pos_decimals=5):
+        """Return pos id.
+
+        Args:
+            lon (_type_): _description_
+            lat (_type_): _description_
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        return f"{lon:.{pos_decimals}f}#{lat:.{pos_decimals}f}"
+
+    def posids(self, lons, lats, pos_decimals=5):
+        """Get posids.
+
+        Args:
+            lons (_type_): _description_
+            lats (_type_): _description_
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        lposids = []
+        for pind, lon in enumerate(lons):
+            lat = lats[pind]
+            pos = self.posid(lon, lat, pos_decimals=pos_decimals)
+            if pos in self.index_pos:
+                pos = self.index_pos[pos]
+            lposids.append(pos)
+        return lposids
+
+    def all_posids(self, pos_decimals=5):
+        """Get all posids in list.
+
+        Args:
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        lons, lats, __ = self.get_pos_from_stid(self.stids)
+        return self.posids(lons, lats, pos_decimals=pos_decimals)
+
