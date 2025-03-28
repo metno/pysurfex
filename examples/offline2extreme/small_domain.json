@@ -1,7 +1,7 @@
 {
   "nam_conf_proj_grid": {
-    "nimax": 39,
-    "njmax": 49,
+    "nimax": 1489,
+    "njmax": 1489,
     "xloncen": 10.0,
     "xlatcen": 60.0,
     "xdx": 500,

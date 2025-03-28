@@ -8,7 +8,7 @@
 #####################################
 # SURFEX IO
 [SURFEX.IO]
-CSURF_FILETYPE = "NC"               # IO settings NC/FA/ASCII. Inline runs use FA
+CSURF_FILETYPE = "FA"               # IO settings NC/FA/ASCII. Inline runs use FA
 CTIMESERIES_FILETYPE = "NETCDF"     # Fileformat for timseries. Inline runs use FA
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
 XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
@@ -37,7 +37,7 @@ XRIMAX = 0.2                        # Maximum allowed Richardson number in the s
 
 [SURFEX.TILES]                      # Define which tile schemes to use
 SEA = "SEAFLX"                      # Sea scheme
-INLAND_WATER = "FLAKE"              # Treatment of lakes in surfex (WATFLX|FLAKE)
+INLAND_WATER = "WATFLX"              # Treatment of lakes in surfex (WATFLX|FLAKE)
 NATURE = "ISBA"                     # Nature scheme: "ISBA"|"NONE"
 TOWN = "TEB"                        # Town scheme: "TEB"|"NONE"
 
@@ -74,7 +74,7 @@ LDB_VERSION = "3.0"
 # ISBA settings
 [SURFEX.ISBA]
 SCHEME = "DIF"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
-NPATCH = 2                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
+NPATCH = 3                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
 MEB = true                         # Enable Multi Energy Budget (MEB) model
 CANOPY = false                      # Activates surface boundary multi layer scheme over land in SURFEX
                                     # (must be false for NPATCH>1)

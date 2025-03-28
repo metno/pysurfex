@@ -9,35 +9,51 @@ module load netcdf4/4.7.4
 module load hpcx-openmpi/2.9.0
 module load prgenv/intel
 
-# This directory (below) should be the same directory as this script is inside....
-cd /scratch/$USER/deode/offline2extreme/
+# Paths to example dir (this directory) and work dir
+example_dir=/home/sbu/projects/pysurfex_deode_offline_surfex_workflow/examples/offline2extreme/
+work_dir=/scratch/$USER/deode/offline2extreme/
+
 set -x
 
 # Settings.....
-prep_file="/scratch/sbu/deode/CY49TEST/archive/2024/09/18/00/SURFOUT.nc"
+
+#prep_file="/scratch/sbu/deode/CY49TEST/archive/2024/09/18/00/SURFOUT.nc"
+prep_file="/scratch/sbu/deode/CY49DT_OFFLINE_dt_2_5_2500x2500/archive/2024/09/16/00/PREP.nc"
 prep_filetype="NC"
-prep_pgd_file="/scratch/sbu/deode/CY49TEST/climate/DRAMMEN/PGD_0915.nc"
-prep_pgd_file1="/scratch/sbu/deode/CY49TEST/climate/DRAMMEN/PGD_0915.nc"
+
+#prep_pgd_file="/scratch/sbu/deode/CY49TEST/climate/DRAMMEN/PGD_0915.nc"
+prep_pgd_file="/scratch/sbu/deode/CY49DT_OFFLINE_dt_2_5_2500x2500/climate/DT_2_5_2500x2500/PGD_0915.nc"
 prep_pgd_filetype="NC"
+
 pgd_binary="/scratch/sbu/compile_surfex_using_offline_flags/install_lat/bin/PGD"
-prep_binary="/scratch/sbu/compile_surfex_using_offline_flags/install_lat/bin/PREP"
+#prep_binary="/scratch/sbu/compile_surfex_using_offline_flags/install_lat/bin/PREP"
+#prep_binary="/scratch/sbu/dev-CY49T2h_deode/IAL/install_lat/bin/PREP"
+prep_binary="/scratch/sbu/dev-CY49T2h_deode/IAL/build_lat/bin/PREP"
+#prep_binary="/perm/deployde330/github-actions/install/cy49t2/latest/bin//PREP"
 
 # Path to your pysurfex
-export PATH=/lus/h2resw01/scratch/sbu/deode_virtualenvs/surfexp-ZxaY7Jni-py3.10/bin/:$PATH
+#export PATH=/lus/h2resw01/scratch/sbu/deode_virtualenvs/surfexp-ZxaY7Jni-py3.10/bin/:$PATH
+export PATH=/lus/h2resw01/scratch/sbu/deode_virtualenvs/surfexp-pTnIXtrZ-py3.10/bin/:$PATH
 
 # Directory containing databases for processed gmted/soilgrid data
-climdir="/scratch/sbu/deode/CY49TEST/climate/DRAMMEN/"
+#climdir="/scratch/sbu/deode/CY49TEST/climate/DRAMMEN/"
+climdir="/scratch/sbu/deode/CY49DT_OFFLINE_dt_2_5_2500x2500/climate/DT_2_5_2500x2500/"
 
 ############### You might change....
-config="/scratch/$USER/deode/offline2extreme/config_exp_surfex.toml"
-domain="/scratch/$USER/deode/offline2extreme/small_domain.json"
-pgd="/scratch/$USER/deode/offline2extreme/pgd/PGD_0915.nc"
-prep_output="/scratch/$USER/deode/offline2extreme/prep/new_prep.nc"
+config="$example_dir/config_exp_surfex.toml"
+domain="$example_dir/small_domain.json"
+pgd="$work_dir/pgd/PGD_0915.nc"
+prep_output="$work_dir/prep/new_prep.nc"
 
-
+export MBX_SIZE=1000000000
+export OMP_NUM_THREADS=1
+export DR_HOOK=1
 #############  SHOULD NOT BE CHANGED?  ####################################
+
+mkdir -p $work_dir
+cd $work_dir
 [ ! -f rte.json ] && dump_environ
-system_file_paths="/scratch/$USER/deode/offline2extreme/system_file_paths.json"
+system_file_paths="$work_dir/system_file_paths.json"
 cat > $system_file_paths << EOF
 {
   "climdir": "$climdir",
@@ -57,22 +73,23 @@ cat > $system_file_paths << EOF
 }
 EOF
 
-
-cat surfexp_binary_input_data.json | sed \
+cat $example_dir/surfexp_binary_input_data.json | sed \
   -e "s/@DECADE@/0915/g" \
   -e "s#@PREPFILE_WITH_PATH@#$prep_file#g" \
   -e "s#@PREP_PGDFILE_WITH_PATH@#$prep_pgd_file#g" \
-  > /scratch/$USER/deode/offline2extreme/binary_input_data.json
+  > $work_dir/binary_input_data.json
 
 
 do_pgd=1
-do_prep=1
+do_prep=0
 
 # PGD
 if [ $do_pgd -eq 1 ]; then
-  mkdir -p /scratch/$USER/deode/offline2extreme/pgd
-  cd /scratch/$USER/deode/offline2extreme/pgd
+  mkdir -p $work_dir/pgd
+  cd $work_dir/pgd
   rm *
+
+  # namelist blocks for DEODE
   cat > assemble_pgd.json << EOF
 [
     "io",
@@ -106,14 +123,15 @@ if [ $do_pgd -eq 1 ]; then
     "pgd_zs_direct"
 ]
 EOF
-  pgd --input_binary_data /scratch/$USER/deode/offline2extreme/binary_input_data.json \
-  -n /scratch/$USER/deode/offline2extreme/surfex_namelists.yml \
+  pgd --input_binary_data $work_dir/binary_input_data.json \
+  -n $example_dir/surfex_namelists.yml \
   --config $config \
-  -r /scratch/$USER/deode/offline2extreme/rte.json \
-  -s /scratch/$USER/deode/offline2extreme/system_file_paths.json \
+  -r $work_dir/rte.json \
+  -s $work_dir/system_file_paths.json \
   --domain $domain \
   --assemble assemble_pgd.json \
   --no-consistency \
+  --wrapper "srun" \
   -o $pgd \
   $pgd_binary || exit 1
 
@@ -121,11 +139,12 @@ fi
 
 # PREP
 if [ $do_prep -eq 1 ]; then
-  cd /scratch/$USER/deode/offline2extreme/prep
+  mkdir -p $work_dir/prep
+  cd $work_dir/prep
   rm *
-  cat > assemble_prep.json << EOF
-["io", "constants", "treedrag", "flake", "prep", "prep_seaflux", "prep_seaflx", "prep_flake", "prep_isba", "prep_isba_dif", "prep_isba_snow", "prep_isba_snow_3l", "prep_from_file", "prep_from_file_with_pgd"]
-EOF
+#  cat > assemble_prep.json << EOF
+#["io", "constants", "treedrag", "flake", "prep", "prep_seaflux", "prep_seaflx", "prep_flake", "prep_isba", "prep_isba_dif", "prep_isba_snow", "prep_isba_snow_3l", "prep_from_file", "prep_from_file_with_pgd"]
+#EOF
 
   prep --prep_pgdfile $prep_pgd_file \
        --prep_pgdfiletype $prep_pgd_filetype \
@@ -133,13 +152,13 @@ EOF
        --prep_filetype $prep_filetype \
        --pgd $pgd \
        -c $config \
-       --rte /scratch/$USER/deode/offline2extreme/rte.json \
+       --rte $work_dir/rte.json \
        --system_file_paths $system_file_paths \
-       --namelist_path /scratch/$USER/deode/offline2extreme/surfex_namelists.yml \
-       --input_binary_data /scratch/$USER/deode/offline2extreme/binary_input_data.json \
+       --namelist_path $example_dir/surfex_namelists.yml \
+       --input_binary_data $work_dir/binary_input_data.json \
        --output $prep_output \
+       --wrapper "srun" \
        $prep_binary || exit 1
 
        # --assemble assemble_prep.json \
- 
 fi
