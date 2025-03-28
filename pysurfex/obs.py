@@ -1022,13 +1022,16 @@ class StationList:
         except FileNotFoundError:
             raise FileNotFoundError("Station list does not exist!") from FileNotFoundError
         self.stids = ids_from_file
+        ids = []
         for stid in ids_from_file:
+            ids.append(stid)
             lon = ids_from_file[stid]["lon"]
             lat = ids_from_file[stid]["lat"]
             pos = self.posid(lon, lat)
             index_pos.update({pos: stid})
             if "aliases" in ids_from_file[stid]:
                 aliases.update({pos: ids_from_file[stid]["aliases"]})
+        self.ids = ids
         self.index_pos = index_pos
         self.geo = self.get_geo()
 

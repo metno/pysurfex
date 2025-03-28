@@ -6,6 +6,8 @@ import sys
 import json
 from argparse import ArgumentParser
 from datetime import datetime
+import pandas
+from grib2sqlite import sqlite_name, create_table, write_to_sqlite
 
 import numpy as np
 import xarray as xr
@@ -87,7 +89,6 @@ class DatasetFromVfld:
                     # TODO check on stationlist
                     if stationlist is None:
                         location.append(int(stid))
-                        print(xdata)
                         # lon = xdata["lon"] # noqa
                         # lat = xdata["lat"] # noqa
                         # elev = xdata["hgt"] # noqa
@@ -207,8 +208,6 @@ class DataFromSurfexConverter:
         validtime = datetime.strptime(validtime.strftime("%Y%m%d%H"), "%Y%m%d%H")
         cvalidtime = np.array([validtime]).astype(np.datetime64)
 
-        print(geo.nlons, geo.nlats)
-        #print(len(geo.xxx), len(geo.yyy))
         #pvalues = np.transpose(pvalues)
         #pvalues = pvalues.reshape(1, geo.nlons, geo.nlats)
         #pvalues = np.transpose(pvalues)
@@ -224,15 +223,9 @@ class DataFromSurfexConverter:
                  "lonc": float(geo.xloncen),
                  "latc": float(geo.xlatcen)
             })
-        print(var.name, type(var.name))
-        data_vars={f"{var.name}": (["time","y","x"], pvalues), "longitude": (["y","x"], geo.lons), "latitude": (["y","x"], geo.lats)}
-        #print(dict(air_temperature_2m=(["time","lats","lons"],  pvalues)))
+        data_vars={f"{var.name}": (["time","y","x"], pvalues), "longitude": (["y","x"], np.transpose(geo.lons)), "latitude": (["y","x"], np.transpose(geo.lats))}
         ds = xr.Dataset(
             data_vars=data_vars,
-            #data_vars=dict(f"{var.name}"=(["time","y","x"],  pvalues),
-            #               longitude=(["y","x"], geo.lons),
-            #               latitude=(["y","x"], geo.lats)
-            #),
             coords=dict(
                 time=(["time"], cvalidtime),
                 y=(["y"], geo.yyy),
@@ -353,9 +346,6 @@ class VerifData:
                             fcst = self.ds["fcst"][t][ilt][loc]
                             frt_dt = datetime.strptime(
                                 frt.astype(str)[:-3], "%Y-%m-%dT%H:%M:%S.%f"
-                            )
-                            print(
-                                f'{frt_dt.strftime("%Y%m%d")} {frt_dt.strftime("%H")} {lt} {stid} {lat} {lon} {hgt} {obs} {fcst}\n'
                             )
                             fhandler.write(
                                 f'{frt_dt.strftime("%Y%m%d")} {frt_dt.strftime("%H")} {lt} {stid} {lat} {lon} {hgt} {obs} {fcst}\n'
@@ -560,7 +550,6 @@ def converter2ds(argv=None):
     if "stationlist" in kwargs:
         stationlist = StationList(kwargs["stationlist"])
     elif "geo" in kwargs:
-        print(kwargs["geo"])
         geo_json = json.load(open(kwargs["geo"]))
         geo = get_geo_object(geo_json)
     cache = None
@@ -756,10 +745,11 @@ def concat_datasets(argv=None):
     output = kwargs["output"]
     datasets = kwargs["datasets"]
     dsets = []
+    # TODO Adapted for deode runs! Not general
     for dset in datasets:
         print(dset)
         #dsets.append(xr.open_dataarray(dset, drop_variables=["longitude", "latitude"], engine="netcdf4"))
-        
+
         dsets.append(xr.open_dataset(dset, engine="netcdf4"))
     #ds = xr.concat(dsets, dim="time")
     ds = xr.merge(dsets, compat='override')
@@ -843,3 +833,171 @@ def vfld2ds(argv=None):
         variable = None
     vfld = DatasetFromVfld(vfldfile, basetime, validtime, variable, stationlist=None)
     vfld.ds.to_netcdf(output)
+
+
+def parse_args_converter2harp(argv):
+    """Parse the command line input arguments for creating SQLite tables for HARP from a converter.
+
+    Args:
+        argv (list): List with arguments.
+
+    Returns:
+        dict: Parsed arguments.
+
+    """
+    # Same main parser as usual
+    parser = ArgumentParser("converter2harp")
+
+    # Usual arguments which are applicable for the whole script / top-level args
+    parser.add_argument(
+        "-g",
+        "--geo",
+        dest="stationlist",
+        type=str,
+        help="Domain/points json geometry definition file",
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="output",
+        type=str,
+        help="Output SQLite template",
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
+        "-b",
+        "--basetime",
+        dest="basetime",
+        type=str,
+        help="Base time",
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
+        "--harp-param",
+        dest="harp-param",
+        type=str,
+        help="HARP parameter name",
+        required=True,
+    )
+    parser.add_argument(
+        "--harp-param-unit",
+        dest="harp-param-unit",
+        type=str,
+        help="HARP parameter unit",
+        required=True,
+    )
+    parser.add_argument(
+        "--model-name",
+        dest="model-name",
+        type=str,
+        help="HARP model name",
+        required=True,
+    )
+    parser.add_argument("--debug", help="Show debug information", action="store_true")
+    # Same subparsers as usual
+    subparsers = parser.add_subparsers(help="Desired action to perform", dest="action")
+
+    parent_parser = ArgumentParser(add_help=False)
+    # Set converter parser
+    converter_parser(subparsers, parent_parser)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit()
+
+    args = parser.parse_args(argv)
+    kwargs = {}
+    for arg in vars(args):
+        kwargs.update({arg: getattr(args, arg)})
+    return kwargs
+
+
+def converter2harp_cli(argv=None):
+
+    if argv is None:
+        argv = sys.argv[1:]
+    kwargs = parse_args_converter2harp(argv)
+
+    kwargs.update({"filepattern": kwargs["inputfile"]})
+    converter = kwargs2converter(**kwargs)
+    converter2harp(converter, **kwargs)
+
+
+def converter2harp(converter, **kwargs):
+    try:
+        validtime = kwargs["validtime"]
+        if isinstance(validtime, str):
+            validtime = as_datetime(kwargs["validtime"])
+    except KeyError:
+        validtime = None
+    try:
+        basetime = kwargs["basetime"]
+        if isinstance(basetime, str):
+            basetime = as_datetime(kwargs["basetime"])
+    except KeyError:
+        basetime = None
+    try:
+        harp_param_level = kwargs["harp-param-level"]
+    except KeyError:
+        harp_param_level = None
+    try:
+        harp_param_level_name = kwargs["harp-param-level-name"]
+    except KeyError:
+        harp_param_level_name = None
+
+    harp_param = kwargs["harp-param"]
+    harp_param_unit = kwargs["harp-param-unit"]
+    model_name = kwargs["model-name"]
+    variable = kwargs["variable"]
+    try:
+        sqlite_template = kwargs["output"]
+    except KeyError:
+        sqlite_template = "{MODEL}/{YYYY}/{MM}/FCTABLE_{PP}_{YYYY}{MM}.sqlite"
+
+    try:
+        stationlist = StationList(kwargs["stationlist"])
+    except KeyError:
+        raise RuntimeError from KeyError
+
+    geo = stationlist.geo
+    cache = None
+
+    if sqlite_template is None:
+        sqlite_template = "{MODEL}/{YYYY}/{MM}/FCTABLE_{PP}_{YYYY}{MM}.sqlite"
+
+    leadtime = int((validtime - basetime).total_seconds()/3600.)
+    cache = None
+    param = {
+        "varname": variable,
+        "harp_param": harp_param,
+        "units": harp_param_unit,
+        "level": harp_param_level,
+        "level_name": harp_param_level_name
+    }
+
+    data_vector = ConvertedInput(geo, variable, converter).read_time_step(
+            validtime, cache
+        )
+
+    lons, lats, elevs = stationlist.get_pos_from_stid(stationlist.stids)
+    harp_station_list = pandas.DataFrame(
+        {
+            "SID": stationlist.ids,
+            "lat": lats,
+            "lon": lons,
+            "elev": elevs,
+            "name": stationlist.ids,
+        }
+    )
+
+    logging.info("SQLITE: writing var=%s for mode=%sn", variable, model_name)
+    sqlite_file = sqlite_name(param, validtime, model_name, sqlite_template)
+    data = create_table(
+        data_vector, harp_station_list, param, validtime, leadtime, model_name + "_det"
+    )
+    logging.info("SQLITE: writing sqlite_file=%s", sqlite_file)
+    write_to_sqlite(data, sqlite_file, param, model_name + "_det")

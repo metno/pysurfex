@@ -16,6 +16,7 @@
     cryoclim_pseudoobs = "pysurfex.cli:cryoclim_pseudoobs"
     concat_datasets = "pysurfex.verification:concat_datasets"
     converter2ds = "pysurfex.verification:converter2ds"
+    converter2harp = "pysurfex.verification:converter2harp"
     ds2verif =  "pysurfex.verification:ds2verif"
     FirstGuess4gridpp = "pysurfex.cli:first_guess_for_oi"
     dump_environ = "pysurfex.cli:dump_environ"

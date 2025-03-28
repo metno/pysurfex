@@ -18,7 +18,9 @@ from pysurfex.verification import (
     VerifDataFromFile,
     VerifVariable,
     converter2ds,
+    converter2harp_cli,
 )
+from pysurfex.datetime_utils import as_datetime
 
 
 @pytest.fixture()
@@ -557,3 +559,30 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
 
         ds = xr.open_dataset(vfilename, engine="netcdf4")
         assert pytest.approx(ds.obs.data[0][1]) == 273.15
+
+
+def test_converter2harp(stationlist_file, tmp_path_factory):
+
+    var = "T2M"
+    dt_string = "2025021100"
+    basetime = "2025021000"
+    argv = [
+        "-g",
+        stationlist_file,
+        "-b",
+        basetime,
+        "--harp-param",
+        "T2m",
+        "--harp-param-unit",
+        "K",
+        "--model-name",
+        "TEST",
+        "converter",
+        "-i", "/scratch/sbu/deode/CY49DT_OFFLINE_dt_2_5_2500x2500/archive/2025/02/10/00/SURFOUT.20250211_00h00.nc",
+        "-it", "surfex",
+        "-v", var,
+        "-t", dt_string,
+    ]
+
+    with working_directory(tmp_path_factory.getbasetemp()):
+        converter2harp_cli(argv=argv)

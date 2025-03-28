@@ -56,6 +56,11 @@ class Variable(object):
         except KeyError:
             self.prefer_forecast = prefer_forecast
 
+        try:
+            self.one_forecast = self.var_dict["one_forecast"]
+        except KeyError:
+            self.one_forecast = False
+
         if self.offset > self.fcint:
             raise RuntimeError(
                 "You can not have larger offset than the frequency of forecasts "
@@ -518,6 +523,10 @@ class Variable(object):
         if self.offset < 0:
             raise RuntimeError("Negative offset does not make sense here")
 
+        if self.one_forecast:
+            logging.debug("one_forecast is True. Valitime %s Keep initial basetime %s", validtime, self.initial_basetime)
+            return self.initial_basetime
+
         # Take offset into account
         first = False
         offset = self.offset
@@ -577,6 +586,7 @@ class Variable(object):
             basetime_inc * int(as_timedelta(seconds=self.fcint).seconds),
         )
         logging.debug("       prefer_forecast: %s", self.prefer_forecast)
+        logging.debug("          one_forecast: %s", self.one_forecast)
         logging.debug("   prefer_forecast_inc: %s", prefer_forecast)
         logging.debug("          basetime_inc: %s", basetime_inc)
         logging.debug("           Basetime is: %s", basetime)
