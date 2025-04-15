@@ -1,6 +1,6 @@
 [tool.poetry]
     name = "pysurfex"
-    version = "0.0.4.1"
+    version = "0.1.0.0"
     description = "Python API to SURFEX"
     authors = ["Trygve Aspelien"]
     license = "MIT"
@@ -17,7 +17,6 @@
     FirstGuess4gridpp = "pysurfex.cli:first_guess_for_oi"
     dump_environ = "pysurfex.cli:dump_environ"
     gridpp = "pysurfex.cli:gridpp"
-    hm2pysurfex = "pysurfex.cli:hm2pysurfex"
     masterodb = "pysurfex.cli:masterodb"
     merge_qc_data = "pysurfex.cli:cli_merge_qc_data"
     modify_forcing = "pysurfex.cli:cli_modify_forcing"

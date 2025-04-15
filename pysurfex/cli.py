@@ -15,13 +15,6 @@ except ModuleNotFoundError:
 
 
 from .binary_input import JsonOutputDataFromFile
-from .binary_input_legacy import (
-    InlineForecastInputData,
-    OfflineInputData,
-    PgdInputData,
-    PrepInputData,
-    SodaInputData,
-)
 from .cache import Cache
 from .cmd_parsing import (
     parse_args_bufr2json,
@@ -30,7 +23,6 @@ from .cmd_parsing import (
     parse_args_dump_environ,
     parse_args_first_guess_for_oi,
     parse_args_gridpp,
-    parse_args_hm2pysurfex,
     parse_args_lsm_file_assim,
     parse_args_masterodb,
     parse_args_merge_qc_data,
@@ -49,18 +41,13 @@ from .cmd_parsing import (
     parse_sentinel_obs,
     parse_set_domain,
 )
-from .configuration import (
-    ConfigurationFromHarmonieAndConfigFile,
-    ConfigurationFromTomlFile,
-)
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
-from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
+from .geo import LonLatVal, get_geo_object, set_domain, shape2ign, ConfProjFromHarmonie
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
-from .namelist import NamelistGenerator
-from .namelist_legacy import BaseNamelist, Namelist
+from .namelist import NamelistGeneratorAssemble
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
@@ -82,23 +69,14 @@ from .titan import (
 from .variable import Variable
 
 
-def get_geo_and_config_from_cmd(**kwargs):
+def get_geo_from_cmd(**kwargs):
     """Get geo and config from cmd."""
     if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config_exp" in kwargs:
-            if kwargs["config_exp"] is not None:
-                config_exp = kwargs["config_exp"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        config = ConfigurationFromHarmonieAndConfigFile(os.environ, config_exp)
-        geo = config.geo
+        geo = ConfProjFromHarmonie()
     else:
-        if "domain" in kwargs:
-            domain = kwargs["domain"]
+        domain = kwargs.get("domain")
+        if domain is not None:
+            print(domain)
             if os.path.exists(domain):
                 with open(domain, mode="r", encoding="utf-8") as fhandler:
                     geo = get_geo_object(json.load(fhandler))
@@ -106,21 +84,12 @@ def get_geo_and_config_from_cmd(**kwargs):
                 raise FileNotFoundError(domain)
         else:
             geo = None
-
-        if "config" in kwargs:
-            config = kwargs["config"]
-            if os.path.exists(config):
-                config = ConfigurationFromTomlFile(config)
-            else:
-                raise FileNotFoundError("File not found: " + config)
-        else:
-            config = None
-    return config, geo
+    return geo
 
 
 def run_first_guess_for_oi(**kwargs):
     """Run first guess for oi."""
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
+    geo = get_geo_from_cmd(**kwargs)
 
     config_file = kwargs["input_config"]
     if not os.path.exists(config_file):
@@ -266,7 +235,6 @@ def run_first_guess_for_oi(**kwargs):
 def run_masterodb(**kwargs):
     """Run masterodb."""
     logging.debug("ARGS: %s", kwargs)
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
 
     if "config" in kwargs:
         del kwargs["config"]
@@ -289,12 +257,6 @@ def run_masterodb(**kwargs):
     only_archive = kwargs["only_archive"]
     print_namelist = kwargs["print_namelist"]
     try:
-        consistency = kwargs["no_consistency"]
-        if consistency:
-            consistency = False
-    except KeyError:
-        consistency = True
-    try:
         assemble = kwargs["assemble_file"]
     except KeyError:
         assemble = None
@@ -304,13 +266,17 @@ def run_masterodb(**kwargs):
         if kwargs["tolerate_missing"]:
             check_existence = False
 
+    nml_macros = {}
     dtg = None
     if "dtg" in kwargs:
         if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
         if dtg is not None:
-            config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
+            nml_macros.update({
+                "SODA_HH": f"{dtg.hour:02d}"
+            })
+            #config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
     try:
         basetime = kwargs["basetime"]
         if isinstance(basetime, str):
@@ -355,11 +321,10 @@ def run_masterodb(**kwargs):
     if os.path.isfile(namelist_path):
         with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
             nam_defs = yaml.safe_load(file_handler)
-        if assemble is not None:
-            with open(assemble, mode="r", encoding="utf8") as fh:
-                assemble = json.load(fh)
-        nam_gen = NamelistGenerator(
-            mode, config, nam_defs, assemble=assemble, consistency=consistency
+        with open(assemble, mode="r", encoding="utf8") as file_handler:
+            assemble = yaml.safe_load(file_handler)
+        nam_gen = NamelistGeneratorAssemble(
+            mode, nam_defs, assemble, macros=nml_macros
         )
         my_settings = nam_gen.nml
         if input_binary_data is None:
@@ -367,34 +332,9 @@ def run_masterodb(**kwargs):
         with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
             input_binary_data = json.load(file_handler)
         input_data = nam_gen.input_data_from_namelist(
-            input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
+            input_binary_data, system_file_paths, validtime=dtg, basetime=basetime,
+            check_existence=check_existence
         )
-    elif os.path.isdir(namelist_path):
-        if mode == "offline":
-            input_data = InlineForecastInputData(
-                config, system_file_paths, check_existence=check_existence
-            )
-        elif mode == "soda":
-            input_data = SodaInputData(
-                config,
-                system_file_paths,
-                check_existence=check_existence,
-                perturbed_file_pattern=perturbed_file_pattern,
-                dtg=dtg,
-            )
-        else:
-            raise NotImplementedError(mode + " is not implemented!")
-
-        blocks = False
-        if blocks:
-            my_settings = Namelist(
-                mode, config, namelist_path, dtg=dtg, fcint=3
-            ).get_namelist()
-        else:
-            my_settings = BaseNamelist(
-                mode, config, namelist_path, dtg=dtg, fcint=3
-            ).get_namelist()
-        geo.update_namelist(my_settings)
     else:
         raise NotImplementedError
 
@@ -466,7 +406,8 @@ def run_masterodb(**kwargs):
 def run_surfex_binary(mode, **kwargs):
     """Run a surfex binary."""
     logging.debug("ARGS: %s", kwargs)
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
+
+    geo = get_geo_from_cmd(**kwargs)
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -490,27 +431,15 @@ def run_surfex_binary(mode, **kwargs):
     prep_input_file = None
     if "prep_file" in kwargs:
         prep_input_file = kwargs["prep_file"]
-    config.update_setting("SURFEX#PREP#FILE_WITH_PATH", prep_input_file)
-    basename = prep_input_file
-    if basename is not None:
-        basename = os.path.basename(basename)
-    config.update_setting("SURFEX#PREP#FILE", basename)
     prep_input_pgdfile = None
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
-    config.update_setting("SURFEX#PREP#PGDFILE_WITH_PATH", prep_input_pgdfile)
-    basename = prep_input_pgdfile
-    if basename is not None:
-        basename = os.path.basename(basename)
-    config.update_setting("SURFEX#PREP#FILEPGD", basename)
-    prep_input_filetype = None
-    if "prep_filetype" in kwargs:
-        prep_input_filetype = kwargs["prep_filetype"]
-    config.update_setting("SURFEX#PREP#FILETYPE", prep_input_filetype)
-    prep_input_pgdfiletype = None
-    if "prep_pgdfiletype" in kwargs:
-        prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
-    config.update_setting("SURFEX#PREP#FILEPGDTYPE", prep_input_pgdfiletype)
+
+    # Run-time macros
+    nml_macros = {
+        "PREP_INPUT_FILE_WITH_PATH": prep_input_file,
+        "PREP_INPUT_PGDFILE_WITH_PATH": prep_input_pgdfile,
+    }
 
     # TODO
     perturbed_file_pattern = None
@@ -523,12 +452,17 @@ def run_surfex_binary(mode, **kwargs):
             dtg = as_datetime(kwargs["dtg"])
             kwargs.update({"dtg": dtg})
     if dtg is not None:
-        config.update_setting("SURFEX#PREP#NYEAR", dtg.year)
-        config.update_setting("SURFEX#PREP#NMONTH", dtg.month)
-        config.update_setting("SURFEX#PREP#NDAY", dtg.day)
         xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
-        config.update_setting("SURFEX#PREP#XTIME", xtime)
-        config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
+        nml_macros.update(
+            {
+                "PREP_NYEAR": dtg.year,
+                "PREP_NMONTH": dtg.month,
+                "PREP_NDAY": dtg.day,
+                "PREP_XTIME": xtime,
+                "SODA_HH": f"{dtg.hour:02d}"
+            }
+        )
+        # TODO DECADE ??
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]
@@ -541,20 +475,16 @@ def run_surfex_binary(mode, **kwargs):
     print_namelist = kwargs["print_namelist"]
     masterodb = kwargs["masterodb"]
     logging.debug("masterodb %s", masterodb)
+
+    # TODO add this to assemble list
     forc_zs = False
     if "forc_zs" in kwargs:
         forc_zs = kwargs["forc_zs"]
 
     try:
-        consistency = kwargs["no_consistency"]
-        if consistency:
-            consistency = False
+        assemble_file = kwargs["assemble_file"]
     except KeyError:
-        consistency = True
-    try:
-        assemble = kwargs["assemble_file"]
-    except KeyError:
-        assemble = None
+        assemble_file = None
 
     if mode == "pgd":
         pgd = True
@@ -569,6 +499,7 @@ def run_surfex_binary(mode, **kwargs):
         pass
     elif mode == "perturbed":
         perturbed = True
+        mode = "offline"
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
@@ -617,91 +548,25 @@ def run_surfex_binary(mode, **kwargs):
         if os.path.isfile(namelist_path):
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
-            if assemble is not None:
-                with open(assemble, mode="r", encoding="utf8") as fh:
-                    assemble = json.load(fh)
-            nam_gen = NamelistGenerator(
-                mode, config, nam_defs, assemble=assemble, consistency=consistency
+            with open(assemble_file, mode="r", encoding="utf8") as file_handler:
+                assemble = yaml.safe_load(file_handler)
+            nam_gen = NamelistGeneratorAssemble(
+                mode, nam_defs, assemble, macros=nml_macros
             )
 
-            my_settings = nam_gen.nml
             if mode == "pgd":
-                my_settings = geo.update_namelist(my_settings)
+                nam_gen = geo.update_namelist(nam_gen)
+            my_settings = nam_gen.get_namelist()
             if input_binary_data is None:
                 raise RuntimeError("input_binary_data not set")
             with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
                 input_binary_data = json.load(file_handler)
 
+            print(nam_gen.nml)
             input_data = nam_gen.input_data_from_namelist(
-                input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
+                input_binary_data, system_file_paths, validtime=dtg, basetime=basetime, check_existence=check_existence
             )
-        elif os.path.isdir(namelist_path):
-            if mode == "pgd":
-                pgd = True
-                need_pgd = False
-                need_prep = False
-                input_data = PgdInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            elif mode == "prep":
-                prep = True
-                need_prep = False
-                input_data = PrepInputData(
-                    config,
-                    system_file_paths,
-                    check_existence=check_existence,
-                    prep_file=prep_input_file,
-                    prep_pgdfile=prep_input_pgdfile,
-                )
-            elif mode == "offline":
-                input_data = OfflineInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            elif mode == "soda":
-                input_data = SodaInputData(
-                    config,
-                    system_file_paths,
-                    check_existence=check_existence,
-                    masterodb=kwargs["masterodb"],
-                    perturbed_file_pattern=perturbed_file_pattern,
-                    dtg=dtg,
-                )
-            elif mode == "perturbed":
-                perturbed = True
-                input_data = OfflineInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            else:
-                raise NotImplementedError(mode + " is not implemented!")
-
-            blocks = False
-            if blocks:
-                my_settings = Namelist(
-                    mode,
-                    config,
-                    namelist_path,
-                    forc_zs=forc_zs,
-                    prep_file=prep_input_file,
-                    prep_filetype=prep_input_filetype,
-                    prep_pgdfile=prep_input_pgdfile,
-                    prep_pgdfiletype=prep_input_pgdfiletype,
-                    dtg=dtg,
-                    fcint=3,
-                ).get_namelist()
-            else:
-                my_settings = BaseNamelist(
-                    mode,
-                    config,
-                    namelist_path,
-                    forc_zs=forc_zs,
-                    prep_file=prep_input_file,
-                    prep_filetype=prep_input_filetype,
-                    prep_pgdfile=prep_input_pgdfile,
-                    prep_pgdfiletype=prep_input_pgdfiletype,
-                    dtg=dtg,
-                    fcint=3,
-                ).get_namelist()
-            geo.update_namelist(my_settings)
+        
         else:
             raise NotImplementedError
 
@@ -885,7 +750,7 @@ def run_gridpp(**kwargs):
 
 def run_titan(**kwargs):
     """Titan."""
-    __, domain_geo = get_geo_and_config_from_cmd(**kwargs)
+    domain_geo = get_geo_from_cmd(**kwargs)
     if "domain_geo" in kwargs:
         if domain_geo is not None:
             logging.info("Override domain with domain_geo")
@@ -959,29 +824,6 @@ def run_oi2soda(**kwargs):
 
     dtg = as_datetime(kwargs["dtg"])
     oi2soda(dtg, t2m=t2m, rh2m=rh2m, s_d=s_d, s_m=s_m, output=output)
-
-
-def run_hm2pysurfex(**kwargs):
-    """Harmonie to pysurfex."""
-    pysurfex_config = kwargs["config"]
-
-    output = None
-    if "output" in kwargs:
-        output = kwargs["output"]
-
-    environment = os.environ
-    if "environment" in kwargs:
-        environment_file = kwargs["environment"]
-        environment.update(json.load(open(environment_file, "r", encoding="utf-8")))
-
-    # Create configuration
-    config = ConfigurationFromHarmonieAndConfigFile(environment, pysurfex_config)
-
-    if output is None:
-        logging.info("Config settings %s", config.settings)
-    else:
-        with open(output, "w", encoding="utf-8") as fhandler:
-            toml.dump(config.settings, fhandler)
 
 
 def set_geo_from_stationlist(**kwargs):
@@ -1385,7 +1227,7 @@ def perturbed_offline(argv=None):
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
-    logging.info("************ offline ******************")
+    logging.info("************ perturbed ******************")
     run_surfex_binary("perturbed", **kwargs)
 
 
@@ -1509,30 +1351,6 @@ def masterodb(argv=None):
         )
     logging.info("************ masterodb ******************")
     run_masterodb(**kwargs)
-
-
-def hm2pysurfex(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_hm2pysurfex(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ hm2pysurfex ******************")
-    run_hm2pysurfex(**kwargs)
 
 
 def gridpp(argv=None):
@@ -1705,32 +1523,39 @@ def create_namelist(argv=None):
     logging.info("************ %s ******************", mode)
 
     logging.debug("ARGS: %s", kwargs)
-    config, __ = get_geo_and_config_from_cmd(**kwargs)
     mode = kwargs.get("mode")
 
-    system_file_paths = kwargs["system_file_paths"]
-    if os.path.exists(system_file_paths):
-        system_file_paths = SystemFilePathsFromFile(system_file_paths)
+    print(kwargs)
+    geo = get_geo_from_cmd(**kwargs)
+    if mode == "pgd" and geo is None:
+        raise RuntimeError("Geo is needed for PGD")
+    uppercase = kwargs.get("uppercase")
+    true_repr = kwargs.get("true_repr")
+    false_repr = kwargs.get("false_repr")
+    if uppercase:
+        false_repr = false_repr.upper()
+        true_repr = true_repr.upper()
     else:
-        raise FileNotFoundError("File not found: " + system_file_paths)
+        false_repr = false_repr.lower()
+        true_repr = true_repr.lower()
+    namelist_defs_file = kwargs.get("namelist_defs")
+    with open(namelist_defs_file, mode="r", encoding="utf-8") as file_handler:
+        nam_defs = yaml.safe_load(file_handler)
+
+    assemble_file = kwargs["assemble_file"]
+    with open(assemble_file, mode="r", encoding="utf-8") as file_handler:
+        assemble = yaml.safe_load(file_handler)
 
     output = kwargs.get("output")
     if output is None:
         output = "OPTIONS.nam"
 
-    namelist_path = kwargs.get("namelist_path")
-
-    with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
-        nam_defs = yaml.safe_load(file_handler)
-
-    config.update_setting("SURFEX#PREP#FILE", None)
-    config.update_setting("SURFEX#PREP#FILEPGD", None)
-    config.update_setting("SURFEX#SODA#HH", "00")
-
-    my_settings = NamelistGenerator(mode, config, nam_defs)
+    nam_gen = NamelistGeneratorAssemble(mode, nam_defs, assemble)
+    if geo is not None:
+        nam_gen = geo.update_namelist(nam_gen)
     if os.path.exists(output):
         os.remove(output)
-    my_settings.write(output)
+    nam_gen.write(output, uppercase=uppercase, true_repr=true_repr, false_repr=false_repr)
 
 
 def create_lsm_file_assim(argv=None):

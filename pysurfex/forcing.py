@@ -13,10 +13,9 @@ import numpy as np
 import toml
 
 from .cache import Cache
-from .configuration import ConfigurationFromHarmonie
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
-from .geo import get_geo_object
+from .geo import get_geo_object, ConfProjFromHarmonie
 from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
@@ -714,18 +713,7 @@ def set_forcing_config(**kwargs):
     """Set the forcing config."""
     file_base = None
     if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config_exp_surfex" in kwargs:
-            if kwargs["config_exp_surfex"] is not None:
-                config_exp = kwargs["config_exp_surfex"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo_out = config.geo
+        geo_out = ConfProjFromHarmonie()
     elif "domain" in kwargs and kwargs["domain"] is not None:
         geo_out = get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
     else:

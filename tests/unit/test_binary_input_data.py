@@ -9,15 +9,9 @@ import f90nml
 import pytest
 
 from pysurfex.binary_input import InputDataFromNamelist, JsonOutputData
-from pysurfex.binary_input_legacy import SodaInputData
-from pysurfex.configuration import ConfigurationFromTomlFile
 from pysurfex.datetime_utils import as_datetime
 from pysurfex.platform_deps import SystemFilePaths
 
-
-@pytest.fixture()
-def default_config(config_exp_surfex_toml):
-    return ConfigurationFromTomlFile(config_exp_surfex_toml)
 
 
 @pytest.fixture()
@@ -61,31 +55,6 @@ def get_system(climdir, assim_dir, first_guess_dir):
         "first_guess_dir": first_guess_dir,
     }
     return SystemFilePaths(system)
-
-
-@pytest.fixture()
-def soda_input_data(default_config, get_system, an_time):
-    return SodaInputData(default_config, get_system, check_existence=False, dtg=an_time)
-
-
-def test_soda_oi(soda_input_data):
-    soda_input_data.set_input_vertical_soil_oi()
-
-
-def test_soda_enkf(soda_input_data):
-    soda_input_data.set_input_vertical_soil_enkf()
-
-
-def test_soda_ekf(soda_input_data):
-    soda_input_data.set_input_vertical_soil_ekf()
-
-
-def test_soda_observations(soda_input_data):
-    soda_input_data.set_input_observations()
-
-
-def test_soda_sea_assimilation(soda_input_data):
-    soda_input_data.set_input_sea_assimilation()
 
 
 @contextlib.contextmanager

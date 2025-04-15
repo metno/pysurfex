@@ -14,7 +14,7 @@ except Exception:
     ogr = None
 
 
-from .namelist_legacy import BaseNamelist
+from .namelist import NamelistGenerator
 
 
 class Geo(object):
@@ -188,7 +188,7 @@ class ConfProj(SurfexGeo):
         """
         self.cgrid = "CONF PROJ"
         self.json = from_json
-        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = NamelistGenerator.lower_case_namelist_dict(from_json)
 
         logging.debug("from_json: %s", from_json)
         self.ilone = None
@@ -277,15 +277,17 @@ class ConfProj(SurfexGeo):
         logging.debug("lats.shape=%s", lats)
         SurfexGeo.__init__(self, proj, lons, lats)
 
-    def update_namelist(self, nml):
+    def update_namelist(self, nam_nml):
         """Update namelist.
 
         Args:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
 
         Returns:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
         """
+        nml = nam_nml.nml
+        
         nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},
@@ -311,7 +313,8 @@ class ConfProj(SurfexGeo):
             nml["nam_conf_proj_grid"].update({"ilate": self.ilate})
         if self.xtrunc is not None:
             nml["nam_conf_proj_grid"].update({"xtrunc": self.xtrunc})
-        return nml
+        nam_nml.nml = nml
+        return nam_nml
 
     def subset(self, geo):
         """Find subset of geo.
@@ -360,6 +363,49 @@ class ConfProj(SurfexGeo):
         return lons, lats
 
 
+class ConfProjFromHarmonie(ConfProj):
+    """Conf proj."""
+
+    def __init__(self, env=None):
+
+        if env is None:
+            env = os.environ
+
+        # Set domain from environment variables. Geo is alway conf proj
+        ezone = int(env["EZONE"])
+        ndluxg = int(env["NLON"]) - ezone
+        if "LNDLUXG" in env:
+            ndluxg = int(env["LNDLUXG"])
+        ndguxg = int(env["NLAT"]) - ezone
+        if "LNDGUXG" in env:
+            ndguxg = int(env["LNDGUXG"])
+        gsize = float(env["GSIZE"])
+        if "LGSIZE" in env:
+            gsize = float(env["LGSIZE"])
+        trunc = 2  # linear
+        if "TRUNC" in env:
+            trunc = float(env["TRUNC"])
+        domain_dict = {
+            "nam_pgd_grid": {"cgrid": "CONF PROJ"},
+            "nam_conf_proj": {
+                "xlat0": float(env["LAT0"]),
+                "xlon0": float(env["LON0"]),
+            },
+            "nam_conf_proj_grid": {
+                "ilone": ezone,
+                "ilate": ezone,
+                "xlatcen": float(env["LATC"]),
+                "xloncen": float(env["LONC"]),
+                "nimax": ndluxg,
+                "njmax": ndguxg,
+                "xdx": gsize,
+                "xdy": gsize,
+                "xtrunc": trunc,
+            },
+        }
+        ConfProj.__init__(self, domain_dict)
+
+
 class LonLatVal(SurfexGeo):
     """LonLatVal."""
 
@@ -378,7 +424,7 @@ class LonLatVal(SurfexGeo):
         """
         self.cgrid = "LONLATVAL"
         self.json = from_json
-        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = NamelistGenerator.lower_case_namelist_dict(from_json)
 
         if "nam_lonlatval" in domain_dict:
             if "xx" and "xy" and "xdx" and "xdy" in domain_dict["nam_lonlatval"]:
@@ -395,16 +441,16 @@ class LonLatVal(SurfexGeo):
         else:
             raise KeyError("Missing key")
 
-    def update_namelist(self, nml):
+    def update_namelist(self, nam_nml):
         """Update namelist.
 
         Args:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
 
         Returns:
-            nml (f90nml.Namelist): Namelist object.
+            nml (NamelistGenerator): Namelist object.
         """
-        nml.update(
+        nam_nml.nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},
                 "nam_lonlatval": {
@@ -415,7 +461,7 @@ class LonLatVal(SurfexGeo):
                 },
             }
         )
-        return nml
+        return nam_nml
 
     def subset(self, geo):
         """Find subset of geo.
@@ -448,7 +494,7 @@ class Cartesian(SurfexGeo):
         """
         self.cgrid = "CARTESIAN"
         self.json = from_json
-        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = NamelistGenerator.lower_case_namelist_dict(from_json)
 
         if "nam_cartesian" in domain_dict:
             if (
@@ -479,17 +525,16 @@ class Cartesian(SurfexGeo):
         else:
             raise KeyError("Missing key")
 
-    def update_namelist(self, nml):
+    def update_namelist(self, nam_nml):
         """Update namelist.
 
         Args:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
 
         Returns:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
         """
-        print(nml)
-        nml.update(
+        nam_nml.nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},
                 "nam_cartesian": {
@@ -502,7 +547,7 @@ class Cartesian(SurfexGeo):
                 },
             }
         )
-        return nml
+        return nam_nml
 
     def subset(self, geo):
         """Find subset of geo.
@@ -537,7 +582,7 @@ class LonLatReg(SurfexGeo):
         """
         self.cgrid = "LONLAT REG"
         self.json = from_json
-        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = NamelistGenerator.lower_case_namelist_dict(from_json)
 
         if "nam_lonlat_reg" in domain_dict:
             if (
@@ -579,16 +624,16 @@ class LonLatReg(SurfexGeo):
         logging.debug("longitudes=%s latitudes=%s", longitudes.shape, latitudes.shape)
         SurfexGeo.__init__(self, proj, longitudes, latitudes)
 
-    def update_namelist(self, nml):
+    def update_namelist(self, nam_nml):
         """Update namelist.
 
         Args:
-            nml (f90nml.Namelist): Namelist object.
+            nml (NamelistGenerator): Namelist object.
 
         Returns:
-            nml (f90nml.Namelist): Namelist object.
+            nml (NamelistGenerator): Namelist object.
         """
-        nml.update(
+        nam_nml.nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},
                 "nam_lonlat_reg": {
@@ -601,7 +646,7 @@ class LonLatReg(SurfexGeo):
                 },
             }
         )
-        return nml
+        return nam_nml
 
     def subset(self, geo):
         """Find subset of geo.
@@ -637,7 +682,7 @@ class IGN(SurfexGeo):
         """
         self.cgrid = "IGN"
         self.json = from_json
-        domain_dict = BaseNamelist.lower_case_namelist_dict(from_json)
+        domain_dict = NamelistGenerator.lower_case_namelist_dict(from_json)
 
         if "nam_ign" in domain_dict:
             if (
@@ -826,16 +871,16 @@ class IGN(SurfexGeo):
         logging.info("Created mask: %s", mask)
         return mask
 
-    def update_namelist(self, nml):
+    def update_namelist(self, nam_nml):
         """Update namelist.
 
         Args:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
 
         Returns:
-            nml (f90nml.Namelist): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
         """
-        nml.update(
+        nam_nml.nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},
                 "nam_ign": {
@@ -853,7 +898,7 @@ class IGN(SurfexGeo):
                 },
             }
         )
-        return nml
+        return nam_nml
 
     def subset(self, geo):
         """Find subset of geo.

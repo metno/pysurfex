@@ -32,9 +32,8 @@ def prep_file(tmp_path_factory):
 def test_create_namelist(
     tmp_path_factory,
     mode,
-    config_exp_surfex_toml,
     get_nam_file,
-    get_system,
+    get_assemble_file,
     conf_proj_2x3_file,
 ):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_{mode}"
@@ -42,16 +41,14 @@ def test_create_namelist(
         create_namelist(argv=["fail"])
 
     argv = [
-        "-c",
-        config_exp_surfex_toml,
         "-n",
         get_nam_file,
+        "--assemble-file",
+        get_assemble_file,
         "-o",
         output,
         "--domain",
         conf_proj_2x3_file,
-        "-s",
-        get_system,
         mode,
     ]
     create_namelist(argv=argv)

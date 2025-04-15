@@ -9,7 +9,7 @@ from .geo import ConfProj
 from .platform_deps import SystemFilePaths
 from .util import merge_toml_env
 
-
+'''
 class Configuration(object):
     """Configuration class."""
 
@@ -906,3 +906,4 @@ class ConfigurationFromTomlFile(Configuration):
         with open(filename, mode="r", encoding="utf-8") as fhandler:
             settings = toml.load(fhandler)
         Configuration.__init__(self, settings)
+'''

@@ -230,6 +230,13 @@ def get_nam_file():
 
 
 @pytest.fixture(scope="module")
+def get_assemble_file():
+    fname = (
+        f"{os.path.abspath(os.path.dirname(__file__))}/../examples/assemble.yml"
+    )
+    return fname
+
+@pytest.fixture(scope="module")
 def input_binary_data_file():
     fname = (
         f"{os.path.abspath(os.path.dirname(__file__))}/../examples/binary_input_data.json"

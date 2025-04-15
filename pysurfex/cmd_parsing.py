@@ -856,9 +856,10 @@ def parse_args_masterodb(argv):
         "--no-consistency", dest="no_consistency", action="store_true", required=False
     )
     parser.add_argument(
-        "--assemble",
+        "--assemble-file",
+        dest="assemble_file",
         type=str,
-        required=False,
+        required=True,
         help="Path to file containing list of namelist blocks",
         default=None,
     )
@@ -966,7 +967,6 @@ def parse_args_surfex_binary(argv, mode):
         "--input_binary_data", "-i", dest="input_binary_data", required=False
     )
     parser.add_argument("--rte", "-r", required=True, nargs="?")
-    parser.add_argument("--config", "-c", required=False, nargs="?")
     parser.add_argument(
         "--system_file_paths",
         "-s",
@@ -997,12 +997,10 @@ def parse_args_surfex_binary(argv, mode):
     )
     parser.add_argument("binary", type=str, help="Command to run")
     parser.add_argument(
-        "--no-consistency", dest="no_consistency", action="store_true", required=False
-    )
-    parser.add_argument(
-        "--assemble",
+        "--assemble-file",
+        dest="assemble_file",
         type=str,
-        required=False,
+        required=True,
         help="Path to file containing list of namelist blocks",
         default=None,
     )
@@ -1041,16 +1039,17 @@ def parse_args_create_namelist(argv):
         help="Surfex configuration created from Harmonie environment",
     )
     parser.add_argument(
-        "--system_file_paths",
-        "-s",
+        "--assemble-file",
+        "-a",
+        dest="assemble_file",
         required=True,
-        nargs="?",
         help="Input file paths on your system",
     )
-    parser.add_argument("--config", "-c", required=False, nargs="?")
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
-    parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
+    parser.add_argument("--namelist-defs", "-n", dest="namelist_defs", required=True)
+    parser.add_argument("--uppercase", action="store_true", required=False, default=False)
+    parser.add_argument("--true_repr", type=str, required=False, default=".TRUE.")
+    parser.add_argument("--false_repr", type=str, required=False, default=".FALSE.")
+    parser.add_argument("--domain", "-d", dest="domain", type=str, required=False, help="JSON file with domain"
     )
     parser.add_argument("--output", "-o", type=str, required=False)
 
