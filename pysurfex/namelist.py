@@ -12,7 +12,7 @@ from .binary_input import InputDataFromNamelist
 class NamelistGenerator(object):
     """Namelist class."""
 
-    def __init__(self, nml, macros=None, micro="@"):
+    def __init__(self, program, nml, macros=None, micro="@"):
         """Construct a base namelists class.
 
         Args:
@@ -21,12 +21,27 @@ class NamelistGenerator(object):
             assemble(dict): Assembly order. Defines the configuration
             macros(dict, optional): Macros
         """
+        self.program = program
         self.nml = nml
+        if macros is None:
+            macros = {}
         self.macros = macros
         self.micro = micro
 
     def get_namelist(self):
         """Get namelist."""
+        for bkey, block in self.nml.items():
+            items = {}
+            for key, val in block.items():
+                items.update({key: val})
+                for mkey, mval in self.macros.items():
+                    if isinstance(val, str):
+                        val = val.replace(f"{self.micro}{mkey}{self.micro}", f"{mval}")
+                        if val == f"{mval}":
+                            if isinstance(mval, int) or isinstance(mval, float):
+                                val = mval
+                    items.update({key: val})
+            self.nml[bkey].update(items)
         return self.nml
 
     def input_data_from_namelist(
@@ -45,7 +60,24 @@ class NamelistGenerator(object):
 
         """
         logging.info("Set input data from namelist for program: %s", self.program)
-             
+
+        def process_macros(data):
+            for k, v in data.copy().items():
+                if isinstance(v, dict):     # For DICT
+                    data[k] = process_macros(v)
+                elif isinstance(v, list):   # For LIST
+                    data[k] = [process_macros(i) for i in v]
+                else:
+                    for macro, mval in self.macros.items():
+                        if isinstance(v, str) and isinstance(mval, str):
+                            v = v.replace(f"{self.micro}{macro}{self.micro}", mval)
+                    data[k] = v
+            return data
+
+        # Substitute macros in binary input data
+        if self.macros is not None:
+            input_data = process_macros(input_data)
+
         data_obj = InputDataFromNamelist(
             self.nml,
             input_data,
@@ -54,16 +86,7 @@ class NamelistGenerator(object):
             basetime=basetime,
             validtime=validtime,
         )
-        # Substitute macros in binary input data
-        if self.macros is not None:
-            print(self.macros)
-            print(data_obj.data)
-            for key, val in data_obj.data.items():
-                for macro, mval in self.macros.items():
-                    print(val, mval)
-                    if isinstance(val, str) and isinstance(mval, str):
-                        val = val.replace(f"{self.micro}{macro}{self.micro}", mval)
-                data_obj.data.update({key: val})
+
         if check_existence:
             for __, val in data_obj.data.items():
                 if not os.path.exists(val):
@@ -82,7 +105,7 @@ class NamelistGenerator(object):
         self.nml.false_repr = false_repr
         self.nml.write(output_file, force=True)
         logging.debug("Wrote: %s", output_file)
-    
+
     @staticmethod
     def lower_case_namelist_dict(dict_in):
         """Lower case namelist.
@@ -103,6 +126,15 @@ class NamelistGenerator(object):
         return new_dict
 
 
+class NamelistGeneratorFromNamelistFile(NamelistGenerator):
+    """Namelist class."""
+
+    def __init__(self, program, nml_file, macros=None, micro="@"):
+        parser = f90nml.Parser()
+        nml = parser.read(nml_file)
+        NamelistGenerator.__init__(self, program, nml, macros=macros, micro=micro)
+
+
 class NamelistGeneratorAssemble(NamelistGenerator):
     """Namelist class."""
 
@@ -115,7 +147,6 @@ class NamelistGeneratorAssemble(NamelistGenerator):
             assemble(dict): Assembly order. Defines the configuration
             macros(dict, optional): Macros
         """
-        self.program = program
         self.nldict = definitions
         if macros is None:
             macros = {}
@@ -123,12 +154,12 @@ class NamelistGeneratorAssemble(NamelistGenerator):
 
         self.assemble = assemble
         logging.info("Namelist blocks for program %s: %s", program, self.assemble)
-        nlres = self.assemble_namelist()
+        nlres = self.assemble_namelist(program)
         nml = f90nml.Namelist(nlres)
-        NamelistGenerator.__init__(self, nml, macros=macros, micro=micro)
+        NamelistGenerator.__init__(self, program, nml, macros=macros, micro=micro)
 
 
-    def assemble_namelist(self):
+    def assemble_namelist(self, program):
         """Generate the namelists for 'target'.
 
         Raises:
@@ -141,7 +172,7 @@ class NamelistGeneratorAssemble(NamelistGenerator):
         # Read namelist file with all the categories
 
         # Check target is valid
-        cndict = self.assemble[self.program]
+        cndict = self.assemble[program]
         nldict = self.nldict
 
         # Start with empty result dictionary

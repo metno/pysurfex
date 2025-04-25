@@ -55,6 +55,24 @@ def conf_proj_2x3_dict():
 
 
 @pytest.fixture(scope="module")
+def conf_proj_2x3_dict_metcoop_b():
+    conf_proj_2x3_dict = {
+        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
+        "nam_conf_proj": {"xlat0": 63.5, "xlon0": 15.0},
+        "nam_conf_proj_grid": {
+            "ilone": 1,
+            "ilate": 1,
+            "xlatcen": 63.0,
+            "xloncen": 15.0,
+            "nimax": 2,
+            "njmax": 3,
+            "xdx": 10000.0,
+            "xdy": 10000.0,
+        },
+    }
+    return conf_proj_2x3_dict
+
+@pytest.fixture(scope="module")
 def conf_proj_2x3(conf_proj_2x3_dict):
     return ConfProj(conf_proj_2x3_dict)
 
@@ -194,40 +212,23 @@ def qc_dataset(obstime_str):
 
 
 @pytest.fixture(scope="module")
-def get_nam_path(tmp_path_factory):
-    nam_dir = f"{tmp_path_factory.getbasetemp().as_posix()}/nam"
-    if not os.path.exists(nam_dir):
-        os.makedirs(nam_dir, exist_ok=True)
-    files = [
-        "io",
-        "constants",
-        "rsmin",
-        "rsmin_mod",
-        "cv",
-        "sea",
-        "treedrag",
-        "flake",
-        "prep_from_namelist_values",
-        "prep",
-        "prep_snow",
-        "offline",
-        "soda",
-        "selected_output",
-        "override",
-    ]
-    for fff in files:
-        with open(f"{nam_dir}/{fff}.json", mode="w", encoding="utf-8") as nam:
-            json.dump({}, nam)
-    return nam_dir
-
-
-@pytest.fixture(scope="module")
 def get_nam_file():
     fname = (
         f"{os.path.abspath(os.path.dirname(__file__))}/../examples/surfex_namelists.yml"
     )
     return fname
 
+@pytest.fixture(scope="module")
+def get_options_nam_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/OPTIONS.nam"
+    with open(fname, mode="w", encoding="utf8") as fhandler:
+        fhandler.write("&nam_io_offline\n")
+        fhandler.write("  csurf_filetype='NC'\n")
+        fhandler.write("  cpgdfile='PGD'\n")
+        fhandler.write("  cprepfile='PREP'\n")
+        fhandler.write("  csurffile='SURFOUT'\n")
+        fhandler.write("/\n")
+    return fname
 
 @pytest.fixture(scope="module")
 def get_assemble_file():
@@ -604,6 +605,14 @@ air_temperature_ml =
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0;
 
+x_wind_10m =
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+y_wind_10m =
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0;
+
 air_temperature_2m =
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
 272.0, 273.0, 274.0, 275.0, 276.0, 277.0;
@@ -623,6 +632,103 @@ liquid_water_content_of_surface_snow =
     )
     return fname
 
+
+
+@pytest.fixture()
+def data_thredds_nc_file_aa(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write(
+            """
+netcdf aa_thredds {
+dimensions:
+        time = UNLIMITED ;
+        height7 = 1 ;
+        x = 5 ;
+        y = 6 ;
+variables:
+        double time(time) ;
+                time:long_name = "time" ;
+                time:standard_name = "time" ;
+                time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;
+        double forecast_reference_time ;
+                forecast_reference_time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;
+                forecast_reference_time:standard_name = "forecast_reference_time" ;
+        int projection_lambert ;
+                projection_lambert:grid_mapping_name = "lambert_conformal_conic" ;
+                projection_lambert:standard_parallel = 77.5, 77.5 ;
+                projection_lambert:longitude_of_central_meridian = 23.0 ;
+                projection_lambert:latitude_of_projection_origin = 75.4 ;
+                projection_lambert:earth_radius = 6371000. ;
+                projection_lambert:proj4 = "+proj=lcc +lat_0=77.5 +lon_0=-25.0 +lat_1=77.5 +lat_2=77.5 +no_defs +R=6.371e+06" ;
+        float x(x) ;
+        float y(y) ;
+        double longitude(y, x) ;
+        double latitude(y, x) ;
+        float x_wind_10m(time, height7, y, x) ;
+        float y_wind_10m(time, height7, y, x) ;
+
+        float height7(height7) ;
+
+data:
+
+forecast_reference_time = 1582178400;
+
+time = 1582178400, 1582182000;
+
+height7 = 10;
+
+x = 1, 2, 3, 4, 5;
+
+y = 1, 2, 3, 4, 5, 6;
+
+longitude =
+22.71561383, 22.77678257, 22.83781655, 22.8987161 , 22.95948152,
+22.78040195, 22.84156292, 22.90258887, 22.96348013, 23.024237  ,
+22.8453254 , 22.90647829, 22.9674959 , 23.02837854, 23.08912655,
+22.91038445, 22.97152893, 23.03253788, 23.0934116 , 23.15415042,
+22.97557935, 23.03671512, 23.09771508, 23.15857956, 23.21930888,
+23.04091038, 23.1020371 , 23.16302776, 23.22388268, 23.28460218;
+
+latitude =
+75.39421006, 75.3778817 , 75.36153744, 75.34517733, 75.32880143,
+75.40964289, 75.39329735, 75.37693593, 75.36055868, 75.34416567,
+75.4250578 , 75.40869506, 75.39231647, 75.37592208, 75.35951193,
+75.44045473, 75.4240748 , 75.40767902, 75.39126746, 75.37484017,
+75.45583364, 75.43943648, 75.42302351, 75.40659477, 75.39015032,
+75.47119446, 75.45478007, 75.43834987, 75.42190394, 75.40544232;
+
+x_wind_10m =
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+y_wind_10m =
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0;
+}
+"""
+        )
+    Dataset(fname, mode="w").fromcdl(
+        cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
+    )
+    return fname
+
+'''
+longitude =
+22.71561383, 22.78040195, 22.8453254,  22.91038445, 22.97557935, 23.04091038,
+22.77678257, 22.84156292, 22.90647829, 22.97152893, 23.03671512, 23.1020371,
+22.83781655, 22.90258887, 22.9674959,  23.03253788, 23.09771508, 23.16302776,
+22.8987161,  22.96348013, 23.02837854, 23.0934116,  23.15857956, 23.22388268,
+22.95948152, 23.024237,   23.08912655, 23.15415042, 23.21930888, 23.28460218;
+
+latitude =
+75.39421006, 75.40964289, 75.4250578,  75.44045473, 75.45583364, 75.47119446,
+75.3778817,  75.39329735, 75.40869506, 75.4240748,  75.43943648, 75.45478007,
+75.36153744, 75.37693593, 75.39231647, 75.40767902, 75.42302351, 75.43834987,
+75.34517733, 75.36055868, 75.37592208, 75.39126746, 75.40659477, 75.42190394,
+75.32880143, 75.34416567, 75.35951193, 75.37484017, 75.39015032, 75.40544232;
+'''
 
 @pytest.fixture()
 def data_surfex_pgd_nc_file(tmp_path_factory):

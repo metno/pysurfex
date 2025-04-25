@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import toml
 
-from pysurfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda
+from pysurfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda, canari
 from pysurfex.util import merge_toml_env_from_files
 
 
@@ -74,6 +74,7 @@ def get_system(tmp_path_factory):
     return system_file
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_pgd(
     get_rte_file,
@@ -83,6 +84,7 @@ def test_run_pgd(
     get_assemble_file,
     tmp_path_factory,
     input_binary_data_file,
+    debug
 ):
     """Test run NC."""
     # PGD
@@ -109,12 +111,84 @@ def test_run_pgd(
         "--tolerate_missing",
         "-o",
         output,
+        "--binary",
+        binary,
+    ]
+    if debug:
+        argv += ["--debug"]
+    with working_directory(tmp_path_factory.getbasetemp()):
+        pgd(argv=argv)
+    with pytest.raises(SystemExit):
+        pgd()
+
+    argv = [
+        "-w",
+        "",
+        "--domain",
+        conf_proj_2x3_file,
+        "-s",
+        get_system,
+        "-n",
+        get_nam_file,
+        "--assemble-file",
+        get_assemble_file,
+        "-i",
+        input_binary_data_file,
+        "-f",
+        "--tolerate_missing",
+        "--one-decade",
+        "--basetime",
+        "2020022006",
+        "-o",
+        output,
+        "--binary",
+        binary,
+    ]
+    if debug:
+        argv += ["--debug"]
+    with working_directory(tmp_path_factory.getbasetemp()):
+        pgd(argv=argv)
+
+@pytest.mark.usefixtures("_mockers")
+def test_run_pgd_from_nml(
+    get_rte_file,
+    get_system,
+    conf_proj_2x3_file,
+    get_options_nam_file,
+    tmp_path_factory,
+    input_binary_data_file,
+):
+    """Test run NC."""
+    # PGD
+
+    output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/PGD_test.nc"
+    binary = "touch PGD.nc"
+
+    argv = [
+        "-w",
+        "",
+        "--domain",
+        conf_proj_2x3_file,
+        "-s",
+        get_system,
+        "-n",
+        get_options_nam_file,
+        "-i",
+        input_binary_data_file,
+        "-r",
+        get_rte_file,
+        "-f",
+        "--tolerate_missing",
+        "-o",
+        output,
+        "--binary",
         binary,
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         pgd(argv=argv)
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_prep(
     get_system,
@@ -124,6 +198,7 @@ def test_run_prep(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
+    debug
 ):
     # PREP
 
@@ -153,12 +228,18 @@ def test_run_prep(
         "--tolerate_missing",
         "-o",
         output,
+        "--binary",
         binary,
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         prep(argv=argv)
+    with pytest.raises(SystemExit):
+        prep()
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_offline(
     get_rte_file,
@@ -168,6 +249,7 @@ def test_run_offline(
     tmp_path_factory,
     conf_proj_2x3_file,
     input_binary_data_file,
+    debug
 ):
     # OFFLINE
 
@@ -204,12 +286,18 @@ def test_run_offline(
         "--forc_zs",
         "--forcing_dir",
         "testdata",
+        "--binary",
         binary,
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         offline(argv=argv)
+    with pytest.raises(SystemExit):
+        offline()
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_perturbed(
     get_rte_file,
@@ -219,6 +307,7 @@ def test_run_perturbed(
     tmp_path_factory,
     conf_proj_2x3_file,
     input_binary_data_file,
+    debug
 ):
     # PERTURBED OFFLINE
 
@@ -257,12 +346,17 @@ def test_run_perturbed(
         "--forc_zs",
         "--forcing_dir",
         "testdata",
+        "--binary",
         binary,
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         perturbed_offline(argv=argv)
+    with pytest.raises(SystemExit):
+        perturbed_offline()
 
-
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_soda(
     get_system,
@@ -272,6 +366,7 @@ def test_run_soda(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
+    debug
 ):
     # SODA
 
@@ -301,18 +396,24 @@ def test_run_soda(
         input_binary_data_file,
         "-r",
         get_rte_file,
-        "--dtg",
+        "--basetime",
         "2020022006",
         "-f",
         "--tolerate_missing",
         "-o",
         output,
+        "--binary",
         binary,
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         soda(argv)
+    with pytest.raises(SystemExit):
+        soda()
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_forecast(
     get_system,
@@ -322,6 +423,7 @@ def test_masterodb_forecast(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
+    debug
 ):
     """Test masterodb."""
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -334,8 +436,6 @@ def test_masterodb_forecast(
     argv = [
         "-w",
         "",
-        "-m",
-        "forecast",
         "--domain",
         conf_proj_2x3_file,
         "--pgd",
@@ -356,13 +456,18 @@ def test_masterodb_forecast(
         "--tolerate_missing",
         "-o",
         output,
-        "-b",
-        binary,
+        "--binary",
+        binary
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         masterodb(argv=argv)
+        assert (os.path.exists("ICMSHHARM+0003.fa"))
+    with pytest.raises(SystemExit):
+        masterodb()
 
-
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_masterodb_canari(
     get_system,
@@ -372,6 +477,7 @@ def test_masterodb_canari(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
+    debug
 ):
     # CANARI
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -379,12 +485,9 @@ def test_masterodb_canari(
     prep = tmp_path_factory.getbasetemp() / "ICMSHHARMINIT.sfx"
     prep.touch()
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ICMSHANAL+0000.sfx"
-    binary = "touch ICMSHANAL.sfx"
     argv = [
         "-w",
         "",
-        "-m",
-        "canari",
         "--domain",
         conf_proj_2x3_file,
         "--pgd",
@@ -401,14 +504,14 @@ def test_masterodb_canari(
         input_binary_data_file,
         "-r",
         get_rte_file,
-        "--dtg",
+        "--basetime",
         "2020022006",
         "-f",
         "--tolerate_missing",
         "-o",
         output,
-        "-b",
-        binary,
     ]
+    if debug:
+        argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
-        masterodb(argv=argv)
+        canari(argv=argv)

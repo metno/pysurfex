@@ -10,6 +10,7 @@
 
 [tool.poetry.scripts]
     bufr2json = "pysurfex.cli:bufr2json"
+    canari = "pysurfex.cli:canari"
     create_forcing = "pysurfex.cli:create_forcing"
     create_lsm_file = "pysurfex.cli:create_lsm_file_assim"
     create_namelist = "pysurfex.cli:create_namelist"

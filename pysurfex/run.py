@@ -306,13 +306,6 @@ class Masterodb(object):
             logging.info("Run binary with namelist EXSEG1.nam: %s", self.binary)
             self.batch.run(self.binary)
 
-    def archive_output(self):
-        """Archive output."""
-        # Archive output
-        self.surfout.archive_output_file()
-        if self.archive is not None:
-            self.archive.archive_files()
-
 
 # TODO is it used?
 def create_working_dir(workdir, enter=True):

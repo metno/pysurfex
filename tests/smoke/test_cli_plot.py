@@ -31,8 +31,9 @@ def test_plot_grib1(tmp_path_factory, conf_proj_2x3_file, lambert_t2m_grib1):
     plot_points(argv=argv)
 
 
+@pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
-def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2):
+def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2, debug):
     """Test plotting from grib2."""
     output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/output_plot_grib2.png"
     argv = [
@@ -59,6 +60,8 @@ def test_plot_grib2(tmp_path_factory, conf_proj_2x3_file, lambert_t1_grib2):
         "-if",
         lambert_t1_grib2,
     ]
+    if debug:
+        argv += ["--debug"]
     plot_points(argv=argv)
 
 
@@ -94,7 +97,6 @@ def test_plot_obs_frost_json(tmp_path_factory, obsset_fname, obstime_str):
     argv = [
         "-o",
         output_file,
-        "--debug",
         "variable",
         "-it",
         "obs",
@@ -108,3 +110,5 @@ def test_plot_obs_frost_json(tmp_path_factory, obsset_fname, obstime_str):
         obsset_fname,
     ]
     plot_points(argv=argv)
+    with pytest.raises(SystemExit):
+        plot_points()

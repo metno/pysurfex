@@ -499,16 +499,20 @@ class AsciiOutput(SurfexOutputForcing):
 
 def write_formatted_array(file, array, columns, fileformat):
     """Write a formatted array."""
-    astr = np.empty(array.size - array.size % columns, dtype="float64")
-    astr = array[0 : astr.size]
-    astr = astr.reshape((columns, astr.size / columns), order="F")
-    mlw = (len(fileformat % 0)) * (columns + 1)
-    formatter = {"float_kind": lambda x: fileformat % x}
-    astr_end = np.array2string(
-        array[astr.size :], separator="", max_line_width=mlw, formatter=formatter
-    )[1:-1]
-    np.savetxt(file, astr.T, fmt=fileformat, newline="\n", delimiter="")
-    file.write(astr_end + "\n")
+
+    full_lines = int(array.size / columns)
+    extra = array.size % columns
+    first = array.size - extra
+    astr = np.empty(columns*full_lines, dtype="float64")
+    array = array.flatten()
+    astr = array[0 : columns*full_lines]
+    astr1 = astr.reshape(columns, full_lines, order="F")
+    np.savetxt(file, astr1.T, fmt=fileformat, newline="\n", delimiter="")
+    if extra != 0:
+        astr2 = np.empty(extra, dtype="float64")
+        astr2 = array[first: array.size]
+        astr2 = astr2.reshape(extra, 1, order="F")
+        np.savetxt(file, astr2.T, fmt=fileformat, newline="\n", delimiter="")
 
 
 def run_time_loop(options, var_objs, att_objs):

@@ -42,7 +42,7 @@ io:
     LFAGMAP: true
     LRESTART: true
     LRESTART_2M: true
-    LSET_FORC_ZS: true
+    LSET_FORC_ZS: false
     NHALO: 0
     XTSTEP_OUTPUT: 21600
     XTSTEP_SURF: 600

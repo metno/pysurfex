@@ -208,8 +208,6 @@ class Interpolation(object):
                     interpolated_field = new_field.reshape(self.npoints)
             return interpolated_field
 
-    def rotate_wind_to_geographic(self):
-        """Not implemented."""
 
     @staticmethod
     def distance(lon1, lat1, lon2, lat2):
@@ -248,6 +246,7 @@ class Interpolation(object):
         lon = self.var_lons
         lat = self.var_lats
         n_x = lat.shape[0]
+        n_y = lat.shape[1]
         dlon = np.zeros(lat.shape)
         dlat = np.zeros(lat.shape)
         i_1 = np.arange(n_x - 1)
@@ -266,7 +265,8 @@ class Interpolation(object):
             lon[-2, :], lat[-2, :], lon[-2, :], lat[-1, :]
         )
 
-        alpha = np.rad2deg(np.arctan2(dlon, dlat))
+        alpha = np.rad2deg(np.arctan2(dlon, dlat)) - 90
+        alpha = alpha.reshape((n_x, n_y))
         return alpha
 
 
@@ -520,7 +520,7 @@ def horizontal_oi(
 
     # Remove undefined backgrounds
     if any(np.isnan(pbackground)):
-        print("Found undefined backgrounds. Remove them")
+        logging.info("Found undefined backgrounds. Remove them")
         lons2 = []
         lats2 = []
         elevs2 = []

@@ -7,6 +7,7 @@ import numpy as np
 from .datetime_utils import as_timedelta
 from .fa import Fa
 from .file import SurfexFileVariable, get_surfex_io_object
+from .interpolation import Interpolation
 from .geo import get_geo_object_from_json_file
 from .grib import Grib, Grib1Variable, Grib2Variable
 from .input_methods import get_datasources
@@ -67,6 +68,7 @@ class Variable(object):
         self.file_var = file_var
         self.instant = instant
         self.accumulated = accumulated
+        self.alpha = None
         logging.debug("Constructed variable for %s", str(self.var_dict))
 
     def get_filename(self, validtime, previoustime=None):
@@ -233,8 +235,8 @@ class Variable(object):
                     field, interpolator = filehandler.points(
                         var, geo, interpolation=interpolation, validtime=validtime
                     )
-
-                    field = self.rotate_geographic_wind(field, interpolator)
+                    # Set alpha if requested
+                    self.rotate_geographic_wind(interpolator)
                 if field is not None:
                     logging.debug("field.shape %s", field.shape)
 
@@ -565,11 +567,10 @@ class Variable(object):
         logging.debug("           Basetime is: %s", basetime)
         return basetime
 
-    def rotate_geographic_wind(self, field, interpolator):
+    def rotate_geographic_wind(self, interpolator):
         """Rotate wind.
 
         Args:
-            field (_type_): _description_
             interpolator (_type_): _description_
 
         Returns:
@@ -580,7 +581,6 @@ class Variable(object):
         if "rotate_to_geographic" in self.var_dict:
             rotate_wind = self.var_dict["rotate_to_geographic"]
         if rotate_wind:
-            field = interpolator.rotate_wind_to_geographic(field)
-            return field
-        else:
-            return field
+            alpha_grid = interpolator.alpha_grid_rot()
+            alpha_interpolation = Interpolation("nearest", interpolator.geo_in, interpolator.geo_out)
+            self.alpha = alpha_interpolation.interpolate(alpha_grid)

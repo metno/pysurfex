@@ -762,7 +762,7 @@ def parse_args_first_guess_for_oi(argv):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
 
-
+'''
 def parse_args_masterodb(argv):
     """Parse the command line input arguments for masterodb.
 
@@ -811,7 +811,8 @@ def parse_args_masterodb(argv):
         nargs="?",
         help="Input file paths on your system",
     )
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
+    parser.add_argument("--namelist_path", "-n", required=True, nargs="?",
+                        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
     parser.add_argument(
         "--domain", type=str, required=False, help="JSON file with domain"
     )
@@ -859,7 +860,7 @@ def parse_args_masterodb(argv):
         "--assemble-file",
         dest="assemble_file",
         type=str,
-        required=True,
+        required=False,
         help="Path to file containing list of namelist blocks",
         default=None,
     )
@@ -873,6 +874,7 @@ def parse_args_masterodb(argv):
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
     return kwargs
+'''
 
 
 def parse_args_surfex_binary(argv, mode):
@@ -889,9 +891,19 @@ def parse_args_surfex_binary(argv, mode):
         dict: Parsed arguments.
 
     """
+    binary_needed = True
+    if mode == "forecast":
+        mode = "offline"
+        binary_needed = False
+    elif mode == "canari":
+        mode = "soda"
+        binary_needed = False
+    masterodb = not binary_needed
+
     pert = False
     need_pgd = True
     need_prep = True
+    basetime_required = False
     if mode == "pgd":
         need_pgd = False
         need_prep = False
@@ -922,25 +934,30 @@ def parse_args_surfex_binary(argv, mode):
     )
     if need_pgd:
         parser.add_argument(
-            "--pgd", type=str, nargs="?", required=True, help="Name of the PGD file"
+            "--pgd", type=str, required=True, help="Name of the PGD file"
         )
     if need_prep:
         parser.add_argument(
-            "--prep", type=str, nargs="?", required=True, help="Name of the PREP file"
+            "--prep", type=str, required=True, help="Name of the PREP file"
         )
+    if mode == "pgd":
+        parser.add_argument("--one-decade", dest="one_decade", action="store_true", required=False, default=False)
     if mode == "prep":
-        parser.add_argument("--prep_file", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_filetype", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_pgdfile", required=False, default=None, nargs="?")
-        parser.add_argument("--prep_pgdfiletype", required=False, default=None, nargs="?")
+        parser.add_argument("--prep_file", required=False, default=None)
+        parser.add_argument("--prep_filetype", required=False, default=None)
+        parser.add_argument("--prep_pgdfile", required=False, default=None)
+        parser.add_argument("--prep_pgdfiletype", required=False, default=None)
     if mode == "offline" or mode == "perturbed":
-        parser.add_argument(
-            "--forc_zs",
-            action="store_true",
-            default=False,
-            help="Set model ZS to forcing ZS",
-        )
-        parser.add_argument("--forcing_dir", required=False, default=None, nargs="?")
+        if not masterodb:
+            parser.add_argument(
+                "--forc_zs",
+                action="store_true",
+                default=False,
+                help="Set model ZS to forcing ZS",
+            )
+            parser.add_argument("--forcing_dir", required=False, default=None)
+    if mode == "soda":
+        basetime_required = True
     parser.add_argument("--force", "-f", action="store_true", help="Force re-creation")
     parser.add_argument(
         "--harmonie",
@@ -966,21 +983,21 @@ def parse_args_surfex_binary(argv, mode):
     parser.add_argument(
         "--input_binary_data", "-i", dest="input_binary_data", required=False
     )
-    parser.add_argument("--rte", "-r", required=True, nargs="?")
+    parser.add_argument("--rte", "-r", required=False, default=None)
     parser.add_argument(
         "--system_file_paths",
         "-s",
         required=True,
-        nargs="?",
         help="Input file paths on your system",
     )
-    parser.add_argument("--namelist_path", "-n", required=True, nargs="?")
+    parser.add_argument("--namelist_path", "-n", required=True,
+                        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
     parser.add_argument(
         "--domain", type=str, required=False, help="JSON file with domain"
     )
     parser.add_argument("--output", "-o", type=str, required=False, default=None)
-    parser.add_argument("--dtg", type=str, required=False, default=None)
-    parser.add_argument("--basetime", type=str, required=False, default=None)
+    parser.add_argument("--basetime", type=str, required=basetime_required, default=None)
+    parser.add_argument("--validtime", type=str, required=False, default=None)
     if pert:
         parser.add_argument("--pert", "-p", type=int, required=False, default=None)
         parser.add_argument(
@@ -992,18 +1009,18 @@ def parse_args_surfex_binary(argv, mode):
         type=str,
         required=False,
         default=None,
-        nargs="?",
         help="JSON file with archive output",
     )
-    parser.add_argument("binary", type=str, help="Command to run")
     parser.add_argument(
         "--assemble-file",
         dest="assemble_file",
         type=str,
-        required=True,
+        required=False,
         help="Path to file containing list of namelist blocks",
         default=None,
     )
+    parser.add_argument("--binary", type=str, help="Command to run", required=binary_needed, default=None)
+
 
     if len(argv) == 0:
         parser.print_help()
@@ -1042,10 +1059,12 @@ def parse_args_create_namelist(argv):
         "--assemble-file",
         "-a",
         dest="assemble_file",
-        required=True,
+        default=None,
+        required=False,
         help="Input file paths on your system",
     )
-    parser.add_argument("--namelist-defs", "-n", dest="namelist_defs", required=True)
+    parser.add_argument("--namelist-defs", "-n", dest="namelist_defs", required=True,
+                        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
     parser.add_argument("--uppercase", action="store_true", required=False, default=False)
     parser.add_argument("--true_repr", type=str, required=False, default=".TRUE.")
     parser.add_argument("--false_repr", type=str, required=False, default=".FALSE.")

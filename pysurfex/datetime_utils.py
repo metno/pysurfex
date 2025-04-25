@@ -53,3 +53,30 @@ def as_datetime_args(year=None, month=None, day=None, hour=0, minute=0, second=0
     return datetime(
         year=year, month=month, day=day, hour=hour, minute=minute, second=second
     ).replace(tzinfo=timezone.utc)
+
+def get_decade(dt) -> str:
+    """Return the decade given a datetime object."""
+    # Extract month and day from datetime object
+    dtg_mm = int(dt.month)
+    dtg_dd = int(dt.day)
+
+    # Determine decades_mm and decades_dd based on dtg_dd
+    if dtg_dd < 9:
+        decades_mm = dtg_mm
+        decades_dd = 5
+    elif 8 < dtg_dd < 19:
+        decades_mm = dtg_mm
+        decades_dd = 15
+    elif 18 < dtg_dd < 29:
+        decades_mm = dtg_mm
+        decades_dd = 25
+    else:
+        decades_mm = dtg_mm + 1
+        if decades_mm == 13:
+            decades_mm = 1
+        decades_dd = 5
+
+    decades_mm = f"{decades_mm:02d}"
+    decades_dd = f"{decades_dd:02d}"
+
+    return f"{decades_mm}{decades_dd}"

@@ -230,7 +230,7 @@ def create_obs_data(var, obs_fname):
 def _qc_gridpp_obsmon(
     tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm
 ):
-    harmonie = []
+    harmonie = ["--debug"]
     if hm == "harmonie":
         hm_env()
         harmonie = ["--harmonie"]
@@ -272,6 +272,9 @@ def _qc_gridpp_obsmon(
     with pytest.raises(SystemExit):
         titan(argv=["fail"])
 
+    with pytest.raises(SystemExit):
+        titan()
+
     argv = [
         "-i",
         qc_settings_fname,
@@ -299,6 +302,7 @@ def _qc_gridpp_obsmon(
     ]
     argv += harmonie
     titan(argv=argv)
+
 
     qc_titan_obs = json.load(open(qc_fname, "r"))
     assert qc_titan_obs["0"]["epsilon"] == 0.5
@@ -404,7 +408,7 @@ def test_qc_gridpp_obsmon():
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file, hm):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp_output.nc"
-    harmonie = []
+    harmonie = ["--debug"]
     if hm == "harmonie":
         hm_env()
         harmonie = ["--harmonie"]

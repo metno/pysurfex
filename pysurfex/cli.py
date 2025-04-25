@@ -24,12 +24,10 @@ from .cmd_parsing import (
     parse_args_first_guess_for_oi,
     parse_args_gridpp,
     parse_args_lsm_file_assim,
-    parse_args_masterodb,
     parse_args_merge_qc_data,
     parse_args_modify_forcing,
     parse_args_obs2json,
     parse_args_oi2soda,
-    parse_args_plot_field,
     parse_args_plot_points,
     parse_args_qc2obsmon,
     parse_args_set_geo_from_obs_set,
@@ -41,13 +39,13 @@ from .cmd_parsing import (
     parse_sentinel_obs,
     parse_set_domain,
 )
-from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, get_decade
 from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
 from .geo import LonLatVal, get_geo_object, set_domain, shape2ign, ConfProjFromHarmonie
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
-from .namelist import NamelistGeneratorAssemble
+from .namelist import NamelistGeneratorAssemble, NamelistGeneratorFromNamelistFile
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
@@ -232,180 +230,14 @@ def run_first_guess_for_oi(**kwargs):
         f_g.close()
 
 
-def run_masterodb(**kwargs):
-    """Run masterodb."""
-    logging.debug("ARGS: %s", kwargs)
-
-    if "config" in kwargs:
-        del kwargs["config"]
-
-    system_file_paths = kwargs["system_file_paths"]
-    if os.path.exists(system_file_paths):
-        system_file_paths = SystemFilePathsFromFile(system_file_paths)
-    else:
-        raise FileNotFoundError("File not found: " + system_file_paths)
-    del kwargs["system_file_paths"]
-
-    binary = kwargs["binary"]
-    rte = kwargs["rte"]
-    wrapper = kwargs["wrapper"]
-    namelist_path = kwargs["namelist_path"]
-    force = kwargs["force"]
-    mode = kwargs["mode"]
-    output = kwargs["output"]
-    archive = kwargs["archive"]
-    only_archive = kwargs["only_archive"]
-    print_namelist = kwargs["print_namelist"]
-    try:
-        assemble = kwargs["assemble_file"]
-    except KeyError:
-        assemble = None
-
-    check_existence = True
-    if "tolerate_missing" in kwargs:
-        if kwargs["tolerate_missing"]:
-            check_existence = False
-
-    nml_macros = {}
-    dtg = None
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = as_datetime(kwargs["dtg"])
-            kwargs.update({"dtg": dtg})
-        if dtg is not None:
-            nml_macros.update({
-                "SODA_HH": f"{dtg.hour:02d}"
-            })
-            #config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
-    try:
-        basetime = kwargs["basetime"]
-        if isinstance(basetime, str):
-            basetime = as_datetime(basetime)
-    except KeyError:
-        basetime = None
-
-    try:
-        input_binary_data = kwargs["input_binary_data"]
-    except KeyError:
-        input_binary_data = None
-
-    # TODO
-    perturbed_file_pattern = None
-    if perturbed_file_pattern in kwargs:
-        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
-
-    pgd_file_path = kwargs["pgd"]
-    prep_file_path = kwargs["prep"]
-
-    if os.path.exists(rte):
-        with open(rte, mode="r", encoding="utf-8") as file_handler:
-            rte = json.load(file_handler)
-        my_batch = BatchJob(rte, wrapper=wrapper)
-    else:
-        raise FileNotFoundError
-
-    my_archive = None
-    if archive is not None:
-        if os.path.exists(archive):
-            my_archive = JsonOutputDataFromFile(archive)
-        else:
-            raise FileNotFoundError
-
-    if mode == "forecast":
-        mode = "offline"
-    elif mode == "canari":
-        mode = "soda"
-    else:
-        raise NotImplementedError(mode + " is not implemented!")
-
-    if os.path.isfile(namelist_path):
-        with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
-            nam_defs = yaml.safe_load(file_handler)
-        with open(assemble, mode="r", encoding="utf8") as file_handler:
-            assemble = yaml.safe_load(file_handler)
-        nam_gen = NamelistGeneratorAssemble(
-            mode, nam_defs, assemble, macros=nml_macros
-        )
-        my_settings = nam_gen.nml
-        if input_binary_data is None:
-            raise RuntimeError("input_binary_data not set")
-        with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
-            input_binary_data = json.load(file_handler)
-        input_data = nam_gen.input_data_from_namelist(
-            input_binary_data, system_file_paths, validtime=dtg, basetime=basetime,
-            check_existence=check_existence
-        )
-    else:
-        raise NotImplementedError
-
-    # Create input
-    my_format = my_settings["nam_io_offline"]["csurf_filetype"]
-    my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
-    my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
-    my_surffile = my_settings["nam_io_offline"]["csurffile"]
-    lfagmap = False
-    if "lfagmap" in my_settings["nam_io_offline"]:
-        lfagmap = my_settings["nam_io_offline"]["lfagmap"]
-
-    logging.debug("%s %s", my_pgdfile, lfagmap)
-    # Not run binary
-    masterodb = None
-    if not only_archive:
-        # Normal dry or wet run
-        exists = False
-        if output is not None:
-            exists = os.path.exists(output)
-        if not exists or force:
-            if binary is None:
-                my_batch = None
-
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                input_file=prep_file_path,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-            surffile = SURFFile(
-                my_format,
-                my_surffile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-
-            masterodb = Masterodb(
-                my_pgdfile,
-                my_prepfile,
-                surffile,
-                my_settings,
-                input_data,
-                binary=binary,
-                print_namelist=print_namelist,
-                batch=my_batch,
-                archive_data=my_archive,
-            )
-
-        else:
-            logging.info("%s already exists!", output)
-
-    if archive is not None:
-        if masterodb is not None:
-            masterodb.archive_output()
-        else:
-            logging.info("Masterodb is None")
-
-
 def run_surfex_binary(mode, **kwargs):
     """Run a surfex binary."""
     logging.debug("ARGS: %s", kwargs)
+
+    try:
+        masterodb = kwargs["masterodb"]
+    except KeyError:
+        masterodb = False
 
     geo = get_geo_from_cmd(**kwargs)
 
@@ -418,15 +250,35 @@ def run_surfex_binary(mode, **kwargs):
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
+    masterodb_mode = False
+    if mode == "forecast":
+        mode = "offline"
+        masterodb_mode = True
+    elif mode == "canari":
+        mode = "soda"
+        masterodb_mode = True
+
     pgd = False
     prep = False
     perturbed = False
     need_pgd = True
     need_prep = True
+    try:
+        one_decade = kwargs["one_decade"]
+    except KeyError:
+        one_decade = False
     check_existence = True
     if "tolerate_missing" in kwargs:
         if kwargs["tolerate_missing"]:
             check_existence = False
+
+    try:
+        nml_macros = kwargs["macros"]
+        if isinstance(nml_macros, str):
+            with open(nml_macros, mode="r", encoding="utf8") as fhandler:
+                nml_macros = json.load(fhandler)
+    except KeyError:
+        nml_macros = {}
 
     prep_input_file = None
     if "prep_file" in kwargs:
@@ -435,34 +287,43 @@ def run_surfex_binary(mode, **kwargs):
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
 
-    # Run-time macros
-    nml_macros = {
+    nml_macros.update({
         "PREP_INPUT_FILE_WITH_PATH": prep_input_file,
-        "PREP_INPUT_PGDFILE_WITH_PATH": prep_input_pgdfile,
-    }
+        "PREP_PGD_INPUT_FILE_WITH_PATH": prep_input_pgdfile
+    })
 
     # TODO
     perturbed_file_pattern = None
     if perturbed_file_pattern in kwargs:
         perturbed_file_pattern = kwargs["perturbed_file_pattern"]
 
-    dtg = None
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = as_datetime(kwargs["dtg"])
-            kwargs.update({"dtg": dtg})
-    if dtg is not None:
-        xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
+    basetime = None
+    if "basetime" in kwargs:
+        if kwargs["basetime"] is not None and isinstance(kwargs["basetime"], str):
+            basetime = as_datetime(kwargs["basetime"])
+            kwargs.update({"basetime": basetime})
+    try:
+        validtime = kwargs["validtime"]
+    except KeyError:
+        validtime = basetime
+    if basetime is not None:
+        xtime = (basetime - basetime.replace(hour=0, second=0, microsecond=0)).total_seconds()
         nml_macros.update(
             {
-                "PREP_NYEAR": dtg.year,
-                "PREP_NMONTH": dtg.month,
-                "PREP_NDAY": dtg.day,
+                "PREP_NYEAR": basetime.year,
+                "PREP_NMONTH": basetime.month,
+                "PREP_NDAY": basetime.day,
                 "PREP_XTIME": xtime,
-                "SODA_HH": f"{dtg.hour:02d}"
+                "SODA_HH": f"{basetime.hour:02d}"
             }
         )
-        # TODO DECADE ??
+        if one_decade:
+            nml_macros.update({
+                "DECADE": get_decade(basetime)
+            })
+    else:
+        if one_decade:
+            raise RuntimeError("You must set basetime with option one_decade")
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]
@@ -471,9 +332,13 @@ def run_surfex_binary(mode, **kwargs):
     namelist_path = kwargs["namelist_path"]
     force = kwargs["force"]
     output = kwargs["output"]
-    archive = kwargs["archive"]
-    print_namelist = kwargs["print_namelist"]
     masterodb = kwargs["masterodb"]
+    archive = kwargs["archive"]
+    try:
+        only_archive = kwargs["only_archive"]
+    except KeyError:
+        only_archive = False
+    print_namelist = kwargs["print_namelist"]
     logging.debug("masterodb %s", masterodb)
 
     # TODO add this to assemble list
@@ -530,12 +395,16 @@ def run_surfex_binary(mode, **kwargs):
     except KeyError:
         input_binary_data = None
 
-    if os.path.exists(rte):
-        with open(rte, mode="r", encoding="utf-8") as file_handler:
-            rte = json.load(file_handler)
+    # Create run time enviroment from local unless given
+
+    if rte is None:
+        rte = "rte.json"
+    if not os.path.exists(rte):
+        json.dump(os.environ.copy(), open(rte, mode="w", encoding="utf-8"))
+
+    with open(rte, mode="r", encoding="utf-8") as file_handler:
+        rte = json.load(file_handler)
         my_batch = BatchJob(rte, wrapper=wrapper)
-    else:
-        raise FileNotFoundError("File not found: " + rte)
 
     my_archive = None
     if archive is not None:
@@ -545,7 +414,9 @@ def run_surfex_binary(mode, **kwargs):
             raise FileNotFoundError("File not found: " + archive)
 
     if not (output is not None and os.path.exists(output)) or force:
-        if os.path.isfile(namelist_path):
+        if assemble_file is None:
+            nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_path)
+        else:
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
             with open(assemble_file, mode="r", encoding="utf8") as file_handler:
@@ -554,21 +425,34 @@ def run_surfex_binary(mode, **kwargs):
                 mode, nam_defs, assemble, macros=nml_macros
             )
 
-            if mode == "pgd":
-                nam_gen = geo.update_namelist(nam_gen)
-            my_settings = nam_gen.get_namelist()
-            if input_binary_data is None:
-                raise RuntimeError("input_binary_data not set")
-            with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
-                input_binary_data = json.load(file_handler)
+        if mode == "pgd":
+            nam_gen = geo.update_namelist(nam_gen)
+        my_settings = nam_gen.get_namelist()
+        if mode == "pgd" and one_decade:
+            try:
+                ntime = my_settings["nam_data_isba"]["ntime"]
+                if ntime != 1:
+                    logging.warning("Overriding value %s nam_data_isba#ntime and setting it 1 because of one_decade=True")
+                    my_settings["nam_data_isba"]["ntime"] = 1
+            except KeyError:
+                raise RuntimeError from KeyError
+        if forc_zs:
+            try:
+                val = my_settings["nam_io_offline"]["lset_forc_zs"]
+            except KeyError:
+                val = False
+            if not val:
+                logging.warning("Override lset_forc_zs with value True")
+            my_settings["nam_io_offline"]["lset_forc_zs"] = True
 
-            print(nam_gen.nml)
-            input_data = nam_gen.input_data_from_namelist(
-                input_binary_data, system_file_paths, validtime=dtg, basetime=basetime, check_existence=check_existence
-            )
-        
-        else:
-            raise NotImplementedError
+        if input_binary_data is None:
+            raise RuntimeError("input_binary_data not set")
+        with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
+            input_binary_data = json.load(file_handler)
+
+        input_data = nam_gen.input_data_from_namelist(
+            input_binary_data, system_file_paths, validtime=validtime, basetime=basetime, check_existence=check_existence
+        )
 
         # Create input
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -581,102 +465,128 @@ def run_surfex_binary(mode, **kwargs):
 
         logging.debug("pgdfile=%s lfagmap=%s %s", my_pgdfile, lfagmap, pgd_file_path)
         logging.debug("nam_io_offline=%s", my_settings["nam_io_offline"])
-        if need_pgd:
-            logging.debug("Need pgd")
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
 
-        if need_prep:
-            logging.debug("Need prep")
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                input_file=prep_file_path,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
+        if not only_archive:
+            if need_pgd:
+                logging.debug("Need pgd")
+                my_pgdfile = PGDFile(
+                    my_format,
+                    my_pgdfile,
+                    input_file=pgd_file_path,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
-        surffile = None
-        if need_prep and need_pgd:
-            logging.debug("Need pgd and prep")
-            surffile = SURFFile(
-                my_format,
-                my_surffile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
+            if need_prep:
+                logging.debug("Need prep")
+                my_prepfile = PREPFile(
+                    my_format,
+                    my_prepfile,
+                    input_file=prep_file_path,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
-        if perturbed:
-            PerturbedOffline(
-                binary,
-                my_batch,
-                my_prepfile,
-                pert,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                surfout=surffile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-                negpert=negpert,
-            )
-        elif pgd:
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_pgdfile,
-                my_settings,
-                input_data,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
-        elif prep:
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_prepfile,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
-        else:
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_prepfile,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                surfout=surffile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
+            surffile = None
+            if need_prep and need_pgd:
+                logging.debug("Need pgd and prep")
+                surffile = SURFFile(
+                    my_format,
+                    my_surffile,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
+            if perturbed:
+                if masterodb_mode:
+                    raise NotImplementedError
+                PerturbedOffline(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    pert,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    surfout=surffile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                    negpert=negpert,
+                )
+            elif pgd:
+                if masterodb_mode:
+                    raise NotImplementedError
+                my_pgdfile = PGDFile(
+                    my_format,
+                    my_pgdfile,
+                    input_file=pgd_file_path,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_pgdfile,
+                    my_settings,
+                    input_data,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
+            elif prep:
+                if masterodb_mode:
+                    raise NotImplementedError
+                my_prepfile = PREPFile(
+                    my_format,
+                    my_prepfile,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
+            else:
+                if masterodb_mode:
+                    if binary is None:
+                        my_batch = None
+                    Masterodb(
+                        my_pgdfile,
+                        my_prepfile,
+                        surffile,
+                        my_settings,
+                        input_data,
+                        binary=binary,
+                        print_namelist=print_namelist,
+                        batch=my_batch,
+                        archive_data=my_archive
+                    )
+                else:
+                    SURFEXBinary(
+                        binary,
+                        my_batch,
+                        my_prepfile,
+                        my_settings,
+                        input_data,
+                        pgdfile=my_pgdfile,
+                        surfout=surffile,
+                        archive_data=my_archive,
+                        print_namelist=print_namelist,
+                    )
     else:
         logging.info("%s already exists!", output)
+
+    if only_archive and masterodb_mode:
+        if my_archive is not None:
+            my_archive.archive_files()
 
 
 def run_gridpp(**kwargs):
@@ -1079,110 +989,6 @@ def plot_points(argv=None):
         plt.savefig(output)
 
 
-def plot_field(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-
-    Raises:
-        NotImplementedError: "Inputype is not implemented"
-        RuntimeError: "No geo is set"
-        RuntimeError: "No field read"
-        ModuleNotFoundError: "Matplotlib is needed to plot"
-
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_plot_field(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ plot_field ******************")
-
-    validtime = None
-    if kwargs["validtime"] is not None:
-        validtime = as_datetime(kwargs["validtime"])
-    output = kwargs["output"]
-
-    geo_file = None
-    if "geo" in kwargs:
-        geo_file = kwargs["geo"]
-
-    geo = None
-    if geo_file is not None:
-        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
-        geo = get_geo_object(domain_json)
-
-    contour = True
-    if "no_contour" in kwargs:
-        no_contour = kwargs["no_contour"]
-        if no_contour:
-            contour = False
-
-    inputtype = kwargs["variable"]["inputtype"]
-    var = Variable(inputtype, kwargs["variable"], validtime)
-    field, geo = var.read_var_field(validtime)
-
-    if inputtype == "grib1" or inputtype == "grib2":
-        title = f"{inputtype}: {var.file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-    elif inputtype == "netcdf":
-        title = "netcdf: " + var.file_var.var_name + " " + validtime.strftime("%Y%m%d%H")
-    elif inputtype == "surfex":
-        title = inputtype + ": " + var.file_var.print_var()
-    else:
-        raise NotImplementedError("Inputype is not implemented")
-
-    if geo is None:
-        raise RuntimeError("No geo is set")
-
-    if field is None:
-        raise RuntimeError("No field read")
-
-    logging.debug(
-        "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
-        geo.npoints,
-        geo.nlons,
-        geo.nlats,
-        contour,
-        field.shape,
-    )
-    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
-        if contour:
-            field = np.reshape(field, [geo.nlons, geo.nlats])
-    else:
-        contour = False
-
-    if plt is None:
-        raise ModuleNotFoundError("Matplotlib is needed to plot")
-    logging.debug(
-        "lons.shape=%s lats.shape=%s field.shape=%s",
-        geo.lons.shape,
-        geo.lats.shape,
-        field.shape,
-    )
-    if contour:
-        plt.contourf(geo.lons, geo.lats, field)
-    else:
-        plt.scatter(geo.lonlist, geo.latlist, c=field)
-
-    plt.title(title)
-    plt.colorbar()
-    if output is None:
-        plt.show()
-    else:
-        logging.info("Saving figure in %s", output)
-        plt.savefig(output)
-
-
 def pgd(argv=None):
     """Command line interface.
 
@@ -1337,7 +1143,7 @@ def masterodb(argv=None):
     """
     if argv is None:
         argv = sys.argv[1:]
-    kwargs = parse_args_masterodb(argv)
+    kwargs = parse_args_surfex_binary(argv, "forecast")
     debug = kwargs.get("debug")
 
     if debug:
@@ -1350,7 +1156,32 @@ def masterodb(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ masterodb ******************")
-    run_masterodb(**kwargs)
+    run_surfex_binary("forecast", **kwargs)
+
+
+def canari(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+    #kwargs = parse_args_masterodb(argv)
+    kwargs = parse_args_surfex_binary(argv, "canari")
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
+            level=logging.DEBUG,
+        )
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+        )
+    logging.info("************ canari ******************")
+    run_surfex_binary("canari", **kwargs)
 
 
 def gridpp(argv=None):
@@ -1539,18 +1370,20 @@ def create_namelist(argv=None):
         false_repr = false_repr.lower()
         true_repr = true_repr.lower()
     namelist_defs_file = kwargs.get("namelist_defs")
-    with open(namelist_defs_file, mode="r", encoding="utf-8") as file_handler:
-        nam_defs = yaml.safe_load(file_handler)
-
     assemble_file = kwargs["assemble_file"]
-    with open(assemble_file, mode="r", encoding="utf-8") as file_handler:
-        assemble = yaml.safe_load(file_handler)
-
     output = kwargs.get("output")
     if output is None:
         output = "OPTIONS.nam"
 
-    nam_gen = NamelistGeneratorAssemble(mode, nam_defs, assemble)
+    if assemble_file is None:
+        nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_defs_file)
+    else:
+        with open(namelist_defs_file, mode="r", encoding="utf-8") as file_handler:
+            nam_defs = yaml.safe_load(file_handler)
+        with open(assemble_file, mode="r", encoding="utf-8") as file_handler:
+            assemble = yaml.safe_load(file_handler)
+        nam_gen = NamelistGeneratorAssemble(mode, nam_defs, assemble)
+
     if geo is not None:
         nam_gen = geo.update_namelist(nam_gen)
     if os.path.exists(output):

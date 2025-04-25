@@ -37,7 +37,7 @@ def test_geo_conf_proj(conf_proj_2x3_dict):
     my_geo = get_geo_object(conf_proj_2x3_dict)
 
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = NamelistGenerator(f90nml.Namelist(json_settings))
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_geo.update_namelist(my_settings)
     assert conf_proj_2x3_dict["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
 
@@ -90,7 +90,7 @@ def test_geo_lonlat_reg():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = NamelistGenerator(f90nml.Namelist(json_settings))
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
     assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
@@ -131,7 +131,7 @@ def test_geo_lonlatval():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = NamelistGenerator(f90nml.Namelist(json_settings))
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
     assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
@@ -160,7 +160,7 @@ def test_geo_cartesian():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = NamelistGenerator(f90nml.Namelist(json_settings))
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
     assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
@@ -194,7 +194,7 @@ def test_geo_ign():
     }
     my_geo = IGN(domain, recreate=True)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = NamelistGenerator(f90nml.Namelist(json_settings))
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
     assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid

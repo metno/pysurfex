@@ -340,7 +340,15 @@ class Converter(object):
                 field = np.sqrt(np.square(field_x) + np.square(field_y))
                 np.where(field < 0.005, field, 0)
             elif self.name == "winddir":
-                field = np.mod(90 - np.rad2deg(np.arctan2(field_y, field_x)), 360)
+                field = np.mod(180 + np.rad2deg(np.arctan2(field_x, field_y)), 360)
+                if self.x_wind.alpha is not None and self.y_wind.alpha is not None:
+                    if self.x_wind.alpha.all() == self.y_wind.alpha.all():
+                        field = np.subtract(field, self.x_wind.alpha)
+                        logging.debug("Wind was rotated to geographical coordinates")
+                    else:
+                        raise RuntimeError("Alpha is different for the 2 wind vectors!")
+                else:
+                    logging.warning("Wind was not rotated to geographical coordinates due to missing alphas")
 
         elif self.name == "rh2q" or self.name == "rh2q_mslp" or self.name == "rh2q_z":
             """

@@ -60,7 +60,8 @@ def domains_file(domains, tmp_path_factory):
     return fname
 
 
-def test_set_domain(domains, domains_file, tmp_path_factory):
+@pytest.mark.parametrize("debug", [False, True])
+def test_set_domain(domains, domains_file, tmp_path_factory, debug):
     """Test set domain."""
     saved_domain = domains["CONF_PROJ_TEST"]
     domain_file = f"{tmp_path_factory.getbasetemp().as_posix()}/set_geo_domain.json"
@@ -71,8 +72,12 @@ def test_set_domain(domains, domains_file, tmp_path_factory):
         domains_file,
         "-o",
         domain_file,
-        "--debug",
     ]
+    if debug:
+        argv += ["--debug"]
+    with pytest.raises(SystemExit):
+        cli_set_domain()
+
     cli_set_domain(argv=argv)
     with open(domain_file) as fhandler:
         domain_json = json.load(fhandler)
@@ -83,7 +88,8 @@ def test_set_domain(domains, domains_file, tmp_path_factory):
         cli_set_domain(argv=argv)
 
 
-def test_shape2ign(tmp_path_factory, ref_domain_file, mocker):
+@pytest.mark.parametrize("debug", [False, True])
+def test_shape2ign(tmp_path_factory, ref_domain_file, mocker, debug):
     infile = f"{tmp_path_factory.getbasetemp().as_posix()}/input"
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/ign_geo.json"
     argv = [
@@ -98,6 +104,8 @@ def test_shape2ign(tmp_path_factory, ref_domain_file, mocker):
         "--indent",
         "2",
     ]
+    if debug:
+        argv += ["--debug"]
     mocker.patch("pysurfex.geo.ogr")
     with pytest.raises(TypeError):
         cli_shape2ign(argv=argv)
