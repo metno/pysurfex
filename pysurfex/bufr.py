@@ -17,7 +17,6 @@ except Exception:
     logging.warning("Could not load eccodes")
     eccodes = None
 
-
 from .datetime_utils import as_datetime_args
 from .obs import ObservationSet
 from .observation import Observation

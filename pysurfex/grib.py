@@ -65,6 +65,7 @@ class Grib(object):
         geo_out = None
         with open(self.fname, mode="rb") as file_handler:
             while 1:
+
                 gid = eccodes.codes_grib_new_from_file(file_handler)
 
                 if gid is None:

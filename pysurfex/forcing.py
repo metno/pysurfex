@@ -10,7 +10,6 @@ import time
 
 import netCDF4
 import numpy as np
-import toml
 
 from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta

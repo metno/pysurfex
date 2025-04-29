@@ -52,7 +52,6 @@
     pandas = "^1.3.0"
     pyproj = "^3.3.0"
     pyyaml = "^6.0"
-    toml = "^0.10.2"
 
 #[tool.poetry.group.formats.dependencies]
     netcdf4 = "^1.5.7"

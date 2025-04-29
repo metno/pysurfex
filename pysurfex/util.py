@@ -3,26 +3,6 @@ import collections
 import logging
 import os
 
-import toml
-
-
-def merge_toml_env(old_env, mods):
-    """Merge."""
-    return deep_update(old_env, mods)
-
-
-def merge_toml_env_from_files(toml_files):
-    """Merge."""
-    merged_env = {}
-    for toml_file in toml_files:
-        if os.path.exists(toml_file):
-            with open(toml_file, mode="r", encoding="utf-8") as file_handler:
-                modification = toml.load(file_handler)
-            merged_env = merge_toml_env(merged_env, modification)
-        else:
-            print("WARNING: File not found " + toml_file)
-    return merged_env
-
 
 def deep_update(source, overrides):
     """Update a nested dictionary or similar mapping.

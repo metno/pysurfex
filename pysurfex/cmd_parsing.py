@@ -53,15 +53,6 @@ def parse_args_create_forcing(argv):
         help="Surfex configuration (domain) created from Harmonie environment",
     )
     parser.add_argument(
-        "--config_exp_surfex",
-        dest="config_exp_surfex",
-        type=str,
-        help="Toml configuration file for surfex settings potentially "
-        + "used if --harmonie is set",
-        default=None,
-        nargs="?",
-    )
-    parser.add_argument(
         "-fb", type=str, help="First base time unless equal to dtg_start", default=None
     )
     parser.add_argument(
@@ -1360,55 +1351,6 @@ def parse_args_lsm_file_assim(argv):
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
 
-    return kwargs
-
-
-def parse_args_hm2pysurfex(argv):
-    """Parse the command line input arguments for hm2pysurfex.
-
-    Args:
-        argv (list): List with arguments.
-
-    Returns:
-        dict: Parsed arguments.
-
-    """
-    parser = ArgumentParser("hm2pysurfex")
-    parser.add_argument(
-        "--options", type=open, action=LoadFromFile, help="Load options from file"
-    )
-    parser.add_argument(
-        "-c", dest="config", type=str, required=True, help="PySurfex config file"
-    )
-    parser.add_argument(
-        "-e",
-        dest="environment",
-        type=str,
-        required=False,
-        default=None,
-        help="Environment if not taken from running environment",
-    )
-    parser.add_argument(
-        "-o",
-        dest="output",
-        type=str,
-        required=False,
-        default=None,
-        help="Output toml file",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Debug", required=False, default=False
-    )
-    parser.add_argument("--version", action="version", version=__version__)
-
-    if len(argv) == 0:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
     return kwargs
 
 

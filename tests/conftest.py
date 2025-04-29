@@ -1,6 +1,8 @@
 """Mockers."""
 import json
 import os
+import logging
+from contextlib import contextmanager
 
 import numpy as np
 import pytest
@@ -8,6 +10,10 @@ from netCDF4 import Dataset
 
 from pysurfex.datetime_utils import as_datetime
 from pysurfex.geo import ConfProj
+
+
+MY_CODES_MISSING_DOUBLE = 999.0
+MY_CODES_MISSING_LONG = 999
 
 
 @pytest.fixture(scope="module")
@@ -253,7 +259,7 @@ def input_binary_data_file_single():
 
 @pytest.fixture(scope="module")
 def rotated_ll_t2m_grib1(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 1,
         "gridType": "rotated_ll",
         "Ni": 9,
@@ -273,7 +279,7 @@ def rotated_ll_t2m_grib1(tmp_path_factory):
         "level": 2,
         "timeRangeIndicator": 0,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -282,7 +288,7 @@ def rotated_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def rotated_ll_t1_grib2(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 2,
         "gridType": "rotated_ll",
         "Ni": 9,
@@ -304,7 +310,7 @@ def rotated_ll_t1_grib2(tmp_path_factory):
         "typeOfStatisticalProcessing": -1,
         "level": 2,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -313,7 +319,7 @@ def rotated_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t2m_grib1(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 1,
         "gridType": "lambert",
         "Nx": 9,
@@ -336,7 +342,7 @@ def lambert_t2m_grib1(tmp_path_factory):
         "level": 2,
         "timeRangeIndicator": 0,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -345,7 +351,7 @@ def lambert_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t1_grib2(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 2,
         "gridType": "lambert",
         "Nx": 9,
@@ -370,7 +376,7 @@ def lambert_t1_grib2(tmp_path_factory):
         "typeOfStatisticalProcessing": -1,
         "level": 2,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_tl.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -379,7 +385,7 @@ def lambert_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t2m_grib1(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 1,
         "gridType": "regular_ll",
         "Ni": 9,
@@ -395,7 +401,7 @@ def regular_ll_t2m_grib1(tmp_path_factory):
         "level": 2,
         "timeRangeIndicator": 0,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -404,7 +410,7 @@ def regular_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t1_grib2(tmp_path_factory):
-    keys = {
+    keys = [{
         "editionNumber": 2,
         "gridType": "regular_ll",
         "Ni": 9,
@@ -422,7 +428,7 @@ def regular_ll_t1_grib2(tmp_path_factory):
         "typeOfStatisticalProcessing": -1,
         "level": 2,
         "bitmapPresent": 0,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -431,11 +437,41 @@ def regular_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_file(tmp_path_factory):
-    keys = {
-        "latitude": 60.0,
-        "localLatitude": 60.0,
-        "longitude": 10.0,
-        "localLongitude": 10.0,
+    keys = [{
+        "latitude": 59.713,
+        "localLatitude": 59.713,
+        "longitude": 10.146,
+        "localLongitude": 10.146,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": 6,
+        "minute": 2,
+        "heightOfStationGroundAboveMeanSeaLevel": 230,
+        "heightOfStation": 230,
+        "stationNumber": 477,
+        "blockNumber": 10,
+        "airTemperatureAt2M": 273.15,
+    },{
+        "latitude": 59.4352,
+        "localLatitude": 59.4352,
+        "longitude": 10.578,
+        "localLongitude": 10.578,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": 6,
+        "minute": 2,
+        "heightOfStationGroundAboveMeanSeaLevel": 100,
+        "heightOfStation": 230,
+        "stationNumber": 492,
+        "blockNumber": 10,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 274.15,
+    },{
+        "latitude": 59.713,
+        "localLatitude": 59.713,
+        "longitude": 10.146,
+        "localLongitude": 10.146,
         "year": 2020,
         "month": 2,
         "day": 20,
@@ -445,10 +481,59 @@ def bufr_file(tmp_path_factory):
         "heightOfStation": 230,
         "stationNumber": 479,
         "blockNumber": 10,
+        "relativeHumidityAt2M": 50,
+    },{
+        "latitude": 59.4352,
+        "localLatitude": 59.4352,
+        "longitude": 10.578,
+        "localLongitude": 10.578,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": 6,
+        "minute": 2,
+        "heightOfStationGroundAboveMeanSeaLevel": 230,
+        "heightOfStation": 230,
+        "stationNumber": 479,
+        "blockNumber": 10,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/relativeHumidity": MY_CODES_MISSING_DOUBLE,
+        "dewpointTemperatureAt2M": 270.0,
+        "totalSnowDepth": 75,
         "airTemperatureAt2M": 273.15,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
-    }
+    },{
+        "latitude": 59.4352,
+        "localLatitude": 59.4352,
+        "longitude": 10.578,
+        "localLongitude": 10.578,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": 6,
+        "minute": 2,
+        "heightOfStationGroundAboveMeanSeaLevel": 230,
+        "heightOfStation": 230,
+        "stationNumber": 479,
+        "blockNumber": 10,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature": 270.0,
+        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 273.15,
+        "heightOfBaseOfCloud": 3000,
+    },
+    {
+        "latitude": 59.4352,
+        "localLatitude": 59.4352,
+        "longitude": 10.578,
+        "localLongitude": 10.578,
+        "year": 2020,
+        "month": 2,
+        "day": 20,
+        "hour": 6,
+        "minute": 2,
+        "stationOrSiteName": "stationOrSiteName",
+        "heightOfStationGroundAboveMeanSeaLevel": 230,
+        "heightOfStation": 230,
+        "stationNumber": 479,
+        "blockNumber": 10,
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -457,7 +542,7 @@ def bufr_file(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_bad_file(tmp_path_factory):
-    keys = {
+    keys = [{
         "latitude": 60.0,
         "localLatitude": 60.0,
         "longitude": 10.0,
@@ -474,7 +559,7 @@ def bufr_bad_file(tmp_path_factory):
         "airTemperatureAt2M": 273.15,
         "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
         "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
-    }
+    }]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -1185,56 +1270,110 @@ class MyFaResource:
 def _mockers(session_mocker):
     """Define mockers used in the tests for the tasks' `run` methods."""
 
+    class MyCodesInternalError(BaseException):
+
+        def __init__(self, *args):
+            super().__init__(*args)
+
+    class CodesMessage():
+        def __init__(self, fhandler):
+            messages = json.load(fhandler)
+            self.fhandler = fhandler
+            self.record = -1
+            self.messages = messages
+            self.nmessages = len(messages)
+            self.message = None
+
+        def seek(*args):
+            return 1
+
+        def tell(*args, **kwargs):
+            return 100
+
+        def close(self, *args, **kwargs):
+            self.fhandler.close()
+
+        def next_record(self):
+            self.record += 1
+            if self.record >= self.nmessages:
+                return None
+            else:
+                message = self.messages[self.record]
+                self.message = message
+                return self
+
+        def codes_set(self, *args):
+            pass
+
+        def codes_get(self, key):
+            av_keys = ["average", "min", "max"]
+            if key in av_keys:
+                return -1
+            else:
+                if key in self.message:
+                    return self.message[key]
+                else:
+                    raise MyCodesInternalError
+                    #import eccodes
+                    #raise eccodes.CodesInternalError
+
+        def codes_get_size(self, key):
+            try:
+                nx = self.message["Ni"]
+                ny = self.message["Nj"]
+            except KeyError:
+                nx = self.message["Nx"]
+                ny = self.message["Ny"]
+            return nx * ny
+
+        def codes_get_values(self):
+            try:
+                nx = self.message["Ni"]
+                ny = self.message["Nj"]
+            except KeyError:
+                nx = self.message["Nx"]
+                ny = self.message["Ny"]
+            print("codes_get_values", nx, ny)
+            return np.zeros_like([np.arange(nx * ny)])
+
     def dummy_frost_data(*args, **kwargs):
         print("Frost request ", args, kwargs)
         return DummyFrostRequest()
 
-    def my_codes_grib_new_from_file(file_handler):
-        print(file_handler)
-        gid = json.load(file_handler)
-        print(gid)
-        return gid
+    def my_codes_new_from_file(code_messages):
+        grib_id = code_messages.next_record()
+        return grib_id
 
-    def my_codes_bufr_new_from_file(file_handler):
-        try:
-            gid = json.load(file_handler)
-            file_handler.close()
-        except ValueError:
-            gid = None
-        return gid
+    def my_codes_set(gid, *args):
+        gid.codes_set(*args)
 
     def my_codes_get(gid, key):
-        print("codes_get", key)
-        av_keys = ["average", "min", "max"]
-        if key in av_keys:
-            return -1
-        else:
-            return gid[key]
+        return gid.codes_get(key)
 
     def my_codes_get_size(gid, key):
-        print("codes_get_size", key)
-        try:
-            nx = gid["Ni"]
-            ny = gid["Nj"]
-        except KeyError:
-            nx = gid["Nx"]
-            ny = gid["Ny"]
-        return nx * ny
+        return gid.codes_get_size(key)
 
     def my_codes_get_values(gid):
-        try:
-            nx = gid["Ni"]
-            ny = gid["Nj"]
-        except KeyError:
-            nx = gid["Nx"]
-            ny = gid["Ny"]
-        return np.zeros_like([np.arange(nx * ny)])
+        return gid.codes_get_values()
+
+    @contextmanager
+    def my_open_with_file(filename, *args, **kwargs):
+        fhandler = open(filename, mode="r", encoding="utf8")
+        yield CodesMessage(fhandler)
+
+    def my_open_file(filename, *args, **kwargs):
+        fhandler = open(filename, mode="r", encoding="utf8")
+        return CodesMessage(fhandler)
+
+    def codes_internal_error(*args, **kwargs):
+        return MyCodesInternalError()
 
     # Do the actual mocking
     session_mocker.patch("pysurfex.obs.requests.get", new=dummy_frost_data)
     session_mocker.patch(
-        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_grib_new_from_file
+        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_new_from_file
     )
+    session_mocker.patch("pysurfex.grib.open", new=my_open_with_file)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
@@ -1242,8 +1381,14 @@ def _mockers(session_mocker):
         "pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values
     )
     session_mocker.patch("pysurfex.grib.eccodes.codes_release")
+    session_mocker.patch("pysurfex.bufr.open", new=my_open_file)
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_release")
+    session_mocker.patch("pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError)
     session_mocker.patch(
-        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file
+        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_new_from_file
     )
-    session_mocker.patch("pysurfex.bufr.eccodes.codes_set")
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_set", new=my_codes_set)
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_get", new=my_codes_get)
+    session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE)
+    session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG)
     session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)

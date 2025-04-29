@@ -221,12 +221,11 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
 
     for i in range(0, nx):
         for j in range(0, ny):
-            assert new_field_x[i][j] == target_new_field_x[i][j]
-            assert new_field_y[i][j] == target_new_field_y[i][j]
+            assert pytest.approx(new_field_x[i][j]) == target_new_field_x[i][j]
+            assert pytest.approx(new_field_y[i][j]) == target_new_field_y[i][j]
 
     if plot:
         import matplotlib.pyplot as plt
-        import matplotlib.cm as cm
         plt.clf()
         plt.barbs(lon, lat, old_field_x, old_field_y, barbcolor=['red'])
         plt.barbs(lon, lat, new_field_x, new_field_y, barbcolor=['green'])

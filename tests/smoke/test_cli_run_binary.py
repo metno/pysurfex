@@ -8,7 +8,6 @@ import pytest
 import toml
 
 from pysurfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda, canari
-from pysurfex.util import merge_toml_env_from_files
 
 
 @contextlib.contextmanager
@@ -20,34 +19,6 @@ def working_directory(path):
         yield
     finally:
         os.chdir(prev_cwd)
-
-
-@pytest.fixture()
-def get_nc_config_file(config_exp_surfex_toml, tmp_path_factory):
-    this_config = f"{tmp_path_factory.getbasetemp().as_posix()}/nc.toml"
-    config_file = f"{tmp_path_factory.getbasetemp().as_posix()}/config.toml"
-    nc_config = {"SURFEX": {"IO": {"CSURF_FILETYPE": "NC"}}}
-    with open(this_config, mode="w", encoding="utf-8") as fhandler:
-        toml.dump(nc_config, fhandler)
-
-    config = merge_toml_env_from_files([config_exp_surfex_toml, this_config])
-    with open(config_file, mode="w", encoding="utf-8") as file_handler:
-        toml.dump(config, file_handler)
-    return config_file
-
-
-@pytest.fixture()
-def get_fa_config_file(config_exp_surfex_toml, tmp_path_factory):
-    this_config = f"{tmp_path_factory.getbasetemp().as_posix()}/fa.toml"
-    config_file = f"{tmp_path_factory.getbasetemp().as_posix()}/config.toml"
-    nc_config = {"SURFEX": {"IO": {"CSURF_FILETYPE": "FA"}}}
-    with open(this_config, mode="w", encoding="utf-8") as fhandler:
-        toml.dump(nc_config, fhandler)
-
-    config = merge_toml_env_from_files([config_exp_surfex_toml, this_config])
-    with open(config_file, mode="w", encoding="utf-8") as file_handler:
-        toml.dump(config, file_handler)
-    return config_file
 
 
 @pytest.fixture()
