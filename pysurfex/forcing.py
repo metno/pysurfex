@@ -241,12 +241,12 @@ class NetCDFOutput(SurfexOutputForcing):
             "LON", "f4", ("Number_of_points",)
         )
         self.forcing_file["LON"].longname = "Longitude"
-        self.forcing_file["LON"][:] = geo.lonlist
+        self.forcing_file["LON"][:] = geo.lons.flatten(order="F")
         self.forcing_file["LAT"] = self.file_handler.createVariable(
             "LAT", "f4", ("Number_of_points",)
         )
         self.forcing_file["LAT"].longname = "Latitude"
-        self.forcing_file["LAT"][:] = geo.latlist
+        self.forcing_file["LAT"][:] = geo.lats.flatten(order="F")
         self.forcing_file["ZS"] = self.file_handler.createVariable(
             "ZS", "f4", ("Number_of_points",)
         )
