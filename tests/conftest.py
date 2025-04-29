@@ -1392,3 +1392,6 @@ def _mockers(session_mocker):
     session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE)
     session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG)
     session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)
+    session_mocker.patch("pysurfex.verification.sqlite_name")
+    session_mocker.patch("pysurfex.verification.create_table")
+    session_mocker.patch("pysurfex.verification.write_to_sqlite")

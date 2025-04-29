@@ -1,0 +1,181 @@
+[SURFEX]
+###################
+# SURFEX SETTINGS #
+###################
+
+#####################################
+# IO and non-tile specific settings #
+#####################################
+# SURFEX IO
+[SURFEX.IO]
+CSURF_FILETYPE = "FA"               # IO settings NC/FA/ASCII. Inline runs use FA
+CTIMESERIES_FILETYPE = "NETCDF"     # Fileformat for timseries. Inline runs use FA
+CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
+XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
+XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
+LSPLIT_PATCH = true                 # Split patches into separate variables in output files
+LSELECT = false                      # Only write selected diagnostics
+
+[SURFEX.COVER]                      # Land cover information
+YCOVER = "ecosg_final_map"      # Version of ECOCLIMAP for surfex (1,2,SG)
+                                    # Available versions are 1.1-1.5,2.0-2.2.1,SG and 2.5_plus if you use FLake
+                                    # SG represents SecondGeneration and is now availbale for test on ECMWF. However,
+                                    # please note that SG is not yet compatible with any availbale lake data base.
+SG = true                           # ECOCLIMAP second generation
+H_TREE = "new_ht_c"                 # SG tree height
+ALBNIR_SOIL = 'ALB_SAT_NI_@MM@@CDD@_c' # SG soil NIR albedo
+ALBNIR_VEG = 'ALB_SAT_NI_@MM@@CDD@_c'  # SG vegetation NIR albedo
+ALBVIS_SOIL = 'ALB_SAT_VI_@MM@@CDD@_c' # SG soil visible albedo
+ALBVIS_VEG = 'ALB_SAT_VI_@MM@@CDD@_c'  # SG vgetation visible albedo
+LAI = 'LAI_SAT_@MM@@CDD@_c'             # SG Leaf area index
+
+[SURFEX.ZS]                         # Orography
+YZS = "gmted2010"                   # Database with orography: "gmted2010"|"gtopo30"
+
+[SURFEX.PARAMETERS]
+XRIMAX = 0.2                        # Maximum allowed Richardson number in the surface layer
+
+[SURFEX.TILES]                      # Define which tile schemes to use
+SEA = "SEAFLX"                      # Sea scheme
+INLAND_WATER = "WATFLX"              # Treatment of lakes in surfex (WATFLX|FLAKE)
+NATURE = "ISBA"                     # Nature scheme: "ISBA"|"NONE"
+TOWN = "TEB"                        # Town scheme: "TEB"|"NONE"
+
+
+#########################################
+########## Tile specific settings #######
+#########################################
+
+#######
+# SEA #
+#######
+[SURFEX.SEA]                        # General sea settings
+ICE = "NONE"                        # Treatment of sea ice in surfex (NONE|SICE)
+PERTFLUX = false                    # Perturb sea fluxes
+LVOLATILE_SIC = false               # 
+
+
+################
+# INLAND WATER #
+################
+
+# General inland water
+[SURFEX.INLAND_WATER]
+
+# General FLAKE
+[SURFEX.FLAKE]
+LCLIM = true                        # Use FLAKE climatology
+LDB_VERSION = "3.0"
+
+##########
+# NATURE #
+##########
+
+# ISBA settings
+[SURFEX.ISBA]
+SCHEME = "DIF"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
+NPATCH = 3                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
+MEB = true                         # Enable Multi Energy Budget (MEB) model
+CANOPY = false                      # Activates surface boundary multi layer scheme over land in SURFEX
+                                    # (must be false for NPATCH>1)
+SNOW = "3-L"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
+YSOC_TOP = "soc_top"                # Soil organic carbon data. Options: "soc_top"
+YSOC_SUB = "soc_sub"                # Soil organic carbon data. Options: "soc_sub"
+YCLAY = "CLAY_SOILGRID"
+YSAND = "SAND_SOILGRID"
+ERTSURF = false                    # Perturb surface parameters
+XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
+XCSMAX = 2.0E-4                     # Maximum value for snow heat capacity; default=2.0E-4
+
+# Sub-grid-scale orography settings
+[SURFEX.SSO]
+SCHEME = "NONE"                     # SSO scheme used in SURFEX "NONE"|"'Z01D'"|"'BE04'"|"'OROT'"
+
+# Tree height treatment
+[SURFEX.TREEDRAG]
+TREEDATA_FILE = ""                  # Name of tree height data file (with *.llv suffix)
+XSCALE_H_TREE = 1.0                 # Scale the tree height with this factor
+XALLEN_TERM = 2.5                   # crops: zallen=exp((LAI-XALLEN_TERM)/1.3); default=3.5
+XGRASS_H_DNM = 3.0                  # grass: z0=0.13*LAI/XGRASS_H_DNM; default=6.0
+FAKETREES = [false, false, false, false, false, false, false]                   # Fake trees
+
+########
+# TOWN #
+########
+# Settings for town tile.
+[SURFEX.TOWN]
+LTOWN_TO_ROCK = false               # Switch to set town as rock. Only used if surfex tile scheme for town is "NONE".
+                                    # If true will override other TOWN scheme settings and set CTOWN == "NONE"
+
+# TEB specific settings
+[SURFEX.TEB]
+
+
+#########################
+# Assimilation settings #
+#########################
+
+[SURFEX.ASSIM]
+CFILE_FORMAT_LSM = "ASCII"              # File format for land sea mask when using SODA: "ASCII"|"FA"
+
+[SURFEX.ASSIM.SCHEMES]
+SEA = "NONE"                         # Assimilation method for sea tile: "INPUT"|"NONE"
+INLAND_WATER = "INPUT"               # Assimilation method for water tile: "INPUT"|"NONE"
+ISBA = "EKF"                         # Assimilation method for ISBA soil: "NONE"|"OI"|"EKF"
+TEB = "NONE"                         # Assimilation method for TEB tile: "NONE"|"ROADT"
+
+[SURFEX.ASSIM.OBS]
+LOBSHEADER = false                          # ASCII observation file has header
+CFILE_FORMAT_OBS = "ASCII"                  # File format for observations when using SODA: "ASCII"|"FA"
+LOBSNAT = false                             # Observation ASCII file only contains nature points
+COBS_M = ["T2M","HU2M","WG2 ","LAI","SWE"]  # Observation types
+NNCO = [1, 1, 0, 0, 1]                      # Active observation types
+XERROBS_M = [1.0, 0.1, 0.1, 0.1, 20.0]      # Observation error (used in EKF)
+LSWE = false                                # Assimilate SWE, if false assimilate snow depth
+
+[SURFEX.ASSIM.SEA]
+CFILE_FORMAT_SST = "ASCII"           # File format for SST input when using SODA and SEA == "INPUT": "ASCII"|"FA"
+LREAD_SST_FROM_FILE = true           # When SEA == INPUT read SST from external file
+LEXTRAP_SEA = false                  # Extrapolate sea variables to points having LSM < 0.5
+LECSST = true                        # SST from ECMWF
+
+[SURFEX.ASSIM.INLAND_WATER]
+LWATERTG2 = false                    # Use TG2 as LST in points having both land and water defined. Should use LEXTRAP_WATER=true
+LEXTRAP_WATER = false                # Extrapolate LST to points having LSM < 0.5 or to points masked by LWATERTG2
+
+[SURFEX.ASSIM.ISBA]
+UPDATE_SNOW_CYCLES = ["06"]          # Cycles to update snow depths/SWE in assimilation.
+                                     # Empty list or not valid values means no update
+LSWEPSINI = false
+XSWEPSINI = 1000.0
+LSWEPSMIN = false
+XSWEPSMIN = 500.0
+LPATCH1 = false
+
+
+# OI settings
+[SURFEX.ASSIM.ISBA.OI]
+CFILE_FORMAT_CLIM = "ASCII"         # File format for file containing climatological fields
+CFILE_FORMAT_FG = "ASCII"           # File format of upper air first guess
+COEFFS = "POLYNOMES_ISBA"             # Specify use of OI coefficients file (POLYNOMES_ISBA|POLYNOMES_ISBA_MF6)
+                                    # POLYNOMES_ISBA_MF6 means 6 times smaller coefficients for WG2 increments
+XSIGT2MO = 1.0                      # SIGMA O for T2M in oi_cacsts
+XSIGH2MO = 0.1                      # SIGMA O for RH2M in oi_cacsts
+
+# EKF settings
+[SURFEX.ASSIM.ISBA.EKF]
+NNCV = [0,1,0,1]                             # Active EKF control variables
+XSIGMA_M = [2.0, 2.0, 0.1 , 0.15]            # Background error
+CVAR_M = ["TG1", "TG2", "WG1" , "WG2"]       # Control variables
+XTPRT_M = [0.0001, 0.0001, 0.00001, 0.00001] # Perturbation magnitude
+XSCALE_Q = 0.125                             # Scaling of obs error
+EVOLVE_B = false                             # Evolve B matrix each cycle
+LLINCHECK = true                             # Linerarity check of jacobians
+XALPHA = 0.2                                 # Alpha used in linerarity check of jacobians
+
+# EnKF settings
+[SURFEX.ASSIM.ISBA.ENKF]
+NNCV = [1,1,1,1,1,1]                             # Active EnKF control variables
+CVAR_M = ["TG1", "TG2", "TG3", "WG2" , "WG3", "WG4"]       # Control variables
+NENS_M=16                                    # Number of ensemble members
+LPASSIVE_MODE=false

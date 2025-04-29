@@ -1,0 +1,73 @@
+pgd:
+  - io
+  - constants
+  - sice
+  - treedrag
+  - pgd
+  - eco_sg
+  - pgd_kdtree
+  - pgd_cover
+  - pgd_cover_direct
+  - pgd_arrange_cover
+  - pgd_cover_direct
+  - pgd_cover_lrm_river_true
+  - pgd_cv_sg
+  - pgd_rsmin_sg
+  - pgd_ecoclimap_sg
+  - pgd_ecoclimap_sg_single_decade
+  - pgd_ecoclimap_sg_single_decade_albnir_soil_dirtyp
+  - pgd_ecoclimap_sg_single_decade_albnir_veg_dirtyp
+  - pgd_ecoclimap_sg_single_decade_albvis_soil_dirtyp
+  - pgd_ecoclimap_sg_single_decade_albvis_veg_dirtyp
+  - pgd_ecoclimap_sg_single_decade_lai_dirtyp
+  - pgd_ecoclimap_sg_single_decade_tree_height_dirtyp
+  - pgd_zs
+  - pgd_zs_direct
+  - pgd_sea
+  - pgd_isba
+  - pgd_isba_sand_direct
+  - pgd_isba_clay_direct
+  - pgd_isba_soc_direct
+  - meb
+  - pgd_meb
+
+prep:
+  - io
+  - constants
+  - treedrag
+  - prep
+  - eco_sg
+  - prep_from_file
+  - prep_from_file_with_pgd
+  - prep_seaflux
+  - prep_sice
+  - prep_isba
+  - prep_isba_snow
+  - prep_isba_snow_3l
+  - meb
+
+offline:
+  - io
+  - constants
+  - treedrag
+  - eco_sg
+  - offline
+  - offline_sso
+  - offline_sso_none
+  - offline_seaice
+  - offline_sice
+  - offline_flake
+  - offline_isba
+  - offline_pert_isba_settings
+  - offline_teb
+  - offline_selected_output
+
+soda:
+  - io
+  - treedrag
+  - eco_sg
+  - soda
+  - soda_sice
+  #- soda_snow_an
+  - soda_isba_ekf
+  - soda_obs

@@ -1,0 +1,999 @@
+# General netcdf settings
+netcdf:
+  filepattern: https://thredds.met.no/thredds/dodsC/meps25epsarchive/@YYYY@/@MM@/@DD@/meps_det_2_5km_@YYYY@@MM@@DD@T@HH@Z.nc
+  interpolator: bilinear
+  offset: 10800
+  fcint: 10800
+
+# General grib1 settings
+grib1:
+  filepattern: not_defined
+  offset: 0
+  fcint: 10800
+  interpolator: bilinear
+
+# General grib2 settings
+grib2:
+  filepattern: not_defined
+  offset: 0
+  fcint: 10800
+  interpolator: bilinear
+  typeOfStatisticalProcessing: -1
+
+surfex:
+  filepattern: not_defined
+  offset: 0
+  fcint: 3600
+  interpolator: bilinear
+  prefer_forecast: false
+
+fa:
+  filepattern: not_defined
+  offset: 0
+  fcint: 10800
+  interpolator: bilinear
+
+# Orography
+ZS:
+  netcdf:
+    converter:
+      none:
+        name: altitude
+      phi2m:
+        phi:
+          name: surface_geopotential
+  grib1:
+    converter:
+      none:
+        parameter: 129
+        type: 1
+        level: 0
+        tri: 0
+      phi2m:
+        phi:
+          parameter: 6
+          type: 105
+          level: 0
+          tri: 0
+  grib2:
+    converter:
+      none:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 5
+          levelType: 1
+          level: 0
+      phi2m:
+        phi:
+          discipline: 0
+          parameterCategory: 3
+          parameterNumber: 4
+          levelType: 103
+          level: 0
+  fa:
+    converter:
+      phi2m:
+        name: SURFGEOPOTENTIEL
+  surfex:
+    converter:
+      none:
+        varname: ZS
+
+# Reference height Z
+ZREF:
+  screen:
+    constant:
+      value: 2
+    surfex:
+      converter:
+        none:
+          varname: ZREF
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
+    constant:
+      value: 12.5
+    grib1:
+      converter:
+        none:
+          parameter: 11
+          type: 109
+          level: 65
+          tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: 105
+          level: 65
+    fa:
+      converter:
+        none:
+    surfex:
+      converter:
+        none:
+          varname: ZREF
+
+# Reference height U
+UREF:
+  screen:
+    constant:
+      value: 10
+    surfex:
+      converter:
+        none:
+          varname: UREF
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
+    constant:
+      value: 12.5
+    grib1:
+      converter:
+        none:
+          parameter: -1
+          type: 109
+          level: 65
+          tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: 105
+          level: 65
+    fa:
+      converter:
+        none:
+    surfex:
+      converter:
+        none:
+          varname: UREF
+
+# Temperature
+TA:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: air_temperature_2m
+    grib1:
+      converter:
+        none:
+          parameter: 167
+          type: 1
+          level: 0
+          tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: 103
+          level: 2
+    fa:
+      converter:
+        none:
+          name: CLSTEMPERATURE
+    surfex:
+      converter:
+        none:
+          varname: Tair
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: air_temperature_ml
+          level: 0.99851962924
+    grib1:
+      converter:
+        none:
+          parameter: 11
+          type: 109
+          level: 65
+          tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 0
+          parameterNumber: 0
+          levelType: 105
+          level: 65
+    fa:
+      converter:
+        none:
+          name: S065TEMPERATURE
+    surfex:
+      converter:
+        none:
+          varname: Tair
+
+# Specific humidity
+QA:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: specific_humidity_2m
+        rh2q:
+          rh:
+            name: relative_humidity_2m
+            level: 2
+            units: "%"
+          t:
+            name: air_temperature_2m
+            level: 2
+            units: "K"
+          p:
+            name: surface_air_pressure
+            units: "Pa"
+        rh2q_mslp:
+          rh:
+            name: relative_humidity_2m
+            level: 2
+            units: "%"
+          t:
+            name: air_temperature_2m
+            level: 2
+            units: "K"
+          altitude:
+            name: altitude
+            units: "m"
+          mslp:
+            name: air_pressure_at_sea_level
+            units: "Pa"
+        rh2q_z:
+          rh:
+            name: relative_humidity_2m
+            level: 2
+            units: "%"
+          t:
+            name: air_temperature_2m
+            level: 2
+            units: "K"
+          altitude:
+            name: altitude
+            units: "m"
+    grib1:
+      converter:
+        none:
+          parameter: 168
+          type: 1
+          level: 0
+          tri: 0
+        rh2q:
+          rh:
+            parameter: 52
+            type: 105
+            level: 2
+            tri: 0
+          t:
+            parameter: 11
+            type: 105
+            level: 2
+            tri: 0
+          p:
+            parameter: 1
+            type: 105
+            level: 0
+            tri: 0
+        td2q:
+          td:
+            parameter: 168
+            type: 1
+            level: 0
+            tri: 0
+          p:
+            parameter: 134
+            type: 1
+            level: 0
+            tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 0
+          levelType: 103
+          level: 0
+        rh2q:
+          rh:
+            discipline: 0
+            parameterCategory: 1
+            parameterNumber: 192
+            levelType: 103
+            level: 2
+          t:
+            discipline: 0
+            parameterCategory: 0
+            parameterNumber: 0
+            levelType: 103
+            level: 2
+          p:
+            discipline: 0
+            parameterCategory: 3
+            parameterNumber: 0
+            levelType: 103
+            level: 0
+    fa:
+      converter:
+        none:
+          name: CLSHUMI.SPECIFI
+        rh2q:
+          rh:
+            name: CLSHUMI_RELATIV
+          t:
+            name: CLSTEMPERATURE
+          p:
+            name: SURFPRESSION
+    surfex:
+      converter:
+        none:
+          varname: Qair
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: specific_humidity_ml
+          level: 0.99851962924
+        rh2q:
+          rh:
+            name: relative_humidity_ml
+            level: 0.99851962924
+            units: "%"
+          t:
+            name: air_temperature_ml
+            level: 0.99851962924
+            units: "K"
+          p:
+            name: surface_air_pressure
+            units: "Pa"
+    grib1:
+      converter:
+        none:
+          parameter: 51
+          type: 109
+          level: 65
+          tri: 0
+        rh2q:
+          rh:
+            parameter: 52
+            type: 109
+            level: 65
+            tri: 0
+          t:
+            parameter: 11
+            type: 109
+            level: 65
+            tri: 0
+          p:
+            parameter: 1
+            type: 105
+            level: 0
+            tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 0
+          levelType: 105
+          level: 65
+        rh2q:
+          rh:
+            discipline: 0
+            parameterCategory: 1
+            parameterNumber: 192
+            levelType: 105
+            level: 65
+          t:
+            discipline: 0
+            parameterCategory: 0
+            parameterNumber: 0
+            levelType: 105
+            level: 65
+          p:
+            discipline: 0
+            parameterCategory: 3
+            parameterNumber: 0
+            levelType: 103
+            level: 0
+    fa:
+      converter:
+        none:
+          name: S065HUMI.SPECIFI
+        rh2q:
+          rh:
+            name: S065HUMI_RELATIV
+          t:
+            name: S065TEMPERATURE
+          p:
+            name: SURFPRESSION
+    surfex:
+      converter:
+        none:
+          varname: Qair
+
+# Wind speed
+WIND:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: wind_speed_10m
+        windspeed:
+          x:
+            name: x_wind_10m
+          y:
+            name: y_wind_10m
+    grib1:
+      converter:
+        none:
+          parameter: 32
+          type: 105
+          level: 10
+          tri: 0
+        windspeed:
+          x:
+            parameter: 165
+            type: 1
+            level: 0
+            tri: 0
+          y:
+            parameter: 166
+            type: 1
+            level: 0
+            tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: 103
+          level: 10
+        windspeed:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: 103
+            level: 10
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: 103
+            level: 10
+    fa:
+      converter:
+        none:
+          name: CLSWIND.VELOCITY
+        windspeed:
+          x:
+            name: CLSVENT.ZONAL
+          y:
+            name: CLSVENT.MERIDIEN
+    surfex:
+      converter:
+        none:
+          varname: Wind
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: wind_speed_ml
+          level: 0.99851962924
+        windspeed:
+          x:
+            name: x_wind_ml
+            level: 0.99851962924
+          y:
+            name: y_wind_ml
+            level: 0.99851962924
+    grib1:
+      converter:
+        none:
+          parameter: 207
+          type: 105
+          level: 10
+          tri: 0
+        windspeed:
+          x:
+            parameter: 33
+            type: 109
+            level: 65
+            tri: 0
+          y:
+            parameter: 34
+            type: 109
+            level: 65
+            tri: 0
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: 105
+          level: 65
+        windspeed:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: 105
+            level: 65
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: 105
+            level: 65
+    fa:
+      converter:
+        none:
+          name: S065WIND.VELOCITY
+        windspeed:
+          x:
+            name: S065VENT.ZONAL
+          y:
+            name: S065VENT.MERIDIEN
+    surfex:
+      converter:
+        none:
+          varname: Wind
+
+# Wind direction
+WIND_DIR:
+  screen:
+    netcdf:
+      converter:
+        none:
+          name: wind_direction_10m
+        winddir:
+          x:
+            name: x_wind_10m
+            rotate_to_geographic: True
+          y:
+            name: y_wind_10m
+            rotate_to_geographic: True
+    grib1:
+      converter:
+        none:
+          parameter: 31
+          type: 105
+          level: 10
+          tri: 0
+        winddir:
+          x:
+            parameter: 165
+            type: 1
+            level: 0
+            tri: 0
+            rotate_to_geographic: True
+          y:
+            parameter: 166
+            type: 1
+            level: 0
+            tri: 0
+            rotate_to_geographic: True
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 1
+          levelType: 103
+          level: 10
+        winddir:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: 103
+            level: 10
+            rotate_to_geographic: True
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: 103
+            level: 10
+            rotate_to_geographic: True
+    fa:
+      converter:
+        none:
+          name:
+        windspeed:
+          x:
+            name: CLSVENT.ZONAL
+            rotate_to_geographic: True
+          y:
+            name: CLSVENT.MERIDIEN
+            rotate_to_geographic: True
+    surfex:
+      converter:
+        none:
+          varname: Wind_DIR
+  ml:
+    netcdf:
+      converter:
+        none:
+          name: wind_direction_ml
+          level: 0.99851962924
+        winddir:
+          x:
+            name: x_wind_ml
+            level: 0.99851962924
+            rotate_to_geographic: True
+          y:
+            name: y_wind_ml
+            level: 0.99851962924
+            rotate_to_geographic: True
+    grib1:
+      converter:
+        none:
+          parameter: 249
+          type: ml
+          level: 109
+          tri: 0
+        winddir:
+          x:
+            parameter: 33
+            type: 109
+            level: 65
+            tri: 0
+            rotate_to_geographic: True
+          y:
+            parameter: 34
+            type: 109
+            level: 65
+            tri: 0
+            rotate_to_geographic: True
+    grib2:
+      converter:
+        none:
+          discipline: 0
+          parameterCategory: 2
+          parameterNumber: 0
+          levelType: 105
+          level: 65
+        winddir:
+          x:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 2
+            levelType: 105
+            level: 65
+            rotate_to_geographic: True
+          y:
+            discipline: 0
+            parameterCategory: 2
+            parameterNumber: 3
+            levelType: 105
+            level: 65
+            rotate_to_geographic: True
+    fa:
+      converter:
+        none:
+          name:
+        windspeed:
+          x:
+            name: S065VENT.ZONAL
+            rotate_to_geographic: True
+          y:
+            name: S065VENT.MERIDIEN
+            rotate_to_geographic: True
+    surfex:
+      converter:
+        none:
+          varname: Wind_DIR
+
+# Rainfall rate
+RAIN:
+  netcdf:
+    converter:
+      none:
+        name: rainfall_amount
+        accumulated: False
+        instant: 3600.
+      totalprec:
+        totalprec:
+          name: precipitation_amount_acc
+          accumulated: True
+          instant: 3600.
+        snow:
+          name: snowfall_amount_acc
+          accumulated: True
+          instant: 3600.
+      calcrain:
+        totalprec:
+          name: precipitation_amount
+          accumulated: false
+          instant: 3600.
+        t:
+          name: air_temperature_2m
+  grib1:
+    converter:
+      none:
+        parameter: 181,
+        type: 1
+        level: 0
+        tri: 0
+      totalprec:
+        totalprec:
+          parameter: 228
+          type: 1
+          level: 0
+          tri: 0
+          instant: 3600.
+        snow:
+          parameter: 144
+          type: 1
+          level: 0
+          tri: 0
+          instant: 3600.
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 65
+        levelType: 103
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
+      totalprec:
+        totalprec:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 8
+          levelType: 103
+          level: 0
+          instant: 3600.
+          typeOfStatisticalProcessing: 1
+        snow:
+          discipline: 0
+          parameterCategory: 1
+          parameterNumber: 53
+          levelType: 103
+          level: 0
+          instant: 3600.
+          typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      none:
+        intant: 3600
+        accumulated: False
+        name: SURFACCPLUIE
+  surfex:
+    converter:
+      none:
+        varname: Rainf
+
+# Snow fall amount rate
+SNOW:
+  netcdf:
+    converter:
+      none:
+        name: snowfall_amount_acc
+        accumulated: True
+        instant: 3600.
+      calcsnow: 
+        totalprec:
+          name: precipitation_amount
+          accumulated: false
+          instant: 3600.
+        rh:
+          name: relative_humidity_2m
+          level: 2
+          units: "%"
+        t:
+          name: air_temperature_2m
+          level: 2
+          units: "celsius"
+        p:
+          name: surface_air_pressure
+          units: "Pa"
+
+  grib1:
+    converter:
+      none:
+        parameter: 144
+        type: 1
+        level: 0
+        tri: 0
+        instant: 3600.
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 1
+        parameterNumber: 53
+        levelType: 103
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      none:
+        intant: 3600
+        accumulated: False
+        name: SURFACCNEIGE
+  surfex:
+    converter:
+      none:
+        varname: Snowf
+
+# Surface air pressure
+PS:
+  netcdf:
+    converter:
+      none:
+        name: surface_air_pressure
+      mslp2ps:
+        t:
+          name: air_temperature_2m
+          level: 2
+          units: "K"
+        altitude:
+          name: altitude
+          units: "m"
+        mslp:
+          name: air_pressure_at_sea_level
+          units: "Pa"
+
+  grib1:
+    converter:
+      none:
+        parameter: 134
+        type: 1
+        level: 0
+        tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 3
+        parameterNumber: 0
+        levelType: 103
+        level: 0
+  fa:
+    converter:
+      none:
+        name: SURFPRESSION
+  surfex:
+    converter:
+      none:
+        varname: PSurf
+
+# Direct shortwave radiation
+DIR_SW:
+  netcdf:
+    converter:
+      none:
+        name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
+        accumulated: True
+        instant: 3600.
+      analysis:
+        name: integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time
+        accumulated: False
+        instant: 3600.
+  grib1:
+    converter:
+      none:
+        parameter: 169
+        type: 1
+        level: 0
+        tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 4
+        parameterNumber: 3
+        levelType: 103
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      name: "SURFRAYT SOLA DE"
+  surfex:
+    converter:
+      none:
+        varname: DIR_SWdown
+
+# Direct scattered radiation
+SCA_SW:
+  netcdf:
+    converter:
+      none:
+        name: scattered_short_wave_radiation
+  constant:
+    value: 0
+  grib1:
+    converter:
+      none:
+        parameter: 14
+        type: 105
+        level: 0
+        tri: 0
+  grib2:
+    converter:
+      none:
+  surfex:
+    converter:
+      none:
+        varname: SCA_SWdown
+
+# Long wave radiation
+LW:
+  netcdf:
+    converter:
+      none:
+        name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
+        accumulated: True
+        instant: 3600.
+      analysis:
+        name: integral_of_surface_downwelling_longwave_flux_in_air_wrt_time
+        accumulated: False
+        instant: 3600.
+  grib1:
+    converter:
+      none:
+        parameter: 175
+        type: 1
+        level: 0
+        tri: 0
+  grib2:
+    converter:
+      none:
+        discipline: 0
+        parameterCategory: 5
+        parameterNumber: 4
+        levelType: 103
+        level: 0
+        instant: 3600.
+        typeOfStatisticalProcessing: 1
+  fa:
+    converter:
+      name: "SURFRAYT THER DE"
+  surfex:
+    converter:
+      none:
+        varname: LWdown
+
+# Carbon dioxide
+CO2:
+  netcdf:
+    converter:
+      none:
+        name: carbon_dioxide
+  grib1:
+    converter:
+      none:
+        parameter: -1
+        type: 105
+        level: 0
+        tri: 0
+  grib2:
+    converter:
+      none:
+
+  constant:
+    value: 0.00062
+  surfex:
+    converter:
+      none:
+        varname: CO2air

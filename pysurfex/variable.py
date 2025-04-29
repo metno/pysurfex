@@ -40,7 +40,7 @@ class Variable(object):
         except KeyError:
             self.interval = 3600
         try:
-            self.filepattern = var_dict["filepattern"]
+            self.filepattern = self.substitute_macros("filepattern")
         except KeyError:
             raise RuntimeError("No filepattern provided") from KeyError
         self.initial_basetime = initial_basetime
@@ -57,6 +57,11 @@ class Variable(object):
         except KeyError:
             self.prefer_forecast = prefer_forecast
 
+        try:
+            self.one_forecast = self.var_dict["one_forecast"]
+        except KeyError:
+            self.one_forecast = False
+
         if self.offset > self.fcint:
             raise RuntimeError(
                 "You can not have larger offset than the frequency of forecasts "
@@ -70,6 +75,24 @@ class Variable(object):
         self.accumulated = accumulated
         self.alpha = None
         logging.debug("Constructed variable for %s", str(self.var_dict))
+
+    def substitute_macros(self, key, micro="@"):
+        try:
+            value = self.var_dict[key]
+        except:
+            raise KeyError
+        logging.debug("Substitute key %s, value: %s", key, value)
+        try:
+            macros = self.var_dict["macros"]
+        except KeyError:
+            logging.debug("No macros found")
+            return value
+
+        for mkey, mvalue in macros.items():
+            if isinstance(value, str):
+                logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
+                value = value.replace(f"{micro}{mkey}{micro}", mvalue)
+        return value
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
@@ -137,8 +160,7 @@ class Variable(object):
             elif self.var_type == "obs":
                 var_dict = self.var_dict
                 var_dict = {"set": var_dict}
-                basetime = self.get_basetime(validtime)
-                file_handler = get_datasources(basetime, var_dict)[0]
+                file_handler = get_datasources(validtime, var_dict)[0]
             else:
                 raise NotImplementedError
 
@@ -451,7 +473,7 @@ class Variable(object):
             instant (_type_): _description_
 
         Raises:
-            RuntimeError: "Should not be negative values"
+            ValueError: _description_
 
         Returns:
             _type_: _description_
@@ -477,7 +499,7 @@ class Variable(object):
                 )
             field[field < 0.0] = 0
             if any(field[field < 0.0]):
-                raise RuntimeError("Should not be negative values")
+                raise ValueError("Should not be negative values")
             if float(instant) != 0.0:
                 field = np.divide(field, float(instant))
 
@@ -502,6 +524,10 @@ class Variable(object):
         """
         if self.offset < 0:
             raise RuntimeError("Negative offset does not make sense here")
+
+        if self.one_forecast:
+            logging.debug("one_forecast is True. Valitime %s Keep initial basetime %s", validtime, self.initial_basetime)
+            return self.initial_basetime
 
         # Take offset into account
         first = False
@@ -562,6 +588,7 @@ class Variable(object):
             basetime_inc * int(as_timedelta(seconds=self.fcint).seconds),
         )
         logging.debug("       prefer_forecast: %s", self.prefer_forecast)
+        logging.debug("          one_forecast: %s", self.one_forecast)
         logging.debug("   prefer_forecast_inc: %s", prefer_forecast)
         logging.debug("          basetime_inc: %s", basetime_inc)
         logging.debug("           Basetime is: %s", basetime)

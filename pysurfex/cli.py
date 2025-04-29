@@ -51,7 +51,7 @@ from .netcdf import (
     read_first_guess_netcdf_file,
     write_analysis_netcdf_file,
 )
-from .obs import Observation
+from .obs import StationList
 from .obsmon import write_obsmon_sqlite_file
 from .platform_deps import SystemFilePathsFromFile
 from .pseudoobs import CryoclimObservationSet, SentinelObservationSet
@@ -73,12 +73,8 @@ def get_geo_from_cmd(**kwargs):
     else:
         domain = kwargs.get("domain")
         if domain is not None:
-            print(domain)
-            if os.path.exists(domain):
-                with open(domain, mode="r", encoding="utf-8") as fhandler:
-                    geo = get_geo_object(json.load(fhandler))
-            else:
-                raise FileNotFoundError(domain)
+            with open(domain, mode="r", encoding="utf-8") as fhandler:
+                geo = get_geo_object(json.load(fhandler))
         else:
             geo = None
     return geo
@@ -751,13 +747,11 @@ def set_geo_from_stationlist(**kwargs):
 
     lons = []
     lats = []
-    if os.path.exists(stationlist):
-        stids = json.load(open(stationlist, "r", encoding="utf-8"))
-    else:
-        raise FileNotFoundError("Station list does not exist!")
+    stationlist = StationList(stationlist)
+    stids = stationlist.stids
 
     for stid in stids:
-        lon, lat = Observation.get_pos_from_stid(stationlist, [stid])
+        lon, lat, __ = stationlist.get_pos_from_stid([stid])
         lon = lon[0]
         lat = lat[0]
         if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:

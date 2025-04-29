@@ -8,6 +8,43 @@ from pysurfex.variable import Variable
 @pytest.fixture()
 def fixture():
     cfg = {
+        "long_forecast": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 10800,
+            "parameter": -1,
+            "levelType": 105,
+            "level": 0,
+            "tri": 0,
+            "prefer_forecast": True,
+            "one_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib_fp",
+            "blueprint": {
+                "0": "archive/2019/11/13/03/fc2019111303_000grib_fp",
+                "1": "archive/2019/11/13/03/fc2019111303_003grib_fp",
+                "2": "archive/2019/11/13/03/fc2019111303_006grib_fp",
+                "3": "archive/2019/11/13/03/fc2019111303_009grib_fp",
+                "4": "archive/2019/11/13/03/fc2019111303_012grib_fp",
+                "5": "archive/2019/11/13/03/fc2019111303_015grib_fp",
+                "6": "archive/2019/11/13/03/fc2019111303_018grib_fp",
+                "7": "archive/2019/11/13/03/fc2019111303_021grib_fp",
+                "8": "archive/2019/11/13/03/fc2019111303_024grib_fp",
+                "9": "archive/2019/11/13/03/fc2019111303_027grib_fp",
+                "10": "archive/2019/11/13/03/fc2019111303_030grib_fp",
+                "11": "archive/2019/11/13/03/fc2019111303_033grib_fp",
+                "12": "archive/2019/11/13/03/fc2019111303_036grib_fp",
+                "13": "archive/2019/11/13/03/fc2019111303_039grib_fp",
+                "14": "archive/2019/11/13/03/fc2019111303_042grib_fp",
+                "15": "archive/2019/11/13/03/fc2019111303_045grib_fp",
+                "16": "archive/2019/11/13/03/fc2019111303_048grib_fp",
+                "17": "archive/2019/11/13/03/fc2019111303_051grib_fp",
+                "18": "archive/2019/11/13/03/fc2019111303_054grib_fp",
+                "19": "archive/2019/11/13/03/fc2019111303_057grib_fp",
+                "20": "archive/2019/11/13/03/fc2019111303_060grib_fp",
+                "21": "archive/2019/11/13/03/fc2019111303_063grib_fp",
+                "22": "archive/2019/11/13/03/fc2019111303_066grib_fp",
+            },
+        },
         "grib1": {
             "fcint": 10800,
             "offset": 0,
@@ -203,6 +240,23 @@ def test_open_new_file_nc(fixture):
         assert filename == var_dict["blueprint"][str(i)]
         if i > 0:
             assert previous_filename == var_dict["blueprint_previous"][str(i)]
+
+
+def test_open_new_file_one_forecast(fixture):
+    """Test to open a grib1 file."""
+    initialtime = as_datetime_args(year=2019, month=11, day=13, hour=3)
+    intervall = 10800
+    case = "long_forecast"
+
+    var_dict = fixture[case]
+    var_type = "grib1"
+    for i in range(23):
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
+        print(validtime)
+        variable = Variable(var_type, var_dict, initialtime)
+        filename = variable.get_filename(validtime)
+        print(filename, var_dict["blueprint"][str(i)])
+        assert filename == var_dict["blueprint"][str(i)]
 
 
 def test_open_new_file_grib1(fixture):

@@ -1,0 +1,1406 @@
+# GENERAL
+
+constants:
+  NAM_SURF_ATM:
+    XRIMAX: '${SURFEX#PARAMETERS#XRIMAX}'
+  NAM_SURF_CSTS:
+    XZ0HSN: 0.0003
+    XZ0SN: 0.003
+
+flake:
+  NAM_FLAKEN:
+    LSEDIMENTS: false
+
+treedrag:
+  NAM_TREEDRAG:
+    #LFAKETREE: '${SURFEX#TREEDRAG#FAKETREES}'
+    LFAKETREE:
+     - false
+     - true
+     - true
+     - true
+     - true
+     - true
+     - true
+    XALLEN_TERM: 2.5
+    XFORFRAC1: 1.0
+    XFORFRAC2: 0.0
+    XFORLAT1: 1.0
+    XFORLAT2: 0.0
+    XGRASS_H_DNM: 3.0
+    XZ0_MAX_LIMIT: 1.6
+    XZ0_MIN_LIMIT: 0.0
+
+io:
+  NAM_IO_OFFLINE:
+    CFORCING_FILETYPE: '${SURFEX#IO#CFORCING_FILETYPE}'
+    CPGDFILE: '${SURFEX#IO#CPGDFILE}'
+    CPREPFILE: '${SURFEX#IO#CPREPFILE}'
+    CSURFFILE: '${SURFEX#IO#CSURFFILE}'
+    CSURF_FILETYPE: '${SURFEX#IO#CSURF_FILETYPE}'
+    CTIMESERIES_FILETYPE: '${SURFEX#IO#CTIMESERIES_FILETYPE}'
+    LFAGMAP: true
+    LRESTART: true
+    LRESTART_2M: true
+    LSET_FORC_ZS: true
+    NHALO: 0
+    XTSTEP_OUTPUT: '${SURFEX#IO#XTSTEP_OUTPUT}'
+    XTSTEP_SURF: '${SURFEX#IO#XTSTEP}'
+  NAM_WRITE_SURF_ATM:
+    LSPLIT_PATCH: '${SURFEX#IO#LSPLIT_PATCH}'
+
+# PGD
+pgd_kdtree:
+  NAM_IO_OFFLINE:
+    LKDTREE: false
+
+pgd_meb:
+  NAM_MEB_ISBA:
+    LMEB_LITTER: true
+    LMEB_PATCH:
+    - false
+    - true
+  NAM_SGH_ISBAn:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: true
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
+
+pgd:
+  NAM_FRAC:
+    LECOSG: '${SURFEX#COVER#SG}'
+  NAM_PGD_SCHEMES:
+    CNATURE: '${SURFEX#TILES#NATURE}'
+    CSEA: '${SURFEX#TILES#SEA}'
+    CTOWN: '${SURFEX#TILES#TOWN}'
+    CWATER: '${SURFEX#TILES#INLAND_WATER}'
+
+pgd_arrange_cover:
+  NAM_PGD_ARRANGE_COVER:
+    LTOWN_TO_ROCK: false
+
+pgd_cover:
+  NAM_COVER:
+    YCOVER: '${SURFEX#COVER#YCOVER}'
+    YCOVERFILETYPE: 'DIRECT'
+
+pgd_cover_direct:
+  NAM_COVER:
+    YCOVERFILETYPE: DIRECT
+
+pgd_cover_netcdf:
+  NAM_COVER:
+    YCOVERFILETYPE: NETCDF
+
+pgd_cover_lrm_river_true:
+  NAM_COVER:
+     LRM_RIVER: true
+
+pgd_cv:
+  NAM_DATA_ISBA:
+    XUNIF_CV:
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 2.0e-05
+    - 2.0e-05
+
+pgd_cv_sg:
+  NAM_DATA_ISBA:
+    XUNIF_CV:
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 2.0e-05
+    - 1.0e-05
+    - 2.0e-05
+
+pgd_ecoclimap_sg:
+  NAM_DATA_ISBA:
+    NTIME: 36
+    CFNAM_ALBNIR_SOIL:
+    - - albnir_soil_0105
+    - - albnir_soil_0115
+    - - albnir_soil_0125
+    - - albnir_soil_0205
+    - - albnir_soil_0215
+    - - albnir_soil_0225
+    - - albnir_soil_0305
+    - - albnir_soil_0315
+    - - albnir_soil_0325
+    - - albnir_soil_0405
+    - - albnir_soil_0415
+    - - albnir_soil_0425
+    - - albnir_soil_0505
+    - - albnir_soil_0515
+    - - albnir_soil_0525
+    - - albnir_soil_0605
+    - - albnir_soil_0615
+    - - albnir_soil_0625
+    - - albnir_soil_0705
+    - - albnir_soil_0715
+    - - albnir_soil_0725
+    - - albnir_soil_0805
+    - - albnir_soil_0815
+    - - albnir_soil_0825
+    - - albnir_soil_0905
+    - - albnir_soil_0915
+    - - albnir_soil_0925
+    - - albnir_soil_1005
+    - - albnir_soil_1015
+    - - albnir_soil_1025
+    - - albnir_soil_1105
+    - - albnir_soil_1115
+    - - albnir_soil_1125
+    - - albnir_soil_1205
+    - - albnir_soil_1215
+    - - albnir_soil_1225
+    CFNAM_ALBNIR_VEG:
+    - - albir_veg_0105
+    - - albir_veg_0115
+    - - albir_veg_0125
+    - - albir_veg_0205
+    - - albir_veg_0215
+    - - albir_veg_0225
+    - - albir_veg_0305
+    - - albir_veg_0315
+    - - albir_veg_0325
+    - - albir_veg_0405
+    - - albir_veg_0415
+    - - albir_veg_0425
+    - - albir_veg_0505
+    - - albir_veg_0515
+    - - albir_veg_0525
+    - - albir_veg_0605
+    - - albir_veg_0615
+    - - albir_veg_0625
+    - - albir_veg_0705
+    - - albir_veg_0715
+    - - albir_veg_0725
+    - - albir_veg_0805
+    - - albir_veg_0815
+    - - albir_veg_0825
+    - - albir_veg_0905
+    - - albir_veg_0915
+    - - albir_veg_0925
+    - - albir_veg_1005
+    - - albir_veg_1015
+    - - albir_veg_1025
+    - - albir_veg_1105
+    - - albir_veg_1115
+    - - albir_veg_1125
+    - - albir_veg_1205
+    - - albir_veg_1215
+    - - albir_veg_1225
+    CFNAM_ALBVIS_SOIL:
+    - - albvis_soil_0105
+    - - albvis_soil_0115
+    - - albvis_soil_0125
+    - - albvis_soil_0205
+    - - albvis_soil_0215
+    - - albvis_soil_0225
+    - - albvis_soil_0305
+    - - albvis_soil_0315
+    - - albvis_soil_0325
+    - - albvis_soil_0405
+    - - albvis_soil_0415
+    - - albvis_soil_0425
+    - - albvis_soil_0505
+    - - albvis_soil_0515
+    - - albvis_soil_0525
+    - - albvis_soil_0605
+    - - albvis_soil_0615
+    - - albvis_soil_0625
+    - - albvis_soil_0705
+    - - albvis_soil_0715
+    - - albvis_soil_0725
+    - - albvis_soil_0805
+    - - albvis_soil_0815
+    - - albvis_soil_0825
+    - - albvis_soil_0905
+    - - albvis_soil_0915
+    - - albvis_soil_0925
+    - - albvis_soil_1005
+    - - albvis_soil_1015
+    - - albvis_soil_1025
+    - - albvis_soil_1105
+    - - albvis_soil_1115
+    - - albvis_soil_1125
+    - - albvis_soil_1205
+    - - albvis_soil_1215
+    - - albvis_soil_1225
+    CFNAM_ALBVIS_VEG:
+    - - albvis_veg_0105
+    - - albvis_veg_0115
+    - - albvis_veg_0125
+    - - albvis_veg_0205
+    - - albvis_veg_0215
+    - - albvis_veg_0225
+    - - albvis_veg_0305
+    - - albvis_veg_0315
+    - - albvis_veg_0325
+    - - albvis_veg_0405
+    - - albvis_veg_0415
+    - - albvis_veg_0425
+    - - albvis_veg_0505
+    - - albvis_veg_0515
+    - - albvis_veg_0525
+    - - albvis_veg_0605
+    - - albvis_veg_0615
+    - - albvis_veg_0625
+    - - albvis_veg_0705
+    - - albvis_veg_0715
+    - - albvis_veg_0725
+    - - albvis_veg_0805
+    - - albvis_veg_0815
+    - - albvis_veg_0825
+    - - albvis_veg_0905
+    - - albvis_veg_0915
+    - - albvis_veg_0925
+    - - albvis_veg_1005
+    - - albvis_veg_1015
+    - - albvis_veg_1025
+    - - albvis_veg_1105
+    - - albvis_veg_1115
+    - - albvis_veg_1125
+    - - albvis_veg_1205
+    - - albvis_veg_1215
+    - - albvis_veg_1225
+    CFNAM_H_TREE:
+    - h_tree
+    CFNAM_LAI:
+    - - lai_0105
+    - - lai_0115
+    - - lai_0125
+    - - lai_0205
+    - - lai_0215
+    - - lai_0225
+    - - lai_0305
+    - - lai_0315
+    - - lai_0325
+    - - lai_0405
+    - - lai_0415
+    - - lai_0425
+    - - lai_0505
+    - - lai_0515
+    - - lai_0525
+    - - lai_0605
+    - - lai_0615
+    - - lai_0625
+    - - lai_0705
+    - - lai_0715
+    - - lai_0725
+    - - lai_0805
+    - - lai_0815
+    - - lai_0825
+    - - lai_0905
+    - - lai_0915
+    - - lai_0925
+    - - lai_1005
+    - - lai_1015
+    - - lai_1025
+    - - lai_1105
+    - - lai_1115
+    - - lai_1125
+    - - lai_1205
+    - - lai_1215
+    - - lai_1225
+
+pgd_ecoclimap_sg_albnir_soil_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_SOIL:
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+
+pgd_ecoclimap_sg_albnir_veg_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_VEG:
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+
+pgd_ecoclimap_sg_albvis_soil_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_SOIL:
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP    
+
+pgd_ecoclimap_sg_albvis_veg_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_VEG:
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP    
+
+pgd_ecoclimap_sg_tree_height_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_H_TREE:
+    - DIRTYP
+
+pgd_ecoclimap_sg_lai_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_LAI:
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP
+    - - DIRTYP   
+
+pgd_ecoclimap_sg_single_decade:
+  NAM_DATA_ISBA:
+    NTIME: 1
+    CFNAM_ALBNIR_SOIL:
+    - albnir_soil
+    CFNAM_ALBNIR_VEG:
+    - albnir_veg
+    CFNAM_ALBVIS_SOIL:
+    - albvis_soil
+    CFNAM_ALBVIS_VEG:
+    - albvis_veg
+    CFNAM_H_TREE:
+    - h_tree
+    CFNAM_LAI:
+    - lai
+
+pgd_ecoclimap_sg_single_decade_albnir_soil_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_SOIL:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_albnir_veg_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_VEG:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_albvis_soil_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_SOIL:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_albvis_veg_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_VEG:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_lai_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_LAI:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_tree_height_dirtyp:
+  NAM_DATA_ISBA:
+    CFTYP_H_TREE:
+    - DIRTYP
+
+pgd_ecoclimap_sg_single_decade_albnir_soil_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_SOIL:
+    - NETCDF
+
+pgd_ecoclimap_sg_single_decade_albnir_veg_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_VEG:
+    - NETCDF
+
+pgd_ecoclimap_sg_single_decade_albvis_soil_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_SOIL:
+    - NETCDF
+
+pgd_ecoclimap_sg_single_decade_albvis_veg_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_VEG:
+    - NETCDF
+
+pgd_ecoclimap_sg_single_decade_lai_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_LAI:
+    - NETCDF
+
+pgd_ecoclimap_sg_single_decade_tree_height_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_H_TREE:
+    - NETCDF
+
+pgd_ecoclimap_sg_albnir_soil_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_SOIL:
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+
+pgd_ecoclimap_sg_albnir_veg_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBNIR_VEG:
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+
+pgd_ecoclimap_sg_albvis_soil_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_SOIL:
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+
+pgd_ecoclimap_sg_albvis_veg_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_ALBVIS_VEG:
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+
+pgd_ecoclimap_sg_tree_height_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_H_TREE:
+      - NETCDF
+
+pgd_ecoclimap_sg_lai_netcdf:
+  NAM_DATA_ISBA:
+    CFTYP_LAI:
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+    - - NETCDF
+
+pgd_flake:
+  NAM_DATA_FLAKE:
+    YWATER_DEPTH: GlobalLakeDepth
+    YWATER_DEPTHFILETYPE: DIRECT
+    YWATER_DEPTH_STATUS: GlobalLakeStatus
+
+pgd_flake_depth_direct:
+  NAM_DATA_FLAKE:
+    YWATER_DEPTHFILETYPE: DIRECT
+
+pgd_flake_depth_status_direct:
+  NAM_DATA_FLAKE:
+    YWATER_DEPTH_STATUSFILETYPE: DIRECT
+
+pgd_flake_depth_netcdf:
+  NAM_DATA_FLAKE:
+    YWATER_DEPTHFILETYPE: NETCDF
+
+pgd_flake_depth_status_netcdf:
+  NAM_DATA_FLAKE:
+    YWATER_DEPTH_STATUSFILETYPE: NETCDF
+
+pgd_inland_water: {}
+
+pgd_isba:
+  NAM_ISBA:
+    CISBA: '${SURFEX#ISBA#SCHEME}'
+    LMEB: '${SURFEX#ISBA#MEB}'
+    NPATCH: '${SURFEX#ISBA#NPATCH}'
+    YCLAY: '${SURFEX#ISBA#YCLAY}'
+    YCLAYFILETYPE: 'DIRECT'
+    YSAND: '${SURFEX#ISBA#YSAND}'
+    YSANDFILETYPE: 'DIRECT'
+    YSOCFILETYPE: 'DIRECT'
+    YSOC_SUB: '${SURFEX#ISBA#YSOC_SUB}'
+    YSOC_TOP: '${SURFEX#ISBA#YSOC_TOP}'
+
+pgd_isba_sand_direct:
+  NAM_ISBA:
+    YSANDFILETYPE: DIRECT
+
+pgd_isba_clay_direct:
+  NAM_ISBA:
+    YCLAYFILETYPE: DIRECT
+
+pgd_isba_soc_direct:
+  NAM_ISBA:
+    YSOCFILETYPE: DIRECT
+
+pgd_isba_sand_netcdf:
+  NAM_ISBA:
+    YSANDFILETYPE: NETCDF
+
+pgd_isba_clay_netcdf:
+  NAM_ISBA:
+    YCLAYFILETYPE: NETCDF
+
+pgd_isba_soc_netcdf:
+  NAM_ISBA:
+    YSOCFILETYPE: NETCDF
+
+pgd_isba_2l:
+  NAM_ISBA:
+    CISBA: '2-L'
+    NGROUND_LAYER: 2
+
+pgd_isba_3l:
+  NAM_ISBA:
+    CISBA: '3-L'
+    NGROUND_LAYER: 3
+
+pgd_isba_dif:
+  NAM_ISBA:
+    CISBA: 'DIF'
+    NGROUND_LAYER: 14
+
+pgd_rsmin:
+  NAM_DATA_ISBA:
+    XUNIF_RSMIN:
+    - 40.0
+    - 40.0
+    - 40.0
+    - 150.0
+    - 150.0
+    - 175.0
+    - 40.0
+    - 120.0
+    - 120.0
+    - 40.0
+    - 130.0
+    - 40.0
+    - 150.0
+    - 150.0
+    - 150.0
+    - 150.0
+    - 150.0
+    - 40.0
+    - 150.0
+
+pgd_rsmin_mod: {}
+
+pgd_rsmin_sg:
+  NAM_DATA_ISBA:
+    XUNIF_RSMIN:
+    - 40.0
+    - 40.0
+    - 40.0
+    - 169.5
+    - 169.5
+    - 169.5
+    - 169.5
+    - 175.0
+    - 216.0
+    - 216.0
+    - 216.0
+    - 169.5
+    - 40.0
+    - 40.0
+    - 120.0
+    - 60.0
+    - 60.0
+    - 135.6
+    - 150.0
+    - 40.0
+
+pgd_rsmin_sg_mod: {}
+
+pgd_sea:
+  NAM_SEABATHY:
+    XUNIF_SEABATHY: 0.0
+
+pgd_zs:
+  NAM_ZS:
+    YZS: '${SURFEX#ZS#YZS}'
+    YZSFILETYPE: 'DIRECT'
+
+pgd_zs_direct:
+  NAM_ZS:
+    YZSFILETYPE: DIRECT
+
+pgd_zs_netcdf:
+  NAM_ZS:
+    YZSFILETYPE: NETCDF
+
+# PREP
+
+prep:
+  NAM_PREP_SURF_ATM:
+    NDAY: '${SURFEX#PREP#NDAY}'
+    NMONTH: '${SURFEX#PREP#NMONTH}'
+    NYEAR: '${SURFEX#PREP#NYEAR}'
+    XTIME: '${SURFEX#PREP#XTIME}'
+    NHALO_PREP: 100
+
+prep_from_file:
+  NAM_PREP_SURF_ATM:
+    CFILE: '${SURFEX#PREP#FILE}'
+    CFILETYPE: '${SURFEX#PREP#FILETYPE}'
+
+prep_from_file_with_pgd:
+  NAM_PREP_SURF_ATM:
+    CFILEPGD: '${SURFEX#PREP#FILEPGD}'
+    CFILEPGDTYPE: '${SURFEX#PREP#FILEPGDTYPE}'
+    
+prep_from_namelist:
+  NAM_PREP_ISBA:
+    XHUG_SURF: 0.2
+    XHUG_ROOT: 0.2
+    XHUG_DEEP: 0.2
+    XTG_SURF: 285.0
+    XTG_ROOT: 288.0
+    XTG_DEEP: 292.0
+  NAM_PREP_TEB:
+    XTI_BLD:  285.0
+    XTI_ROAD: 285.0
+    XTS_ROAD: 285.0
+    XTS_ROOF: 285.0
+    XTS_WALL:  285.0
+    XWS_ROAD:    0.0
+    XWS_ROOF:    0.0
+  NAM_PREP_SEAFLUX:
+    XSST_UNIF: 280
+    XSSS_UNIF: 35
+    XSIC_UNIF: 2
+  NAM_PREP_WATFLUX:
+    XTS_WATER_UNIF: 280
+  NAM_PREP_FLAKE:
+    XTS_UNIF: 280
+  NAM_PREP_SEAICE_SICE:
+    XICE_TUNIF:  270
+    LINIT_FROM_SST: true
+    NUM_LAYERS: 4
+    XICE_THICKNESS: 0.5
+
+prep_flake:
+  NAM_PGD_SCHEMES:
+    CWATER: '${SURFEX#TILES#INLAND_WATER}'
+  NAM_PREP_FLAKE:
+    LCLIM_LAKE: '${SURFEX#FLAKE#LCLIM}'
+
+prep_isba:
+  NAM_FRAC:
+    LECOSG: '${SURFEX#COVER#SG}'
+  NAM_ISBA:
+    LMEB: '${SURFEX#ISBA#MEB}'
+  NAM_PREP_ISBA:
+    LISBA_CANOPY: false
+    LEXTRAP_SN: true
+    LEXTRAP_TG: true
+    LEXTRAP_WG: true
+    LEXTRAP_WGI: true
+  NAM_DIAG_ISBAN:
+    LPATCH_BUDGET: true
+
+prep_isba_dif:
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
+  NAM_SGH_ISBAN:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: TRUE
+
+prep_isba_snow:
+  NAM_PREP_ISBA_SNOW:
+    CSNOW: '${SURFEX#ISBA#SNOW}'
+    LSWEMAX: true
+
+prep_isba_snow_crocus: {}
+
+prep_seaflux:
+  NAM_PREP_SEAFLUX:
+    CSEAICE_SCHEME: '${SURFEX#SEA#ICE}'
+    LSEA_SBL: false
+
+prep_sice:
+  NAM_SEAICE_SICE:
+    LICE_HAS_SNOW: false
+    LICE_MASS_BALANCE: true
+  NAM_PREP_SEAICE_SICE:
+    NUM_LAYERS: 4
+    XICE_THICKNESS: 0.75
+
+# OFFLINE
+offline:
+  NAM_DIAG_ISBAN:
+    LPATCH_BUDGET: true
+    LPGD: true
+    LSURF_MISC_BUDGET: true
+    LSURF_MISC_DIF: true
+  NAM_DIAG_SURF_ATMn:
+    LT2MMW: true
+  NAM_DIAG_SURFn:
+    LCOEF: true
+    LRESET_BUDGETC: true
+    LSURF_BUDGET: true
+    LSURF_BUDGETC: true
+    LSURF_VARS: true
+    N2M: 2
+  NAM_ISBAN:
+    LCANOPY_DRAG: true
+    XCDRAG: 0.01
+  NAM_SEAFLUXN:
+    LPRECIP: false
+    LPWEBB: false
+    LPWG: false
+  NAM_SURF_ATM:
+    XCD_COEFF1: 10.0
+    XCD_COEFF2: 5.0
+    XCH_COEFF1: 15.0
+
+offline_sso:
+  NAM_SSON:
+    CROUGH: '${SURFEX#SSO#SCHEME}'
+
+offline_sso_none:
+  NAM_SSON:
+    XCOROT: 500
+    XFRACZ0: 15.0
+
+offline_sso_orotur:
+  NAM_SSON:
+    XSOROT: '${NAM_SSON#XSOROT}'
+    XCOROT: 500
+    XFRACZ0: 15.0
+    XVOROT: 8.0
+
+offline_pert_isba_settings:
+  NAM_IO_VARASSIM:
+    LBEV: False
+    LBFIXED: True
+    LPRT: False
+  NAM_VAR:
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NNCV: '${SURFEX#ASSIM#ISBA#EKF#NNCV}'
+    XTPRT_M: '${SURFEX#ASSIM#ISBA#EKF#XTPRT_M}'
+    CVAR_M: '${SURFEX#ASSIM#ISBA#EKF#CVAR_M}'
+    NVAR: '${SURFEX#SODA#NVAR}'
+  NAM_OBS:
+    NNCO: []
+    COBS_M: []
+    NOBSTYPE: 0
+  NAM_ASSIM:
+    CASSIM_ISBA: "EKF"
+
+offline_flake: {}
+
+offline_isba:
+  NAM_FRAC:
+    LECOSG: '${SURFEX#COVER#SG}'
+  NAM_ISBAn:
+    LPERTSURF: '${SURFEX#ISBA#PERTSURF}'
+    XCGMAX: '${SURFEX#ISBA#XCGMAX}'
+    XCSMAX: '${SURFEX#ISBA#XCSMAX}'
+
+offline_isba_dif:
+  NAM_SGH_ISBAn:
+    CHORT: DEF
+    CRAIN: SGH
+    CRUNOFF: DT92
+    LSOC: true
+  NAM_ISBA:
+    CPEDO_FUNCTION: CO84
+    CPHOTO: NON
+    XUNIF_RUNOFFB: 0.2
+
+offline_isba_dif_snow_flux:
+  NAM_SURF_SNOW_CSTS:
+    LESSOILSNOWFLUX: true
+
+offline_seaflux:
+  NAM_SEAFLUXn:
+    CSEA_FLUX: ECUME6
+    LPERTFLUX: '${SURFEX#SEA#PERTFLUX}'
+    LPRECIP: false
+    LPWEBB: false
+    LPWG: false
+
+offline_seaice:
+  NAM_SEAICEn:
+    LVOLATILE_SIC: '${SURFEX#SEA#LVOLATILE_SIC}'
+    XSIC_EFOLDING_TIME: 1.0
+
+offline_sice:
+  NAM_SEAICE_SICE:
+    LICE_HAS_SNOW: true
+    LICE_MASS_BALANCE: true
+    XOCEAN_HEAT_FLUX: 2.0
+
+offline_teb: {}
+
+offline_watflux: {}
+
+offline_selected_output:
+  NAM_WRITE_DIAG_SURFN:
+    LPROVAR_TO_DIAG: true
+    LRESETCUMUL: true
+    CSELECT:
+    - GRID_TYPE
+    - LON0
+    - LAT0
+    - IMAX
+    - JMAX
+    - DX
+    - DY
+    - LONORI
+    - LATORI
+    - FMU
+    - FMV
+    - T2M
+    - T2MMIN
+    - T2MMAX
+    - Q2M
+    - HU2M
+    - HU2MMIN
+    - HU2MMAX
+    - ZON10M
+    - MER10M
+    - W10M
+    - W10MMAX
+    - TS
+    - RI
+    - RN
+    - H
+    - LE
+    - SWD
+    - SWU
+    - LWD
+    - LWU
+    - GFLUX
+    - Z0
+    - Z0H
+    - T2M_ISBA
+    - T2MMIN_ISBA
+    - T2MMAX_ISBA
+    - Q2M_ISBA
+    - MER10M_ISBA
+    - ZON10M_ISBA
+    - HU2M_ISBA
+    - W10M_ISBA
+    - W10MMAX_ISBA
+    - PSNG_ISBA
+    - PSNV_ISBA
+    - PSN_ISBA
+    - DSN_T_ISBA
+    - WSN_T_ISBA
+    - TSWI_T_ISBA
+    - TALB_ISBA
+    - TS_ISBA
+    - RNC_ISBA
+    - HC_ISBA
+    - LEC_ISBA
+    - FMUC_ISBA
+    - FMVC_ISBA
+    - SWDC_ISBA
+    - SWUC_ISBA
+    - LWDC_ISBA
+    - LWUC_ISBA
+    - T2M_P
+    - T2MMIN_P
+    - T2MMAX_P
+    - Q2M_P
+    - HU2M_P
+    - ZON10M_P
+    - MER10M_P
+    - W10M_P
+    - DSN_T_P
+    - TG1
+    - TG2
+    - WG1
+    - WG2
+    - WGI1
+    - WGI2
+    - RSN_VEG1
+    - WSN_VEG1
+    - ASN_VEG
+    - PSN
+    - LAI
+    - RNC_P
+    - HC_P
+    - LEC_P
+    - FMUC_P
+    - FMVC_P
+    - SWDC_P
+    - SWUC_P
+    - LWDC_P
+    - LWUC_P
+    - T2M_SEA
+    - HU2M_SEA
+    - Q2M_SEA
+    - MER10M_SEA
+    - ZON10M_SEA
+    - W10M_SEA
+    - W10MMAX_SEA
+    - SST
+    - SIC
+    - TICE_01
+    - TICE_02
+    - TICE_03
+    - TICE_04
+    - T2M_WAT
+    - Q2M_WAT
+    - HU2M_WAT
+    - ZON10M_WAT
+    - MER10M_WAT
+    - W10M_WAT
+    - TS_WATER
+    - T2M_TEB
+    - Q2M_TEB
+    - HU2M_TEB
+    - ZON10M_TEB
+    - MER10M_TEB
+    - T2MMIN_TEB
+    - T2MMAX_TEB
+    - HU2MMIN_TEB
+    - HU2MMAX_TEB
+    - W10MMAX_TEB
+    - TROAD1
+    - T_SNOW
+    - T_ICE
+    - T_WML
+    - T_MNW
+    - T_BOT
+    - H_ML
+    - H_SNOW
+    - H_ICE
+    - WS_ROAD
+    - WSN_RD1
+    - VEG
+    - EMIS
+    - CD
+    - CH
+    - CE
+    - RUNOFFC_ISBA
+    - DRAINC_ISBA
+    LSELECT: true
+
+# SODA
+
+soda:
+  NAM_FRAC:
+    LECOSG: '${SURFEX#COVER#SG}'
+  NAM_ASSIM:
+    CASSIM_ISBA: '${SURFEX#ASSIM#SCHEMES#ISBA}'
+    CASSIM_SEA: '${SURFEX#ASSIM#SCHEMES#SEA}'
+    CASSIM_TEB: '${SURFEX#ASSIM#SCHEMES#TEB}'
+    CASSIM_WATER: '${SURFEX#ASSIM#SCHEMES#INLAND_WATER}'
+    CFILE_FORMAT_LSM: '${SURFEX#ASSIM#CFILE_FORMAT_LSM}'
+    CFILE_FORMAT_SST: '${SURFEX#ASSIM#SEA#CFILE_FORMAT_SST}'
+    LAESNM: '${SURFEX#SODA#LAESNM}'
+    LASSIM: True
+    LECSST: '${SURFEX#ASSIM#SEA#LECSST}'
+    LEXTRAP_NATURE: false
+    LEXTRAP_SEA: '${SURFEX#ASSIM#SEA#LEXTRAP_SEA}'
+    LEXTRAP_SNOW: false
+    LEXTRAP_WATER: '${SURFEX#ASSIM#INLAND_WATER#LEXTRAP_WATER}'
+    LREAD_SST_FROM_FILE: '${SURFEX#ASSIM#SEA#LREAD_SST_FROM_FILE}'
+    LRELCLIMSNOW: false
+    LWATERTG2: '${SURFEX#ASSIM#INLAND_WATER#LWATERTG2}'
+    NPRINTLEV: 0
+  NAM_DIAG_ISBAn:
+    LSURF_MISC_BUDGET: true
+
+soda_sice:
+  NAM_SEAICE_SICE:
+    LICE_HAS_SNOW: true
+    LICE_MASS_BALANCE: true
+
+soda_isba_ekf:
+  NAM_ASSIM:
+    CASSIM_ISBA: EKF
+    LLINCHECK: '${SURFEX#ASSIM#ISBA#EKF#LLINCHECK}'
+  NAM_IO_VARASSIM:
+    LBEV: False
+    LBFIXED: True
+    LPRT: False
+  NAM_VAR:
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
+    XALPHA: '${SURFEX#ASSIM#ISBA#EKF#XALPHA}'
+    XSCALE_Q: '${SURFEX#ASSIM#ISBA#EKF#XSCALE_Q}'
+    XTPRT_M: '${SURFEX#ASSIM#ISBA#EKF#XTPRT_M}'
+    XSIGMA_M: '${SURFEX#ASSIM#ISBA#EKF#XSIGMA_M}'
+    NNCV: '${SURFEX#ASSIM#ISBA#EKF#NNCV}'
+    CVAR_M: '${SURFEX#ASSIM#ISBA#EKF#CVAR_M}'
+
+soda_isba_enkf:
+  NAM_VAR:
+    NIVAR: '${SURFEX#SODA#NIVAR}'
+    NVAR: '${SURFEX#SODA#NVAR}'
+    NNCV: '${SURFEX#ASSIM#ISBA#ENKF#NNCV}'
+    CVAR_M: '${SURFEX#ASSIM#ISBA#ENKF#CVAR_M}'
+    NENS_M: '${SURFEX#ASSIM#ISBA#ENKF#NENS_M}'
+
+soda_isba_oi:
+  NAM_ASSIM:
+    CFILE_FORMAT_CLIM: '${SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_CLIM}'
+    CFILE_FORMAT_FG: '${SURFEX#ASSIM#ISBA#OI#CFILE_FORMAT_FG}'
+    LAROME: True
+  NAM_NACVEG:
+    NECHGU: 3
+    XRCLIMCA: 0.0
+    XRCLISST: 0.05
+    XSIGH2MO: 0.10
+    XSIGT2MO: 1.0
+    LOBS2M: true
+    LOBSWG: false
+
+soda_obs:
+  NAM_OBS:
+    CFILE_FORMAT_OBS: '${SURFEX#ASSIM#OBS#CFILE_FORMAT_OBS}'
+    LOBSHEADER: '${SURFEX#ASSIM#OBS#LOBSHEADER}'
+    LOBSNAT: '${SURFEX#ASSIM#OBS#LOBSNAT}'
+    LSWE: '${SURFEX#ASSIM#OBS#LSWE}'
+    NNCO: '${SURFEX#ASSIM#OBS#NNCO}'
+    COBS_M: '${SURFEX#ASSIM#OBS#COBS_M}'
+    XERROBS_M: '${SURFEX#ASSIM#OBS#XERROBS_M}'
+    NOBSTYPE: '${SURFEX#SODA#NOBSTYPE}'

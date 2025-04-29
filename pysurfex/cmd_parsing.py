@@ -167,7 +167,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Converter function to specific humidity",
         default="none",
-        choices=["none", "rh2q", "rh2q_mslp", "rh2q_z"],
+        choices=["none", "rh2q", "rh2q_mslp", "rh2q_z", "td2q"],
     )
 
     group_ps = parser.add_argument_group("PS", description="Surface air pressure [Pa]")
@@ -983,8 +983,11 @@ def parse_args_surfex_binary(argv, mode):
     )
     parser.add_argument("--namelist_path", "-n", required=True,
                         help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
+    domain_required = False
+    if mode == "pgd":
+        domain_required = True
     parser.add_argument(
-        "--domain", type=str, required=False, help="JSON file with domain"
+        "--domain", type=str, required=domain_required, help="JSON file with domain"
     )
     parser.add_argument("--output", "-o", type=str, required=False, default=None)
     parser.add_argument("--basetime", type=str, required=basetime_required, default=None)

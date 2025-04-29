@@ -82,10 +82,11 @@ def parse_filepattern(file_pattern, basetime, validtime):
     hour = basetime.strftime("%H")
     mins = basetime.strftime("%M")
     d_t = validtime - basetime
-    ll_d = f"{int(d_t.seconds / 3600):d}"
-    ll_2 = f"{int(d_t.seconds / 3600):02d}"
-    ll_3 = f"{int(d_t.seconds / 3600):03d}"
-    ll_4 = f"{int(d_t.seconds / 3600):04d}"
+    print(d_t, d_t.total_seconds())
+    ll_d = f"{int(d_t.total_seconds() / 3600):d}"
+    ll_2 = f"{int(d_t.total_seconds() / 3600):02d}"
+    ll_3 = f"{int(d_t.total_seconds() / 3600):03d}"
+    ll_4 = f"{int(d_t.total_seconds() / 3600):04d}"
     file_name = file_name.replace("@YYYY@", year)
     file_name = file_name.replace("@YY@", year2)
     file_name = file_name.replace("@MM@", month)
@@ -96,4 +97,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace("@LL@", ll_2)
     file_name = file_name.replace("@LLL@", ll_3)
     file_name = file_name.replace("@LLLL@", ll_4)
+    logging.debug(
+        "file_name=%s basetime=%s validtime=%s", file_name, basetime, validtime
+    )
     return file_name

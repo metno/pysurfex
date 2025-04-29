@@ -6,7 +6,12 @@ import os
 from .bufr import BufrObservationSet
 from .datetime_utils import as_timedelta
 from .geo import LonLatVal
-from .obs import JsonObservationSet, MetFrostObservations, NetatmoObservationSet
+from .obs import (
+    JsonObservationSet,
+    MetFrostObservations,
+    NetatmoObservationSet,
+    ObsSetFromVobs,
+)
 from .obsoul import ObservationDataSetFromObsoulFile
 from .util import parse_filepattern
 
@@ -185,6 +190,27 @@ def get_datasources(obs_time, settings):
                     )
                 else:
                     print("WARNING: filename " + filename + " not existing. Not added.")
+            elif filetype.lower() == "vobs":
+                if isinstance(filepattern, list):
+                    if len(filepattern) > 1:
+                        raise NotImplementedError("Only one file reading implemented")
+                    filepattern = filepattern[0]
+                filename = parse_filepattern(filepattern, obs_time, validtime)
+                varname = None
+                if "varname" in settings[obs_set]:
+                    varname = settings[obs_set]["varname"]
+                if isinstance(varname, list):
+                    varname = varname[0]
+
+                kwargs.update({"var": varname})
+                if os.path.exists(filename):
+                    datasources.append(
+                        ObsSetFromVobs(filename, validtime, varname=varname, label="vobs")
+                    )
+                else:
+                    logging.warning(
+                        "WARNING: filename %s not existing. Not added.", filename
+                    )
             elif filetype.lower() == "json":
                 if isinstance(filepattern, list):
                     if len(filepattern) > 1:
@@ -194,6 +220,8 @@ def get_datasources(obs_time, settings):
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
+                if isinstance(varname, list):
+                    varname = varname[0]
 
                 kwargs.update({"var": varname})
                 if "sigmao" in settings[obs_set]:
