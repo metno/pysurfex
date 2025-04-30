@@ -90,7 +90,7 @@ class NamelistGenerator(object):
         if check_existence:
             for __, val in data_obj.data.items():
                 if not os.path.exists(val):
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(val)
         return data_obj
 
     def write(self, output_file, uppercase=True, true_repr=".TRUE.", false_repr=".FALSE."):

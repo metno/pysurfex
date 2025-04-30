@@ -410,7 +410,7 @@ def run_surfex_binary(mode, **kwargs):
 
     if not (output is not None and os.path.exists(output)) or force:
         if assemble_file is None:
-            nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_path)
+            nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_path, macros=nml_macros)
         else:
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
