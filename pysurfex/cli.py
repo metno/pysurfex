@@ -294,9 +294,12 @@ def run_surfex_binary(mode, **kwargs):
 
     basetime = None
     if "basetime" in kwargs:
-        if kwargs["basetime"] is not None and isinstance(kwargs["basetime"], str):
-            basetime = as_datetime(kwargs["basetime"])
-            kwargs.update({"basetime": basetime})
+        if kwargs["basetime"] is not None:
+            if  isinstance(kwargs["basetime"], str):
+               basetime = as_datetime(kwargs["basetime"])
+               kwargs.update({"basetime": basetime})
+            else:
+               basetime = kwargs["basetime"]
     try:
         validtime = kwargs["validtime"]
     except KeyError:
@@ -319,6 +322,8 @@ def run_surfex_binary(mode, **kwargs):
     else:
         if one_decade:
             raise RuntimeError("You must set basetime with option one_decade")
+        if mode == "prep" or mode == "soda":
+            raise RuntimeError("You must set basetime when using mode %s", mode)
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]
@@ -408,6 +413,7 @@ def run_surfex_binary(mode, **kwargs):
         else:
             raise FileNotFoundError("File not found: " + archive)
 
+    logging.info("nml_macros: %s", nml_macros)
     if not (output is not None and os.path.exists(output)) or force:
         if assemble_file is None:
             nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_path)

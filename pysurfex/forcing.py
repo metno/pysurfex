@@ -7,10 +7,12 @@ import logging
 import os
 import shutil
 import time
+import yaml
 
 import netCDF4
 import numpy as np
 
+from . import PACKAGE_DIRECTORY
 from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
@@ -778,6 +780,13 @@ def set_forcing_config(**kwargs):
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
+        if config is None:
+            config_file = (
+                f"{PACKAGE_DIRECTORY}/cfg/config.yml"
+            )
+            with open(config_file, mode="r", encoding="utf-8") as file_handler:
+               config = yaml.safe_load(file_handler)
+
         if "interpolation" in kwargs:
             interpolation = kwargs["interpolation"]
         if "analysis" in kwargs:

@@ -561,7 +561,7 @@ def converter2ds(argv=None):
         force = kwargs["force"]
 
     geo = None
-    if "stationlist" in kwargs:
+    if "stationlist" in kwargs and kwargs["stationlist"] is not None:
         stationlist = StationList(kwargs["stationlist"])
     elif "geo" in kwargs:
         geo_json = json.load(open(kwargs["geo"]))
