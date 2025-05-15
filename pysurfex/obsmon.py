@@ -321,7 +321,7 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
         varname (_type_): _description_
 
     Raises:
-        Exception: _description_
+        RuntimeError: _description_
 
     """
     logging.info("Update obsmon table")
@@ -348,7 +348,7 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
     records = len(cursor.fetchall())
     if records > 1:
         logging.info(cmd)
-        raise Exception("You should not have ", records, " in your database")
+        raise RuntimeError("You should not have ", records, " in your database")
 
     if records == 0:
         cmd = (

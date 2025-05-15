@@ -245,6 +245,10 @@ class SystemFilePaths(object):
         )
         self.system_file_paths.update({name: path})
 
+    def save_as(self, fname):
+        with open(fname, mode="w", encoding="utf8") as fhandler:
+            json.dump(self.system_file_paths, fhandler)
+
 
 class SystemFilePathsFromFile(SystemFilePaths):
     """System file paths."""

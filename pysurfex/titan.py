@@ -1378,6 +1378,8 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             tests.append(Redundancy(an_time, **kwargs))
 
         elif qct.lower() == "blacklist":
+            if blacklist is None:
+                raise RuntimeError("You must set a blacklist if you want to use it for QC")
             if test_options is not None:
                 opts = []
                 for opt in opts:
@@ -1679,7 +1681,7 @@ class TitanDataSet(QCDataSet):
         """Perform the tests."""
         summary = {}
         for test in self.tests:
-            print("Test: ", test.name)
+            logging.info("Test: %s", test.name)
             mask = []
             findex = 0
             for obs_set in self.datasources:
@@ -1689,7 +1691,7 @@ class TitanDataSet(QCDataSet):
                         "assumed to have a label"
                     )
 
-                print("obs_set", obs_set.label)
+                logging.info("obs_set: %s", obs_set.label)
                 size = obs_set.size
 
                 do_test = False

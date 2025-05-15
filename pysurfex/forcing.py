@@ -17,6 +17,7 @@ from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
 from .geo import get_geo_object, ConfProjFromHarmonie
+from .platform_deps import SystemFilePathsFromFile
 from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
@@ -65,7 +66,7 @@ class SurfexOutputForcing(object):
 
     def _check_sanity(self):
         if len(self.var_objs) != self.nparameters:
-            raise Exception(
+            raise RuntimeError(
                 f"Inconsistent number of parameter. {str(len(self.var_objs))} != "
                 f"{str(self.nparameters)}"
             )
@@ -76,7 +77,7 @@ class SurfexOutputForcing(object):
 
         for key, value in self.parameters.items():
             if value == 0:
-                raise Exception(f"Required parameter {str(key)} is missing!")
+                raise RuntimeError(f"Required parameter {str(key)} is missing!")
 
     # Time dependent parameter
     nparameters = 11
@@ -538,7 +539,15 @@ def run_time_loop(options, var_objs, att_objs):
             ntimes = 2
             logging.info("Print single time step twice %s", 0)
         else:
-            raise Exception("Option single should be used with one time step")
+            raise RuntimeError("Option single should be used with one time step")
+
+    output_file = options["output_file"]
+    if os.path.exists(output_file) and not options["force"]:
+        logging.info("%s already exists and force in false", output_file)
+        return
+
+    if os.path.exists(output_file):
+        logging.warning("Overwrite output: %s", output_file)
 
     # Create output object
     if (
@@ -612,6 +621,7 @@ def set_input_object(
     ref_height,
     first_base_time,
     timestep,
+    system_file_paths=None
 ):
     """Set the input parameter for a specific SURFEX forcing variable based on input.
 
@@ -624,6 +634,7 @@ def set_input_object(
         ref_height (_type_): _description_
         first_base_time (_type_): _description_
         timestep (_type_): _description_
+        system_file_paths(SystemFilePaths): System file paths
 
     Returns:
         _type_: _description_
@@ -648,14 +659,7 @@ def set_input_object(
         defs.update({"timestep": timestep})
 
     # Macros
-    try:
-        macros = defs["macros"]
-    except KeyError:
-        try:
-            macros = conf["macros"]
-        except KeyError:
-            macros = {}
-    defs["macros"] = macros
+    defs["system_file_paths"] = system_file_paths
 
     # All objects with converters, find converter dict entry
     conf_dict = {}
@@ -732,7 +736,7 @@ def set_forcing_config(**kwargs):
     elif "domain" in kwargs and kwargs["domain"] is not None:
         geo_out = get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
     else:
-        raise Exception("No geometry is set")
+        raise RuntimeError("No geometry is set")
 
     user_config = {}
     pattern = None
@@ -776,7 +780,7 @@ def set_forcing_config(**kwargs):
         dtg_stop = kwargs["dtg_stop"]
         input_format = kwargs["input_format"]
         output_format = kwargs["output_format"]
-        outfile = kwargs["of"]
+        outfile = kwargs["output_filename"]
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
@@ -791,12 +795,15 @@ def set_forcing_config(**kwargs):
             interpolation = kwargs["interpolation"]
         if "analysis" in kwargs:
             analysis = kwargs["analysis"]
-        if "fb" in kwargs:
-            file_base = kwargs["fb"]
+        if "filebase" in kwargs:
+            file_base = kwargs["filebase"]
         if "geo_out" in kwargs:
             geo_out = kwargs["geo_out"]
         if "user_config" in kwargs:
             user_config = kwargs["user_config"]
+            if isinstance(user_config, str):
+                with open(user_config, mode="r", encoding="utf-8") as file_handler:
+                    user_config = yaml.safe_load(file_handler)
         if "pattern" in kwargs:
             pattern = kwargs["pattern"]
         if "timestep" in kwargs:
@@ -863,11 +870,11 @@ def set_forcing_config(**kwargs):
             diskless_write = kwargs["diskless_write"]
 
     except ValueError:
-        raise Exception("Needed input is missing") from ValueError
+        raise RuntimeError("Needed input is missing") from ValueError
 
     # Time information
     if (int(dtg_start) or int(dtg_stop)) < 1000010100:
-        raise Exception(
+        raise RuntimeError(
             "Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop)
         )
 
@@ -878,8 +885,13 @@ def set_forcing_config(**kwargs):
     else:
         first_base_time = as_datetime(str.strip(str(file_base)))
 
+    logging.info("config=%s", config)
+    logging.info("user_config=%s", user_config)
     # Merge all settings with user all settings
     merged_conf = deep_update(config, user_config)
+    logging.info("merged_conf=%s", merged_conf)
+
+    logging.info("fileformat=%s, pattern=%s", input_format, pattern)
 
     # Replace global settings from
     fileformat = input_format
@@ -904,18 +916,27 @@ def set_forcing_config(**kwargs):
     if geo_input is None:
         if "geo_input_file" in kwargs:
             geo_input_file = kwargs["geo_input_file"]
-            if os.path.exists(geo_input_file):
-                geo_input = get_geo_object(
-                    json.load(open(geo_input_file, "r", encoding="utf-8"))
-                )
-                merged_conf[fileformat]["geo_input_file"] = geo_input_file
-            else:
-                logging.warning("Input geometry %s does not exist", geo_input_file)
+            if geo_input_file is not None:
+                if os.path.exists(geo_input_file):
+                    geo_input = get_geo_object(
+                        json.load(open(geo_input_file, "r", encoding="utf-8"))
+                    )
+                    merged_conf[fileformat]["geo_input_file"] = geo_input_file
+                else:
+                    logging.warning("Input geometry %s does not exist", geo_input_file)
+
+    try:
+        system_file_paths = kwargs["system_file_paths"]
+    except KeyError:
+        system_file_paths = None
+    if system_file_paths is not None:
+        system_file_paths = SystemFilePathsFromFile(kwargs["system_file_paths"])
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
     att_objs = []
     for att_var in atts:
+        logging.info("Set variable %s", att_var)
         # Override with command line options for a given variable
         ref_height = None
         cformat = fileformat
@@ -950,6 +971,7 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
+                system_file_paths=system_file_paths
             )
         )
 
@@ -970,6 +992,7 @@ def set_forcing_config(**kwargs):
     var_objs = []
     # Search in config file for parameters to override
     for sfx_var in variables:
+        logging.info("Set variable %s", sfx_var)
         ref_height = None
         cformat = fileformat
         if sfx_var == "TA":
@@ -1032,6 +1055,7 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
+                system_file_paths=system_file_paths
             )
         )
 
@@ -1045,6 +1069,7 @@ def set_forcing_config(**kwargs):
     options["timestep"] = timestep
     options["geo_out"] = geo_out
     options["single"] = False
+    options["force"] = kwargs["force"]
     if "single" in kwargs:
         options["single"] = kwargs["single"]
     options["cache_interval"] = cache_interval
@@ -1063,11 +1088,11 @@ def modify_forcing(**kwargs):
     ofile = netCDF4.Dataset(outfile, "r+")
 
     for var in variables:
-        print("Modify variable " + var)
-        print(
-            "input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step
+        logging.info("Modify variable %s", var)
+        logging.info(
+            "input %s %s %s", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step
         )
-        print("output", ofile[var][0, :], ofile[var][0, :].shape)
+        logging.info("output %s %s", ofile[var][0, :], ofile[var][0, :].shape)
         ofile[var][0, :] = ifile[var][time_step, :]
         ofile.sync()
 

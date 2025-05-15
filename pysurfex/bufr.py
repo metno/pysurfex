@@ -334,7 +334,7 @@ class BufrObservationSet(ObservationSet):
                             elif var == "heightOfBaseOfCloud":
                                 value = c_b
                             elif var == "stationOrSiteName":
-                                site_name = site_name
+                                pass
                             else:
                                 raise NotImplementedError(
                                     f"Var {var} is not coded! Please do it!"

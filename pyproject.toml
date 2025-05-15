@@ -154,5 +154,9 @@
     # Set max-line-length compatible with black
     max-line-length = "90"
 
+[tool.flake8]
+    # Set max-line-length compatible with black
+    max-line-length = "90"
+
 [tool.flakeheaven]
     base = ".flakeheaven.toml"

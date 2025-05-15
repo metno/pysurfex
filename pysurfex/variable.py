@@ -39,10 +39,8 @@ class Variable(object):
             self.interval = var_dict["timestep"]
         except KeyError:
             self.interval = 3600
-        try:
-            self.filepattern = self.substitute_macros("filepattern")
-        except KeyError:
-            raise RuntimeError("No filepattern provided") from KeyError
+
+        self.filepattern = self.substitute_macros(var_dict["filepattern"])
         self.initial_basetime = initial_basetime
         try:
             self.fcint = int(self.var_dict["fcint"])
@@ -76,23 +74,22 @@ class Variable(object):
         self.alpha = None
         logging.debug("Constructed variable for %s", str(self.var_dict))
 
-    def substitute_macros(self, key, micro="@"):
+    def substitute_macros(self, setting, micro="@"):
         try:
-            value = self.var_dict[key]
-        except:
-            raise KeyError
-        logging.debug("Substitute key %s, value: %s", key, value)
-        try:
-            macros = self.var_dict["macros"]
+            spaths = self.var_dict["system_file_paths"]
         except KeyError:
-            logging.debug("No macros found")
-            return value
+            logging.info("No system file paths used")
+            spaths = None
+        if spaths is None:
+            return setting
 
-        for mkey, mvalue in macros.items():
-            if isinstance(value, str):
+        if isinstance(setting, str):
+            for mkey, mvalue in spaths.system_file_paths.items():
                 logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
-                value = value.replace(f"{micro}{mkey}{micro}", mvalue)
-        return value
+                if isinstance(mkey, str) and isinstance(mvalue, str):
+                    logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
+                    setting = setting.replace(f"{micro}{mkey}{micro}", mvalue)
+        return setting
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
@@ -105,7 +102,7 @@ class Variable(object):
             str: Parsed filename
 
         """
-        logging.debug("Set basename for filename")
+        logging.debug("Set basetime for filename")
         basetime = None
         if validtime is not None:
             basetime = self.get_basetime(validtime, previoustime=previoustime)
@@ -128,6 +125,7 @@ class Variable(object):
             tuple: Filehandler and file name
 
         """
+        logging.info("validtime, %s previoustime %s", validtime, previoustime)
         filename = self.get_filename(validtime, previoustime=previoustime)
         if cache is not None and cache.file_open(filename):
             file_handler = cache.get_file_handler(filename)
@@ -193,6 +191,7 @@ class Variable(object):
         if cache is not None:
             id_str = cache.generate_id(self.var_type, self.file_var, filename, validtime)
 
+        geo_read = None
         if cache is not None and cache.is_saved(id_str):
             field = cache.saved_fields[id_str]
             logging.info("Using cached value for %s", id_str)
@@ -252,6 +251,8 @@ class Variable(object):
                 logging.info("Using cached value for %s", id_str)
             else:
                 if self.var_type == "obs":
+                    if geo is None:
+                        raise RuntimeError("No geo is provided!")
                     __, field, __ = filehandler.points(geo, validtime=validtime)
                 else:
                     field, interpolator = filehandler.points(
@@ -599,9 +600,6 @@ class Variable(object):
 
         Args:
             interpolator (_type_): _description_
-
-        Returns:
-            _type_: _description_
 
         """
         rotate_wind = False

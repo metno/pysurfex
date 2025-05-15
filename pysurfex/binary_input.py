@@ -364,21 +364,18 @@ class InputDataFromNamelist(JsonInputData):
                 pkey = pkey.replace(f"{micro}{macro_key}{micro}", macro_val)
                 pval = pval.replace(f"{micro}{macro_key}{micro}", macro_val)
 
-        print("pkey", pkey, self.validtime)
         pkey = self.platform.parse_setting(
             pkey,
             validtime=self.validtime,
             basedtg=self.basetime,
             check_parsing=check_parsing,
         )
-        print("pval", pval, self.validtime)
         pval = self.platform.parse_setting(
             pval,
             validtime=self.validtime,
             basedtg=self.basetime,
             check_parsing=check_parsing,
         )
-        print(pkey, pval)
         return pkey, pval
 
     def read_macro_setting(self, macro_defs, key, default=None, sep="#"):
@@ -635,9 +632,6 @@ class InputDataFromNamelist(JsonInputData):
         def _process_data(mapped_data, data, indices=None, macros=None, extenders=None):
             for key, value in data.items():
                 logging.debug(".................. key=%s", key)
-                print(key, sep)
-                print(value)
-                print(key.find(sep))
                 # Required namelist variable
                 if key.find(sep) > 0:
                     vals = self.get_nml_value_from_string(self.nml, key, indices=indices)
@@ -668,7 +662,7 @@ class InputDataFromNamelist(JsonInputData):
                                     if isinstance(tval, dict):
                                         last_dict = False
                             else:
-                                print(setting)
+                                logging.debug("setting=%s", setting)
                             if not last_dict:
                                 logging.debug(
                                     "------ Call next loop. setting=%s", setting

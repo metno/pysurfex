@@ -279,7 +279,7 @@ class ObservationSet(object):
                 dlats[pos] = lats[posid]
                 delevs[pos] = elevs[posid]
 
-        print("posids", posids)
+        logging.info("posids %s", posids)
         coords = dict()
 
         dtimes = np.array(times)
@@ -384,7 +384,6 @@ class NetatmoObservationSet(ObservationSet):
                 text = text.replace("}]{", "}{")
                 text = text.replace("}][{", "},{")
                 text = text.replace("}{", "},{")
-                print(text)
                 text = '{"data": %s}' % text
                 raw = json.loads(text)
                 raw = raw["data"]
@@ -595,7 +594,6 @@ class MetFrostObservations(ObservationSet):
                 data = req.json()["data"]
                 ids = []
                 count_discard = 0
-                print(data)
                 for data_block in data:
                     my_id = data_block["id"]
                     if "masl" in data_block:
@@ -679,7 +677,7 @@ class MetFrostObservations(ObservationSet):
                 break
 
             if req.status_code == 404:
-                print("STATUS: No data was found for the list of query Ids.")
+                logging.warning("STATUS: No data was found for the list of query Ids.")
                 break
             if tries > num_tries:
                 raise Exception("ERROR: could not retrieve observations.")
@@ -828,10 +826,10 @@ class MetFrostObservations(ObservationSet):
                     )
                     break
                 if req.status_code == 404:
-                    print("STATUS: No data was found for the list of query Ids.")
+                    logging.warning("STATUS: No data was found for the list of query Ids.")
                     break
                 if tries > num_tries:
-                    raise Exception("ERROR: could not retrieve observations.")
+                    raise RuntimeError("ERROR: could not retrieve observations.")
 
             for station, station_id in ids_obs_dict.items():
                 value = float(station_id)
@@ -1046,7 +1044,6 @@ class StationList:
         lats = []
         for stid in self.stids:
             lon, lat, __ = self.get_pos_from_stid([stid])
-            print(stid, lon, lat)
             lon = lon[0]
             lat = lat[0]
             if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
@@ -1061,7 +1058,6 @@ class StationList:
             "nam_pgd_grid": {"cgrid": "LONLATVAL"},
             "nam_lonlatval": {"xx": lons, "xy": lats, "xdx": d_x, "xdy": d_y},
         }
-        print(geo_json)
         return LonLatVal(geo_json)
 
     def get_pos_from_stid(self, stids):

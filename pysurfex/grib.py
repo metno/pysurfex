@@ -438,12 +438,11 @@ class Grib1Variable:
 
     def print_keys(self):
         """Print keys."""
-        print("\n")
-        print("Version:", self.version)
-        print("indicatorOfParameter:", self.par)
-        print("levelType", self.typ)
-        print("level:", self.level)
-        print("timeRangeIndicator:", self.tri)
+        logging.info("Version: %s", self.version)
+        logging.info("indicatorOfParameter: %s", self.par)
+        logging.info("levelType %s", self.typ)
+        logging.info("level: %s", self.level)
+        logging.info("timeRangeIndicator: %s", self.tri)
 
     def generate_grib_id(self):
         """Generate grib1 ID."""
@@ -549,14 +548,13 @@ class Grib2Variable(object):
 
     def print_keys(self):
         """Print keys."""
-        print("\n")
-        print("Version:", self.version)
-        print("discipline:", self.discipline)
-        print("parameterCategory:", self.parameter_category)
-        print("parameterNumber:", self.parameter_number)
-        print("levelType:", self.level_type)
-        print("level:", self.level)
-        print("typeOfStatisticalProcessing:", self.type_of_statistical_processing)
+        logging.info("Version: %s", self.version)
+        logging.info("discipline: %s", self.discipline)
+        logging.info("parameterCategory: %s", self.parameter_category)
+        logging.info("parameterNumber: %s", self.parameter_number)
+        logging.info("levelType: %s", self.level_type)
+        logging.info("level: %s", self.level)
+        logging.info("typeOfStatisticalProcessing: %s", self.type_of_statistical_processing)
 
     def generate_grib_id(self):
         """Generate grib2 ID."""

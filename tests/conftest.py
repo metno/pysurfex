@@ -1262,7 +1262,7 @@ class MyFaResource:
         self.name = name
 
     def readfield(self, name):
-        print("Read FA field ", name)
+        logging.info("Read FA field %s", name)
         return DummyFAField()
 
 
@@ -1333,11 +1333,11 @@ def _mockers(session_mocker):
             except KeyError:
                 nx = self.message["Nx"]
                 ny = self.message["Ny"]
-            print("codes_get_values", nx, ny)
+            logging.info("codes_get_values %s %s", nx, ny)
             return np.zeros_like([np.arange(nx * ny)])
 
     def dummy_frost_data(*args, **kwargs):
-        print("Frost request ", args, kwargs)
+        logging.info("Frost request %s %s", args, kwargs)
         return DummyFrostRequest()
 
     def my_codes_new_from_file(code_messages):

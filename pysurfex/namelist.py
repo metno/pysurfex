@@ -185,6 +185,7 @@ class NamelistGeneratorAssemble(NamelistGenerator):
             # assemble namelists for this category
             if catg in nldict:
                 for nl in nldict[catg]:
+                    logging.debug("nl=%s catg=%s", nl, catg)
                     if nl not in nlres:
                         # create the result namelist dict
                         nlres[nl] = {}
@@ -233,6 +234,7 @@ class NamelistGeneratorAssemble(NamelistGenerator):
                                 else:
                                     raise KeyError(val)
                             nlres[nl][key] = finval
+                            logging.debug("nl=%s key=%s, finval=%s", nl, key, finval)
             else:
                 logging.info("Category %s not found in definitions", catg)
         return nlres

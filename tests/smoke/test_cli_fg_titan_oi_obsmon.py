@@ -280,7 +280,7 @@ def _qc_gridpp_obsmon(
         qc_settings_fname,
         "-v",
         var,
-        "-dtg",
+        "-b",
         an_time,
         "--blacklist",
         blacklist_fname,
@@ -340,7 +340,6 @@ def _qc_gridpp_obsmon(
         "--elevGradient",
         translation[var]["elevGradient"],
     ]
-    print(qc_fname)
     gridpp(argv=argv)
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/OBSERVATIONS_200330H06.DAT"
@@ -413,30 +412,62 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
         hm_env()
         harmonie = ["--harmonie"]
 
-    with pytest.raises(SystemExit):
-        first_guess_for_oi(argv=["fail"])
-
+    #argv = [
+    #    "-c",
+    #    "pysurfex/cfg/first_guess.yml",
+    #    "-i",
+    #    data_thredds_nc_file,
+    #    "-if",
+    #    "netcdf",
+    #    "-b",
+    #    an_time,
+    #    "-d",
+    #    conf_proj_2x3_file,
+    #    "--laf_converter",
+    #    "none",
+    #    "--sd_converter",
+    #    "sweclim",
+    #    "--debug",
+    #    "-o",
+    #    output,
+    #    "air_temperature_2m",
+    #    "relative_humidity_2m",
+    #    "surface_snow_thickness",
+    #]
     argv = [
-        "-c",
-        "pysurfex/cfg/first_guess.yml",
-        "-i",
-        data_thredds_nc_file,
-        "-if",
-        "netcdf",
-        "-dtg",
-        an_time,
-        "-d",
-        conf_proj_2x3_file,
-        "--laf_converter",
-        "none",
-        "--sd_converter",
-        "sweclim",
-        "--debug",
-        "-o",
-        output,
-        "air_temperature_2m",
-        "relative_humidity_2m",
-        "surface_snow_thickness",
+        "--domain", conf_proj_2x3_file,
+        "--validtime", an_time,
+        "--output", output,
+        "--fg-variables", "t2m", "rh2m", "sd", "altitude", "laf",
+        "--t2m-inputfile", data_thredds_nc_file,
+        "--t2m-inputtype", "netcdf",
+        "--t2m-variable", "air_temperature_2m",
+        "--t2m-basetime", an_time,
+        "--rh2m-inputfile", data_thredds_nc_file,
+        "--rh2m-inputtype", "netcdf",
+        "--rh2m-variable", "relative_humidity_2m",
+        "--rh2m-basetime", an_time,
+        "--sd-converter", "sweclim",
+        "--sd-converter-variables", "swe",
+        "--sd-swe-inputfile", data_thredds_nc_file,
+        "--sd-swe-inputtype", "netcdf",
+        "--sd-swe-variable", "liquid_water_content_of_surface_snow",
+        "--sd-swe-basetime", an_time,
+        "--altitude-converter", "phi2m",
+        "--altitude-converter-variables", "phi",
+        "--altitude-phi-inputfile", data_thredds_nc_file,
+        "--altitude-phi-inputtype", "netcdf",
+        "--altitude-phi-variable", "surface_geopotential",
+        "--altitude-phi-basetime", an_time,
+        "--laf-inputfile", data_thredds_nc_file,
+        "--laf-inputtype", "netcdf",
+        "--laf-variable", "land_area_fraction",
+        "--laf-basetime", an_time
     ]
+
+    with pytest.raises(SystemExit):
+        fail = argv + ["fail"]
+        first_guess_for_oi(argv=fail)
+
     argv += harmonie
     first_guess_for_oi(argv=argv)

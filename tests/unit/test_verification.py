@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import xarray as xr
-from netCDF4 import Dataset
+from netCDF4 import Dataset  # noqa
 
 from pysurfex.obs import ObservationSet, StationList
 from pysurfex.observation import Observation
@@ -445,25 +445,19 @@ def test_verif_nc(tmp_path_factory, stationlist_file, data_surfex_nc_file):
     var = "T2M"
     vfilename = f"test_verif_nc_{var}.nc"
     argv = [
-        "--station-list",
-        stationlist_file,
-        "-b",
-        "2023110807",
-        "-o",
-        vfilename,
-        "converter",
-        "-i",
-        data_surfex_nc_file,
-        "-t",
-        "2023110808",
-        "-it",
-        "surfex",
-        "-v",
-        var,
+        "--station-list", stationlist_file,
+        "-o", vfilename,
+        "--inputfile", data_surfex_nc_file,
+        "--basetime", "2023110807",
+        "--validtime", "2023110808",
+        "--inputtype", "surfex",
+        "--variable", var,
+        "--verif-variable", var
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
         ds = xr.open_dataset(vfilename, engine="netcdf4")
+        print(ds)
         assert ds.fcst.data[0][0][1] == 285
 
 
@@ -475,15 +469,11 @@ def test_converter2ds_frost(stationlist_file, tmp_path_factory):
         stationlist_file,
         "-o",
         vfilename,
-        "converter",
-        "-t",
-        "2023110809",
-        "-it",
-        "obs",
-        "--obs_type",
-        "frost",
-        "-v",
-        "air_temperature",
+        "--basetime", "2023110809",
+        "--validtime", "2023110809",
+        "--inputtype", "obs",
+        "--obs-type", "frost",
+        "--variable", "air_temperature",
     ]
 
     with working_directory(tmp_path_factory.getbasetemp()):
@@ -525,25 +515,21 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
     argv = [
         "--station-list",
         stationlist_file,
-        "-o",
-        vfilename,
-        "converter",
-        "-i",
-        bufr_file_for_verif,
-        "-t",
-        "2023110808",
-        "-it",
-        "obs",
-        "--obs_type",
-        "bufr",
-        "-v",
-        bufrvar,
+        "-o", vfilename,
+        "--inputfile", bufr_file_for_verif,
+        "--basetime", "2023110807",
+        "--validtime", "2023110808",
+        "--inputtype", "obs",
+        "--obs-type", "bufr",
+        "--obs",
+        "--variable", bufrvar,
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
         print(os.getcwd() + "/" + vfilename)
 
         ds = xr.open_dataset(vfilename, engine="netcdf4")
+        print(ds)
         assert pytest.approx(ds.obs.data[0][1]) == 273.15
 
 
@@ -554,21 +540,15 @@ def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file)
     dt_string = "2023110808"
     basetime = "2023110807"
     argv = [
-        "--station-list",
-        stationlist_file,
-        "-b",
-        basetime,
-        "--harp-param",
-        "T2m",
-        "--harp-param-unit",
-        "K",
-        "--model-name",
-        "TEST",
-        "converter",
-        "-i", data_surfex_nc_file,
-        "-it", "surfex",
-        "-v", var,
-        "-t", dt_string,
+        "--station-list", stationlist_file,
+        "--harp-param", "T2m",
+        "--harp-param-unit", "K",
+        "--model-name", "TEST",
+        "--inputfile", data_surfex_nc_file,
+        "--inputtype", "surfex",
+        "--variable", var,
+        "--basetime", basetime,
+        "--validtime", dt_string,
     ]
 
     with working_directory(tmp_path_factory.getbasetemp()):

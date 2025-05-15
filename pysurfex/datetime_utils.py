@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 
 
 # TODO use ISO times
-def as_datetime(dtg):
+def as_datetime(dtg, offset=False):
     """Convert string to datetime."""
     if len(dtg) == 10:
         fmt = "%Y%m%d%H"
@@ -14,7 +14,10 @@ def as_datetime(dtg):
         fmt = "%Y%m%d%H%M%S"
     else:
         raise RuntimeError(f"dtg={dtg} len(dtg) is {len(dtg)}")
-    return datetime.strptime(dtg, fmt).replace(tzinfo=timezone.utc)
+    if offset:
+        return datetime.strptime(dtg, fmt)
+    else:
+        return datetime.strptime(dtg, fmt).replace(tzinfo=timezone.utc)
 
 
 def as_datetime_string(dtg):

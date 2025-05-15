@@ -644,8 +644,8 @@ class AsciiSurfexFile(SurfexIO):
         values = []
         for line in file:
             words = line.split()
-            print(read_value, read_desc)
-            print(words)
+            logging.debug("read_value=%s, read_desc=%s", read_value, read_desc)
+            logging.debug("words=%s", words)
             if len(words) > 0:
                 if read_value and not read_desc:
                     if words[0].find("&") < 0:
@@ -1166,7 +1166,7 @@ class NetCDFSurfexFile(SurfexIO):
                 dim_indices.append(this_dim)
                 ndims = ndims + 1
 
-            print(dim_indices)
+            logging.debug("dim_indices=%s", dim_indices)
             field = self.file_handler.variables[var.varname][dim_indices]
 
             # Add extra dimensions

@@ -1,23 +1,23 @@
 grib1:
-  fcint: 3
-  file_inc: 1
+  fcint: 10800
+  file_inc: 3600
   offset: 0
 grib2:
-  fcint: 3
-  file_inc: 1
+  fcint: 10800
+  file_inc: 3600
   offset: 0
   typeOfStatisticalProcessing: -1
 netcdf:
-  fcint: 3
-  file_inc: 1
+  fcint: 10800
+  file_inc: 3600
   offset: 0
 surfex:
-  fcint: 3
-  file_inc: 1
+  fcint: 10800
+  file_inc: 3600
   offset: 0
 fa:
-  fcint: 3
-  file_inc: 1
+  fcint: 10800
+  file_inc: 3600
   offset: 0
 
 air_temperature_2m:

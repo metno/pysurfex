@@ -17,11 +17,12 @@ except ModuleNotFoundError:
 import numpy as np
 import xarray as xr
 
+from pysurfex.cmd_parsing import variable_parse_options, parse_args_variable
 from pysurfex.datetime_utils import as_datetime, as_timedelta
 from pysurfex.geo import get_geo_object, ConfProj
 from pysurfex.obs import ObservationSet, ObsSetFromVobs, StationList
 from pysurfex.observation import Observation
-from pysurfex.read import ConvertedInput, converter_parser, kwargs2converter
+from pysurfex.read import ConvertedInput, get_multi_converters
 
 
 class ObsDataFromSurfexConverter(ObservationSet):
@@ -102,7 +103,7 @@ class DatasetFromVfld:
 
         if len(location) > 0:
             fcst = np.array(fcst)
-            fcst = fcst.reshape(1, 1, len(location))
+            fcst = fcst.reshape((1, 1, len(location)))
             ds = xr.Dataset(
                 data_vars=dict(fcst=(["time", "leadtime", "location"], fcst)),
                 coords=dict(time=time, leadtime=leadtime, location=location),
@@ -159,9 +160,7 @@ class VerificationDataFromSurfexConverter:
             validtime, cache
         )
 
-        basetime = datetime.strptime(basetime.strftime("%Y%m%d%H"), "%Y%m%d%H")
-        validtime = datetime.strptime(validtime.strftime("%Y%m%d%H"), "%Y%m%d%H")
-
+        basetime = converter.initial_time
         lons = stationlist.geo.lons
         nlons = len(lons)
         ileadtime = np.array([validtime - basetime]).astype(np.timedelta64)
@@ -213,10 +212,7 @@ class DataFromSurfexConverter:
         validtime = datetime.strptime(validtime.strftime("%Y%m%d%H"), "%Y%m%d%H")
         cvalidtime = np.array([validtime]).astype(np.datetime64)
 
-        #pvalues = np.transpose(pvalues)
-        #pvalues = pvalues.reshape(1, geo.nlons, geo.nlats)
-        #pvalues = np.transpose(pvalues)
-        attrs={"long_name": var.name, "units": var.unit}
+        attrs = {"long_name": var.name, "units": var.unit}
         if isinstance(geo, ConfProj):
             attrs.update({
                  "gridtype": "lambert",
@@ -228,7 +224,8 @@ class DataFromSurfexConverter:
                  "lonc": float(geo.xloncen),
                  "latc": float(geo.xlatcen)
             })
-        data_vars={f"{var.name}": (["time","y","x"], pvalues), "longitude": (["y","x"], np.transpose(geo.lons)), "latitude": (["y","x"], np.transpose(geo.lats))}
+        data_vars = {f"{var.name}": (["time", "y", "x"], pvalues), "longitude": (["y", "x"],
+                    np.transpose(geo.lons)), "latitude": (["y", "x"], np.transpose(geo.lats))}
         ds = xr.Dataset(
             data_vars=data_vars,
             coords=dict(
@@ -472,6 +469,14 @@ def parse_args_converter2ds(argv):
         required=False,
     )
     parser.add_argument(
+        "--verif-variable",
+        dest="verif_variable",
+        type=str,
+        help="Verification variable",
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
         "-o",
         "--output",
         dest="output",
@@ -481,31 +486,25 @@ def parse_args_converter2ds(argv):
         required=False,
     )
     parser.add_argument(
-        "-b",
-        "--basetime",
-        dest="basetime",
+        "--validtime",
+        dest="validtime",
         type=str,
-        help="Base time",
+        help="Validtime",
         default=None,
         required=False,
     )
+    parser.add_argument("--obs", dest="are_observations", help="Observation set", action="store_true", default=False)
     parser.add_argument("--debug", help="Show debug information", action="store_true")
-    # Same subparsers as usual
-    subparsers = parser.add_subparsers(help="Desired action to perform", dest="action")
-
-    parent_parser = ArgumentParser(add_help=False)
-    # Set converter parser
-    converter_parser(subparsers, parent_parser)
 
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args(argv)
+    args, __ = parser.parse_known_args(argv)
     kwargs = {}
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
-    return kwargs
+    return parser, kwargs
 
 
 def converter2ds(argv=None):
@@ -516,11 +515,12 @@ def converter2ds(argv=None):
 
     Raises:
         FileExistsError: _description_
+        RuntimeError: "No geo information"
 
     """
     if argv is None:
         argv = sys.argv[1:]
-    kwargs = parse_args_converter2ds(argv)
+    parser, kwargs = parse_args_converter2ds(argv)
     debug = kwargs.get("debug")
 
     if debug:
@@ -534,9 +534,7 @@ def converter2ds(argv=None):
         )
     logging.info("************ converter2ds ******************")
 
-    kwargs.update({"filepattern": kwargs["inputfile"]})
-    converter = kwargs2converter(**kwargs)
-
+    converter = get_multi_converters(parser, [], argv)
     try:
         validtime = kwargs["validtime"]
         if isinstance(validtime, str):
@@ -549,8 +547,10 @@ def converter2ds(argv=None):
             basetime = as_datetime(kwargs["basetime"])
     except KeyError:
         basetime = None
-    variable = kwargs["variable"]
+
+    variable = converter.name
     verif_variable = kwargs.get("verif_variable")
+
     unit = kwargs.get("unit")
     try:
         output = kwargs["output"]
@@ -561,11 +561,15 @@ def converter2ds(argv=None):
         force = kwargs["force"]
 
     geo = None
+    stationlist = None
     if "stationlist" in kwargs and kwargs["stationlist"] is not None:
         stationlist = StationList(kwargs["stationlist"])
     elif "geo" in kwargs:
-        geo_json = json.load(open(kwargs["geo"]))
+        with open(kwargs["geo"], mode="r", encoding="utf8") as fhandler:
+            geo_json = json.load(fhandler)
         geo = get_geo_object(geo_json)
+    else:
+        raise RuntimeError("No geo information")
     cache = None
 
     if verif_variable is None:
@@ -576,7 +580,7 @@ def converter2ds(argv=None):
     if geo is not None:
         vdata = DataFromSurfexConverter(converter, variable, geo, validtime, cache=cache)
     else:
-        if basetime is None:
+        if kwargs["are_observations"]:
             vdata = ObsDataFromSurfexConverter(
                 converter, variable, stationlist, validtime, cache=cache
             )
@@ -589,7 +593,6 @@ def converter2ds(argv=None):
             raise FileExistsError
         else:
             vdata.ds.to_netcdf(output)
-            print(f"{os.getcwd()}/{output}")
 
 
 def parse_args_ds2verif(argv):
@@ -650,15 +653,15 @@ def parse_args_ds2verif(argv):
         required=True,
     )
     parser.add_argument("--debug", help="Show debug information", action="store_true")
+
+    variable_parse_options(parser)
+
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args(argv)
-    kwargs = {}
-    for arg in vars(args):
-        kwargs.update({arg: getattr(args, arg)})
-    return kwargs
+    return parse_args_variable(parser, {}, argv)
+
 
 
 def ds2verif(argv=None):
@@ -757,15 +760,14 @@ def concat_datasets(argv=None):
     output = kwargs["output"]
     datasets = kwargs["datasets"]
     dsets = []
+    logging.warning("Adapted for concat interpolated boundaries")
     # TODO Adapted for deode runs! Not general
     for dset in datasets:
-        print(dset)
-        #dsets.append(xr.open_dataarray(dset, drop_variables=["longitude", "latitude"], engine="netcdf4"))
-
+        # dsets.append(xr.open_dataarray(dset, drop_variables=["longitude", "latitude"], engine="netcdf4"))
         dsets.append(xr.open_dataset(dset, engine="netcdf4"))
-    #ds = xr.concat(dsets, dim="time")
-    ds = xr.merge(dsets, compat='override')
 
+    # ds = xr.concat(dsets, dim="time")
+    ds = xr.merge(dsets, compat='override')
     ds.to_netcdf(output)
 
 
@@ -784,14 +786,14 @@ def parse_args_vfld2ds(argv):
 
     # Usual arguments which are applicable for the whole script / top-level args
     parser.add_argument(
-        "-i", dest="vfldfile", type=str, help="Datasets", default=None, required=True
+        "--inputfile", dest="vfldfile", type=str, help="Datasets", default=None, required=True
     )
     parser.add_argument(
-        "-v", dest="variable", type=str, help="Datasets", default=None, required=True
+        "--variable", dest="variable", type=str, help="Datasets", default=None, required=True
     )
-    parser.add_argument("-b", dest="basetime", type=str, help="Datasets", default=None)
+    parser.add_argument("--basetime", dest="basetime", type=str, help="Datasets", default=None)
     parser.add_argument(
-        "-t", dest="validtime", type=str, help="Datasets", default=None, required=True
+        "--validtime", dest="validtime", type=str, help="Datasets", default=None, required=True
     )
     parser.add_argument(
         "-o",
@@ -879,11 +881,10 @@ def parse_args_converter2harp(argv):
         required=False,
     )
     parser.add_argument(
-        "-b",
-        "--basetime",
-        dest="basetime",
+        "--validtime",
+        dest="validtime",
         type=str,
-        help="Base time",
+        help="Validtime",
         default=None,
         required=False,
     )
@@ -909,32 +910,26 @@ def parse_args_converter2harp(argv):
         required=True,
     )
     parser.add_argument("--debug", help="Show debug information", action="store_true")
-    # Same subparsers as usual
-    subparsers = parser.add_subparsers(help="Desired action to perform", dest="action")
-
-    parent_parser = ArgumentParser(add_help=False)
-    # Set converter parser
-    converter_parser(subparsers, parent_parser)
 
     if len(argv) == 0:
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args(argv)
+    args, __ = parser.parse_known_args(argv)
     kwargs = {}
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
-    return kwargs
+
+    return parser, kwargs
 
 
 def converter2harp_cli(argv=None):
 
     if argv is None:
         argv = sys.argv[1:]
-    kwargs = parse_args_converter2harp(argv)
+    parser, kwargs = parse_args_converter2harp(argv)
 
-    kwargs.update({"filepattern": kwargs["inputfile"]})
-    converter = kwargs2converter(**kwargs)
+    converter = get_multi_converters(parser, [], argv)
     converter2harp(converter, **kwargs)
 
 
@@ -945,12 +940,6 @@ def converter2harp(converter, **kwargs):
             validtime = as_datetime(kwargs["validtime"])
     except KeyError:
         validtime = None
-    try:
-        basetime = kwargs["basetime"]
-        if isinstance(basetime, str):
-            basetime = as_datetime(kwargs["basetime"])
-    except KeyError:
-        basetime = None
     try:
         harp_param_level = kwargs["harp-param-level"]
     except KeyError:
@@ -963,7 +952,9 @@ def converter2harp(converter, **kwargs):
     harp_param = kwargs["harp-param"]
     harp_param_unit = kwargs["harp-param-unit"]
     model_name = kwargs["model-name"]
-    variable = kwargs["variable"]
+
+    basetime = converter.initial_time
+    variable = converter.name
     try:
         sqlite_template = kwargs["output"]
     except KeyError:

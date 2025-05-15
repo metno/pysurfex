@@ -3,7 +3,7 @@ import json
 import logging
 
 from .datetime_utils import as_timedelta
-from .obs import Observation
+from .obs import Observation, StationList
 
 
 class TimeSeries(object):
@@ -95,7 +95,7 @@ class TimeSeriesFromConverter(TimeSeries):
                 cache.clean_fields(this_time)
 
         if stids_file is not None:
-            stids = Observation.get_stid_from_stationlist(
+            stids = StationList.get_stid_from_stationlist(
                 stids_file, geo.lonlist, geo.latlist
             )
         else:
