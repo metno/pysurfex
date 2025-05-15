@@ -4,7 +4,7 @@ import json
 import numpy as np
 import logging
 
-from pysurfex.cmd_parsing import variable_parse_options, parse_args_variable, parse_args_single_converter, converter_parse_options
+from pysurfex.cmd_parsing import variable_parse_options, parse_args_variable
 from pysurfex.cli import get_geo_from_cmd
 from pysurfex.read import kwargs2converter, ConvertedInput, get_multi_converters
 from pysurfex.datetime_utils import as_datetime, as_datetime_args

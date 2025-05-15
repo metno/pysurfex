@@ -17,7 +17,6 @@ from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
 from .geo import get_geo_object, ConfProjFromHarmonie
-from .platform_deps import SystemFilePathsFromFile
 from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
@@ -929,8 +928,6 @@ def set_forcing_config(**kwargs):
         system_file_paths = kwargs["system_file_paths"]
     except KeyError:
         system_file_paths = None
-    if system_file_paths is not None:
-        system_file_paths = SystemFilePathsFromFile(kwargs["system_file_paths"])
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]

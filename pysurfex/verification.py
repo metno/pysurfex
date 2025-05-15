@@ -467,12 +467,12 @@ def parse_args_converter2ds(argv):
         help="Station list file",
         default=None,
         required=False,
-    )
+    )    
     parser.add_argument(
-        "--verif-variable",
-        dest="verif_variable",
+        "--out-variable",
+        dest="out_variable",
         type=str,
-        help="Verification variable",
+        help="Output variable in data set",
         default=None,
         required=False,
     )
@@ -548,8 +548,7 @@ def converter2ds(argv=None):
     except KeyError:
         basetime = None
 
-    variable = converter.name
-    verif_variable = kwargs.get("verif_variable")
+    out_variable = kwargs["out_variable"]
 
     unit = kwargs.get("unit")
     try:
@@ -572,11 +571,8 @@ def converter2ds(argv=None):
         raise RuntimeError("No geo information")
     cache = None
 
-    if verif_variable is None:
-        verif_variable = variable
-
     force = True
-    variable = VerifVariable(verif_variable, unit=unit)
+    variable = VerifVariable(out_variable, unit=unit)
     if geo is not None:
         vdata = DataFromSurfexConverter(converter, variable, geo, validtime, cache=cache)
     else:

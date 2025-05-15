@@ -564,7 +564,7 @@ def run_titan(**kwargs):
     if "indent" in kwargs:
         indent = kwargs["indent"]
 
-    an_time = kwargs["basetime"]
+    an_time = kwargs["validtime"]
     if isinstance(an_time, str):
         an_time = as_datetime(an_time)
     var = kwargs["variable"]

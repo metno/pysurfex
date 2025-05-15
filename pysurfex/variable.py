@@ -12,6 +12,7 @@ from .geo import get_geo_object_from_json_file
 from .grib import Grib, Grib1Variable, Grib2Variable
 from .input_methods import get_datasources
 from .netcdf import Netcdf, NetCDFReadVariable
+from .platform_deps import SystemFilePathsFromFile
 from .util import parse_filepattern
 
 
@@ -83,6 +84,7 @@ class Variable(object):
         if spaths is None:
             return setting
 
+        spaths = SystemFilePathsFromFile(spaths)
         if isinstance(setting, str):
             for mkey, mvalue in spaths.system_file_paths.items():
                 logging.debug("mkey: %s mvalue=%s", mkey, mvalue)

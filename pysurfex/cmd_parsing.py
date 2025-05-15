@@ -552,7 +552,7 @@ def parse_args_first_guess_for_oi(argv):
     )
     parser.add_argument("--validtime")
     parser.add_argument("-o", "--output", dest="output", required=False, default="raw.nc")
-    parser.add_argument("--fg-variables", dest="fg_variables", nargs="*", default=None)
+    parser.add_argument("--fg-variables", dest="fg_variables", nargs="*", default=None, required=True)
     parser.add_argument("--t2m-outfile-var", dest="t2m_outfile_var", default="air_temperature_2m")
     parser.add_argument("--rh2m-outfile-var", dest="rh2m_outfile_var", default="relative_humidity_2m")
     parser.add_argument("--sd-outfile-var", dest="sd_outfile_var", default="surface_snow_thickness")
@@ -932,7 +932,7 @@ def parse_args_titan(argv):
     )
     parser.add_argument("--indent", type=int, default=None, help="Indent")
     parser.add_argument(
-        "-b", "--basetime", type=str, help="Date time group YYYYMMDDHH", required=True
+        "--validtime", type=str, help="Date time group YYYYMMDDHH", required=True
     )
     parser.add_argument(
         "tests", nargs="*", type=str, help="Which tests to run and order to run"
@@ -1938,7 +1938,7 @@ def variable_parse_options(parser, name=None):
         default=10800,
     )
     parser.add_argument(
-        f"--{name}file_inc",
+        f"--{name}file-inc",
         dest=f"{nameu}file_inc",
         type=int,
         help="Interval between analysis in seconds",
@@ -1952,6 +1952,15 @@ def variable_parse_options(parser, name=None):
         help="Offset into next forecast by seconds",
         required=False,
         default=0,
+    )
+    parser.add_argument(
+        f"--{name}preference",
+        dest=f"{nameu}preference",
+        type=str,
+        help="Not prefer a forecast value",
+        choices=["analysis", "forecast"],
+        required=False,
+        default="forecast"
     )
     parser.add_argument(
         f"--{name}interpolator",
@@ -2022,7 +2031,7 @@ def variable_parse_options(parser, name=None):
     )
     sfx = parser.add_argument_group("Surfex", "Surfex settings (-it surfex)")
     sfx.add_argument(
-        f"--{name}sfx_type",
+        f"--{name}sfx-type",
         dest=f"{nameu}sfx_type",
         type=str,
         help="Surfex file type",
@@ -2030,21 +2039,21 @@ def variable_parse_options(parser, name=None):
         choices=[None, "forcing", "ascii", "nc", "netcdf", "texte"],
     )
     sfx.add_argument(
-        f"--{name}sfx_patches",
+        f"--{name}sfx-patches",
         dest=f"{nameu}sfx_patches",
         type=int,
         help="Patches [ascii/texte]",
         default=-1
     )
     sfx.add_argument(
-        f"--{name}sfx_layers",
+        f"--{name}sfx-layers",
         dest=f"{nameu}sfx_layers",
         type=int,
         help="Layers [ascii/texte]",
         default=-1
     )
     sfx.add_argument(
-        f"--{name}sfx_datatype",
+        f"--{name}sfx-datatype",
         dest=f"{nameu}sfx_datatype",
         type=str,
         help="Datatype [ascii]",
@@ -2052,14 +2061,14 @@ def variable_parse_options(parser, name=None):
         default="float",
     )
     sfx.add_argument(
-        f"--{name}sfx_interval",
+        f"--{name}sfx-interval",
         dest=f"{nameu}sfx_interval",
         type=str,
         help="Interval [texte]",
         default=None
     )
     sfx.add_argument(
-        f"--{name}sfx_geo_input",
+        f"--{name}sfx-geo-input",
         dest=f"{nameu}sfx_geo_input",
         type=str,
         default=None,
@@ -2094,28 +2103,12 @@ def converter_parse_options(parser, prefix=""):
         nargs="*",
         default=None
     )
-
-
-def parse_args_single_converter(parser, argv, prefix=""):
-
-    #converter_parse_options(parser, prefix=prefix)
-    #args, __ = parser.parse_known_args(argv)
-    #kwargs = {}
-    #for arg in vars(args):
-    #    kwargs.update({arg: getattr(args, arg)})
-    #conv_name = kwargs["converter"]
-    #variables = kwargs["conv_variables"]
-#
-    #for variable in variables:
-    #    variable_parse_options(parser, name=variable)
-
-    if len(argv) == 0:
-        parser.print_help()
-
-    kwargs = parse_args_variable(parser, kwargs, argv, variables=variables)
-    kwargs["converter"] = conv_name
-    kwargs["conv_variables"] = variables
-    return kwargs
+    parser.add_argument(
+        f"--{prefix}system-file-paths",
+        dest=f"{prefix_u}system_file_paths",
+        required=False,
+        help="Input file paths on your system",
+    )
 
 
 def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
@@ -2125,8 +2118,6 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
     args = parent_parser.parse_args(argv)
     for arg in vars(args):
         var_name = ""
-        #if prefix != "":
-        #    var_name = prefix
         if len(variables) == 0:
             var_name = "var"
         val = getattr(args, arg)
@@ -2138,7 +2129,7 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
             if arg.find(pname) == 0:
                 var_name = name
 
-        print(arg, prefix, var_name)
+        #print(arg, prefix, var_name)
         if var_name != "":
             if isinstance(arg, str):
                 if prefix != "":
@@ -2148,27 +2139,17 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
                         arg = arg.replace(f"{prefix}_{var_name}_", "")
                 else:
                     arg = arg.replace(f"{var_name}_", "")
-            print(arg, prefix, var_name)
+            #print(arg, prefix, var_name)
             if var_name in kwargs:
                 kwargs[var_name].update({arg: val})
             else:
                 kwargs.update({var_name: {arg: val}})
         else:
-            #nspaces = variables
-            #if len(variables) == 0:
-            #    nspaces = ["var"]
-            #for nspace in nspaces:
-            #    if nspace in kwargs:
-            #        if not arg in kwargs[nspace]:
-            #            kwargs[nspace].update({arg: val})
-            #    else:
-            #        kwargs.update({nspace: {arg: val}})
-            print(arg, val)
+            #print(arg, val)
             pfix = prefix
             if prefix != "":
                 pfix = f"{prefix}_"
             arg = arg.replace(f"{pfix}", "")
-            #raise
             kwargs.update({arg: val})
     logging.debug("kwargs out: %s", kwargs)
     return kwargs

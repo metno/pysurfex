@@ -565,10 +565,22 @@ def kwargs2converter(**kwargs):
         conv_variables = None
     if conv_variables is None:
         conv_variables = ["var"]
+    try:
+        system_file_paths = kwargs["var"]["system_file_paths"]
+    except KeyError:
+        try:
+            system_file_paths = kwargs["system_file_paths"]
+        except KeyError:
+            raise RuntimeError from KeyError
+
     var_dict2 = {}
     for conv_var in conv_variables:
         kwargs2 = kwargs[conv_var]
 
+        if kwargs2["preference"] == "forecast":
+            prefer_forecast = True
+        else:
+            prefer_forecast = False
         try:
             basetime = kwargs2["basetime"]
         except KeyError:
@@ -603,14 +615,16 @@ def kwargs2converter(**kwargs):
 
             var_dict = {
                 "filepattern": filepattern,
-                "fcint": 10800,
-                "file_inc": 10800,
-                "offset": 0,
+                "fcint": kwargs2["fcint"],
+                "file_inc": kwargs2["file_inc"],
+                "offset": kwargs2["offset"],
+                "prefer_forecast": prefer_forecast,
                 "parameter": par,
                 "type": ltp,
                 "level": lev,
                 "tri": tri,
                 "interpolator": interpolator,
+                "system_file_paths": system_file_paths,
             }
 
         elif inputtype == "grib2":
@@ -626,9 +640,10 @@ def kwargs2converter(**kwargs):
             type_of_statistical_processing = kwargs2["typeOfStatisticalProcessing"]
 
             var_dict = {
-                "fcint": 10800,
-                "file_inc": 10800,
-                "offset": 0,
+                "fcint": kwargs2["fcint"],
+                "file_inc": kwargs2["file_inc"],
+                "offset": kwargs2["offset"],
+                "prefer_forecast": prefer_forecast,
                 "filepattern": filepattern,
                 "discipline": discipline,
                 "parameterCategory": parameter_category,
@@ -636,6 +651,7 @@ def kwargs2converter(**kwargs):
                 "levelType": level_type,
                 "level": level,
                 "typeOfStatisticalProcessing": type_of_statistical_processing,
+                "system_file_paths": system_file_paths,
             }
 
         elif inputtype == "netcdf":
@@ -648,12 +664,13 @@ def kwargs2converter(**kwargs):
             var_dict = {
                 "name": variable,
                 "filepattern": filepattern,
-                "fcint": 10800,
-                "file_inc": 10800,
-                "offset": 0,
+                "fcint": kwargs2["fcint"],
+                "file_inc": kwargs2["file_inc"],
+                "offset": kwargs2["offset"],
+                "prefer_forecast": prefer_forecast,
                 "interpolator": interpolator,
+                "system_file_paths": system_file_paths,
             }
-
         elif inputtype == "surfex":
 
             if variable is None:
@@ -689,10 +706,12 @@ def kwargs2converter(**kwargs):
                 "datatype": datatype,
                 "interval": interval,
                 "basetime": basetime,
-                "fcint": 10800,
-                "file_inc": 10800,
-                "offset": 0,
+                "fcint": kwargs2["fcint"],
+                "file_inc": kwargs2["file_inc"],
+                "offset": kwargs2["offset"],
+                "prefer_forecast": prefer_forecast,
                 "interpolator": interpolator,
+                "system_file_paths": system_file_paths,
             }
             if geo_sfx_input is not None:
                 var_dict.update({"geo_input_file": geo_sfx_input})
@@ -714,6 +733,7 @@ def kwargs2converter(**kwargs):
                 "fcint": 10800,
                 "file_inc": 10800,
                 "offset": 0,
+                "system_file_paths": system_file_paths,
             }
 
         else:
