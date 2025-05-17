@@ -310,7 +310,10 @@ def run_surfex_binary(mode, **kwargs):
         except KeyError:
             nnco = None
         if nnco is not None:
-            nobstype = int(sum(nnco))
+            if isinstance(nnco, int):
+                nobstype = nnco
+            else:
+                nobstype = int(sum(nnco))
             try:
                 nobstype_old = my_settings["nam_obs"]["nobstype"]
             except KeyError:
