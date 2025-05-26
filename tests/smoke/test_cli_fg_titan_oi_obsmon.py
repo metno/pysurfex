@@ -1,7 +1,6 @@
 """Test fg + titan + gridpp + obsmon."""
 import json
 import os
-import sys
 import shutil
 
 import numpy as np
@@ -281,7 +280,7 @@ def _qc_gridpp_obsmon(
         qc_settings_fname,
         "-v",
         var,
-        "-b",
+        "--validtime",
         an_time,
         "--blacklist",
         blacklist_fname,
@@ -399,7 +398,6 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
     qc2obsmon(argv=argv)
 
 
-@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 @pytest.mark.usefixtures("_qc_gridpp_obsmon")
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon():
