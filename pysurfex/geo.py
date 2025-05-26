@@ -287,7 +287,7 @@ class ConfProj(SurfexGeo):
             nam_nml (NamelistGenerator): Namelist object.
         """
         nml = nam_nml.nml
-        
+
         nml.update(
             {
                 "nam_pgd_grid": {"cgrid": self.cgrid},

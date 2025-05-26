@@ -1379,7 +1379,9 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
 
         elif qct.lower() == "blacklist":
             if blacklist is None:
-                raise RuntimeError("You must set a blacklist if you want to use it for QC")
+                raise RuntimeError(
+                    "You must set a blacklist if you want to use it for QC"
+                )
             if test_options is not None:
                 opts = []
                 for opt in opts:

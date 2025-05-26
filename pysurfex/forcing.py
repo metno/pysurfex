@@ -7,16 +7,16 @@ import logging
 import os
 import shutil
 import time
-import yaml
 
 import netCDF4
 import numpy as np
+import yaml
 
 from . import PACKAGE_DIRECTORY
 from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
-from .geo import get_geo_object, ConfProjFromHarmonie
+from .geo import ConfProjFromHarmonie, get_geo_object
 from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
@@ -504,14 +504,14 @@ def write_formatted_array(file, array, columns, fileformat):
     full_lines = int(array.size / columns)
     extra = array.size % columns
     first = array.size - extra
-    astr = np.empty(columns*full_lines, dtype="float64")
+    astr = np.empty(columns * full_lines, dtype="float64")
     array = array.flatten()
-    astr = array[0 : columns*full_lines]
+    astr = array[0 : columns * full_lines]
     astr1 = astr.reshape(columns, full_lines, order="F")
     np.savetxt(file, astr1.T, fmt=fileformat, newline="\n", delimiter="")
     if extra != 0:
         astr2 = np.empty(extra, dtype="float64")
-        astr2 = array[first: array.size]
+        astr2 = array[first : array.size]
         astr2 = astr2.reshape(extra, 1, order="F")
         np.savetxt(file, astr2.T, fmt=fileformat, newline="\n", delimiter="")
 
@@ -620,7 +620,7 @@ def set_input_object(
     ref_height,
     first_base_time,
     timestep,
-    system_file_paths=None
+    system_file_paths=None,
 ):
     """Set the input parameter for a specific SURFEX forcing variable based on input.
 
@@ -784,11 +784,9 @@ def set_forcing_config(**kwargs):
         uref = kwargs["uref"]
         config = kwargs["config"]
         if config is None:
-            config_file = (
-                f"{PACKAGE_DIRECTORY}/cfg/config.yml"
-            )
+            config_file = f"{PACKAGE_DIRECTORY}/cfg/config.yml"
             with open(config_file, mode="r", encoding="utf-8") as file_handler:
-               config = yaml.safe_load(file_handler)
+                config = yaml.safe_load(file_handler)
 
         if "interpolation" in kwargs:
             interpolation = kwargs["interpolation"]
@@ -968,7 +966,7 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
-                system_file_paths=system_file_paths
+                system_file_paths=system_file_paths,
             )
         )
 
@@ -1052,7 +1050,7 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
-                system_file_paths=system_file_paths
+                system_file_paths=system_file_paths,
             )
         )
 
@@ -1087,7 +1085,10 @@ def modify_forcing(**kwargs):
     for var in variables:
         logging.info("Modify variable %s", var)
         logging.info(
-            "input %s %s %s", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step
+            "input %s %s %s",
+            ifile[var][time_step, :],
+            ifile[var][time_step, :].shape,
+            time_step,
         )
         logging.info("output %s %s", ofile[var][0, :], ofile[var][0, :].shape)
         ofile[var][0, :] = ifile[var][time_step, :]

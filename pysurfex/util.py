@@ -2,7 +2,9 @@
 import collections
 import logging
 import os
+
 from .platform_deps import SystemFilePaths
+
 
 def deep_update(source, overrides):
     """Update a nested dictionary or similar mapping.
@@ -98,8 +100,8 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace("@LLL@", ll_3)
     file_name = file_name.replace("@LLLL@", ll_4)
 
-    file_name = SystemFilePaths.parse_setting(file_name, basedtg=basetime, validtime=validtime)
-    logging.debug(
-        "file_name=%s basetime=%s validtime=%s", file_name, basetime, validtime
+    file_name = SystemFilePaths.parse_setting(
+        file_name, basedtg=basetime, validtime=validtime
     )
+    logging.debug("file_name=%s basetime=%s validtime=%s", file_name, basetime, validtime)
     return file_name

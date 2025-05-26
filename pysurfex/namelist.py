@@ -1,10 +1,10 @@
 """Namelist."""
 import logging
-import re
 import os
-import yaml
+import re
 
 import f90nml
+import yaml
 
 from .binary_input import InputDataFromNamelist
 
@@ -63,9 +63,9 @@ class NamelistGenerator(object):
 
         def process_macros(data):
             for k, v in data.copy().items():
-                if isinstance(v, dict):     # For DICT
+                if isinstance(v, dict):  # For DICT
                     data[k] = process_macros(v)
-                elif isinstance(v, list):   # For LIST
+                elif isinstance(v, list):  # For LIST
                     data[k] = [process_macros(i) for i in v]
                 else:
                     for macro, mval in self.macros.items():
@@ -93,7 +93,9 @@ class NamelistGenerator(object):
                     raise FileNotFoundError(val)
         return data_obj
 
-    def write(self, output_file, uppercase=True, true_repr=".TRUE.", false_repr=".FALSE."):
+    def write(
+        self, output_file, uppercase=True, true_repr=".TRUE.", false_repr=".FALSE."
+    ):
         """Generate the namelists for 'target'.
 
         Args:
@@ -157,7 +159,6 @@ class NamelistGeneratorAssemble(NamelistGenerator):
         nlres = self.assemble_namelist(program)
         nml = f90nml.Namelist(nlres)
         NamelistGenerator.__init__(self, program, nml, macros=macros, micro=micro)
-
 
     def assemble_namelist(self, program):
         """Generate the namelists for 'target'.
@@ -245,9 +246,9 @@ class NamelistGeneratorAssemble(NamelistGenerator):
         if li == []:
             return li
         if isinstance(li[0], list):
-            return NamelistGeneratorAssemble.flatten_list(li[0]) + NamelistGeneratorAssemble.flatten_list(
-                li[1:]
-            )
+            return NamelistGeneratorAssemble.flatten_list(
+                li[0]
+            ) + NamelistGeneratorAssemble.flatten_list(li[1:])
         return li[:1] + NamelistGeneratorAssemble.flatten_list(li[1:])
 
     @staticmethod
@@ -282,4 +283,6 @@ class NamelistGeneratorAssembleFromFiles(NamelistGeneratorAssemble):
             definitions = yaml.safe_load(file_handler)
         with open(assemble, mode="r", encoding="utf8") as file_handler:
             assemble = yaml.safe_load(file_handler)
-        NamelistGeneratorAssemble.__init__(self, program, definitions, assemble, macros=macros, micro=micro)
+        NamelistGeneratorAssemble.__init__(
+            self, program, definitions, assemble, macros=macros, micro=micro
+        )

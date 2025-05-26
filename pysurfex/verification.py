@@ -1,14 +1,16 @@
 """Verification."""
 
+import json
 import logging
 import os
 import sys
-import json
 from argparse import ArgumentParser
 from datetime import datetime
+
 import pandas
+
 try:
-    from grib2sqlite import sqlite_name, create_table, write_to_sqlite
+    from grib2sqlite import create_table, sqlite_name, write_to_sqlite
 except ModuleNotFoundError:
     sqlite_name = None
     create_table = None
@@ -17,9 +19,9 @@ except ModuleNotFoundError:
 import numpy as np
 import xarray as xr
 
-from pysurfex.cmd_parsing import variable_parse_options, parse_args_variable
+from pysurfex.cmd_parsing import parse_args_variable, variable_parse_options
 from pysurfex.datetime_utils import as_datetime, as_timedelta
-from pysurfex.geo import get_geo_object, ConfProj
+from pysurfex.geo import ConfProj, get_geo_object
 from pysurfex.obs import ObservationSet, ObsSetFromVobs, StationList
 from pysurfex.observation import Observation
 from pysurfex.read import ConvertedInput, get_multi_converters
@@ -214,24 +216,27 @@ class DataFromSurfexConverter:
 
         attrs = {"long_name": var.name, "units": var.unit}
         if isinstance(geo, ConfProj):
-            attrs.update({
-                 "gridtype": "lambert",
-                 "dlon": float(geo.xdx),
-                 "dlat": float(geo.xdy),
-                 "projlat": float(geo.xlat0),
-                 "projlat2": float(geo.xlat0),
-                 "projlon": float(geo.xlon0),
-                 "lonc": float(geo.xloncen),
-                 "latc": float(geo.xlatcen)
-            })
-        data_vars = {f"{var.name}": (["time", "y", "x"], pvalues), "longitude": (["y", "x"],
-                    np.transpose(geo.lons)), "latitude": (["y", "x"], np.transpose(geo.lats))}
+            attrs.update(
+                {
+                    "gridtype": "lambert",
+                    "dlon": float(geo.xdx),
+                    "dlat": float(geo.xdy),
+                    "projlat": float(geo.xlat0),
+                    "projlat2": float(geo.xlat0),
+                    "projlon": float(geo.xlon0),
+                    "lonc": float(geo.xloncen),
+                    "latc": float(geo.xlatcen),
+                }
+            )
+        data_vars = {
+            f"{var.name}": (["time", "y", "x"], pvalues),
+            "longitude": (["y", "x"], np.transpose(geo.lons)),
+            "latitude": (["y", "x"], np.transpose(geo.lats)),
+        }
         ds = xr.Dataset(
             data_vars=data_vars,
             coords=dict(
-                time=(["time"], cvalidtime),
-                y=(["y"], geo.yyy),
-                x=(["x"], geo.xxx)
+                time=(["time"], cvalidtime), y=(["y"], geo.yyy), x=(["x"], geo.xxx)
             ),
             attrs=attrs,
         )
@@ -467,7 +472,7 @@ def parse_args_converter2ds(argv):
         help="Station list file",
         default=None,
         required=False,
-    )    
+    )
     parser.add_argument(
         "--out-variable",
         dest="out_variable",
@@ -493,7 +498,13 @@ def parse_args_converter2ds(argv):
         default=None,
         required=False,
     )
-    parser.add_argument("--obs", dest="are_observations", help="Observation set", action="store_true", default=False)
+    parser.add_argument(
+        "--obs",
+        dest="are_observations",
+        help="Observation set",
+        action="store_true",
+        default=False,
+    )
     parser.add_argument("--debug", help="Show debug information", action="store_true")
 
     if len(argv) == 0:
@@ -659,7 +670,6 @@ def parse_args_ds2verif(argv):
     return parse_args_variable(parser, {}, argv)
 
 
-
 def ds2verif(argv=None):
     """Command line interface.
 
@@ -763,7 +773,7 @@ def concat_datasets(argv=None):
         dsets.append(xr.open_dataset(dset, engine="netcdf4"))
 
     # ds = xr.concat(dsets, dim="time")
-    ds = xr.merge(dsets, compat='override')
+    ds = xr.merge(dsets, compat="override")
     ds.to_netcdf(output)
 
 
@@ -782,14 +792,31 @@ def parse_args_vfld2ds(argv):
 
     # Usual arguments which are applicable for the whole script / top-level args
     parser.add_argument(
-        "--inputfile", dest="vfldfile", type=str, help="Datasets", default=None, required=True
+        "--inputfile",
+        dest="vfldfile",
+        type=str,
+        help="Datasets",
+        default=None,
+        required=True,
     )
     parser.add_argument(
-        "--variable", dest="variable", type=str, help="Datasets", default=None, required=True
+        "--variable",
+        dest="variable",
+        type=str,
+        help="Datasets",
+        default=None,
+        required=True,
     )
-    parser.add_argument("--basetime", dest="basetime", type=str, help="Datasets", default=None)
     parser.add_argument(
-        "--validtime", dest="validtime", type=str, help="Datasets", default=None, required=True
+        "--basetime", dest="basetime", type=str, help="Datasets", default=None
+    )
+    parser.add_argument(
+        "--validtime",
+        dest="validtime",
+        type=str,
+        help="Datasets",
+        default=None,
+        required=True,
     )
     parser.add_argument(
         "-o",
@@ -967,19 +994,19 @@ def converter2harp(converter, **kwargs):
     if sqlite_template is None:
         sqlite_template = "{MODEL}/{YYYY}/{MM}/FCTABLE_{PP}_{YYYY}{MM}.sqlite"
 
-    leadtime = int((validtime - basetime).total_seconds()/3600.)
+    leadtime = int((validtime - basetime).total_seconds() / 3600.0)
     cache = None
     param = {
         "varname": variable,
         "harp_param": harp_param,
         "units": harp_param_unit,
         "level": harp_param_level,
-        "level_name": harp_param_level_name
+        "level_name": harp_param_level_name,
     }
 
     data_vector = ConvertedInput(geo, variable, converter).read_time_step(
-            validtime, cache
-        )
+        validtime, cache
+    )
 
     lons, lats, elevs = stationlist.get_pos_from_stid(stationlist.stids)
     harp_station_list = pandas.DataFrame(

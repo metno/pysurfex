@@ -42,14 +42,14 @@ def test_ekf_fa(surfex_fa_file):
                 "NVAR": 2,
                 "NNCV": nncv,
                 "CVAR_M": cvar_m,
-                "XTPRT_M": xtprt_m
+                "XTPRT_M": xtprt_m,
             },
         }
     }
-    assemble = {
-        "perturbed": ["offline_pert_isba_settings"]
-    }
-    settings = NamelistGeneratorAssemble("perturbed", definitions, assemble).get_namelist()
+    assemble = {"perturbed": ["offline_pert_isba_settings"]}
+    settings = NamelistGeneratorAssemble(
+        "perturbed", definitions, assemble
+    ).get_namelist()
     pert3 = PerturbedOffline(
         "echo 'Hello world'",
         batch,

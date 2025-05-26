@@ -13,7 +13,6 @@ from pysurfex.datetime_utils import as_datetime
 from pysurfex.platform_deps import SystemFilePaths
 
 
-
 @pytest.fixture()
 def climdir(tmp_path_factory):
     climdir = tmp_path_factory.getbasetemp() / "climdir"

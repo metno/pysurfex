@@ -1,12 +1,12 @@
+import numpy as np
 import pytest
 
-from pysurfex.interpolation import Interpolation
-from pysurfex.geo import ConfProj
-from pysurfex.datetime_utils import as_datetime
-from pysurfex.read import Converter, ConvertedInput
 from pysurfex.cache import Cache
+from pysurfex.datetime_utils import as_datetime
+from pysurfex.geo import ConfProj
+from pysurfex.interpolation import Interpolation
+from pysurfex.read import ConvertedInput, Converter
 
-import numpy as np
 
 def test_alpha():
     operator = "nearest"
@@ -26,8 +26,8 @@ def test_alpha():
             "xloncen": 15.0,
             "xlatcen": 63.0,
             "xdx": 2500,
-            "xdy": 2500
-        }
+            "xdy": 2500,
+        },
     }
     geo_out_json = {
         "nam_grid": {
@@ -43,8 +43,8 @@ def test_alpha():
             "xloncen": 10.0,
             "xlatcen": 60.0,
             "xdx": 1000,
-            "xdy": 1000
-        }
+            "xdy": 1000,
+        },
     }
     geo_in = ConfProj(geo_in_json)
     geo_out = ConfProj(geo_out_json)
@@ -52,16 +52,23 @@ def test_alpha():
 
     field = np.zeros((nx, ny))
     alpha = interpol.alpha_grid_rot()
-    degree = Interpolation.distance(10.0,60.0, 10.0, 61.0)
+    degree = Interpolation.distance(10.0, 60.0, 10.0, 61.0)
     assert pytest.approx(degree, 3) == 111125.113
 
-    alpha_target = [11.743715981179648, 9.119850062560516, 6.115879585392307,
-                    2.6633765163315104, -1.3147463482296473, -5.900142353225576,
-                    -11.169620630797297, -17.17780407904317]
+    alpha_target = [
+        11.743715981179648,
+        9.119850062560516,
+        6.115879585392307,
+        2.6633765163315104,
+        -1.3147463482296473,
+        -5.900142353225576,
+        -11.169620630797297,
+        -17.17780407904317,
+    ]
     for i, ind in enumerate([0, 100, 200, 300, 400, 500, 600, 700]):
         assert pytest.approx(alpha[ind][ind]) == alpha_target[i]
 
-    assert pytest.approx(alpha[nx-1][ny-1]) == -24.08629516967261
+    assert pytest.approx(alpha[nx - 1][ny - 1]) == -24.08629516967261
 
 
 def test_plot_wind_barbs(data_thredds_nc_file_aa):
@@ -91,8 +98,8 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
             "xdx": 2500,
             "xdy": 2500,
             "ilone": 11,
-            "ilate": 11
-        }
+            "ilate": 11,
+        },
     }
     if aa:
         my_geo = ConfProj(geo_in_json)
@@ -123,7 +130,7 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
                             "rotate_to_geographic": True,
                             "name": "y_wind_10m",
                             "filepattern": fpattern,
-                        }
+                        },
                     },
                 }
             }
@@ -139,7 +146,7 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
                         "y": {
                             "name": "y_wind_10m",
                             "filepattern": fpattern,
-                        }
+                        },
                     }
                 }
             }
@@ -155,13 +162,12 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
                         "y": {
                             "name": "y_wind_10m",
                             "filepattern": fpattern,
-                        }
+                        },
                     }
                 }
             }
         },
     }
-
 
     var = "winddir_rot"
     converter = "winddir"
@@ -187,7 +193,6 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
     field = ConvertedInput(my_geo, var, converter).read_time_step(validtime, cache)
     windspeed = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
-
     dx = 20
     lon = my_geo.lons
     lat = my_geo.lats
@@ -207,17 +212,89 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
         new_field_y = new_field_y[0:nx:dx, 0:ny:dx]
 
     target_new_field_x = [
-        [-14.538699666738989, -14.553860982392056, -14.569037734411797, -14.58421938990439, -14.599423229399378, -14.614636792357867],
- [-14.552991274332525, -14.56813356916662, -14.58328708288867,  -14.598456877804475, -14.61363549326945, -14.628837064571723],
- [-14.567235708835753, -14.5823591687436, -14.597491893968247, -14.61264278123428, -14.627805494589886, -14.642979795417165],
- [-14.581432214144044, -14.596532869553673, -14.611653003975755, -14.626782139789613, -14.641926099462344, -14.657081614359456],
- [-14.581432214144044, -14.596532869553673, -14.611653003975755, -14.626782139789613, -14.641926099462344, -14.657081614359456]]
+        [
+            -14.538699666738989,
+            -14.553860982392056,
+            -14.569037734411797,
+            -14.58421938990439,
+            -14.599423229399378,
+            -14.614636792357867,
+        ],
+        [
+            -14.552991274332525,
+            -14.56813356916662,
+            -14.58328708288867,
+            -14.598456877804475,
+            -14.61363549326945,
+            -14.628837064571723,
+        ],
+        [
+            -14.567235708835753,
+            -14.5823591687436,
+            -14.597491893968247,
+            -14.61264278123428,
+            -14.627805494589886,
+            -14.642979795417165,
+        ],
+        [
+            -14.581432214144044,
+            -14.596532869553673,
+            -14.611653003975755,
+            -14.626782139789613,
+            -14.641926099462344,
+            -14.657081614359456,
+        ],
+        [
+            -14.581432214144044,
+            -14.596532869553673,
+            -14.611653003975755,
+            -14.626782139789613,
+            -14.641926099462344,
+            -14.657081614359456,
+        ],
+    ]
     target_new_field_y = [
-         [-13.734125818571911, -13.718058554518791, -13.701939260312216, -13.685778925115544, -13.66955893102897, -13.653292329231794],
- [-13.718981192829203, -13.702900580202744, -13.686772368168196, -13.670590945050005, -13.654364052194278, -13.638076335693851],
- [-13.70385507086311, -13.687760995639843, -13.67162135247796, -13.655426428641533, -13.639182761897647, -13.622890394883335],
- [-13.68874846669053, -13.672645252036608, -13.65648551024041,  -13.640280211019551, -13.624022904336424, -13.60771687499435],
- [-13.68874846669053, -13.672645252036608, -13.65648551024041, -13.640280211019551, -13.624022904336424, -13.60771687499435]]
+        [
+            -13.734125818571911,
+            -13.718058554518791,
+            -13.701939260312216,
+            -13.685778925115544,
+            -13.66955893102897,
+            -13.653292329231794,
+        ],
+        [
+            -13.718981192829203,
+            -13.702900580202744,
+            -13.686772368168196,
+            -13.670590945050005,
+            -13.654364052194278,
+            -13.638076335693851,
+        ],
+        [
+            -13.70385507086311,
+            -13.687760995639843,
+            -13.67162135247796,
+            -13.655426428641533,
+            -13.639182761897647,
+            -13.622890394883335,
+        ],
+        [
+            -13.68874846669053,
+            -13.672645252036608,
+            -13.65648551024041,
+            -13.640280211019551,
+            -13.624022904336424,
+            -13.60771687499435,
+        ],
+        [
+            -13.68874846669053,
+            -13.672645252036608,
+            -13.65648551024041,
+            -13.640280211019551,
+            -13.624022904336424,
+            -13.60771687499435,
+        ],
+    ]
 
     for i in range(0, nx):
         for j in range(0, ny):
@@ -226,7 +303,8 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
 
     if plot:
         import matplotlib.pyplot as plt
+
         plt.clf()
-        plt.barbs(lon, lat, old_field_x, old_field_y, barbcolor=['red'])
-        plt.barbs(lon, lat, new_field_x, new_field_y, barbcolor=['green'])
+        plt.barbs(lon, lat, old_field_x, old_field_y, barbcolor=["red"])
+        plt.barbs(lon, lat, new_field_x, new_field_y, barbcolor=["green"])
         plt.show()

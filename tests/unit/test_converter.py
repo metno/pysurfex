@@ -62,7 +62,7 @@ def test_converter_meps_nc_rotated_winddir(conf_proj_2x3_dict, data_thredds_nc_f
                             "rotate_to_geographic": True,
                             "name": "y_wind_10m",
                             "filepattern": data_thredds_nc_file,
-                        }
+                        },
                     }
                 }
             }

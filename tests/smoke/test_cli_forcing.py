@@ -71,7 +71,9 @@ def test_forcing_nc(conf_proj_domain_file, tmp_path_factory, data_thredds_nc_fil
 
 @pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
-def test_forcing_ascii(conf_proj_domain_file, tmp_path_factory, data_thredds_nc_file, debug):
+def test_forcing_ascii(
+    conf_proj_domain_file, tmp_path_factory, data_thredds_nc_file, debug
+):
     """Test forcing from netcdf files."""
     pattern = data_thredds_nc_file
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/Params_config.txt"
@@ -100,7 +102,8 @@ def test_forcing_ascii(conf_proj_domain_file, tmp_path_factory, data_thredds_nc_
         "constant",
         "--uval",
         "constant",
-        "-o", "ascii",
+        "-o",
+        "ascii",
         "-of",
         output,
     ]

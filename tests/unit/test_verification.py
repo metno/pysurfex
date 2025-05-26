@@ -21,6 +21,7 @@ from pysurfex.verification import (
     converter2harp_cli,
 )
 
+
 @contextlib.contextmanager
 def working_directory(path):
     """Change working directory and returns to previous on exit."""
@@ -445,14 +446,22 @@ def test_verif_nc(tmp_path_factory, stationlist_file, data_surfex_nc_file):
     var = "T2M"
     vfilename = f"test_verif_nc_{var}.nc"
     argv = [
-        "--station-list", stationlist_file,
-        "-o", vfilename,
-        "--inputfile", data_surfex_nc_file,
-        "--basetime", "2023110807",
-        "--validtime", "2023110808",
-        "--inputtype", "surfex",
-        "--variable", var,
-        "--out-variable", var
+        "--station-list",
+        stationlist_file,
+        "-o",
+        vfilename,
+        "--inputfile",
+        data_surfex_nc_file,
+        "--basetime",
+        "2023110807",
+        "--validtime",
+        "2023110808",
+        "--inputtype",
+        "surfex",
+        "--variable",
+        var,
+        "--out-variable",
+        var,
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
@@ -470,11 +479,16 @@ def test_converter2ds_frost(stationlist_file, tmp_path_factory):
         "-o",
         vfilename,
         "--obs",
-        "--basetime", "2023110809",
-        "--validtime", "2023110809",
-        "--inputtype", "obs",
-        "--obs-type", "frost",
-        "--variable", "air_temperature",
+        "--basetime",
+        "2023110809",
+        "--validtime",
+        "2023110809",
+        "--inputtype",
+        "obs",
+        "--obs-type",
+        "frost",
+        "--variable",
+        "air_temperature",
     ]
 
     with working_directory(tmp_path_factory.getbasetemp()):
@@ -486,22 +500,24 @@ def test_converter2ds_frost(stationlist_file, tmp_path_factory):
 @pytest.fixture(name="bufr_file_for_verif")
 def fixture_bufr_file_for_verif(tmp_path_factory, stationlist):
     lon, lat, elev = stationlist.get_pos_from_stid(["1477"])
-    keys = [{
-        "latitude": lat[0],
-        "localLatitude": lat[0],
-        "longitude": lon[0],
-        "localLongitude": lon[0],
-        "year": 2023,
-        "month": 11,
-        "day": 8,
-        "hour": 8,
-        "minute": 0,
-        "heightOfStationGroundAboveMeanSeaLevel": elev[0],
-        "heightOfStation": elev[0],
-        "stationNumber": 477,
-        "blockNumber": 10,
-        "airTemperatureAt2M": 273.15,
-    }]
+    keys = [
+        {
+            "latitude": lat[0],
+            "localLatitude": lat[0],
+            "longitude": lon[0],
+            "localLongitude": lon[0],
+            "year": 2023,
+            "month": 11,
+            "day": 8,
+            "hour": 8,
+            "minute": 0,
+            "heightOfStationGroundAboveMeanSeaLevel": elev[0],
+            "heightOfStation": elev[0],
+            "stationNumber": 477,
+            "blockNumber": 10,
+            "airTemperatureAt2M": 273.15,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs_verif.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -516,14 +532,21 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
     argv = [
         "--station-list",
         stationlist_file,
-        "-o", vfilename,
-        "--inputfile", bufr_file_for_verif,
-        "--basetime", "2023110807",
-        "--validtime", "2023110808",
-        "--inputtype", "obs",
-        "--obs-type", "bufr",
+        "-o",
+        vfilename,
+        "--inputfile",
+        bufr_file_for_verif,
+        "--basetime",
+        "2023110807",
+        "--validtime",
+        "2023110808",
+        "--inputtype",
+        "obs",
+        "--obs-type",
+        "bufr",
         "--obs",
-        "--variable", bufrvar,
+        "--variable",
+        bufrvar,
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
@@ -541,15 +564,24 @@ def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file)
     dt_string = "2023110808"
     basetime = "2023110807"
     argv = [
-        "--station-list", stationlist_file,
-        "--harp-param", "T2m",
-        "--harp-param-unit", "K",
-        "--model-name", "TEST",
-        "--inputfile", data_surfex_nc_file,
-        "--inputtype", "surfex",
-        "--variable", var,
-        "--basetime", basetime,
-        "--validtime", dt_string,
+        "--station-list",
+        stationlist_file,
+        "--harp-param",
+        "T2m",
+        "--harp-param-unit",
+        "K",
+        "--model-name",
+        "TEST",
+        "--inputfile",
+        data_surfex_nc_file,
+        "--inputtype",
+        "surfex",
+        "--variable",
+        var,
+        "--basetime",
+        basetime,
+        "--validtime",
+        dt_string,
     ]
 
     with working_directory(tmp_path_factory.getbasetemp()):

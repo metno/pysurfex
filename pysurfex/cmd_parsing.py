@@ -1,10 +1,10 @@
 """Command line interfaces."""
+import logging
 import os
 import sys
 from argparse import Action, ArgumentParser
-import logging
-import yaml
 
+import yaml
 
 from . import __version__
 
@@ -49,7 +49,12 @@ def parse_args_create_forcing(argv):
         help="Surfex configuration (domain) created from Harmonie environment",
     )
     parser.add_argument(
-        "-fb", "--filebase", dest="file_base", type=str, help="First base time unless equal to dtg_start", default=None
+        "-fb",
+        "--filebase",
+        dest="file_base",
+        type=str,
+        help="First base time unless equal to dtg_start",
+        default=None,
     )
     parser.add_argument(
         "--options", type=open, action=LoadFromFile, help="Load options from file"
@@ -112,8 +117,12 @@ def parse_args_create_forcing(argv):
         choices=["netcdf", "nc4", "ascii"],
         nargs="?",
     )
-    parser.add_argument("--diskless-write", dest="diskless_write", action="store_true", default=False)
-    parser.add_argument("-a", "--analysis", dest="analysis", action="store_true", default=False)
+    parser.add_argument(
+        "--diskless-write", dest="diskless_write", action="store_true", default=False
+    )
+    parser.add_argument(
+        "-a", "--analysis", dest="analysis", action="store_true", default=False
+    )
     parser.add_argument(
         "--interpolation",
         dest="interpolation",
@@ -125,9 +134,19 @@ def parse_args_create_forcing(argv):
         "-of",
         "--output-filename",
         dest="output_filename",
-        type=str, help="Output file name", default=None, nargs="?")
+        type=str,
+        help="Output file name",
+        default=None,
+        nargs="?",
+    )
     parser.add_argument(
-        "-p", "--pattern", dest="pattern", type=str, help="Filepattern", default=None, nargs="?"
+        "-p",
+        "--pattern",
+        dest="pattern",
+        type=str,
+        help="Filepattern",
+        default=None,
+        nargs="?",
     )
     parser.add_argument(
         "--zref",
@@ -540,7 +559,9 @@ def parse_args_dump_environ(argv):
 
 def parse_args_first_guess_for_oi(argv):
 
-    parser = ArgumentParser(description="Create first guess file for gridpp", add_help=True)
+    parser = ArgumentParser(
+        description="Create first guess file for gridpp", add_help=True
+    )
     parser.add_argument(
         "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
@@ -552,12 +573,24 @@ def parse_args_first_guess_for_oi(argv):
     )
     parser.add_argument("--validtime")
     parser.add_argument("-o", "--output", dest="output", required=False, default="raw.nc")
-    parser.add_argument("--fg-variables", dest="fg_variables", nargs="*", default=None, required=True)
-    parser.add_argument("--t2m-outfile-var", dest="t2m_outfile_var", default="air_temperature_2m")
-    parser.add_argument("--rh2m-outfile-var", dest="rh2m_outfile_var", default="relative_humidity_2m")
-    parser.add_argument("--sd-outfile-var", dest="sd_outfile_var", default="surface_snow_thickness")
-    parser.add_argument("--altitude-outfile-var", dest="altitude_outfile_var", default="altitude")
-    parser.add_argument("--laf-outfile-var", dest="laf_outfile_var", default="land_area_fraction")
+    parser.add_argument(
+        "--fg-variables", dest="fg_variables", nargs="*", default=None, required=True
+    )
+    parser.add_argument(
+        "--t2m-outfile-var", dest="t2m_outfile_var", default="air_temperature_2m"
+    )
+    parser.add_argument(
+        "--rh2m-outfile-var", dest="rh2m_outfile_var", default="relative_humidity_2m"
+    )
+    parser.add_argument(
+        "--sd-outfile-var", dest="sd_outfile_var", default="surface_snow_thickness"
+    )
+    parser.add_argument(
+        "--altitude-outfile-var", dest="altitude_outfile_var", default="altitude"
+    )
+    parser.add_argument(
+        "--laf-outfile-var", dest="laf_outfile_var", default="land_area_fraction"
+    )
     parser.add_argument(
         "--domain",
         dest="domain",
@@ -640,18 +673,20 @@ def parse_args_surfex_binary(argv, mode):
         "--wrapper", "-w", type=str, default="", help="Execution wrapper command"
     )
     if need_pgd:
-        parser.add_argument(
-            "--pgd", type=str, required=True, help="Name of the PGD file"
-        )
+        parser.add_argument("--pgd", type=str, required=True, help="Name of the PGD file")
     if need_prep:
         parser.add_argument(
             "--prep", type=str, required=True, help="Name of the PREP file"
         )
     if mode == "pgd":
-        parser.add_argument("--one-decade", dest="one_decade",
-                            action="store_true",
-                            help="Create a PGD file with one decade only",
-                            required=False, default=False)
+        parser.add_argument(
+            "--one-decade",
+            dest="one_decade",
+            action="store_true",
+            help="Create a PGD file with one decade only",
+            required=False,
+            default=False,
+        )
     if mode == "prep":
         parser.add_argument("--prep-file", required=False, default=None)
         parser.add_argument("--prep-filetype", required=False, default=None)
@@ -701,8 +736,12 @@ def parse_args_surfex_binary(argv, mode):
         required=True,
         help="Input file paths on your system",
     )
-    parser.add_argument("--namelist-path", "-n", required=True,
-                        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
+    parser.add_argument(
+        "--namelist-path",
+        "-n",
+        required=True,
+        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set",
+    )
     domain_required = False
     if mode == "pgd":
         domain_required = True
@@ -742,7 +781,9 @@ def parse_args_surfex_binary(argv, mode):
             help="Diagnostic output frequency",
             default=None,
         )
-    parser.add_argument("--binary", type=str, help="Command to run", required=binary_needed, default=None)
+    parser.add_argument(
+        "--binary", type=str, help="Command to run", required=binary_needed, default=None
+    )
 
     if len(argv) == 0:
         parser.print_help()
@@ -785,13 +826,23 @@ def parse_args_create_namelist(argv):
         required=False,
         help="Input file paths on your system",
     )
-    parser.add_argument("--namelist-defs", "-n", dest="namelist_defs", required=True,
-                        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set")
+    parser.add_argument(
+        "--namelist-defs",
+        "-n",
+        dest="namelist_defs",
+        required=True,
+        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set",
+    )
     parser.add_argument("--uppercase", action="store_true", required=False, default=False)
     parser.add_argument("--true_repr", type=str, required=False, default=".TRUE.")
     parser.add_argument("--false_repr", type=str, required=False, default=".FALSE.")
     parser.add_argument(
-        "--domain", "-d", dest="domain", type=str, required=False, help="JSON file with domain"
+        "--domain",
+        "-d",
+        dest="domain",
+        type=str,
+        required=False,
+        help="JSON file with domain",
     )
     parser.add_argument("--output", "-o", type=str, required=False)
 
@@ -1066,7 +1117,9 @@ def parse_args_lsm_file_assim(argv):
         required=False,
         default="none",
     )
-    parser.add_argument("-b", "--basetime", type=str, help="Base time", default=None, required=False)
+    parser.add_argument(
+        "-b", "--basetime", type=str, help="Base time", default=None, required=False
+    )
     parser.add_argument("--domain", type=str, help="Domain", required=True)
     parser.add_argument("-o", dest="output", type=str, help="Output file", default=None)
     parser.add_argument(
@@ -1100,7 +1153,9 @@ def parse_args_bufr2json(argv):
     parser.add_argument(
         "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
-    parser.add_argument("-i", "--input-file", dest="bufr", type=str, required=True, help="Bufr file")
+    parser.add_argument(
+        "-i", "--input-file", dest="bufr", type=str, required=True, help="Bufr file"
+    )
     parser.add_argument(
         "-v", dest="vars", nargs="+", type=str, required=True, help="Variables"
     )
@@ -1960,7 +2015,7 @@ def variable_parse_options(parser, name=None):
         help="Not prefer a forecast value",
         choices=["analysis", "forecast"],
         required=False,
-        default="forecast"
+        default="forecast",
     )
     parser.add_argument(
         f"--{name}interpolator",
@@ -1968,11 +2023,9 @@ def variable_parse_options(parser, name=None):
         type=str,
         default="nearest",
         required=False,
-        help="Interpolator"
+        help="Interpolator",
     )
-    grib = parser.add_argument_group(
-        "grib", "Grib1/2 settings (-it grib1 or -it grib2)"
-    )
+    grib = parser.add_argument_group("grib", "Grib1/2 settings (-it grib1 or -it grib2)")
     grib.add_argument(
         f"--{name}indicatorOfParameter",
         dest=f"{nameu}parameter",
@@ -1985,42 +2038,42 @@ def variable_parse_options(parser, name=None):
         dest=f"{nameu}timeRangeIndicator",
         type=int,
         help="Time range indicator [grib1]",
-        default=0
+        default=0,
     )
     grib.add_argument(
         f"--{name}levelType",
         dest=f"{nameu}levelType",
         type=str,
         help="Level type [grib1/grib2]",
-        default="sfc"
+        default="sfc",
     )
     grib.add_argument(
         f"--{name}level",
         dest=f"{nameu}level",
         type=int,
         help="Level [grib1/grib2]",
-        default=0
+        default=0,
     )
     grib.add_argument(
         f"--{name}discipline",
         dest=f"{nameu}discipline",
         type=int,
         help="Discipline [grib2]",
-        default=None
+        default=None,
     )
     grib.add_argument(
         f"--{name}parameterCategory",
         dest=f"{nameu}parameterCategory",
         type=int,
         help="Parameter category [grib2]",
-        default=None
+        default=None,
     )
     grib.add_argument(
         f"--{name}parameterNumber",
         dest=f"{nameu}parameterNumber",
         type=int,
         help="ParameterNumber [grib2]",
-        default=None
+        default=None,
     )
     grib.add_argument(
         f"--{name}typeOfStatisticalProcessing",
@@ -2043,14 +2096,14 @@ def variable_parse_options(parser, name=None):
         dest=f"{nameu}sfx_patches",
         type=int,
         help="Patches [ascii/texte]",
-        default=-1
+        default=-1,
     )
     sfx.add_argument(
         f"--{name}sfx-layers",
         dest=f"{nameu}sfx_layers",
         type=int,
         help="Layers [ascii/texte]",
-        default=-1
+        default=-1,
     )
     sfx.add_argument(
         f"--{name}sfx-datatype",
@@ -2065,7 +2118,7 @@ def variable_parse_options(parser, name=None):
         dest=f"{nameu}sfx_interval",
         type=str,
         help="Interval [texte]",
-        default=None
+        default=None,
     )
     sfx.add_argument(
         f"--{name}sfx-geo-input",
@@ -2091,17 +2144,14 @@ def converter_parse_options(parser, prefix=""):
         prefix = f"{prefix}-"
     prefix_u = prefix.replace("-", "_")
     parser.add_argument(
-        f"--{prefix}converter",
-        dest=f"{prefix_u}converter",
-        type=str,
-        default="none"
+        f"--{prefix}converter", dest=f"{prefix_u}converter", type=str, default="none"
     )
     parser.add_argument(
         f"--{prefix}converter-variables",
         dest=f"{prefix_u}conv_variables",
         type=str,
         nargs="*",
-        default=None
+        default=None,
     )
     parser.add_argument(
         f"--{prefix}system-file-paths",
@@ -2129,7 +2179,7 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
             if arg.find(pname) == 0:
                 var_name = name
 
-        #print(arg, prefix, var_name)
+        # print(arg, prefix, var_name)
         if var_name != "":
             if isinstance(arg, str):
                 if prefix != "":
@@ -2139,13 +2189,13 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
                         arg = arg.replace(f"{prefix}_{var_name}_", "")
                 else:
                     arg = arg.replace(f"{var_name}_", "")
-            #print(arg, prefix, var_name)
+            # print(arg, prefix, var_name)
             if var_name in kwargs:
                 kwargs[var_name].update({arg: val})
             else:
                 kwargs.update({var_name: {arg: val}})
         else:
-            #print(arg, val)
+            # print(arg, val)
             pfix = prefix
             if prefix != "":
                 pfix = f"{prefix}_"

@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import toml
 
-from pysurfex.cli import masterodb, offline, perturbed_offline, pgd, prep, soda, canari
+from pysurfex.cli import canari, masterodb, offline, perturbed_offline, pgd, prep, soda
 
 
 @contextlib.contextmanager
@@ -55,7 +55,7 @@ def test_run_pgd(
     get_assemble_file,
     tmp_path_factory,
     input_binary_data_file,
-    debug
+    debug,
 ):
     """Test run NC."""
     # PGD
@@ -120,6 +120,7 @@ def test_run_pgd(
     with working_directory(tmp_path_factory.getbasetemp()):
         pgd(argv=argv)
 
+
 @pytest.mark.usefixtures("_mockers")
 def test_run_pgd_from_nml(
     get_rte_file,
@@ -169,7 +170,7 @@ def test_run_prep(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
-    debug
+    debug,
 ):
     # PREP
 
@@ -222,7 +223,7 @@ def test_run_offline(
     tmp_path_factory,
     conf_proj_2x3_file,
     input_binary_data_file,
-    debug
+    debug,
 ):
     # OFFLINE
 
@@ -280,7 +281,7 @@ def test_run_perturbed(
     tmp_path_factory,
     conf_proj_2x3_file,
     input_binary_data_file,
-    debug
+    debug,
 ):
     # PERTURBED OFFLINE
 
@@ -329,6 +330,7 @@ def test_run_perturbed(
     with pytest.raises(SystemExit):
         perturbed_offline()
 
+
 @pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
 def test_run_soda(
@@ -339,7 +341,7 @@ def test_run_soda(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
-    debug
+    debug,
 ):
     # SODA
 
@@ -396,7 +398,7 @@ def test_masterodb_forecast(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
-    debug
+    debug,
 ):
     """Test masterodb."""
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
@@ -430,15 +432,16 @@ def test_masterodb_forecast(
         "-o",
         output,
         "--binary",
-        binary
+        binary,
     ]
     if debug:
         argv += ["--debug"]
     with working_directory(tmp_path_factory.getbasetemp()):
         masterodb(argv=argv)
-        assert (os.path.exists("ICMSHHARM+0003.fa"))
+        assert os.path.exists("ICMSHHARM+0003.fa")
     with pytest.raises(SystemExit):
         masterodb()
+
 
 @pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.usefixtures("_mockers")
@@ -450,7 +453,7 @@ def test_masterodb_canari(
     conf_proj_2x3_file,
     tmp_path_factory,
     input_binary_data_file,
-    debug
+    debug,
 ):
     # CANARI
     pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"

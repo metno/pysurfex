@@ -57,6 +57,7 @@ def as_datetime_args(year=None, month=None, day=None, hour=0, minute=0, second=0
         year=year, month=month, day=day, hour=hour, minute=minute, second=second
     ).replace(tzinfo=timezone.utc)
 
+
 def get_decade(dt) -> str:
     """Return the decade given a datetime object."""
     # Extract month and day from datetime object

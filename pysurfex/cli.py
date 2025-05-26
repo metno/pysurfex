@@ -41,7 +41,7 @@ from .cmd_parsing import (
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, get_decade
 from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
-from .geo import LonLatVal, get_geo_object, set_domain, shape2ign, ConfProjFromHarmonie
+from .geo import ConfProjFromHarmonie, LonLatVal, get_geo_object, set_domain, shape2ign
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
 from .namelist import NamelistGeneratorAssemble, NamelistGeneratorFromNamelistFile
@@ -137,10 +137,12 @@ def run_surfex_binary(mode, **kwargs):
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
 
-    nml_macros.update({
-        "PREP_INPUT_FILE_WITH_PATH": prep_input_file,
-        "PREP_PGD_INPUT_FILE_WITH_PATH": prep_input_pgdfile
-    })
+    nml_macros.update(
+        {
+            "PREP_INPUT_FILE_WITH_PATH": prep_input_file,
+            "PREP_PGD_INPUT_FILE_WITH_PATH": prep_input_pgdfile,
+        }
+    )
 
     # TODO
     perturbed_file_pattern = None
@@ -160,20 +162,20 @@ def run_surfex_binary(mode, **kwargs):
     except KeyError:
         validtime = basetime
     if basetime is not None:
-        xtime = (basetime - basetime.replace(hour=0, second=0, microsecond=0)).total_seconds()
+        xtime = (
+            basetime - basetime.replace(hour=0, second=0, microsecond=0)
+        ).total_seconds()
         nml_macros.update(
             {
                 "PREP_NYEAR": basetime.year,
                 "PREP_NMONTH": basetime.month,
                 "PREP_NDAY": basetime.day,
                 "PREP_XTIME": xtime,
-                "SODA_HH": f"{basetime.hour:02d}"
+                "SODA_HH": f"{basetime.hour:02d}",
             }
         )
         if one_decade:
-            nml_macros.update({
-                "DECADE": get_decade(basetime)
-            })
+            nml_macros.update({"DECADE": get_decade(basetime)})
     else:
         if one_decade:
             raise RuntimeError("You must set basetime with option one_decade")
@@ -271,7 +273,9 @@ def run_surfex_binary(mode, **kwargs):
     logging.info("nml_macros: %s", nml_macros)
     if not (output is not None and os.path.exists(output)) or force:
         if assemble_file is None:
-            nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_path, macros=nml_macros)
+            nam_gen = NamelistGeneratorFromNamelistFile(
+                mode, namelist_path, macros=nml_macros
+            )
         else:
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
@@ -288,7 +292,9 @@ def run_surfex_binary(mode, **kwargs):
             try:
                 ntime = my_settings["nam_data_isba"]["ntime"]
                 if ntime != 1:
-                    logging.warning("Overriding value %s nam_data_isba#ntime and setting it 1 because of one_decade=True")
+                    logging.warning(
+                        "Overriding value %s nam_data_isba#ntime and setting it 1 because of one_decade=True"
+                    )
                     my_settings["nam_data_isba"]["ntime"] = 1
             except KeyError:
                 raise RuntimeError from KeyError
@@ -319,7 +325,9 @@ def run_surfex_binary(mode, **kwargs):
             except KeyError:
                 nobstype_old = None
             if nobstype_old is not None and nobstype_old != nobstype:
-                logging.warning("Mismatch in nobstype. Override %s with: %s", nobstype_old, nobstype)
+                logging.warning(
+                    "Mismatch in nobstype. Override %s with: %s", nobstype_old, nobstype
+                )
             my_settings["nam_obs"]["nobstype"] = nobstype
 
         if input_binary_data is None:
@@ -328,7 +336,11 @@ def run_surfex_binary(mode, **kwargs):
             input_binary_data = json.load(file_handler)
 
         input_data = nam_gen.input_data_from_namelist(
-            input_binary_data, system_file_paths, validtime=validtime, basetime=basetime, check_existence=check_existence
+            input_binary_data,
+            system_file_paths,
+            validtime=validtime,
+            basetime=basetime,
+            check_existence=check_existence,
         )
 
         # Create input
@@ -444,7 +456,7 @@ def run_surfex_binary(mode, **kwargs):
                         binary=binary,
                         print_namelist=print_namelist,
                         batch=my_batch,
-                        archive_data=my_archive
+                        archive_data=my_archive,
                     )
                 else:
                     SURFEXBinary(
@@ -1142,7 +1154,9 @@ def first_guess_for_oi(argv=None):
         if f_g is None:
             n_x = geo.nlons
             n_y = geo.nlats
-            f_g = create_netcdf_first_guess_template(fvariables, n_x, n_y, output, geo=geo)
+            f_g = create_netcdf_first_guess_template(
+                fvariables, n_x, n_y, output, geo=geo
+            )
             epoch = float(
                 (validtime - as_datetime_args(year=1970, month=1, day=1)).total_seconds()
             )

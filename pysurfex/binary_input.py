@@ -152,7 +152,16 @@ class JsonInputDataFromFile(JsonInputData):
 class InputDataFromNamelist(JsonInputData):
     """Binary input data for offline executables."""
 
-    def __init__(self, nml, input_data, program, platform, basetime=None, validtime=None, macros=None):
+    def __init__(
+        self,
+        nml,
+        input_data,
+        program,
+        platform,
+        basetime=None,
+        validtime=None,
+        macros=None,
+    ):
         """Construct InputDataFromNamelist.
 
         Args:

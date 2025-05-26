@@ -554,7 +554,9 @@ class Grib2Variable(object):
         logging.info("parameterNumber: %s", self.parameter_number)
         logging.info("levelType: %s", self.level_type)
         logging.info("level: %s", self.level)
-        logging.info("typeOfStatisticalProcessing: %s", self.type_of_statistical_processing)
+        logging.info(
+            "typeOfStatisticalProcessing: %s", self.type_of_statistical_processing
+        )
 
     def generate_grib_id(self):
         """Generate grib2 ID."""

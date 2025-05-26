@@ -1,6 +1,6 @@
 """Test geometry."""
-import pytest
 import f90nml
+import pytest
 
 from pysurfex.geo import (
     IGN,

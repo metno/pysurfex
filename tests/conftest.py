@@ -1,7 +1,7 @@
 """Mockers."""
 import json
-import os
 import logging
+import os
 from contextlib import contextmanager
 
 import numpy as np
@@ -9,16 +9,15 @@ import pytest
 from netCDF4 import Dataset
 
 from pysurfex.datetime_utils import as_datetime
-from pysurfex.platform_deps import SystemFilePaths
 from pysurfex.geo import ConfProj
-
+from pysurfex.platform_deps import SystemFilePaths
 
 MY_CODES_MISSING_DOUBLE = 999.0
 MY_CODES_MISSING_LONG = 999
 
 
-#@pytest.fixture(scope="module")
-#def config_exp_surfex_toml():
+# @pytest.fixture(scope="module")
+# def config_exp_surfex_toml():
 #    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
 #    return fname
 
@@ -31,9 +30,7 @@ def fixture_tmpdir(tmp_path_factory):
 @pytest.fixture(name="system_file_paths", scope="module")
 def fixture_system_file_paths(tmpdir):
     fname = f"{tmpdir}/exp_file_paths.json"
-    paths = {
-        "climdir": f"{tmpdir}/climate"
-    }
+    paths = {"climdir": f"{tmpdir}/climate"}
     sexps = SystemFilePaths(paths)
     sexps.save_as(fname)
     return fname
@@ -94,6 +91,7 @@ def conf_proj_2x3_dict_metcoop_b():
         },
     }
     return conf_proj_2x3_dict
+
 
 @pytest.fixture(scope="module")
 def conf_proj_2x3(conf_proj_2x3_dict):
@@ -241,6 +239,7 @@ def get_nam_file():
     )
     return fname
 
+
 @pytest.fixture(scope="module")
 def get_options_nam_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/OPTIONS.nam"
@@ -253,12 +252,12 @@ def get_options_nam_file(tmp_path_factory):
         fhandler.write("/\n")
     return fname
 
+
 @pytest.fixture(scope="module")
 def get_assemble_file():
-    fname = (
-        f"{os.path.abspath(os.path.dirname(__file__))}/../examples/assemble.yml"
-    )
+    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../examples/assemble.yml"
     return fname
+
 
 @pytest.fixture(scope="module")
 def input_binary_data_file():
@@ -276,27 +275,29 @@ def input_binary_data_file_single():
 
 @pytest.fixture(scope="module")
 def rotated_ll_t2m_grib1(tmp_path_factory):
-    keys = [{
-        "editionNumber": 1,
-        "gridType": "rotated_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "latitudeOfSouthernPoleInDegrees": 0,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "iScansNegatively": 1,
-        "jScansPositively": 0,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "rotated_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "latitudeOfSouthernPoleInDegrees": 0,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "iScansNegatively": 1,
+            "jScansPositively": 0,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -305,29 +306,31 @@ def rotated_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def rotated_ll_t1_grib2(tmp_path_factory):
-    keys = [{
-        "editionNumber": 2,
-        "gridType": "rotated_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "latitudeOfSouthernPoleInDegrees": 0,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "iScansNegatively": 1,
-        "jScansPositively": 0,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "rotated_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "latitudeOfSouthernPoleInDegrees": 0,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "iScansNegatively": 1,
+            "jScansPositively": 0,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -336,30 +339,32 @@ def rotated_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t2m_grib1(tmp_path_factory):
-    keys = [{
-        "editionNumber": 1,
-        "gridType": "lambert",
-        "Nx": 9,
-        "Ny": 19,
-        "latitudeOfFirstGridPointInDegrees": 58.828,
-        "longitudeOfFirstGridPointInDegrees": 7.893,
-        "LoVInDegrees": 15,
-        "DxInMetres": 2500,
-        "DyInMetres": 2500,
-        "iScansNegatively": 0,
-        "jScansPositively": 1,
-        "jPointsAreConsecutive": 1,
-        "Latin1InDegrees": 63.3,
-        "LaDInDegrees": 63.3,
-        "Latin2InDegrees": 63.3,
-        "latitudeOfSouthernPoleInDegrees": -90,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "lambert",
+            "Nx": 9,
+            "Ny": 19,
+            "latitudeOfFirstGridPointInDegrees": 58.828,
+            "longitudeOfFirstGridPointInDegrees": 7.893,
+            "LoVInDegrees": 15,
+            "DxInMetres": 2500,
+            "DyInMetres": 2500,
+            "iScansNegatively": 0,
+            "jScansPositively": 1,
+            "jPointsAreConsecutive": 1,
+            "Latin1InDegrees": 63.3,
+            "LaDInDegrees": 63.3,
+            "Latin2InDegrees": 63.3,
+            "latitudeOfSouthernPoleInDegrees": -90,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -368,32 +373,34 @@ def lambert_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t1_grib2(tmp_path_factory):
-    keys = [{
-        "editionNumber": 2,
-        "gridType": "lambert",
-        "Nx": 9,
-        "Ny": 19,
-        "latitudeOfFirstGridPointInDegrees": 58.828,
-        "longitudeOfFirstGridPointInDegrees": 7.893,
-        "LoVInDegrees": 15,
-        "DxInMetres": 2500,
-        "DyInMetres": 2500,
-        "iScansNegatively": 0,
-        "jScansPositively": 1,
-        "jPointsAreConsecutive": 1,
-        "Latin1InDegrees": 63.3,
-        "LaDInDegrees": 63.3,
-        "Latin2InDegrees": 63.3,
-        "latitudeOfSouthernPoleInDegrees": -90,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "lambert",
+            "Nx": 9,
+            "Ny": 19,
+            "latitudeOfFirstGridPointInDegrees": 58.828,
+            "longitudeOfFirstGridPointInDegrees": 7.893,
+            "LoVInDegrees": 15,
+            "DxInMetres": 2500,
+            "DyInMetres": 2500,
+            "iScansNegatively": 0,
+            "jScansPositively": 1,
+            "jPointsAreConsecutive": 1,
+            "Latin1InDegrees": 63.3,
+            "LaDInDegrees": 63.3,
+            "Latin2InDegrees": 63.3,
+            "latitudeOfSouthernPoleInDegrees": -90,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_tl.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -402,23 +409,25 @@ def lambert_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t2m_grib1(tmp_path_factory):
-    keys = [{
-        "editionNumber": 1,
-        "gridType": "regular_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "regular_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -427,25 +436,27 @@ def regular_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t1_grib2(tmp_path_factory):
-    keys = [{
-        "editionNumber": 2,
-        "gridType": "regular_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }]
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "regular_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -454,103 +465,109 @@ def regular_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_file(tmp_path_factory):
-    keys = [{
-        "latitude": 59.713,
-        "localLatitude": 59.713,
-        "longitude": 10.146,
-        "localLongitude": 10.146,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 477,
-        "blockNumber": 10,
-        "airTemperatureAt2M": 273.15,
-    },{
-        "latitude": 59.4352,
-        "localLatitude": 59.4352,
-        "longitude": 10.578,
-        "localLongitude": 10.578,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 100,
-        "heightOfStation": 230,
-        "stationNumber": 492,
-        "blockNumber": 10,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 274.15,
-    },{
-        "latitude": 59.713,
-        "localLatitude": 59.713,
-        "longitude": 10.146,
-        "localLongitude": 10.146,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "relativeHumidityAt2M": 50,
-    },{
-        "latitude": 59.4352,
-        "localLatitude": 59.4352,
-        "longitude": 10.578,
-        "localLongitude": 10.578,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/relativeHumidity": MY_CODES_MISSING_DOUBLE,
-        "dewpointTemperatureAt2M": 270.0,
-        "totalSnowDepth": 75,
-        "airTemperatureAt2M": 273.15,
-    },{
-        "latitude": 59.4352,
-        "localLatitude": 59.4352,
-        "longitude": 10.578,
-        "localLongitude": 10.578,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature": 270.0,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 273.15,
-        "heightOfBaseOfCloud": 3000,
-    },
-    {
-        "latitude": 59.4352,
-        "localLatitude": 59.4352,
-        "longitude": 10.578,
-        "localLongitude": 10.578,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "stationOrSiteName": "stationOrSiteName",
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-    }]
+    keys = [
+        {
+            "latitude": 59.713,
+            "localLatitude": 59.713,
+            "longitude": 10.146,
+            "localLongitude": 10.146,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 477,
+            "blockNumber": 10,
+            "airTemperatureAt2M": 273.15,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 100,
+            "heightOfStation": 230,
+            "stationNumber": 492,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 274.15,
+        },
+        {
+            "latitude": 59.713,
+            "localLatitude": 59.713,
+            "longitude": 10.146,
+            "localLongitude": 10.146,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "relativeHumidityAt2M": 50,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/relativeHumidity": MY_CODES_MISSING_DOUBLE,
+            "dewpointTemperatureAt2M": 270.0,
+            "totalSnowDepth": 75,
+            "airTemperatureAt2M": 273.15,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature": 270.0,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 273.15,
+            "heightOfBaseOfCloud": 3000,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "stationOrSiteName": "stationOrSiteName",
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+        },
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -559,24 +576,26 @@ def bufr_file(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_bad_file(tmp_path_factory):
-    keys = [{
-        "latitude": 60.0,
-        "localLatitude": 60.0,
-        "longitude": 10.0,
-        "localLongitude": 10.0,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": -2,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "airTemperatureAt2M": 273.15,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
-    }]
+    keys = [
+        {
+            "latitude": 60.0,
+            "localLatitude": 60.0,
+            "longitude": 10.0,
+            "localLongitude": 10.0,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": -2,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "airTemperatureAt2M": 273.15,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -735,7 +754,6 @@ liquid_water_content_of_surface_snow =
     return fname
 
 
-
 @pytest.fixture()
 def data_thredds_nc_file_aa(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
@@ -816,7 +834,8 @@ y_wind_10m =
     )
     return fname
 
-'''
+
+"""
 longitude =
 22.71561383, 22.78040195, 22.8453254,  22.91038445, 22.97557935, 23.04091038,
 22.77678257, 22.84156292, 22.90647829, 22.97152893, 23.03671512, 23.1020371,
@@ -830,7 +849,8 @@ latitude =
 75.36153744, 75.37693593, 75.39231647, 75.40767902, 75.42302351, 75.43834987,
 75.34517733, 75.36055868, 75.37592208, 75.39126746, 75.40659477, 75.42190394,
 75.32880143, 75.34416567, 75.35951193, 75.37484017, 75.39015032, 75.40544232;
-'''
+"""
+
 
 @pytest.fixture()
 def data_surfex_pgd_nc_file(tmp_path_factory):
@@ -1288,11 +1308,10 @@ def _mockers(session_mocker):
     """Define mockers used in the tests for the tasks' `run` methods."""
 
     class MyCodesInternalError(BaseException):
-
         def __init__(self, *args):
             super().__init__(*args)
 
-    class CodesMessage():
+    class CodesMessage:
         def __init__(self, fhandler):
             messages = json.load(fhandler)
             self.fhandler = fhandler
@@ -1331,8 +1350,8 @@ def _mockers(session_mocker):
                     return self.message[key]
                 else:
                     raise MyCodesInternalError
-                    #import eccodes
-                    #raise eccodes.CodesInternalError
+                    # import eccodes
+                    # raise eccodes.CodesInternalError
 
         def codes_get_size(self, key):
             try:
@@ -1400,14 +1419,20 @@ def _mockers(session_mocker):
     session_mocker.patch("pysurfex.grib.eccodes.codes_release")
     session_mocker.patch("pysurfex.bufr.open", new=my_open_file)
     session_mocker.patch("pysurfex.bufr.eccodes.codes_release")
-    session_mocker.patch("pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError)
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError
+    )
     session_mocker.patch(
         "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_new_from_file
     )
     session_mocker.patch("pysurfex.bufr.eccodes.codes_set", new=my_codes_set)
     session_mocker.patch("pysurfex.bufr.eccodes.codes_get", new=my_codes_get)
-    session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE)
-    session_mocker.patch("pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG)
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE
+    )
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG
+    )
     session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)
     session_mocker.patch("pysurfex.verification.sqlite_name")
     session_mocker.patch("pysurfex.verification.create_table")

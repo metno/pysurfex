@@ -826,7 +826,9 @@ class MetFrostObservations(ObservationSet):
                     )
                     break
                 if req.status_code == 404:
-                    logging.warning("STATUS: No data was found for the list of query Ids.")
+                    logging.warning(
+                        "STATUS: No data was found for the list of query Ids."
+                    )
                     break
                 if tries > num_tries:
                     raise RuntimeError("ERROR: could not retrieve observations.")
@@ -1167,4 +1169,3 @@ class StationList:
         """
         lons, lats, __ = self.get_pos_from_stid(self.stids)
         return self.posids(lons, lats, pos_decimals=pos_decimals)
-

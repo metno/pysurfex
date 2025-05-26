@@ -208,7 +208,6 @@ class Interpolation(object):
                     interpolated_field = new_field.reshape(self.npoints)
             return interpolated_field
 
-
     @staticmethod
     def distance(lon1, lat1, lon2, lat2):
         """Compute distance.

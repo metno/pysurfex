@@ -31,12 +31,7 @@ def prep_file(tmp_path_factory):
 @pytest.mark.parametrize("debug", [False, True])
 @pytest.mark.parametrize("mode", ["pgd", "prep", "offline", "soda"])
 def test_create_namelist(
-    tmp_path_factory,
-    mode,
-    get_nam_file,
-    get_assemble_file,
-    conf_proj_2x3_file,
-    debug
+    tmp_path_factory, mode, get_nam_file, get_assemble_file, conf_proj_2x3_file, debug
 ):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_{mode}"
     with pytest.raises(SystemExit):
@@ -61,9 +56,8 @@ def test_create_namelist(
 
 
 def test_create_namelist_pgd_from_nml(
-    tmp_path_factory,
-    get_options_nam_file,
-    conf_proj_2x3_file):
+    tmp_path_factory, get_options_nam_file, conf_proj_2x3_file
+):
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_from_ncml"
     with pytest.raises(SystemExit):
@@ -76,6 +70,6 @@ def test_create_namelist_pgd_from_nml(
         output,
         "--domain",
         conf_proj_2x3_file,
-        "pgd"
+        "pgd",
     ]
     create_namelist(argv=argv)

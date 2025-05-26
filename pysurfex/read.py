@@ -5,7 +5,11 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .cmd_parsing import variable_parse_options, parse_args_variable, converter_parse_options
+from .cmd_parsing import (
+    converter_parse_options,
+    parse_args_variable,
+    variable_parse_options,
+)
 from .datetime_utils import as_datetime
 from .interpolation import fill_field
 from .util import deep_update
@@ -194,7 +198,9 @@ class Converter(object):
             self.pres = self.create_variable(fileformat, defs, conf[self.name]["p"])
         elif name == "td2rh":
             self.dewpoint = self.create_variable(fileformat, defs, conf[self.name]["td"])
-            self.temperature = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            self.temperature = self.create_variable(
+                fileformat, defs, conf[self.name]["t"]
+            )
         elif name == "windspeed" or name == "winddir":
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
@@ -242,9 +248,7 @@ class Converter(object):
             self.nature = self.create_variable(
                 fileformat, defs, conf[self.name]["nature"]
             )
-            self.town = self.create_variable(
-                fileformat, defs, conf[self.name]["town"]
-            )
+            self.town = self.create_variable(fileformat, defs, conf[self.name]["town"])
         elif self.name == "cloud_base":
             self.cloud_base = self.create_variable(
                 fileformat, defs, conf[self.name]["cloud_base"]
@@ -313,11 +317,16 @@ class Converter(object):
 
     @staticmethod
     def saturation_mixing_ratio(total_press, temperature):
-        return Converter.mixing_ratio(Converter.saturation_vapor_pressure(temperature), total_press)
+        return Converter.mixing_ratio(
+            Converter.saturation_vapor_pressure(temperature), total_press
+        )
 
     @staticmethod
     def mixing_ratio(partial_press, total_press, molecular_weight_ratio=0.622):
-        return np.multiply(molecular_weight_ratio, np.divide(partial_press, np.subtract(total_press, partial_press)))
+        return np.multiply(
+            molecular_weight_ratio,
+            np.divide(partial_press, np.subtract(total_press, partial_press)),
+        )
 
     @staticmethod
     def specific_humidity_from_dewpoint(pressure, dewpoint):
@@ -380,7 +389,9 @@ class Converter(object):
                     else:
                         raise RuntimeError("Alpha is different for the 2 wind vectors!")
                 else:
-                    logging.warning("Wind was not rotated to geographical coordinates due to missing alphas")
+                    logging.warning(
+                        "Wind was not rotated to geographical coordinates due to missing alphas"
+                    )
 
         elif self.name == "rh2q" or self.name == "rh2q_mslp" or self.name == "rh2q_z":
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
@@ -525,9 +536,7 @@ class Converter(object):
             field = field_2d.reshape(geo.nlons * geo.nlats)
 
         else:
-            raise NotImplementedError(
-                f"Converter {self.name} not implemented"
-            )
+            raise NotImplementedError(f"Converter {self.name} not implemented")
         return field
 
 
@@ -778,11 +787,14 @@ def get_multi_converters(parser, multivars, argv):
         else:
             prefix = f"{mvar}_"
 
-        converters.update({mvar: {
-               "converter": kwargs[f"{prefix}converter"],
-               "variables": kwargs[f"{prefix}conv_variables"],
+        converters.update(
+            {
+                mvar: {
+                    "converter": kwargs[f"{prefix}converter"],
+                    "variables": kwargs[f"{prefix}conv_variables"],
+                }
             }
-        })
+        )
 
     # Set converter options
     for mvar in multivars:
@@ -816,7 +828,9 @@ def get_multi_converters(parser, multivars, argv):
                 prefix = ""
             else:
                 prefix = f"{mvar}"
-            kwargs = parse_args_variable(parser, {}, argv, variables=variables, prefix=prefix)
+            kwargs = parse_args_variable(
+                parser, {}, argv, variables=variables, prefix=prefix
+            )
         obj = kwargs2converter(**kwargs)
         converters[mvar].update({"obj": obj})
         converters2.update({mvar: obj})

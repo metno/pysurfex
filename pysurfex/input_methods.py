@@ -189,7 +189,9 @@ def get_datasources(obs_time, settings):
                         )
                     )
                 else:
-                    logging.warning("WARNING: filename %s not existing. Not added.", filename)
+                    logging.warning(
+                        "WARNING: filename %s not existing. Not added.", filename
+                    )
             elif filetype.lower() == "vobs":
                 if isinstance(filepattern, list):
                     if len(filepattern) > 1:

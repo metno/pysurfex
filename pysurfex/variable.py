@@ -7,10 +7,10 @@ import numpy as np
 from .datetime_utils import as_timedelta
 from .fa import Fa
 from .file import SurfexFileVariable, get_surfex_io_object
-from .interpolation import Interpolation
 from .geo import get_geo_object_from_json_file
 from .grib import Grib, Grib1Variable, Grib2Variable
 from .input_methods import get_datasources
+from .interpolation import Interpolation
 from .netcdf import Netcdf, NetCDFReadVariable
 from .platform_deps import SystemFilePathsFromFile
 from .util import parse_filepattern
@@ -529,7 +529,11 @@ class Variable(object):
             raise RuntimeError("Negative offset does not make sense here")
 
         if self.one_forecast:
-            logging.debug("one_forecast is True. Valitime %s Keep initial basetime %s", validtime, self.initial_basetime)
+            logging.debug(
+                "one_forecast is True. Valitime %s Keep initial basetime %s",
+                validtime,
+                self.initial_basetime,
+            )
             return self.initial_basetime
 
         # Take offset into account
@@ -609,5 +613,7 @@ class Variable(object):
             rotate_wind = self.var_dict["rotate_to_geographic"]
         if rotate_wind:
             alpha_grid = interpolator.alpha_grid_rot()
-            alpha_interpolation = Interpolation("nearest", interpolator.geo_in, interpolator.geo_out)
+            alpha_interpolation = Interpolation(
+                "nearest", interpolator.geo_in, interpolator.geo_out
+            )
             self.alpha = alpha_interpolation.interpolate(alpha_grid)
