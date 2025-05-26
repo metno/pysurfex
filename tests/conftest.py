@@ -1292,9 +1292,10 @@ class DummyFAField:
         self.geometry = DummyFAGeometry(geometry)
         self.data = np.zeros_like([np.arange(2 * 3)])
         self.spectral = False
-    
+
     def sp2gp(self):
         pass
+
 
 class MyFaResource:
     def __init__(self, name, openmode=None):
