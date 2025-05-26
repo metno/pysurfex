@@ -88,6 +88,8 @@ class Fa(object):
                     },
                 }
                 geo_out = ConfProj(domain)
+                if field.spectral:
+                    field.sp2gp()
                 data = field.data[range_y, range_x].T
             else:
                 raise NotImplementedError(field.geometry.name + " not implemented yet!")
