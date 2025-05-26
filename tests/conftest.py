@@ -9,6 +9,7 @@ import pytest
 from netCDF4 import Dataset
 
 from pysurfex.datetime_utils import as_datetime
+from pysurfex.platform_deps import SystemFilePaths
 from pysurfex.geo import ConfProj
 
 
@@ -16,9 +17,25 @@ MY_CODES_MISSING_DOUBLE = 999.0
 MY_CODES_MISSING_LONG = 999
 
 
-@pytest.fixture(scope="module")
-def config_exp_surfex_toml():
-    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
+#@pytest.fixture(scope="module")
+#def config_exp_surfex_toml():
+#    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
+#    return fname
+
+
+@pytest.fixture(name="tmpdir", scope="module")
+def fixture_tmpdir(tmp_path_factory):
+    return f"{tmp_path_factory.getbasetemp().as_posix()}"
+
+
+@pytest.fixture(name="system_file_paths", scope="module")
+def fixture_system_file_paths(tmpdir):
+    fname = f"{tmpdir}/exp_file_paths.json"
+    paths = {
+        "climdir": f"{tmpdir}/climate"
+    }
+    sexps = SystemFilePaths(paths)
+    sexps.save_as(fname)
     return fname
 
 

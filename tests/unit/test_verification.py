@@ -452,7 +452,7 @@ def test_verif_nc(tmp_path_factory, stationlist_file, data_surfex_nc_file):
         "--validtime", "2023110808",
         "--inputtype", "surfex",
         "--variable", var,
-        "--verif-variable", var
+        "--out-variable", var
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
@@ -469,6 +469,7 @@ def test_converter2ds_frost(stationlist_file, tmp_path_factory):
         stationlist_file,
         "-o",
         vfilename,
+        "--obs",
         "--basetime", "2023110809",
         "--validtime", "2023110809",
         "--inputtype", "obs",

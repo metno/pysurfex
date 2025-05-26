@@ -1,6 +1,7 @@
 """Test fg + titan + gridpp + obsmon."""
 import json
 import os
+import sys
 import shutil
 
 import numpy as np
@@ -398,6 +399,7 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
     qc2obsmon(argv=argv)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 @pytest.mark.usefixtures("_qc_gridpp_obsmon")
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon():
@@ -412,28 +414,6 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
         hm_env()
         harmonie = ["--harmonie"]
 
-    #argv = [
-    #    "-c",
-    #    "pysurfex/cfg/first_guess.yml",
-    #    "-i",
-    #    data_thredds_nc_file,
-    #    "-if",
-    #    "netcdf",
-    #    "-b",
-    #    an_time,
-    #    "-d",
-    #    conf_proj_2x3_file,
-    #    "--laf_converter",
-    #    "none",
-    #    "--sd_converter",
-    #    "sweclim",
-    #    "--debug",
-    #    "-o",
-    #    output,
-    #    "air_temperature_2m",
-    #    "relative_humidity_2m",
-    #    "surface_snow_thickness",
-    #]
     argv = [
         "--domain", conf_proj_2x3_file,
         "--validtime", an_time,

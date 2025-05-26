@@ -1,5 +1,6 @@
 """Test titan."""
 import numpy as np
+import sys
 import pytest
 
 from pysurfex.titan import (
@@ -56,6 +57,7 @@ def obs_set(an_time):
     return dataset_from_json(an_time, obs_set)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_plausibility1(an_time):
     mask = [0, 1]
     test = Plausibility(minval=272, maxval=273.5)
@@ -64,6 +66,7 @@ def test_plausibility1(an_time):
     assert flags == [0.0, 102]
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_plausibility2(an_time):
     mask = [1]
     test = Plausibility(minval=273.5, maxval=274.5)
@@ -72,6 +75,7 @@ def test_plausibility2(an_time):
     assert flags == [0.0, 0.0]
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_blacklist(an_time):
     mask = [0, 1]
     blacklist = {"lons": [6.9933], "lats": [62.191]}
@@ -80,6 +84,7 @@ def test_blacklist(an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_buddy(an_time):
     mask = [0, 1]
     buddy = Buddy()
@@ -88,6 +93,7 @@ def test_buddy(an_time):
         buddy.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_domain(conf_proj_2x3, an_time):
     mask = [0, 1]
     qc = DomainCheck(conf_proj_2x3)
@@ -95,6 +101,7 @@ def test_domain(conf_proj_2x3, an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_first_guess(conf_proj_2x3, an_time):
     mask = [0, 1]
     first_guess = np.ndarray(shape=(2, 3), dtype=float)
@@ -103,6 +110,7 @@ def test_first_guess(conf_proj_2x3, an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_fraction(conf_proj_2x3, an_time):
     mask = [0, 1]
     lsm = np.ndarray(shape=(2, 3), dtype=float)
@@ -111,6 +119,7 @@ def test_fraction(conf_proj_2x3, an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_sct(an_time):
     mask = [0, 1]
     sct = Sct()
@@ -118,6 +127,7 @@ def test_sct(an_time):
     sct.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_no_meta(an_time):
     mask = [0, 1]
     qc = NoMeta()
@@ -125,6 +135,7 @@ def test_no_meta(an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_redundancy(an_time):
     mask = [0, 1]
     qc = Redundancy(an_time)
@@ -132,6 +143,7 @@ def test_redundancy(an_time):
     qc.test(obs_set(an_time), mask)
 
 
+@pytest.mark.skipif(sys.version_info > (3,10), reason="titanlib requires python <= 3.10")
 def test_climatology(an_time):
     mask = [0, 1]
     clim = Climatology(an_time, minval=270, maxval=280)
