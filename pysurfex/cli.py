@@ -190,18 +190,11 @@ def run_surfex_binary(mode, **kwargs):
     output = kwargs["output"]
     masterodb = kwargs["masterodb"]
     archive = kwargs["archive"]
-    try:
-        only_archive = kwargs["only_archive"]
-    except KeyError:
-        only_archive = False
+    only_archive = kwargs.get("only_archive", False)
     print_namelist = kwargs["print_namelist"]
     logging.debug("masterodb %s", masterodb)
 
-    # TODO add this to assemble list
-    forc_zs = False
-    if "forc_zs" in kwargs:
-        forc_zs = kwargs["forc_zs"]
-
+    forc_zs = kwargs.get("forc_zs", False)
     try:
         assemble_file = kwargs["assemble_file"]
     except KeyError:
@@ -250,7 +243,6 @@ def run_surfex_binary(mode, **kwargs):
         input_binary_data = None
 
     # Create run time enviroment from local unless given
-
     if rte is None:
         rte = "rte.json"
     if not os.path.exists(rte):
