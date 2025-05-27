@@ -35,12 +35,15 @@ class SystemFilePaths(object):
         """Parse setting with date/time/experiment specific values.
 
         Args:
-            setting (str): The value of dictionary key which should be processes. Parser if type is str.
+            setting (str): The value of dictionary key which should be processes.
+                           Parser if type is str.
             check_parsing (bool): Check if all @@ pairs were parsed
             validtime (datetime.daetime): Parse setting with this as validtime
             basedtg (datetime.datetime): Parse setting with this as base time
-            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)
-            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)
+            mbr (int): Parse setting with this as ensemble
+                       member number (@E@/@EE@/@EEE@)
+            tstep (int): Parse setting with this as timestep to get
+                         step number (@TTT@/@TTTT@)
             pert (int): Parse setting with this as perturbation number @PERT@
             var (str): Parse setting with this as the variable (@VAR@)
             micro (str, optional): Micro character. Defaults to "@"
@@ -58,9 +61,8 @@ class SystemFilePaths(object):
         """
         # Check on arguments
         if isinstance(setting, str):
-            if basedtg is not None:
-                if isinstance(basedtg, str):
-                    basedtg = as_datetime(basedtg)
+            if basedtg is not None and isinstance(basedtg, str):
+                basedtg = as_datetime(basedtg)
             if validtime is not None:
                 if isinstance(validtime, str):
                     validtime = as_datetime(validtime)
@@ -159,9 +161,8 @@ class SystemFilePaths(object):
             if var is not None:
                 setting = str(setting).replace(f"{micro}VAR{micro}", var)
 
-        if check_parsing:
-            if isinstance(setting, str) and setting.count(f"{micro}") > 1:
-                raise RuntimeError("Setting was not substituted properly? " + setting)
+        if check_parsing and isinstance(setting, str) and setting.count(f"{micro}") > 1:
+            raise RuntimeError("Setting was not substituted properly? " + setting)
 
         return setting
 
@@ -215,11 +216,13 @@ class SystemFilePaths(object):
         """Add a system file path to be used.
 
         Args:
-            name (str): The data type you want to get the path for (clim_dir/bin_dir etc)
+            name (str): The data type you want to get the path for
+                        (clim_dir/bin_dir etc)
             path (str): Name of the file you want to join to the system path
-            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables=
-                                    {"NAME": "Value"}
-            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)
+            system_variables (dict): Arbitrary settings to substitute
+                                     @NAME@ = system_variables={"NAME": "Value"}
+            check_parsing (bool): Check if parsing was
+                                  successful (all @@ pairs substituted)
             validtime (as_datetime): Parse setting with this as valid time
             basedtg (as_datetime): Parse setting with this as base time
             mbr (int): Parse setting with this as ensemble member
@@ -246,6 +249,11 @@ class SystemFilePaths(object):
         self.system_file_paths.update({name: path})
 
     def save_as(self, fname):
+        """Save as a file.
+
+        Args:
+            fname (str): File name
+        """
         with open(fname, mode="w", encoding="utf8") as fhandler:
             json.dump(self.system_file_paths, fhandler)
 
@@ -260,5 +268,6 @@ class SystemFilePathsFromFile(SystemFilePaths):
             system_file_paths (_type_): _description_
 
         """
-        system_file_paths = json.load(open(system_file_paths, "r", encoding="utf-8"))
+        with open(system_file_paths, mode="r", encoding="utf-8") as fhandler:
+            system_file_paths = json.load(fhandler)
         SystemFilePaths.__init__(self, system_file_paths)

@@ -9,7 +9,7 @@ from .obs import Observation, StationList
 class TimeSeries(object):
     """Time series."""
 
-    def __init__(self, times, values, lons, lats, stids, stids_file=None, varname="NA"):
+    def __init__(self, times, values, lons, lats, stids, varname="NA"):
         """Construct time series.
 
         Args:
@@ -18,7 +18,6 @@ class TimeSeries(object):
             lons (_type_): _description_
             lats (_type_): _description_
             stids (_type_): _description_
-            stids_file (_type_, optional): _description_. Defaults to None.
             varname (str, optional): _description_. Defaults to "NA".
 
         """
@@ -54,7 +53,8 @@ class TimeSeries(object):
             "varname": self.varname,
             "data": data,
         }
-        json.dump(data, open(filename, "w", encoding="utf-8"), indent=indent)
+        with open(filename, mode="w", encoding="utf-8") as fhandler:
+            json.dump(data, fhandler, indent=indent)
 
 
 class TimeSeriesFromConverter(TimeSeries):

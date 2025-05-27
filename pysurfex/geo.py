@@ -10,7 +10,7 @@ import pyproj
 
 try:
     from osgeo import ogr  # type: ignore
-except Exception:
+except Exception:  # noqa BLE001
     ogr = None
 
 
@@ -48,10 +48,10 @@ class Geo(object):
         if ndims > 1:
             nlats = lats.shape[1]
 
+        npoints = nlats
         if ndims > 1:
             npoints = nlons * nlats
-        else:
-            npoints = nlats
+
         self.npoints = npoints
         self.nlons = nlons
         self.nlats = nlats
@@ -115,8 +115,7 @@ class Geo(object):
         if self.identifier() == geo_to_check.identifier():
             logging.debug("Geometries are identical")
             return True
-        else:
-            return False
+        return False
 
     def write_proj_info(self):
         """Write proj info.
@@ -124,7 +123,7 @@ class Geo(object):
         Returns:
             None: Do nothing for now.
         """
-        return None
+        return
 
 
 class SurfexGeo(ABC, Geo):
@@ -233,16 +232,16 @@ class ConfProj(SurfexGeo):
         # Work-around for SP cases where projection info in FA header is wrong
         self.xlat0 = float("{:.5f}".format(self.xlat0))
         self.xlon0 = float("{:.5f}".format(self.xlon0))
-        if self.xlat0 == 90.0 or self.xlat0 == -90.0:
+        if self.xlat0 in (90.0, -90.0):
             proj_string = (
-                f"+proj=stere +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
-                f"+lat_ts={str(self.xlat0)}"
+                f"+proj=stere +lat_0={self.xlat0!s} +lon_0={self.xlon0!s} "
+                f"+lat_ts={self.xlat0!s}"
             )
         else:
             proj_string = (
-                f"+proj=lcc +lat_0={str(self.xlat0)} +lon_0={str(self.xlon0)} "
-                f"+lat_1={str(self.xlat0)} +lat_2={str(self.xlat0)} "
-                f"+units=m +no_defs +R={str(earth)}"
+                f"+proj=lcc +lat_0={self.xlat0!s} +lon_0={self.xlon0!s} "
+                f"+lat_1={self.xlat0!s} +lat_2={self.xlat0!s} "
+                f"+units=m +no_defs +R={earth!s}"
             )
 
         logging.debug("Proj string: %s", proj_string)
@@ -260,9 +259,9 @@ class ConfProj(SurfexGeo):
         xxx = np.empty([self.nimax])
         yyy = np.empty([self.njmax])
         # TODO vectorize
-        for i in range(0, self.nimax):
+        for i in range(self.nimax):
             xxx[i] = x_0 + (float(i) * self.xdx)
-        for j in range(0, self.njmax):
+        for j in range(self.njmax):
             yyy[j] = y_0 + (float(j) * self.xdy)
         self.xxx = xxx
         self.yyy = yyy
@@ -345,11 +344,11 @@ class ConfProj(SurfexGeo):
                 x_0 = None
                 y_0 = None
 
-                for i in range(0, geo.nimax):
+                for i in range(geo.nimax):
                     if round(self.x_0, 4) == round(geo.xxx[i], 4):
                         x_0 = i
                         break
-                for j in range(0, geo.njmax):
+                for j in range(geo.njmax):
                     if round(self.y_0, 4) == round(geo.yyy[j], 4):
                         y_0 = j
                         break
@@ -367,7 +366,12 @@ class ConfProjFromHarmonie(ConfProj):
     """Conf proj."""
 
     def __init__(self, env=None):
+        """Create geo from Harmonuie environment.
 
+        Args:
+            env (dict, optional): Environment dict. Defaults to None.
+
+        """
         if env is None:
             env = os.environ
 
@@ -463,7 +467,7 @@ class LonLatVal(SurfexGeo):
         )
         return nam_nml
 
-    def subset(self, geo):
+    def subset(self, geo):  # noqa ARG002
         """Find subset of geo.
 
         Args:
@@ -514,9 +518,9 @@ class Cartesian(SurfexGeo):
                 proj = None
                 lons = []
                 lats = []
-                for i in range(0, self.nimax):
+                for i in range(self.nimax):
                     lons.append(self.xlon0 + i * self.xdx)
-                for j in range(0, self.njmax):
+                for j in range(self.njmax):
                     lats.append(self.xlat0 + j * self.xdy)
 
                 SurfexGeo.__init__(self, proj, np.asarray(lons), np.asarray(lats))
@@ -549,7 +553,7 @@ class Cartesian(SurfexGeo):
         )
         return nam_nml
 
-    def subset(self, geo):
+    def subset(self, geo):  # noqa ARG002
         """Find subset of geo.
 
         Args:
@@ -614,9 +618,9 @@ class LonLatReg(SurfexGeo):
         dlon = (self.xlonmax - self.xlonmin) / (self.nlon - 1)
         dlat = (self.xlatmax - self.xlatmin) / (self.nlat - 1)
         logging.debug("nlon=%s nlat=%s dlon=%s dlat=%s", self.nlon, self.nlat, dlon, dlat)
-        for i in range(0, self.nlon):
+        for i in range(self.nlon):
             lons.append(self.xlonmin + i * dlon)
-        for j in range(0, self.nlat):
+        for j in range(self.nlat):
             lats.append(self.xlatmin + j * dlat)
 
         # proj, npoints, nlons, nlats, lons, lats
@@ -628,7 +632,7 @@ class LonLatReg(SurfexGeo):
         """Update namelist.
 
         Args:
-            nml (NamelistGenerator): Namelist object.
+            nam_nml (NamelistGenerator): Namelist object.
 
         Returns:
             nml (NamelistGenerator): Namelist object.
@@ -648,7 +652,7 @@ class LonLatReg(SurfexGeo):
         )
         return nam_nml
 
-    def subset(self, geo):
+    def subset(self, geo):  # noqa ARG002
         """Find subset of geo.
 
         Args:
@@ -736,7 +740,7 @@ class IGN(SurfexGeo):
         # proj, npoints, nlons, nlats, lons, lats
         lons = []
         lats = []
-        for i in range(0, npoints):
+        for i in range(npoints):
             lon, lat = pyproj.Transformer.from_crs(proj, wgs84, always_xy=True).transform(
                 self.x_x[i], self.x_y[i]
             )
@@ -784,7 +788,7 @@ class IGN(SurfexGeo):
                 zdout.append(0.0)
 
         for i, pinval in enumerate(pin):
-            for j in range(0, ksize):
+            for j in range(ksize):
                 if pout[j] == pinval:
                     break
                 if j == ksize - 1:
@@ -793,20 +797,20 @@ class IGN(SurfexGeo):
                     zdout.append(float(pdin[i]) / 2.0)
 
             # Mesh constrains
-            for j in range(0, ksize):
-                if pout[j] < pin[i] and (pout[j] + zdout[j]) >= (pin[i] - pdin[i]):
+            for j in range(ksize):
+                if pout[j] < pinval and (pout[j] + zdout[j]) >= (pinval - pdin[i]):
                     break
                 if j == ksize - 1:
                     ksize = ksize + 1
-                    pout.append(pin[i] - pdin[i])
+                    pout.append(pinval - pdin[i])
                     zdout.append(0.0)
 
-            for j in range(0, ksize):
-                if pout[j] > pin[i] and (pout[j] - zdout[j]) <= (pin[i] + pdin[i]):
+            for j in range(ksize):
+                if pout[j] > pinval and (pout[j] - zdout[j]) <= (pinval + pdin[i]):
                     break
                 if j == ksize - 1:
                     ksize = ksize + 1
-                    pout.append(pin[i] + pdin[i])
+                    pout.append(pinval + pdin[i])
                     zdout.append(0.0)
 
         # Sort pout
@@ -900,7 +904,7 @@ class IGN(SurfexGeo):
         )
         return nam_nml
 
-    def subset(self, geo):
+    def subset(self, geo):  # noqa ARG002
         """Find subset of geo.
 
         Args:
@@ -1033,13 +1037,14 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
         indent (_type_, optional): _description_. Defaults to None.
 
     """
-    from_json = json.load(open(ref_proj, mode="r", encoding="utf-8"))
+    with open(ref_proj, mode="r", encoding="utf-8") as fhandler:
+        from_json = json.load(fhandler)
     geo = get_geo_object(from_json)
     earth = 6.37122e6
     proj_string = (
-        f"+proj=lcc +lat_0={str(geo.xlat0)} +lon_0={str(geo.xlon0)} "
-        f"+lat_1={str(geo.xlat0)} +lat_2={str(geo.xlat0)} "
-        f"+units=m +no_defs +R={str(earth)}"
+        f"+proj=lcc +lat_0={geo.xlat0!s} +lon_0={geo.xlon0!s} "
+        f"+lat_1={geo.xlat0!s} +lat_2={geo.xlat0!s} "
+        f"+units=m +no_defs +R={earth!s}"
     )
 
     logging.debug(proj_string)
@@ -1089,9 +1094,9 @@ def shape2ign(catchment, infile, output, ref_proj, indent=None):
     xdy = []
 
     npoints = 0
-    for x_p in range(0, n_x):
+    for x_p in range(n_x):
         xxx = x_1 + (x_p * delta_x) - delta_x
-        for y_p in range(0, n_y):
+        for y_p in range(n_y):
             yyy = y_1 + (y_p * delta_y) - delta_y
             point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(xxx, yyy)

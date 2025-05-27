@@ -12,38 +12,43 @@ os.chdir("..")
 for code_dir in code_dirs:
     for root, __, files in os.walk("./" + code_dir):
         for f in files:
-            f = f.strip()
-            if f.endswith(".py"):
-                root = root.replace("./", "")
-                ff = f.replace(".py", "")
-                fname = root + "/" + f
+            fstrip = f.strip()
+            if fstrip.endswith(".py"):
+                sroot = root.replace("./", "")
+                ff = fstrip.replace(".py", "")
+                fname = f"{sroot}/{fstrip}"
                 logging.debug("fname=%s", fname)
                 with open(fname, "r") as fh:
                     cl = None
                     for line in fh.readlines():
-                        line = line.rstrip()
-                        if "class " in line:
-                            if line.find("(") > 0 and line.find(":") == (len(line) - 1):
-                                cl = line.split(" ")[1]
+                        sline = line.rstrip()
+                        if "class " in sline:
+                            if sline.find("(") > 0 and sline.find(":") == (
+                                len(sline) - 1
+                            ):
+                                cl = sline.split(" ")[1]
                                 cl = cl.split("(")[0]
-                                cl = root + "." + ff + "." + cl
+                                cl = sroot + "." + ff + "." + cl
                                 classes.append(cl)
-                        elif " def " in line:
-                            if line.find("(") > 0 and line.find(":") == (len(line) - 1):
-                                line = line.lstrip()
-                                m = line.split(" ")[1]
+                        elif " def " in sline:
+                            if sline.find("(") > 0 and sline.find(":") == (
+                                len(sline) - 1
+                            ):
+                                print(sline, cl)
+                                sline = sline.lstrip()
+                                m = sline.split(" ")[1]
                                 m = m.split("(")[0]
                                 if cl is not None:
                                     class_methods.append(cl + "." + m)
-                        else:
-                            if "def " in line:
-                                if line.find("(") > 0 and line.find(":") == (
-                                    len(line) - 1
-                                ):
-                                    line = line.lstrip()
-                                    m = line.split(" ")[1]
-                                    m = m.split("(")[0]
-                                    methods.append(root + "." + ff + "." + m)
+                        elif (
+                            "def " in sline
+                            and sline.find("(") > 0
+                            and sline.find(":") == (len(sline) - 1)
+                        ):
+                            sline = sline.lstrip()
+                            m = sline.split(" ")[1]
+                            m = m.split("(")[0]
+                            methods.append(sroot + "." + ff + "." + m)
 
 with open("index.rst", mode="w", encoding="utf-8") as fh:
     fh.write(".. SURFEX Python API documentation master file, created by\n")

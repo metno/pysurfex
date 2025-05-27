@@ -16,8 +16,7 @@ def as_datetime(dtg, offset=False):
         raise RuntimeError(f"dtg={dtg} len(dtg) is {len(dtg)}")
     if offset:
         return datetime.strptime(dtg, fmt)
-    else:
-        return datetime.strptime(dtg, fmt).replace(tzinfo=timezone.utc)
+    return datetime.strptime(dtg, fmt).replace(tzinfo=timezone.utc)
 
 
 def as_datetime_string(dtg):

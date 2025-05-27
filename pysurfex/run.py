@@ -42,9 +42,9 @@ class BatchJob(object):
             logging.info("BATCH: %s", self.rte["OMP_NUM_THREADS"])
         logging.info("Batch running %s", cmd)
 
-        process = Popen(  # noqaS602
+        process = Popen(  # noqa S602
             cmd,
-            shell=True,  # noqaS602
+            shell=True,
             env=self.rte,
             stdout=PIPE,
             stderr=STDOUT,
@@ -139,7 +139,7 @@ class SURFEXBinary(object):
         logging.info("Running %s with settings OPTIONS.nam", cmd)
         try:
             self.batch.run(cmd)
-        except Exception as exc:
+        except Exception as exc:  # noqa BLE001
             raise RuntimeError(repr(exc)) from Exception
 
         listings = [

@@ -26,7 +26,8 @@ class Variable(object):
             var_type (str): Variable type.
             var_dict (dict): Variable definitions
             initial_basetime (datetime): Initial basetime
-            prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.
+            prefer_forecast (bool, optional): Prefer forecasts instead of analysis.
+                                              Defaults to True.
 
         Raises:
             RuntimeError: No filepattern provided
@@ -76,6 +77,13 @@ class Variable(object):
         logging.debug("Constructed variable for %s", str(self.var_dict))
 
     def substitute_macros(self, setting, micro="@"):
+        """Substitute macros.
+
+        Args:
+            setting (str): Setting
+            micro (str): Micro character
+
+        """
         try:
             spaths = self.var_dict["system_file_paths"]
         except KeyError:
@@ -98,7 +106,8 @@ class Variable(object):
 
         Args:
             validtime (datetime.datetime): Valid time.
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
 
         Returns:
             str: Parsed filename
@@ -118,7 +127,8 @@ class Variable(object):
         Args:
             validtime (datetime.datetime): Valid time.
             cache (surfex.Cache, optional): Cache. Defaults to None.
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
 
         Raises:
             NotImplementedError: Variable type not implemented
@@ -134,7 +144,7 @@ class Variable(object):
         else:
             if self.var_type == "netcdf":
                 file_handler = Netcdf(filename)
-            elif self.var_type == "grib1" or self.var_type == "grib2":
+            elif self.var_type in ("grib1", "grib2"):
                 file_handler = Grib(filename)
             elif self.var_type == "fa":
                 file_handler = Fa(filename)
@@ -200,8 +210,7 @@ class Variable(object):
         else:
             if self.var_type == "obs":
                 raise NotImplementedError("Field not defined for point data")
-            else:
-                field, geo_read = filehandler.field(self.file_var, validtime=validtime)
+            field, geo_read = filehandler.field(self.file_var, validtime=validtime)
 
             if field is not None:
                 logging.debug("field.shape %s", field.shape)
@@ -218,8 +227,9 @@ class Variable(object):
             var (object): Variable object
             geo (surfex.Geo): Surfex geometry
             validtime (datetime.datetime): Valid time
-            previoustime (datetime.datetime, optional): Previous valid time for accumulated
-                                                        variables. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time for
+                                                        accumulated variables.
+                                                        Defaults to None.
             cache (surfex.Cache, optional): Cache. Defaults to None.
 
         Returns:
@@ -227,9 +237,8 @@ class Variable(object):
 
         """
         interpolation = "bilinear"
-        if self.var_type != "obs":
-            if "interpolator" in self.var_dict:
-                interpolation = self.var_dict["interpolator"]
+        if self.var_type != "obs" and "interpolator" in self.var_dict:
+            interpolation = self.var_dict["interpolator"]
 
         logging.debug("set basetime from %s", validtime)
         filehandler, filename = self.get_filehandler(
@@ -307,9 +316,8 @@ class Variable(object):
                 units = None
             try:
                 member = self.var_dict["member"]
-                if member is not None:
-                    if not isinstance(member, list):
-                        member = [member]
+                if member is not None and not isinstance(member, list):
+                    member = [member]
             except KeyError:
                 member = None
 
@@ -387,10 +395,7 @@ class Variable(object):
                 accumulated = self.var_dict["accumulated"]
 
         elif self.var_type == "obs":
-            if "varname" in self.var_dict:
-                var = self.var_dict["varname"]
-            else:
-                var = None
+            var = self.var_dict.get("varname", None)
         else:
             raise NotImplementedError
 
@@ -486,34 +491,35 @@ class Variable(object):
         if field is None:
             logging.warning("Field is not read properly")
             return None
-        else:
-            field = np.subtract(field, previous_field)
-            if any(field[field < 0.0]):
-                neg = []
-                for i in range(0, field.shape[0]):
-                    if field[i] < 0.0:
-                        neg.append(field[i])
-                neg = np.asarray(neg)
-                logging.warning(
-                    "Deaccumulated field has %s negative values. lowest: %s mean: %s",
-                    str(neg.shape[0]),
-                    str(np.nanmin(neg)),
-                    str(np.nanmean(neg)),
-                )
-            field[field < 0.0] = 0
-            if any(field[field < 0.0]):
-                raise ValueError("Should not be negative values")
-            if float(instant) != 0.0:
-                field = np.divide(field, float(instant))
 
-            return field
+        field = np.subtract(field, previous_field)
+        if any(field[field < 0.0]):
+            neg = []
+            for i in range(field.shape[0]):
+                if field[i] < 0.0:
+                    neg.append(field[i])
+            neg = np.asarray(neg)
+            logging.warning(
+                "Deaccumulated field has %s negative values. lowest: %s mean: %s",
+                str(neg.shape[0]),
+                str(np.nanmin(neg)),
+                str(np.nanmean(neg)),
+            )
+        field[field < 0.0] = 0
+        if any(field[field < 0.0]):
+            raise ValueError("Should not be negative values")
+        if float(instant) != 0.0:
+            field = np.divide(field, float(instant))
+
+        return field
 
     def get_basetime(self, validtime, previoustime=None, allow_different_basetime=False):
         """Get the basetime of the file.
 
         Args:
             validtime (datetime.datetime): Valid time
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
             allow_different_basetime (bool, optional): Allow different base times.
                                                        Defaults to False.
 
@@ -571,12 +577,11 @@ class Variable(object):
         ):
             if first:
                 logging.debug("First basetime")
-            else:
-                if self.prefer_forecast:
-                    logging.debug("Prefer forecasts instead of analyis")
-                    prefer_forecast = as_timedelta(seconds=self.fcint)
-                else:
-                    logging.debug("Prefer analysis instead of forecast")
+            elif self.prefer_forecast:
+                logging.debug("Prefer forecasts instead of analyis")
+                prefer_forecast = as_timedelta(seconds=self.fcint)
+            elif not self.prefer_forecast:
+                logging.debug("Prefer analysis instead of forecast")
 
         fcint = as_timedelta(seconds=self.fcint)
         basetime = (
@@ -585,9 +590,8 @@ class Variable(object):
             - prefer_forecast
         )
 
-        if previoustime is not None:
-            if allow_different_basetime:
-                raise NotImplementedError
+        if previoustime is not None and allow_different_basetime:
+            raise NotImplementedError
 
         logging.debug("seconds_since_midnight: %s", seconds_since_midnight)
         logging.debug(

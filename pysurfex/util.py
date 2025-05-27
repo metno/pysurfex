@@ -53,9 +53,8 @@ def remove_existing_file(f_in, f_out):
         if os.path.isfile(f_out):
             os.remove(f_out)
     # files have the same path. Remove if it is a symlink
-    else:
-        if os.path.islink(f_out):
-            os.unlink(f_out)
+    elif os.path.islink(f_out):
+        os.unlink(f_out)
 
 
 def parse_filepattern(file_pattern, basetime, validtime):
@@ -84,7 +83,6 @@ def parse_filepattern(file_pattern, basetime, validtime):
     hour = basetime.strftime("%H")
     mins = basetime.strftime("%M")
     d_t = validtime - basetime
-    print(d_t, d_t.total_seconds())
     ll_d = f"{int(d_t.total_seconds() / 3600):d}"
     ll_2 = f"{int(d_t.total_seconds() / 3600):02d}"
     ll_3 = f"{int(d_t.total_seconds() / 3600):03d}"

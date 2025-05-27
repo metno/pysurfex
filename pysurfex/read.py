@@ -104,7 +104,7 @@ class ConstantValue(ReadData):
         else:
             raise RuntimeError("Constant value must have a value!")
 
-    def read_time_step(self, validtime, cache):
+    def read_time_step(self, validtime, cache):  # noqa ARG002
         """Read time step.
 
         Args:
@@ -115,7 +115,7 @@ class ConstantValue(ReadData):
             _type_: _description_
 
         """
-        field = np.array([float(i) for i in range(0, self.geo.npoints)])
+        field = np.array([float(i) for i in range(self.geo.npoints)])
         field.fill(self.value)
         return field
 
@@ -161,7 +161,7 @@ class Converter(object):
             logging.debug("conf: %s", conf)
             raise KeyError(self.name + " is missing in converter definition")
 
-        if self.name == "none" or self.name == "analysis":
+        if self.name in ("none", "analysis"):
             self.var = self.create_variable(fileformat, defs, conf[self.name])
         elif name == "diff":
             self.field1 = self.create_variable(
@@ -201,19 +201,19 @@ class Converter(object):
             self.temperature = self.create_variable(
                 fileformat, defs, conf[self.name]["t"]
             )
-        elif name == "windspeed" or name == "winddir":
+        elif name in ("windspeed", "winddir"):
             self.x_wind = self.create_variable(fileformat, defs, conf[self.name]["x"])
             self.y_wind = self.create_variable(fileformat, defs, conf[self.name]["y"])
-        elif name == "totalprec":
+        elif name in ("totalprec", "calcsnow"):
             self.totalprec = self.create_variable(
                 fileformat, defs, conf[self.name]["totalprec"]
             )
-            self.snow = self.create_variable(fileformat, defs, conf[self.name]["snow"])
-        elif name == "calcsnow":
-            self.totalprec = self.create_variable(
-                fileformat, defs, conf[self.name]["totalprec"]
-            )
-            self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
+            if name == "totalprec":
+                self.snow = self.create_variable(
+                    fileformat, defs, conf[self.name]["snow"]
+                )
+            elif name == "calcsnow":
+                self.temp = self.create_variable(fileformat, defs, conf[self.name]["t"])
         elif name == "calcrain":
             self.totalprec = self.create_variable(
                 fileformat, defs, conf[self.name]["totalprec"]
@@ -226,9 +226,7 @@ class Converter(object):
             )
         elif name == "phi2m":
             self.phi = self.create_variable(fileformat, defs, conf[self.name]["phi"])
-        elif self.name == "swe2sd":
-            self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"])
-        elif self.name == "sweclim":
+        elif self.name in ("swe2sd", "sweclim"):
             self.swe = self.create_variable(fileformat, defs, conf[self.name]["swe"])
         elif self.name == "sea2land":
             self.sea = self.create_variable(fileformat, defs, conf[self.name]["sea"])
@@ -317,12 +315,34 @@ class Converter(object):
 
     @staticmethod
     def saturation_mixing_ratio(total_press, temperature):
+        """Calculate sat mixing ratio.
+
+        Args:
+            total_press (np.ndarray): Pressure
+            temperature (np.ndarray): Temperature
+
+        Returns:
+            (np.ndarray): saturation mixing ratio
+
+        """
         return Converter.mixing_ratio(
             Converter.saturation_vapor_pressure(temperature), total_press
         )
 
     @staticmethod
     def mixing_ratio(partial_press, total_press, molecular_weight_ratio=0.622):
+        """Calculate mixing ratio.
+
+        Args:
+            partial_press (np.ndarray): Partial pressure
+            total_press (np.ndarray): Total pressure
+            molecular_weight_ratio (float, optional): Molecular weight ratio.
+                                                      Defaults to 0.622
+
+        Returns:
+            (np.ndarray): mixing ratio
+
+        """
         return np.multiply(
             molecular_weight_ratio,
             np.divide(partial_press, np.subtract(total_press, partial_press)),
@@ -330,19 +350,56 @@ class Converter(object):
 
     @staticmethod
     def specific_humidity_from_dewpoint(pressure, dewpoint):
+        """Calculate q from Td.
+
+        Args:
+            pressure (np.ndarray): Pressure
+            dewpoint (np.ndarray): Temperature
+
+        Returns:
+            (np.ndarray): specific humidity
+
+        """
         mixing_ratio = Converter.saturation_mixing_ratio(pressure, dewpoint)
         return Converter.specific_humidity_from_mixing_ratio(mixing_ratio)
 
     @staticmethod
     def mixing_ratio_from_specific_humidity(specific_humidity):
+        """Calculate mixing ratio from q.
+
+        Args:
+            specific_humidity (np.ndarray): Specific humidity
+
+        Returns:
+            (np.ndarray): mixing ratio
+
+        """
         return np.divide(specific_humidity, np.subtract(1, specific_humidity))
 
     @staticmethod
     def specific_humidity_from_mixing_ratio(mixing_ratio):
+        """Calculate q from mixing ratio.
+
+        Args:
+            mixing_ratio (np.ndarray): Mixing ratio
+
+        Returns:
+            (np.ndarray): Specific humidity
+
+        """
         return np.divide(mixing_ratio, np.subtract(1, mixing_ratio))
 
     @staticmethod
     def saturation_vapor_pressure(temperature_kelvin):
+        """Calculate esat.
+
+        Args:
+            temperature_kelvin (np.ndarray): Absolute temperature
+
+        Returns:
+            (np.ndarray): stauration vapor pressure
+
+        """
         field_t_c = np.subtract(temperature_kelvin, 273.15)
         exp = np.divide(np.multiply(17.67, field_t_c), np.add(field_t_c, 243.5))
         esat = np.multiply(6.112, np.exp(exp))
@@ -368,13 +425,13 @@ class Converter(object):
         gravity = 9.81
         field = None
         # Specific reading for each converter
-        if self.name == "none" or self.name == "analysis":
+        if self.name in ("none", "analysis"):
             field = self.var.read_variable(geo, validtime, cache)
         elif self.name == "diff":
             field = self.field1.read_variable(
                 geo, validtime, cache
             ) - self.field2.read_variable(geo, validtime, cache)
-        elif self.name == "windspeed" or self.name == "winddir":
+        elif self.name in ("windspeed", "winddir"):
             field_x = self.x_wind.read_variable(geo, validtime, cache)
             field_y = self.y_wind.read_variable(geo, validtime, cache)
             if self.name == "windspeed":
@@ -390,10 +447,11 @@ class Converter(object):
                         raise RuntimeError("Alpha is different for the 2 wind vectors!")
                 else:
                     logging.warning(
-                        "Wind was not rotated to geographical coordinates due to missing alphas"
+                        "Wind was not rotated to geographical coordinates due to ",
+                        "missing alphas",
                     )
 
-        elif self.name == "rh2q" or self.name == "rh2q_mslp" or self.name == "rh2q_z":
+        elif self.name in ("rh2q", "rh2q_mslp", "rh2q_z"):
             field_r_h = self.r_h.read_variable(geo, validtime, cache)  # %
             field_temp = self.temp.read_variable(geo, validtime, cache)  # In K
             if self.name == "rh2q_z":
@@ -401,7 +459,7 @@ class Converter(object):
                 field_pres.fill(101325.0)
             else:
                 field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
-            if self.name == "rh2q_mslp" or self.name == "rh2q_z":
+            if self.name in ("rh2q_mslp", "rh2q_z"):
                 field_altitude = self.altitude.read_variable(
                     geo, validtime, cache
                 )  # In m
@@ -421,15 +479,14 @@ class Converter(object):
             t_e = Converter.saturation_vapor_pressure(temperature)
             field = np.divide(td_e, t_e)
 
-        elif self.name == "td2q" or self.name == "td2q_z" or self.name == "td2q_mslp":
-
+        elif self.name in ("td2q", "td2q_z", "td2q_mslp"):
             field_td = self.td.read_variable(geo, validtime, cache)  # %
             if self.name == "td2q_z":
                 field_pres = np.array(field_td.shape)
                 field_pres.fill(101325.0)
             else:
                 field_pres = self.pres.read_variable(geo, validtime, cache)  # In Pa
-            if self.name == "td2q_mslp" or self.name == "td2q_z":
+            if self.name in ("td2q_mslp", "td2q_z"):
                 field_altitude = self.altitude.read_variable(
                     geo, validtime, cache
                 )  # In m
@@ -563,7 +620,6 @@ def kwargs2converter(**kwargs):
         Converter: A converter object
 
     """
-    print("kwargs in: ", kwargs)
     try:
         converter_name = kwargs["converter"]
     except KeyError:
@@ -586,17 +642,15 @@ def kwargs2converter(**kwargs):
     for conv_var in conv_variables:
         kwargs2 = kwargs[conv_var]
 
+        prefer_forecast = False
         if kwargs2["preference"] == "forecast":
             prefer_forecast = True
-        else:
-            prefer_forecast = False
         try:
             basetime = kwargs2["basetime"]
         except KeyError:
             basetime = None
-        if basetime is not None:
-            if isinstance(basetime, str):
-                basetime = as_datetime(kwargs2["basetime"])
+        if basetime is not None and isinstance(basetime, str):
+            basetime = as_datetime(kwargs2["basetime"])
         variable = None
         if "varname" in kwargs2:
             variable = kwargs2["varname"]
@@ -613,7 +667,6 @@ def kwargs2converter(**kwargs):
         except KeyError:
             interpolator = "nearest"
         if inputtype == "grib1":
-
             if filepattern is None:
                 raise RuntimeError("You must provide a filepattern")
 
@@ -637,7 +690,6 @@ def kwargs2converter(**kwargs):
             }
 
         elif inputtype == "grib2":
-
             if filepattern is None:
                 raise RuntimeError("You must provide a filepattern")
 
@@ -664,7 +716,6 @@ def kwargs2converter(**kwargs):
             }
 
         elif inputtype == "netcdf":
-
             if variable is None:
                 raise RuntimeError("You must provide a variable")
             if filepattern is None:
@@ -681,7 +732,6 @@ def kwargs2converter(**kwargs):
                 "system_file_paths": system_file_paths,
             }
         elif inputtype == "surfex":
-
             if variable is None:
                 raise RuntimeError("You must provide a variable")
             if filepattern is None:
@@ -726,7 +776,6 @@ def kwargs2converter(**kwargs):
                 var_dict.update({"geo_input_file": geo_sfx_input})
 
         elif inputtype == "obs":
-
             if variable is None:
                 raise RuntimeError("You must provide a variable")
 
@@ -759,16 +808,26 @@ def kwargs2converter(**kwargs):
 
 
 def get_multi_converters(parser, multivars, argv):
+    """Get multi converter.
 
+    Args:
+        parser (Parser): Argument parser
+        multivars (list): The variables
+        argv (list): Argument list
+
+    Returns:
+        converters (dict): A dictionary with converters if several variables
+                           or a converter object
+
+    """
     single = False
     if multivars is None or len(multivars) == 0:
         multivars = ["var"]
         single = True
     for mvar in multivars:
+        prefix = mvar
         if single:
             prefix = ""
-        else:
-            prefix = mvar
         converter_parse_options(parser, prefix=prefix)
 
     args, __ = parser.parse_known_args(argv)
@@ -782,11 +841,9 @@ def get_multi_converters(parser, multivars, argv):
     # Set converter input
     converters = {}
     for mvar in multivars:
+        prefix = f"{mvar}_"
         if single:
             prefix = ""
-        else:
-            prefix = f"{mvar}_"
-
         converters.update(
             {
                 mvar: {
@@ -800,17 +857,15 @@ def get_multi_converters(parser, multivars, argv):
     for mvar in multivars:
         variables = converters[mvar]["variables"]
         if variables is None:
+            var_prefix = f"{mvar}"
             if single:
                 var_prefix = ""
-            else:
-                var_prefix = f"{mvar}"
             variable_parse_options(parser, name=var_prefix)
         else:
             for var in variables:
+                var_prefix = f"{mvar}-{var}"
                 if single:
                     var_prefix = f"{var}"
-                else:
-                    var_prefix = f"{mvar}-{var}"
                 variable_parse_options(parser, name=var_prefix)
 
     converters2 = {}
@@ -818,16 +873,14 @@ def get_multi_converters(parser, multivars, argv):
         variables = converters[mvar]["variables"]
         logging.info("%s %s", mvar, variables)
         if variables is None:
+            prefix = f"{mvar}"
             if single:
                 prefix = ""
-            else:
-                prefix = f"{mvar}"
             kwargs = parse_args_variable(parser, {}, argv, prefix=prefix)
         else:
+            prefix = f"{mvar}"
             if single:
                 prefix = ""
-            else:
-                prefix = f"{mvar}"
             kwargs = parse_args_variable(
                 parser, {}, argv, variables=variables, prefix=prefix
             )

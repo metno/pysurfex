@@ -59,7 +59,8 @@ class Netcdf(object):
             xcoords: X-axis coordinates to subset
             ycoords: Y-axis coordinates to subset
             deaccumulate (bool): Deaccumulate field
-            instantanious (float): Scaling factor to make an accumulated value as instantanius
+            instantanious (float): Scaling factor to make an accumulated value as
+                                   instantanius
             units (str): CF unit for the variable to be read
             lev_from_ind (bool): level list are indices and not values
 
@@ -89,7 +90,7 @@ class Netcdf(object):
         times_to_read = []
         prev_time_steps = []
         if times is None:
-            for i in range(0, var.times.shape[0]):
+            for i in range(var.times.shape[0]):
                 times_to_read.append(i)
                 if i > 0:
                     prev_time_steps.append(i - 1)
@@ -101,8 +102,8 @@ class Netcdf(object):
             if isdatetime(times[0]):
                 logging.debug("Time provided in call as datetime objects")
                 times_in_var = var.datetimes
-                for i, times_in_var_val in enumerate(times_in_var):
-                    times_in_var_val = offsetaware(times_in_var_val)
+                for i, times_in_var_val_raw in enumerate(times_in_var):
+                    times_in_var_val = offsetaware(times_in_var_val_raw)
                     logging.debug(
                         "i %s times_in_var %s times %s", i, times_in_var_val, times
                     )
@@ -120,7 +121,7 @@ class Netcdf(object):
 
             else:
                 times_in_var = var.times
-                for i in range(0, times_in_var.shape[0]):
+                for i in range(times_in_var.shape[0]):
                     for times_val in times:
                         # Time steps requested
                         if i == times_val:
@@ -133,36 +134,33 @@ class Netcdf(object):
         logging.debug("times to read %s", times_to_read)
         levels_to_read = []
         if levels is None:
-            for i in range(0, var.levels.shape[0]):
-                levels_to_read.append(i)
+            for i in range(var.levels.shape[0]):
+                levels_to_read.append(i)  # noqa PERF402
         else:
             logging.debug("Level provided in call. lev_from_ind=%s", str(lev_from_ind))
             if not isinstance(levels, (list, tuple)):
                 raise ValueError("Levels must be a list!")
             levels_in_var = var.levels
-            for i in range(0, levels_in_var.shape[0]):
+            for i in range(levels_in_var.shape[0]):
                 for level_ind in levels:
                     if lev_from_ind:
                         if i == level_ind:
                             levels_to_read.append(i)
-                    else:
+                    elif round(float(levels_in_var[i]), 5) == round(float(level_ind), 5):
                         # NB! Round number to avoid round off when matching
-                        if round(float(levels_in_var[i]), 5) == round(
-                            float(level_ind), 5
-                        ):
-                            levels_to_read.append(i)
+                        levels_to_read.append(i)
         if len(levels_to_read) == 0:
             levels_to_read = [0]
         members_to_read = []
         if members is None:
-            for i in range(0, var.members.shape[0]):
-                members_to_read.append(i)
+            for i in range(var.members.shape[0]):
+                members_to_read.append(i)  # noqa PERF402
         else:
             if not isinstance(members, (list, tuple)):
                 raise ValueError("Members must be a list!")
             logging.debug("Ensemble members provided in call")
             members_in_var = var.members
-            for i in range(0, members_in_var.shape[0]):
+            for i in range(members_in_var.shape[0]):
                 for member_val in members:
                     if members_in_var[i] == member_val:
                         members_to_read.append(i)
@@ -201,11 +199,11 @@ class Netcdf(object):
         types = var.axis_types
         mapping = {}  # Map axis to output axis
         for i, type_val in enumerate(types):
-            if type_val == Axis.GEOX or type_val == Axis.LON:
+            if type_val == Axis.GEOX or type_val == Axis.LON:  # noqa PLR1714
                 dims.append(lon_ind)
                 prev_dims.append(lon_ind)
                 mapping[0] = i
-            elif type_val == Axis.GEOY or type_val == Axis.LAT:
+            elif type_val == Axis.GEOY or type_val == Axis.LAT:  # noqa PLR1714
                 dims.append(lat_ind)
                 prev_dims.append(lat_ind)
                 mapping[1] = i
@@ -222,7 +220,7 @@ class Netcdf(object):
                 prev_dims.append(members_to_read)
                 mapping[4] = i
             else:
-                raise ValueError(str(types[i]) + " is not defined!")
+                raise ValueError(str(type_val) + " is not defined!")
 
         logging.debug("Read %s with dimensions: %s", var.var_name, str(dims))
         if deaccumulate:
@@ -258,7 +256,7 @@ class Netcdf(object):
         # Add extra dimensions
         i = 0
         reverse_mapping = []
-        for dim in range(0, 5):
+        for dim in range(5):
             if dim not in mapping:
                 logging.debug("Adding dimension %s", str(dim))
                 field = np.expand_dims(field, len(dims) + i)
@@ -282,17 +280,15 @@ class Netcdf(object):
             var_name (str): Variable name
             level (int, optional): Level. Defaults to None.
             member (int, optional): Realization. Defaults to None.
-            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime.
+                                                                     Defaults to None.
             units (str, optional): Units. Defaults to None.
 
         Returns:
             tuple: Field, Geo
 
         """
-        if validtime is None:
-            validtime = []
-        else:
-            validtime = [validtime]
+        validtime = [] if validtime is None else [validtime]
 
         logging.debug("level %s member %s validtime %s", level, member, validtime)
         field, geo_in = self.nc_slice(
@@ -308,7 +304,8 @@ class Netcdf(object):
         Args:
             var (NetCDFReadVariable): NetCDF variable
             geo (surfx.geo.Geo): Geometry
-            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.
+            validtime (surfex.datetime_utils.as_datetime, optional): Validtime.
+                                                                     Defaults to None.
             interpolation (str, optional): Interpolation. Defaults to "bilinear".
 
         Returns:
@@ -390,11 +387,11 @@ class NetCDFFileVariable(object):
 
         if self.file.variables[self.var_name]:
             for dim_name in self.file.variables[self.var_name].dimensions:
-                if dim_name == "longitude" or dim_name == "lon":
+                if dim_name in ("longitude", "lon"):
                     types.append(Axis.LON)
                 elif dim_name == "x":
                     types.append(Axis.GEOX)
-                elif dim_name == "latitude" or dim_name == "lat":
+                elif dim_name in ("latitude", "lat"):
                     types.append(Axis.LAT)
                 elif dim_name == "y":
                     types.append(Axis.GEOY)
@@ -419,7 +416,7 @@ class NetCDFFileVariable(object):
         names = []
         if self.file.variables[self.var_name]:
             for dim_name in self.file.variables[self.var_name].dimensions:
-                names.append(dim_name)
+                names.append(dim_name)  # noqa PERF402
         return names
 
     @property
@@ -583,15 +580,12 @@ class NetCDFFileVariable(object):
             bool: If axis is a level type
 
         """
-        if (
-            axis_type == Axis.HEIGHT
+        return (
+            axis_type == Axis.HEIGHT  # noqa PLR1714
             or axis_type == Axis.PESSURE
             or axis_type == Axis.GEOZ
             or axis_type == Axis.HYBRID
-        ):
-            return True
-        else:
-            return False
+        )
 
 
 def create_netcdf_first_guess_template(
@@ -686,16 +680,15 @@ def create_netcdf_first_guess_template(
         my_fg.variables[my_var].units = units[my_var]
 
     # Global attributes
-    if geo is not None:
-        if isinstance(geo, ConfProj):
-            my_fg.setncattr("gridtype", "lambert")
-            my_fg.setncattr("dlon", float(geo.xdx))
-            my_fg.setncattr("dlat", float(geo.xdy))
-            my_fg.setncattr("projlat", float(geo.xlat0))
-            my_fg.setncattr("projlat2", float(geo.xlat0))
-            my_fg.setncattr("projlon", float(geo.xlon0))
-            my_fg.setncattr("lonc", float(geo.xloncen))
-            my_fg.setncattr("latc", float(geo.xlatcen))
+    if geo is not None and isinstance(geo, ConfProj):
+        my_fg.setncattr("gridtype", "lambert")
+        my_fg.setncattr("dlon", float(geo.xdx))
+        my_fg.setncattr("dlat", float(geo.xdy))
+        my_fg.setncattr("projlat", float(geo.xlat0))
+        my_fg.setncattr("projlat2", float(geo.xlat0))
+        my_fg.setncattr("projlon", float(geo.xlon0))
+        my_fg.setncattr("lonc", float(geo.xloncen))
+        my_fg.setncattr("latc", float(geo.xlatcen))
 
     return my_fg
 
@@ -816,8 +809,8 @@ def write_analysis_netcdf_file(
         )
         file_handler.variables["longitude"][:] = np.transpose(geo.lons)
         file_handler.variables["latitude"][:] = np.transpose(geo.lats)
-        file_handler.variables["x"][:] = list(range(0, geo.nlons))
-        file_handler.variables["y"][:] = list(range(0, geo.nlats))
+        file_handler.variables["x"][:] = list(range(geo.nlons))
+        file_handler.variables["y"][:] = list(range(geo.nlats))
         file_handler.variables["altitude"][:] = np.transpose(elevs)
         file_handler.variables["land_area_fraction"][:] = np.transpose(lafs)
 
@@ -835,8 +828,10 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
 
     Args:
         dtg (surfex.datetime_utils): Analysis time
-        t2m (dict, optional): Screen level temperature var and file name. Defaults to None.
-        rh2m (dict, optional): Screen level relative humidiy var and file name. Defaults to None.
+        t2m (dict, optional): Screen level temperature var and file name.
+                              Defaults to None.
+        rh2m (dict, optional): Screen level relative humidiy var and file name.
+                               Defaults to None.
         s_d (dict, optional): Snow depth var and file name. Defaults to None.
         s_m (dict, optional): Soil moisture var and file name. Defaults to None.
         output (str, optional): Output file name. Defaults to None.
@@ -951,7 +946,7 @@ def oi2soda(dtg, t2m=None, rh2m=None, s_d=None, s_m=None, output=None):
         )
 
     with open(output, mode="w", encoding="utf-8") as out:
-        for i in range(0, n_x * n_y):
+        for i in range(n_x * n_y):
             line = ""
             if t2m_var is not None:
                 line = line + " " + str(t2m_var[i])
@@ -971,7 +966,8 @@ def read_cryoclim_nc(infiles, cryo_varname="classed_value_c"):
 
     Args:
         infiles (list): Input files.
-        cryo_varname (str, optional): Variable name in cryo file. Defaults to "classed_value_c"
+        cryo_varname (str, optional): Variable name in cryo file.
+                                      Defaults to "classed_value_c"
 
     Raises:
         RuntimeError: "No files were read properly"

@@ -3,14 +3,12 @@ import json
 
 import f90nml
 import pytest
-import yaml
 
-from pysurfex.datetime_utils import as_datetime
 from pysurfex.namelist import NamelistGenerator, NamelistGeneratorAssembleFromFiles
 from pysurfex.platform_deps import SystemFilePaths
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_dict():
     dict_data = {
         "nam_block": {"key": "val"},
@@ -19,7 +17,7 @@ def namelist_dict():
     return dict_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_macro_dict_one_decade():
     dict_data = {
         "nam_frac": {"lecosg": True},
@@ -34,7 +32,7 @@ def namelist_macro_dict_one_decade():
     return dict_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_macro_dict_all_decades():
     cftyp_albnir_soil = ["DIRTYP"] * 36
     cfnam_albnir_soil = ["ALB_SAT_NI_@DECADE@_c"] * 36
@@ -51,7 +49,7 @@ def namelist_macro_dict_all_decades():
     return dict_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_macro_dict_all_decades_nc():
     cftyp_albnir_soil = ["NETCDF"] * 36
     cfnam_albnir_soil = ["ALB_SAT_NI_@DECADE@_c"] * 36
@@ -68,7 +66,7 @@ def namelist_macro_dict_all_decades_nc():
     return dict_data
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def binary_input_dict():
     dict_data = {
         "pgd": {
@@ -93,7 +91,7 @@ def binary_input_dict():
     return dict_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_file(namelist_dict, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_dict.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:

@@ -6,7 +6,7 @@ from pysurfex.datetime_utils import as_timedelta
 from pysurfex.input_methods import get_datasources
 
 
-@pytest.fixture()
+@pytest.fixture
 def settings(bufr_file):
     settings_dict = {
         "label": {
@@ -36,7 +36,6 @@ def test_read_bufr(bufr_file, obstime):
 
 @pytest.mark.usefixtures("_mockers")
 def test_read_bufr_file_air_temperature(bufr_file, obstime):
-
     variables = ["airTemperatureAt2M"]
     bufr_set = BufrObservationSet(
         bufr_file, variables, obstime, as_timedelta(seconds=1800)

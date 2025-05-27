@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import xarray as xr
-from netCDF4 import Dataset  # noqa
+from netCDF4 import Dataset
 
 from pysurfex.obs import ObservationSet, StationList
 from pysurfex.observation import Observation
@@ -35,13 +35,13 @@ def working_directory(path):
 
 @pytest.fixture(name="stationlist_file")
 def fixture_stationlist_file(tmp_path_factory):
-
     stlist_file = f"{tmp_path_factory.getbasetemp().as_posix()}/stationlist.json"
     stationlist = {
         "SN18700": {"lon": 10.72, "lat": 59.9423, "elev": 94, "aliases": ["1492"]},
         "1477": {"lon": 10.146136540210664, "lat": 59.71291928812509, "elev": 195},
     }
-    json.dump(stationlist, open(stlist_file, mode="w", encoding="utf-8"))
+    with open(stlist_file, mode="w", encoding="utf-8") as fhandler:
+        json.dump(stationlist, fhandler)
     return stlist_file
 
 
@@ -223,7 +223,6 @@ def fixture_obs_set_t2m(
 def test_xarray_converter(
     tmp_path_factory, t2, t3, obs_name_t2m_bufr, obs_set_t2m_bufr, stationlist
 ):
-
     variable = obs_name_t2m_bufr
     units = "K"
     var = VerifVariable(variable, unit=units)
@@ -236,50 +235,40 @@ def test_xarray_converter(
     posids = stationlist.all_posids()
     posids2 = []
     for pid in posids:
-        pid = pid.replace("SN", "")
-        posids2.append(int(pid))
+        pid2 = pid.replace("SN", "")
+        posids2.append(int(pid2))
 
     ds1 = xr.Dataset(
-        data_vars=dict(
-            fcst=(["time", "leadtime", "location"], fcst1),
-        ),
-        coords=dict(
-            time=[basetime],
-            leadtime=[validtime - basetime],
-            location=posids2,
-        ),
+        data_vars={
+            "fcst": (["time", "leadtime", "location"], fcst1),
+        },
+        coords={
+            "time": [basetime],
+            "leadtime": [validtime - basetime],
+            "location": posids2,
+        },
     )
     fcst2 = np.zeros([1, 1, 2])
     fcst2[0][0][:] = [280, 290]
     basetime = t3
     validtime = t3
     ds2 = xr.Dataset(
-        data_vars=dict(
-            fcst=(["time", "leadtime", "location"], fcst2),
-        ),
-        coords=dict(
-            time=[basetime],
-            leadtime=[validtime - basetime],
-            location=posids2,
-        ),
+        data_vars={
+            "fcst": (["time", "leadtime", "location"], fcst2),
+        },
+        coords={
+            "time": [basetime],
+            "leadtime": [validtime - basetime],
+            "location": posids2,
+        },
     )
 
-    print("ds1")
-    print(ds1)
-    print(ds1.fcst)
-    print("ds2")
-    print(ds2)
-    print(ds2.fcst)
     ds = xr.concat([ds1, ds2], dim="time")
-    print(ds)
     obs_ds = obs_set_t2m_bufr.get_data_set(obs_name_t2m_bufr)
-    print(obs_ds)
 
     verif_ds = VerifData(xr.Dataset(), var)
     verif_ds.merge(ds, obs_ds)
 
-    print("verif_ds")
-    print(verif_ds.ds)
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/test_verif_converter.nc"
     verif_ds.save_as(output)
     verif_ds = VerifDataFromFile(output)
@@ -466,7 +455,6 @@ def test_verif_nc(tmp_path_factory, stationlist_file, data_surfex_nc_file):
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
         ds = xr.open_dataset(vfilename, engine="netcdf4")
-        print(ds)
         assert ds.fcst.data[0][0][1] == 285
 
 
@@ -494,7 +482,6 @@ def test_converter2ds_frost(stationlist_file, tmp_path_factory):
     with working_directory(tmp_path_factory.getbasetemp()):
         os.environ["CLIENTID"] = "dummy"
         converter2ds(argv=argv)
-        print(os.getcwd() + "/" + vfilename)
 
 
 @pytest.fixture(name="bufr_file_for_verif")
@@ -550,16 +537,13 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
     ]
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
-        print(os.getcwd() + "/" + vfilename)
 
         ds = xr.open_dataset(vfilename, engine="netcdf4")
-        print(ds)
         assert pytest.approx(ds.obs.data[0][1]) == 273.15
 
 
 @pytest.mark.usefixtures("_mockers")
 def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file):
-
     var = "T2M"
     dt_string = "2023110808"
     basetime = "2023110807"

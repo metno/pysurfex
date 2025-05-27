@@ -13,7 +13,7 @@ from pysurfex.datetime_utils import as_datetime
 from pysurfex.platform_deps import SystemFilePaths
 
 
-@pytest.fixture()
+@pytest.fixture
 def climdir(tmp_path_factory):
     climdir = tmp_path_factory.getbasetemp() / "climdir"
     climdir.mkdir(exist_ok=True)
@@ -22,7 +22,7 @@ def climdir(tmp_path_factory):
     return climdir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def assim_dir(tmp_path_factory):
     assim_dir = tmp_path_factory.getbasetemp() / "assim"
     assim_dir.mkdir(exist_ok=True)
@@ -36,7 +36,7 @@ def assim_dir(tmp_path_factory):
     return assim_dir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def first_guess_dir(tmp_path_factory):
     first_guess_dir = tmp_path_factory.getbasetemp() / "first_guess"
     first_guess_dir.mkdir(exist_ok=True)
@@ -45,7 +45,7 @@ def first_guess_dir(tmp_path_factory):
     return first_guess_dir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_system(climdir, assim_dir, first_guess_dir):
     system = {
         "climdir": climdir,
@@ -82,7 +82,7 @@ def test_json_output(tmp_path_factory):
         JsonOutputData(data).archive_files()
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nml"
     nml_input = """
@@ -146,7 +146,7 @@ def f90ml_namelist(tmp_path_factory):
     return nml
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist_netcdf(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nc_nml"
     nml_input = """
@@ -191,7 +191,7 @@ def f90ml_namelist_netcdf(tmp_path_factory):
     return nml
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist_netcdf_single(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nc_single_nml"
     nml_input = """

@@ -6,7 +6,7 @@ import pytest
 from pysurfex.cli import create_namelist
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_system(tmp_path_factory):
     system_file = f"{tmp_path_factory.getbasetemp().as_posix()}/system.json"
     system = {
@@ -20,7 +20,7 @@ def get_system(tmp_path_factory):
     return system_file
 
 
-@pytest.fixture()
+@pytest.fixture
 def prep_file(tmp_path_factory):
     prep_file = f"{tmp_path_factory.getbasetemp().as_posix()}/prep_input.json"
     with open(prep_file, mode="w", encoding="utf-8") as file_handler:
@@ -58,7 +58,6 @@ def test_create_namelist(
 def test_create_namelist_pgd_from_nml(
     tmp_path_factory, get_options_nam_file, conf_proj_2x3_file
 ):
-
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_from_ncml"
     with pytest.raises(SystemExit):
         create_namelist(argv=["fail"])

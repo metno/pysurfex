@@ -16,10 +16,13 @@ class NamelistGenerator(object):
         """Construct a base namelists class.
 
         Args:
-            program (str): Which surfex binary you want to run ["pgd", "prep", "offline", "soda"]
-            definitions (dict): Namelist definitions
+            program (str): Which surfex binary you want to run
+                           ["pgd", "prep", "offline", "soda"]
+            nml (f90nml.Namelist): A parsed fortran namelist
             assemble(dict): Assembly order. Defines the configuration
             macros(dict, optional): Macros
+            micro(str, optional): Micro character
+
         """
         self.program = program
         self.nml = nml
@@ -35,12 +38,12 @@ class NamelistGenerator(object):
             for key, val in block.items():
                 items.update({key: val})
                 for mkey, mval in self.macros.items():
-                    if isinstance(val, str):
-                        val = val.replace(f"{self.micro}{mkey}{self.micro}", f"{mval}")
-                        if val == f"{mval}":
-                            if isinstance(mval, int) or isinstance(mval, float):
-                                val = mval
-                    items.update({key: val})
+                    rval = val
+                    if isinstance(rval, str):
+                        rval = rval.replace(f"{self.micro}{mkey}{self.micro}", f"{mval}")
+                        if rval == f"{mval}" and isinstance(mval, (float, int)):
+                            rval = mval
+                    items.update({key: rval})
             self.nml[bkey].update(items)
         return self.nml
 
@@ -54,7 +57,8 @@ class NamelistGenerator(object):
             platform (SystemFilePaths): Platform specific settings
             basetime (as_datetime, optional): Base time
             validtime (as_datetime, optional): Valid time
-
+            check_existence (bool, optional): Check existence of input data.
+                                              Defaults to True
         Returns:
             data_obj (InputDataFromNamelist): Input data from namelist
 
@@ -68,10 +72,11 @@ class NamelistGenerator(object):
                 elif isinstance(v, list):  # For LIST
                     data[k] = [process_macros(i) for i in v]
                 else:
+                    vv = v
                     for macro, mval in self.macros.items():
-                        if isinstance(v, str) and isinstance(mval, str):
-                            v = v.replace(f"{self.micro}{macro}{self.micro}", mval)
-                    data[k] = v
+                        if isinstance(vv, str) and isinstance(mval, str):
+                            vv = vv.replace(f"{self.micro}{macro}{self.micro}", mval)
+                    data[k] = vv
             return data
 
         # Substitute macros in binary input data
@@ -88,7 +93,7 @@ class NamelistGenerator(object):
         )
 
         if check_existence:
-            for __, val in data_obj.data.items():
+            for val in data_obj.data.values():
                 if not os.path.exists(val):
                     raise FileNotFoundError(val)
         return data_obj
@@ -99,7 +104,13 @@ class NamelistGenerator(object):
         """Generate the namelists for 'target'.
 
         Args:
-            output_file (str): where to write the result (OPTIONS.nam, fort.4 or EXSEG1.nam typically)
+            output_file (str): where to write the result
+            (OPTIONS.nam, fort.4 or EXSEG1.nam typically)
+            uppercase (bool, optional): Upper case namelist. Default to True
+            true_repr (str, optional): String representation of fortran boolean true.
+                                       Defaults to ".TRUE."
+            false_repr (str, optional): String representation of fortran boolean false.
+                                        Defaults to ".FALSE."
 
         """
         self.nml.uppercase = uppercase
@@ -132,6 +143,16 @@ class NamelistGeneratorFromNamelistFile(NamelistGenerator):
     """Namelist class."""
 
     def __init__(self, program, nml_file, macros=None, micro="@"):
+        """Construct a base namelists class from a file.
+
+        Args:
+            program (str): Which surfex binary you want to run
+                           ["pgd", "prep", "offline", "soda"]
+            nml_file (str): Namelist file
+            macros(dict, optional): Macros
+            micro(str, optional): Micro character
+
+        """
         parser = f90nml.Parser()
         nml = parser.read(nml_file)
         NamelistGenerator.__init__(self, program, nml, macros=macros, micro=micro)
@@ -144,10 +165,13 @@ class NamelistGeneratorAssemble(NamelistGenerator):
         """Construct a base namelists class.
 
         Args:
-            program (str): Which surfex binary you want to run ["pgd", "prep", "offline", "soda"]
+            program (str): Which surfex binary you want to run
+                           ["pgd", "prep", "offline", "soda"]
             definitions (dict): Namelist definitions
             assemble(dict): Assembly order. Defines the configuration
             macros(dict, optional): Macros
+            micro(str, optional): Micro character
+
         """
         self.nldict = definitions
         if macros is None:
@@ -162,6 +186,10 @@ class NamelistGeneratorAssemble(NamelistGenerator):
 
     def assemble_namelist(self, program):
         """Generate the namelists for 'target'.
+
+        Args:
+            program (str): Which surfex binary you want to run
+                           ["pgd", "prep", "offline", "soda"]
 
         Raises:
             KeyError: Key not found
@@ -197,8 +225,9 @@ class NamelistGeneratorAssemble(NamelistGenerator):
                         for key in nldict[catg][nl]:
                             val = nldict[catg][nl][key]
                             finval = val
-                            # Replace ${var-def} with value from config, possibly macro-expanded
-                            # For now assumes only one subst. per line, could be generalized if needed
+                            # Replace ${var-def} with value from config, possibly
+                            # macro-expanded. For now assumes only one subst. per line,
+                            # could be generalized if needed
                             if str(finval).find("$") >= 0:
                                 m = re.search(
                                     r"^([^\$]*)\$\{([\w\#]+)\-?([^}]*)\}(.*)", str(val)
@@ -267,17 +296,19 @@ class NamelistGeneratorAssemble(NamelistGenerator):
 
 
 class NamelistGeneratorAssembleFromFiles(NamelistGeneratorAssemble):
-
     """Namelist class."""
 
     def __init__(self, program, definitions, assemble, macros=None, micro="@"):
         """Construct a base namelists class.
 
         Args:
-            program (str): Which surfex binary you want to run ["pgd", "prep", "offline", "soda"]
+            program (str): Which surfex binary you want to run
+                           ["pgd", "prep", "offline", "soda"]
             definitions (str): Namelist definitions
             assemble(str)): Assembly order. Defines the configuration
             macros(dict, optional): Macros
+            micro(str, optional): Micro character
+
         """
         with open(definitions, mode="r", encoding="utf8") as file_handler:
             definitions = yaml.safe_load(file_handler)

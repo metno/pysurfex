@@ -167,7 +167,7 @@ def test_create_lsm_file_assim(
     create_lsm_file_assim(argv=argv)
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_sentinel_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.cdl"

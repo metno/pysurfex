@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 
 from pysurfex.cmd_parsing import parse_args_variable, variable_parse_options
 from pysurfex.read import kwargs2converter
@@ -14,7 +15,6 @@ def parse_args(argv):
     for arg in vars(args):
         kwargs.update({arg: getattr(args, arg)})
 
-    # variable_parse_options(parent_parser)
     variables = ["fg", "slope", "perm_snow"]
     for var in variables:
         variable_parse_options(parent_parser, name=var)
@@ -32,5 +32,7 @@ def test_single_parameter(system_file_paths):
     kwargs = parse_args_variable(parent_parser, {}, argv=argv)
     kwargs["system_file_paths"] = system_file_paths
 
-    print(json.dumps(kwargs, sort_keys=True, separators=(",", ": "), indent=2))
+    logging.info(
+        "kwargs: %s", json.dumps(kwargs, sort_keys=True, separators=(",", ": "), indent=2)
+    )
     __ = kwargs2converter(**kwargs)

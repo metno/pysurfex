@@ -6,14 +6,15 @@ import pytest
 from pysurfex.cli import cli_set_domain, cli_shape2ign
 
 
-@pytest.fixture()
+@pytest.fixture
 def ref_domain_file(tmp_path_factory, ref_domain_dict):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/conf_proj_ref.json"
-    json.dump(ref_domain_dict, open(fname, mode="w", encoding="utf-8"))
+    with open(fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(ref_domain_dict, fhandler)
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def ref_domain_dict():
     domain_dict = {
         "nam_pgd_grid": {"cgrid": "CONF PROJ"},
@@ -32,7 +33,7 @@ def ref_domain_dict():
     return domain_dict
 
 
-@pytest.fixture()
+@pytest.fixture
 def domains():
     return {
         "CONF_PROJ_TEST": {
@@ -52,7 +53,7 @@ def domains():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def domains_file(domains, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/domains.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:

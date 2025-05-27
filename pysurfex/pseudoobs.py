@@ -81,9 +81,9 @@ def snow_pseudo_obs_cryoclim(
         neighbour_cryo_extra = sum_neighbour_points(neighbour_cryo_extra, cryo_radius)
     p_snow_class = {}
     p_neighbours = {}
-    for __ in range(0, n_x):
+    for __ in range(n_x):
         jjj = 0
-        for __ in range(0, n_y):
+        for __ in range(n_y):
             if (
                 (
                     (grid_snow_class[0, iii, jjj] == 2)
@@ -170,28 +170,25 @@ def snow_pseudo_obs_cryoclim(
     lafs = []
     providers = []
     logging.debug("p_fg_snow_depth.shape[0]=%s", p_fg_snow_depth.shape[0])
-    for i in range(0, p_fg_snow_depth.shape[0]):
+    for i in range(p_fg_snow_depth.shape[0]):
         p_snow_fg = p_fg_snow_depth[i]
         logging.debug("%s %s %s %s", i, p_snow_fg, res_lons[i], res_lats[i])
         if not np.isnan(p_snow_fg):
             laf_ok = True
-            if glaf is not None:
-                if p_fg_laf[i] < laf_threshold:
-                    laf_ok = False
-                    logging.debug(
-                        "Remove position because p_fg_laf=%s < %s",
-                        p_fg_laf[i],
-                        laf_threshold,
-                    )
+            if glaf is not None and p_fg_laf[i] < laf_threshold:
+                laf_ok = False
+                logging.debug(
+                    "Remove position because p_fg_laf=%s < %s",
+                    p_fg_laf[i],
+                    laf_threshold,
+                )
             perm_ok = True
-            if grid_perm_snow is not None:
-                if p_perm_snow[i] > 0.0:
-                    perm_ok = False
+            if grid_perm_snow is not None and p_perm_snow[i] > 0.0:
+                perm_ok = False
 
             slope_ok = True
-            if grid_slope is not None:
-                if p_slope[i] > 0.5:
-                    slope_ok = False
+            if grid_slope is not None and p_slope[i] > 0.5:
+                slope_ok = False
 
             # Check if in grid
             if in_grid[i] and laf_ok and perm_ok and slope_ok:
@@ -220,12 +217,10 @@ def snow_pseudo_obs_cryoclim(
                         else:
                             obs_value = new_snow_depth
                 elif snow_class_val == 1:
-                    if neighbourhood:
-                        if points_having_snow[i] > 0:
-                            obs_value = 0.0
-                    else:
-                        if p_snow_fg >= 0.0:
-                            obs_value = 0.0
+                    if neighbourhood and points_having_snow[i] > 0:  # noqa SIM114
+                        obs_value = 0.0
+                    elif p_snow_fg >= 0.0:
+                        obs_value = 0.0
 
                 if not np.isnan(obs_value):
                     logging.debug("Add observation")
@@ -291,9 +286,9 @@ def sm_obs_sentinel(
     res_lons = []
     res_lats = []
     p_sm_class = {}
-    for __ in range(0, n_x):
+    for __ in range(n_x):
         jjj = 0
-        for __ in range(0, n_y):
+        for __ in range(n_y):
             res_lons.append(np.float64(grid_lons[iii, jjj]))
             res_lats.append(np.float64(grid_lats[iii, jjj]))
             p_sm_class.update({str(counter): grid_sm_class[iii, jjj]})
@@ -317,35 +312,31 @@ def sm_obs_sentinel(
     cis = []
     lafs = []
     providers = []
-    for i in range(0, p_fg_sm.shape[0]):
+    for i in range(p_fg_sm.shape[0]):
         p_sm_fg = p_fg_sm[i]
-        if not np.isnan(p_sm_fg):
-            # Check if in grid
-            if in_grid[i]:
-                obs_value = np.nan
-                if (p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0):
-                    if p_sm_fg <= fg_threshold:
-                        obs_value = p_sm_fg
-                    else:
-                        obs_value = 999
+        if not np.isnan(p_sm_fg) and in_grid[i]:
+            obs_value = np.nan
+            if (p_sm_class[str(i)] > 1) or (p_sm_class[str(i)] < 0):
+                obs_value = 999
+                if p_sm_fg <= fg_threshold:
+                    obs_value = p_sm_fg
+            else:
+                obs_value = p_sm_class[str(i)]
 
-                else:
-                    obs_value = p_sm_class[str(i)]
-
-                if not np.isnan(obs_value):
-                    flags.append(0)
-                    cis.append(0)
-                    lafs.append(0)
-                    providers.append(0)
-                    obs.append(
-                        Observation(
-                            validtime,
-                            res_lons[i],
-                            res_lats[i],
-                            obs_value,
-                            varname="surface_soil_moisture",
-                        )
+            if not np.isnan(obs_value):
+                flags.append(0)
+                cis.append(0)
+                lafs.append(0)
+                providers.append(0)
+                obs.append(
+                    Observation(
+                        validtime,
+                        res_lons[i],
+                        res_lats[i],
+                        obs_value,
+                        varname="surface_soil_moisture",
                     )
+                )
 
     logging.info("Possible pseudo-observations: %s", n_x * n_y)
     logging.info("Pseudo-observations created: %s", len(obs))
@@ -429,10 +420,13 @@ class CryoclimObservationSet(ObservationSet):
             label (str, optional): Label of set. Defaults to "cryo".
             step (int, optional): Step to process grid points. Defaults to 2.
             fg_threshold (float, optional): First guess threshold. Defaults to 0.4
-            new_snow_depth (float, optional): New snow depth in cryoclim in m.Defaults to 0.1
+            new_snow_depth (float, optional): New snow depth in cryoclim in m.
+                                              Defaults to 0.1
             glaf (np.ndarray, optional): Land-area-fraction. Defaults to None.
-            laf_threshold (float, optional): Threshold for existing land-area-fraction. Defaults to 0.1.
-            cryo_varname (str, optional): Variable name in cryo file. Defaults to "classed_value_c"
+            laf_threshold (float, optional): Threshold for existing land-area-fraction.
+                                             Defaults to 0.1.
+            cryo_varname (str, optional): Variable name in cryo file.
+                                          Defaults to "classed_value_c"
 
         """
         grid_lons, grid_lats, grid_snow_class = read_cryoclim_nc(

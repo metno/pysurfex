@@ -5,7 +5,7 @@ from pysurfex.datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from pysurfex.variable import Variable
 
 
-@pytest.fixture()
+@pytest.fixture
 def fixture():
     cfg = {
         "long_forecast": {
@@ -252,10 +252,8 @@ def test_open_new_file_one_forecast(fixture):
     var_type = "grib1"
     for i in range(23):
         validtime = initialtime + as_timedelta(seconds=intervall * i)
-        print(validtime)
         variable = Variable(var_type, var_dict, initialtime)
         filename = variable.get_filename(validtime)
-        print(filename, var_dict["blueprint"][str(i)])
         assert filename == var_dict["blueprint"][str(i)]
 
 

@@ -1,4 +1,5 @@
 """Observation."""
+import logging
 
 import numpy as np
 
@@ -19,7 +20,8 @@ class Observation(object):
             elev (float, optional): Elevation. Defaults to np.nan.
             stid (str, optional): Staation ID. Defaults to "NA".
             varname (str, optional): _description_. Defaults to None.
-            sigmao (float, optional): Observation error relative to a normalized background error (1). Defaults to 1.0
+            sigmao (float, optional): Observation error relative to a
+                                      normalized background error (1). Defaults to 1.0
 
         """
         self.obstime = obstime
@@ -34,8 +36,8 @@ class Observation(object):
 
     def print_obs(self):
         """Print observation."""
-        print(
-            "observation: ",
+        logging.info(
+            "observation: %s %s %s %s %s %s %s",
             self.obstime,
             self.lon,
             self.lat,

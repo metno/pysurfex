@@ -94,14 +94,11 @@ class Cache:
                 )
                 if identifier_in in self.interpolators[inttype][identifier_out]:
                     return True
-                else:
-                    logging.debug("Could not find in %s", identifier_in)
-                    return False
-            else:
-                logging.debug("Could not find out %s", identifier_out)
+                logging.debug("Could not find in %s", identifier_in)
                 return False
-        else:
+            logging.debug("Could not find out %s", identifier_out)
             return False
+        return False
 
     def get_interpolator(self, inttype, geo_in, geo_out):
         """Get interpolator.
@@ -119,8 +116,7 @@ class Cache:
         identifier_out = geo_out.identifier()
         if self.interpolator_is_set(inttype, geo_in, geo_out):
             return self.interpolators[inttype][identifier_out][identifier_in]
-        else:
-            return None
+        return None
 
     def update_interpolator(self, inttype, geo_in, geo_out, value):
         """Update interpolator.
@@ -208,8 +204,7 @@ class Cache:
         if id_str in self.saved_fields:
             logging.debug("Found %s", id_str)
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def generate_grib_id(gribvar, filename, validtime):
@@ -230,11 +225,10 @@ class Cache:
         if gribvar.version == 1:
             grib_id = gribvar.generate_grib_id()
             return grib_id + f"{filename.split('/')[-1]}:{validtime.strftime('%Y%m%d%H')}"
-        elif gribvar.version == 2:
+        if gribvar.version == 2:
             grib_id = gribvar.generate_grib_id()
             return grib_id + f"{filename.split('/')[-1]}:{validtime.strftime('%Y%m%d%H')}"
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
     @staticmethod
     def generate_netcdf_id(var, filename, validtime):
@@ -252,7 +246,11 @@ class Cache:
         varname = var.name
         level = str(var.level)
         member = str(var.member)
-        return f"{varname}{level}{member}{filename.split('/')[-1]}{validtime.strftime('%Y%m%d%H')}"
+        vid = (
+            f"{varname}{level}{member}{filename.split('/')[-1]}"
+            + f"{validtime.strftime('%Y%m%d%H')}"
+        )
+        return vid
 
     @staticmethod
     def generate_surfex_id(varname, patches, layers, filename, validtime):
@@ -323,16 +321,15 @@ class Cache:
         """
         if id_type == "netcdf":
             return Cache.generate_netcdf_id(var, filename, validtime)
-        elif id_type == "grib1" or id_type == "grib2":
+        if id_type in ("grib1", "grib2"):
             return Cache.generate_grib_id(var, filename, validtime)
-        elif id_type == "fa":
+        if id_type == "fa":
             return Cache.generate_fa_id(var, filename, validtime)
-        elif id_type == "surfex":
+        if id_type == "surfex":
             varname = var.varname
             patches = var.patches
             layers = var.layers
             return Cache.generate_surfex_id(varname, patches, layers, filename, validtime)
-        elif id_type == "obs":
+        if id_type == "obs":
             return Cache.generate_obs_id(var, filename, validtime)
-        else:
-            raise NotImplementedError
+        raise NotImplementedError

@@ -50,7 +50,6 @@ def test_alpha():
     geo_out = ConfProj(geo_out_json)
     interpol = Interpolation(operator, geo_in, geo_out)
 
-    field = np.zeros((nx, ny))
     alpha = interpol.alpha_grid_rot()
     degree = Interpolation.distance(10.0, 60.0, 10.0, 61.0)
     assert pytest.approx(degree, 3) == 111125.113
@@ -72,7 +71,6 @@ def test_alpha():
 
 
 def test_plot_wind_barbs(data_thredds_nc_file_aa):
-
     plot = False
     aa = False
     if aa:
@@ -101,10 +99,7 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
             "ilate": 11,
         },
     }
-    if aa:
-        my_geo = ConfProj(geo_in_json)
-    else:
-        my_geo = ConfProj(geo_in_json)
+    my_geo = ConfProj(geo_in_json)
 
     fileformat = "netcdf"
     if aa:
@@ -296,8 +291,8 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
         ],
     ]
 
-    for i in range(0, nx):
-        for j in range(0, ny):
+    for i in range(nx):
+        for j in range(ny):
             assert pytest.approx(new_field_x[i][j]) == target_new_field_x[i][j]
             assert pytest.approx(new_field_y[i][j]) == target_new_field_y[i][j]
 

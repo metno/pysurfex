@@ -34,7 +34,8 @@ class ObservationDataSetFromObsoul(ObservationSet):
             subtypes  (list, optional): Observation sub types. Defaults to None.
             obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         """
         observations = []
@@ -70,7 +71,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
             records = int(line[80:86])
             lineno += 1
 
-            for __ in range(0, records):
+            for __ in range(records):
                 line = lines[lineno]
                 parts = line.split()
                 logging.debug("Data parts %s", parts)
@@ -89,10 +90,9 @@ class ObservationDataSetFromObsoul(ObservationSet):
                         logging.debug("Wrong obtype %s %s", obt, obtypes)
                         add_obs = False
 
-                if obnumber is not None:
-                    if obn != obnumber:
-                        logging.debug("Wrong obnumber %s %s", obn, obnumber)
-                        add_obs = False
+                if obnumber is not None and obn != obnumber:
+                    logging.debug("Wrong obnumber %s %s", obn, obnumber)
+                    add_obs = False
 
                 # Remove if outside window
                 if an_time is not None:
@@ -112,7 +112,8 @@ class ObservationDataSetFromObsoul(ObservationSet):
                             add_obs = False
                     else:
                         logging.debug(
-                            "Not checking time window. neg_dt=%s and/or pos_dt=%s are None",
+                            "Not checking time window.",
+                            "neg_dt=%s and/or pos_dt=%s are None",
                             neg_dt,
                             pos_dt,
                         )
@@ -162,7 +163,8 @@ class ObservationDataSetFromObsoulFile(ObservationDataSetFromObsoul):
             subtypes  (list, optional): Observation sub types. Defaults to None.
             obnumber (int, optional): Observation number. Defaults to None.
             label (str, optional): Label for observation set. Defaults to "".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         """
         logging.info("Opening OBSOUL file %s", filename)

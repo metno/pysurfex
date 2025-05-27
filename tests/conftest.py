@@ -16,12 +16,6 @@ MY_CODES_MISSING_DOUBLE = 999.0
 MY_CODES_MISSING_LONG = 999
 
 
-# @pytest.fixture(scope="module")
-# def config_exp_surfex_toml():
-#    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
-#    return fname
-
-
 @pytest.fixture(name="tmpdir", scope="module")
 def fixture_tmpdir(tmp_path_factory):
     return f"{tmp_path_factory.getbasetemp().as_posix()}"
@@ -622,7 +616,7 @@ def obsoul_cryoclim_cy43(tmp_path_factory):
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_thredds_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
@@ -754,7 +748,7 @@ liquid_water_content_of_surface_snow =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_thredds_nc_file_aa(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
@@ -852,7 +846,7 @@ latitude =
 """
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_surfex_pgd_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.cdl"
@@ -1021,19 +1015,19 @@ COVER006 =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def surfex_fa_file_sfx(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.sfx"
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def surfex_fa_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.fa"
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def firstguess4gridpp(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.cdl"
@@ -1136,7 +1130,7 @@ land_area_fraction =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_cryoclim_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.cdl"
@@ -1249,7 +1243,7 @@ class DummyFaPos:
         """Construct dummy FA position."""
         self.value = value
 
-    def get(self, mode):
+    def get(self, mode):  # noqa ARG002
         return self.value
 
 
@@ -1269,7 +1263,7 @@ class DummyFAGeometry:
         return DummyFaPos(self.center["lon"]), DummyFaPos(self.center["lat"])
 
     @staticmethod
-    def gimme_corners_ij(subzone=None):
+    def gimme_corners_ij(subzone=None):  # noqa ARG004
         return {"ll": [0, 0], "lr": [8, 0], "ur": [8, 18]}
 
 
@@ -1301,6 +1295,7 @@ class MyFaResource:
     def __init__(self, name, openmode=None):
         """Construct dummy FA resource."""
         self.name = name
+        self.openmode = openmode
 
     def readfield(self, name):
         logging.info("Read FA field %s", name)
@@ -1324,23 +1319,22 @@ def _mockers(session_mocker):
             self.nmessages = len(messages)
             self.message = None
 
-        def seek(*args):
+        def seek(*args):  # noqa ARG002
             return 1
 
-        def tell(*args, **kwargs):
+        def tell(*args, **kwargs):  # noqa ARG002
             return 100
 
-        def close(self, *args, **kwargs):
+        def close(self, *args, **kwargs):  # noqa ARG002
             self.fhandler.close()
 
         def next_record(self):
             self.record += 1
             if self.record >= self.nmessages:
                 return None
-            else:
-                message = self.messages[self.record]
-                self.message = message
-                return self
+            message = self.messages[self.record]
+            self.message = message
+            return self
 
         def codes_set(self, *args):
             pass
@@ -1349,15 +1343,11 @@ def _mockers(session_mocker):
             av_keys = ["average", "min", "max"]
             if key in av_keys:
                 return -1
-            else:
-                if key in self.message:
-                    return self.message[key]
-                else:
-                    raise MyCodesInternalError
-                    # import eccodes
-                    # raise eccodes.CodesInternalError
+            if key in self.message:
+                return self.message[key]
+            raise MyCodesInternalError
 
-        def codes_get_size(self, key):
+        def codes_get_size(self, key):  # noqa ARG002
             try:
                 nx = self.message["Ni"]
                 ny = self.message["Nj"]
@@ -1397,15 +1387,15 @@ def _mockers(session_mocker):
         return gid.codes_get_values()
 
     @contextmanager
-    def my_open_with_file(filename, *args, **kwargs):
-        fhandler = open(filename, mode="r", encoding="utf8")
-        yield CodesMessage(fhandler)
+    def my_open_with_file(filename, *args, **kwargs):  # noqa ARG002
+        with open(filename, mode="r", encoding="utf8") as fhandler:
+            yield CodesMessage(fhandler)
 
-    def my_open_file(filename, *args, **kwargs):
-        fhandler = open(filename, mode="r", encoding="utf8")
-        return CodesMessage(fhandler)
+    def my_open_file(filename, *args, **kwargs):  # noqa ARG002
+        with open(filename, mode="r", encoding="utf8") as fhandler:
+            return CodesMessage(fhandler)
 
-    def codes_internal_error(*args, **kwargs):
+    def codes_internal_error(*args, **kwargs):  # noqa ARG002
         return MyCodesInternalError()
 
     # Do the actual mocking

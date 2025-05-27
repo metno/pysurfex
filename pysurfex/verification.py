@@ -107,8 +107,8 @@ class DatasetFromVfld:
             fcst = np.array(fcst)
             fcst = fcst.reshape((1, 1, len(location)))
             ds = xr.Dataset(
-                data_vars=dict(fcst=(["time", "leadtime", "location"], fcst)),
-                coords=dict(time=time, leadtime=leadtime, location=location),
+                data_vars={"fcst": (["time", "leadtime", "location"], fcst)},
+                coords={"time": time, "leadtime": leadtime, "location": location},
             )
         else:
             ds = xr.Dataset()
@@ -174,17 +174,17 @@ class VerificationDataFromSurfexConverter:
         posids = stationlist.all_posids()
         posids2 = []
         for pid in posids:
-            pid = pid.replace("SN", "")
-            posids2.append(int(pid))
+            pid2 = pid.replace("SN", "")
+            posids2.append(int(pid2))
         cbasetime = np.array([basetime]).astype(np.datetime64)
 
         ds = xr.Dataset(
-            data_vars=dict(fcst=(["time", "leadtime", "location"], pvalues)),
-            coords=dict(
-                time=(["time"], cbasetime),
-                leadtime=(["leadtime"], ileadtime),
-                location=(["location"], posids2),
-            ),
+            data_vars={"fcst": (["time", "leadtime", "location"], pvalues)},
+            coords={
+                "time": (["time"], cbasetime),
+                "leadtime": (["leadtime"], ileadtime),
+                "location": (["location"], posids2),
+            },
             attrs={"long_name": var.name, "units": var.unit},
         )
         self.ds = ds
@@ -235,9 +235,11 @@ class DataFromSurfexConverter:
         }
         ds = xr.Dataset(
             data_vars=data_vars,
-            coords=dict(
-                time=(["time"], cvalidtime), y=(["y"], geo.yyy), x=(["x"], geo.xxx)
-            ),
+            coords={
+                "time": (["time"], cvalidtime),
+                "y": (["y"], geo.yyy),
+                "x": (["x"], geo.xxx),
+            },
             attrs=attrs,
         )
         self.ds = ds
@@ -282,11 +284,11 @@ class VerifData:
         nlocations = location.shape[0]
         dummy_obs = np.nan * np.random.randn(ntimes, nlocations)
         ds3 = xr.Dataset(
-            data_vars=dict(obs=(["obstime", "location"], dummy_obs)),
-            coords=dict(
-                obstime=unique_model_valid_time,
-                location=location,
-            ),
+            data_vars={"obs": (["obstime", "location"], dummy_obs)},
+            coords={
+                "obstime": unique_model_valid_time,
+                "location": location,
+            },
         )
         ds_obs = ds3.update(ds_obs)
 
@@ -299,18 +301,18 @@ class VerifData:
         mtime = mtime.astype("timedelta64[s]").astype("int")
 
         ds = xr.Dataset(
-            data_vars=dict(
-                fcst=(["time", "leadtime", "location"], fcst),
-                obs=(["time", "leadtime", "location"], obs),
-                lon=(["location"], ds_obs.lon.data),
-                lat=(["location"], ds_obs.lat.data),
-                altitude=(["location"], ds_obs.altitude.data),
-            ),
-            coords=dict(
-                time=(["time"], mtime, {"units": "seconds since 1970-01-01"}),
-                leadtime=(["leadtime"], leadtime, {"units": "hours"}),
-                location=location,
-            ),
+            data_vars={
+                "fcst": (["time", "leadtime", "location"], fcst),
+                "obs": (["time", "leadtime", "location"], obs),
+                "lon": (["location"], ds_obs.lon.data),
+                "lat": (["location"], ds_obs.lat.data),
+                "altitude": (["location"], ds_obs.altitude.data),
+            },
+            coords={
+                "time": (["time"], mtime, {"units": "seconds since 1970-01-01"}),
+                "leadtime": (["leadtime"], leadtime, {"units": "hours"}),
+                "location": location,
+            },
             attrs={"long_name": self.var.name, "units": self.var.unit},
         )
         self.ds = ds
@@ -338,7 +340,8 @@ class VerifData:
                 if self.var.unit is not None:
                     fhandler.write(f"# units: {self.var.unit}\n")
                 fhandler.write(
-                    "date   hour  leadtime   location  lat   lon   altitude   obs   fcst\n"
+                    "date   hour  leadtime   location  lat   lon"
+                    + "   altitude   obs   fcst\n"
                 )
                 t = 0
                 for frt in self.ds["time"].data:
@@ -355,7 +358,8 @@ class VerifData:
                                 frt.astype(str)[:-3], "%Y-%m-%dT%H:%M:%S.%f"
                             )
                             fhandler.write(
-                                f'{frt_dt.strftime("%Y%m%d")} {frt_dt.strftime("%H")} {lt} {stid} {lat} {lon} {hgt} {obs} {fcst}\n'
+                                f'{frt_dt.strftime("%Y%m%d")} {frt_dt.strftime("%H")}'
+                                + f" {lt} {stid} {lat} {lon} {hgt} {obs} {fcst}\n"
                             )
                             loc = loc + 1
                         ilt = ilt + 1
@@ -409,15 +413,15 @@ class VerifDataFromFile(VerifData):
                             lat = float(line[mapping["lat"]])  # noqa
                             lon = float(line[mapping["lon"]])  # noqa
                             try:
-                                altitude = int(float(line[mapping["altitude"]]))  # noqa
+                                altitude = int(float(line[mapping["altitude"]]))
                             except ValueError:
                                 altitude = np.nan  # noqa
                             try:
-                                obs = float(line[mapping["obs"]])  # noqa
+                                obs = float(line[mapping["obs"]])
                             except ValueError:
                                 obs = np.nan  # noqa
                             try:
-                                fcst = float(line[mapping["fcst"]])  # noqa
+                                fcst = float(line[mapping["fcst"]])
                             except ValueError:
                                 fcst = np.nan  # noqa
                             frt = as_datetime(date + "00")
@@ -586,20 +590,18 @@ def converter2ds(argv=None):
     variable = VerifVariable(out_variable, unit=unit)
     if geo is not None:
         vdata = DataFromSurfexConverter(converter, variable, geo, validtime, cache=cache)
-    else:
-        if kwargs["are_observations"]:
-            vdata = ObsDataFromSurfexConverter(
-                converter, variable, stationlist, validtime, cache=cache
-            )
-        else:
-            vdata = VerificationDataFromSurfexConverter(
-                converter, variable, stationlist, validtime, basetime, cache=cache
-            )
+    elif kwargs["are_observations"]:
+        vdata = ObsDataFromSurfexConverter(
+            converter, variable, stationlist, validtime, cache=cache
+        )
+    if not kwargs["are_observations"]:
+        vdata = VerificationDataFromSurfexConverter(
+            converter, variable, stationlist, validtime, basetime, cache=cache
+        )
     if output is not None:
         if os.path.exists(output) and not force:
             raise FileExistsError
-        else:
-            vdata.ds.to_netcdf(output)
+        vdata.ds.to_netcdf(output)
 
 
 def parse_args_ds2verif(argv):
@@ -766,14 +768,46 @@ def concat_datasets(argv=None):
     output = kwargs["output"]
     datasets = kwargs["datasets"]
     dsets = []
-    logging.warning("Adapted for concat interpolated boundaries")
-    # TODO Adapted for deode runs! Not general
     for dset in datasets:
-        # dsets.append(xr.open_dataarray(dset, drop_variables=["longitude", "latitude"], engine="netcdf4"))
         dsets.append(xr.open_dataset(dset, engine="netcdf4"))
 
-    # ds = xr.concat(dsets, dim="time")
     ds = xr.merge(dsets, compat="override")
+    ds.to_netcdf(output)
+
+
+def concat_datasets_verif(argv=None):
+    """Command line interface.
+
+    Args:
+        argv(list, optional): Arguments. Defaults to None.
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+    kwargs = parse_args_concat_datasets(argv)
+    debug = kwargs.get("debug")
+
+    if debug:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
+            level=logging.DEBUG,
+        )
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+        )
+    logging.info("************ concat_datasets_verif ******************")
+
+    output = kwargs["output"]
+    datasets = kwargs["datasets"]
+    dsets = []
+    for dset in datasets:
+        dsets.append(
+            xr.open_dataarray(
+                dset, drop_variables=["longitude", "latitude"], engine="netcdf4"
+            )
+        )
+
+    ds = xr.concat(dsets, dim="time")
     ds.to_netcdf(output)
 
 
@@ -873,7 +907,10 @@ def vfld2ds(argv=None):
 
 
 def parse_args_converter2harp(argv):
-    """Parse the command line input arguments for creating SQLite tables for HARP from a converter.
+    """Get args for converter2harp.
+
+    Parse the command line input arguments for creating SQLite
+    tables for HARP from a converter.
 
     Args:
         argv (list): List with arguments.
@@ -947,7 +984,12 @@ def parse_args_converter2harp(argv):
 
 
 def converter2harp_cli(argv=None):
+    """Create harp data froma converter.
 
+    Args:
+        argv (list, optional): Argument list. Defaults to None
+
+    """
     if argv is None:
         argv = sys.argv[1:]
     parser, kwargs = parse_args_converter2harp(argv)
@@ -957,6 +999,13 @@ def converter2harp_cli(argv=None):
 
 
 def converter2harp(converter, **kwargs):
+    """Create harp data froma converter.
+
+    Args:
+        converter (Converter): Converter object
+        kwargs (dict): Key-word arguments
+
+    """
     try:
         validtime = kwargs["validtime"]
         if isinstance(validtime, str):

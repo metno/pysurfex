@@ -1,4 +1,5 @@
 """Command line interfaces."""
+import contextlib
 import json
 import logging
 import os
@@ -68,7 +69,7 @@ from .variable import Variable
 
 def get_geo_from_cmd(**kwargs):
     """Get geo and config from cmd."""
-    if "harmonie" in kwargs and kwargs["harmonie"]:
+    if kwargs.get("harmonie"):
         geo = ConfProjFromHarmonie()
     else:
         domain = kwargs.get("domain")
@@ -118,9 +119,8 @@ def run_surfex_binary(mode, **kwargs):
     except KeyError:
         one_decade = False
     check_existence = True
-    if "tolerate_missing" in kwargs:
-        if kwargs["tolerate_missing"]:
-            check_existence = False
+    if kwargs.get("tolerate_missing"):
+        check_existence = False
 
     try:
         nml_macros = kwargs["macros"]
@@ -150,13 +150,12 @@ def run_surfex_binary(mode, **kwargs):
         perturbed_file_pattern = kwargs["perturbed_file_pattern"]
 
     basetime = None
-    if "basetime" in kwargs:
-        if kwargs["basetime"] is not None:
-            if isinstance(kwargs["basetime"], str):
-                basetime = as_datetime(kwargs["basetime"])
-                kwargs.update({"basetime": basetime})
-            else:
-                basetime = kwargs["basetime"]
+    if "basetime" in kwargs and kwargs["basetime"] is not None:
+        if isinstance(kwargs["basetime"], str):
+            basetime = as_datetime(kwargs["basetime"])
+            kwargs.update({"basetime": basetime})
+        else:
+            basetime = kwargs["basetime"]
     try:
         validtime = kwargs["validtime"]
     except KeyError:
@@ -179,7 +178,7 @@ def run_surfex_binary(mode, **kwargs):
     else:
         if one_decade:
             raise RuntimeError("You must set basetime with option one_decade")
-        if mode == "prep" or mode == "soda":
+        if mode in ("prep", "soda"):
             raise RuntimeError(f"You must set basetime when using mode {mode}")
 
     logging.debug("kwargs: %s", str(kwargs))
@@ -215,9 +214,7 @@ def run_surfex_binary(mode, **kwargs):
     elif mode == "prep":
         do_prep = True
         need_prep = False
-    elif mode == "offline":
-        pass
-    elif mode == "soda":
+    elif mode in ("offline", "soda"):
         pass
     elif mode == "perturbed":
         do_perturbed = True
@@ -257,7 +254,8 @@ def run_surfex_binary(mode, **kwargs):
     if rte is None:
         rte = "rte.json"
     if not os.path.exists(rte):
-        json.dump(os.environ.copy(), open(rte, mode="w", encoding="utf-8"))
+        with open(rte, mode="w", encoding="utf-8") as fhandler:
+            json.dump(os.environ.copy(fhandler))
 
     with open(rte, mode="r", encoding="utf-8") as file_handler:
         rte = json.load(file_handler)
@@ -293,7 +291,8 @@ def run_surfex_binary(mode, **kwargs):
                 ntime = my_settings["nam_data_isba"]["ntime"]
                 if ntime != 1:
                     logging.warning(
-                        "Overriding value %s nam_data_isba#ntime and setting it 1 because of one_decade=True"
+                        "Overriding value %s nam_data_isba#ntime and setting it 1",
+                        "because of one_decade=True",
                     )
                     my_settings["nam_data_isba"]["ntime"] = 1
             except KeyError:
@@ -306,20 +305,15 @@ def run_surfex_binary(mode, **kwargs):
             if not val:
                 logging.warning("Override lset_forc_zs with value True")
             my_settings["nam_io_offline"]["lset_forc_zs"] = True
-        try:
+        with contextlib.suppress(KeyError):
             my_settings["nam_io_offline"]["xtstep_output"] = kwargs["output_frequency"]
-        except KeyError:
-            pass
 
         try:
             nnco = my_settings["nam_obs"]["nnco"]
         except KeyError:
             nnco = None
         if nnco is not None:
-            if isinstance(nnco, int):
-                nobstype = nnco
-            else:
-                nobstype = int(sum(nnco))
+            nobstype = nnco if isinstance(nnco, int) else int(sum(nnco))
             try:
                 nobstype_old = my_settings["nam_obs"]["nobstype"]
             except KeyError:
@@ -443,39 +437,37 @@ def run_surfex_binary(mode, **kwargs):
                     archive_data=my_archive,
                     print_namelist=print_namelist,
                 )
+            elif masterodb_mode:
+                if binary is None:
+                    my_batch = None
+                Masterodb(
+                    my_pgdfile,
+                    my_prepfile,
+                    surffile,
+                    my_settings,
+                    input_data,
+                    binary=binary,
+                    print_namelist=print_namelist,
+                    batch=my_batch,
+                    archive_data=my_archive,
+                )
             else:
-                if masterodb_mode:
-                    if binary is None:
-                        my_batch = None
-                    Masterodb(
-                        my_pgdfile,
-                        my_prepfile,
-                        surffile,
-                        my_settings,
-                        input_data,
-                        binary=binary,
-                        print_namelist=print_namelist,
-                        batch=my_batch,
-                        archive_data=my_archive,
-                    )
-                else:
-                    SURFEXBinary(
-                        binary,
-                        my_batch,
-                        my_prepfile,
-                        my_settings,
-                        input_data,
-                        pgdfile=my_pgdfile,
-                        surfout=surffile,
-                        archive_data=my_archive,
-                        print_namelist=print_namelist,
-                    )
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    surfout=surffile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
     else:
         logging.info("%s already exists!", output)
 
-    if only_archive and masterodb_mode:
-        if my_archive is not None:
-            my_archive.archive_files()
+    if only_archive and masterodb_mode and my_archive is not None:
+        my_archive.archive_files()
 
 
 def run_gridpp(**kwargs):
@@ -498,7 +490,7 @@ def run_gridpp(**kwargs):
     elev_gradient = 0
     if "elev_gradient" in kwargs:
         elev_gradient = kwargs["elev_gradient"]
-    if elev_gradient != -0.0065 and elev_gradient != 0:
+    if elev_gradient not in (-0.0065, 0):
         raise RuntimeError("Not a valid elevation gradient")
     epsilon = None
     if "epsilon" in kwargs:
@@ -554,24 +546,23 @@ def run_titan(**kwargs):
     blacklist = None
     if "blacklist" in kwargs:
         blacklist = kwargs["blacklist"]
-    elif "blacklist_file" in kwargs:
-        if kwargs["blacklist_file"] is not None:
-            blacklist = json.load(open(kwargs["blacklist_file"], "r", encoding="utf-8"))
+    elif "blacklist_file" in kwargs and kwargs["blacklist_file"] is not None:
+        with open(kwargs["blacklist_file"], mode="r", encoding="utf-8") as fhandler:
+            blacklist = json.load()
 
     if "input_file" in kwargs:
         input_file = kwargs["input_file"]
         if os.path.exists(input_file):
-            settings = json.load(open(input_file, "r", encoding="utf-8"))
+            with open(input_file, "r", encoding="utf-8") as fhandler:
+                settings = json.load(fhandler)
         else:
             raise FileNotFoundError("Could not find input file " + input_file)
+    elif "input_data" in kwargs:
+        settings = kwargs["input_data"]
     else:
-        if "input_data" in kwargs:
-            settings = kwargs["input_data"]
-        else:
-            raise RuntimeError("You must specify input_file or input_data")
+        raise RuntimeError("You must specify input_file or input_data")
 
     tests = kwargs["tests"]
-    print(tests)
     output_file = None
     if "output_file" in kwargs:
         output_file = kwargs["output_file"]
@@ -785,7 +776,8 @@ def plot_points(argv=None):
 
     geo = None
     if geo_file is not None:
-        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
+        with open(geo_file, mode="r", encoding="utf-8") as fhandler:
+            domain_json = json.load(fhandler)
         geo = get_geo_object(domain_json)
 
     contour = True
@@ -823,7 +815,7 @@ def plot_points(argv=None):
         contour,
         field.shape,
     )
-    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+    if geo.npoints not in (geo.nlons, geo.nlats):
         if contour:
             field = np.reshape(field, [geo.nlons, geo.nlats])
     else:
@@ -1102,6 +1094,12 @@ def dump_environ(argv=None):
 
 
 def first_guess_for_oi(argv=None):
+    """First guess for OI.
+
+    Args:
+        argv (list): Arguments
+
+    """
     if argv is None:
         argv = sys.argv[1:]
 
@@ -1119,7 +1117,6 @@ def first_guess_for_oi(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
 
-    print(kwargs)
     geo = get_geo_from_cmd(**kwargs)
     if geo is None:
         raise RuntimeError("Geo is missing")
@@ -1143,7 +1140,6 @@ def first_guess_for_oi(argv=None):
 
     f_g = None
     for fg_var in fg_variables:
-
         var = kwargs[f"{fg_var}_outfile_var"]
         converter = converters[fg_var]
 
@@ -1163,8 +1159,8 @@ def first_guess_for_oi(argv=None):
             f_g.variables["time"][:] = epoch
             f_g.variables["longitude"][:] = np.transpose(geo.lons)
             f_g.variables["latitude"][:] = np.transpose(geo.lats)
-            f_g.variables["x"][:] = list(range(0, n_x))
-            f_g.variables["y"][:] = list(range(0, n_y))
+            f_g.variables["x"][:] = list(range(n_x))
+            f_g.variables["y"][:] = list(range(n_y))
 
         if var == "altitude":
             field[field < 0] = 0
@@ -1186,10 +1182,8 @@ def cryoclim_pseudoobs(argv=None):
     Args:
         argv(list, optional): Arguments. Defaults to None.
     """
-    print(argv)
     if argv is None:
         argv = sys.argv[1:]
-    print(argv)
     kwargs = parse_cryoclim_pseudoobs(argv)
     debug = kwargs.get("debug")
 
@@ -1233,10 +1227,7 @@ def cryoclim_pseudoobs(argv=None):
     grid_slope_geo = None
     if "slope" in kwargs and kwargs["slope"]["filepattern"] is not None:
         fileformat = kwargs["slope"]["inputtype"]
-        print(kwargs["slope"]["basetime"])
-        print(kwargs["validtime"])
         basetime = as_datetime(kwargs["slope"]["basetime"], offset=True)
-        print(basetime, validtime)
         if fileformat is not None:
             grid_slope, grid_slope_geo = Variable(
                 fileformat, kwargs["slope"], basetime
@@ -1358,7 +1349,8 @@ def create_lsm_file_assim(argv=None):
     domain = kwargs["domain"]
     logging.debug("domain=%s", domain)
     if os.path.exists(domain):
-        domain_json = json.load(open(domain, "r", encoding="utf-8"))
+        with open(domain, "r", encoding="utf-8") as fhandler:
+            domain_json = json.load(fhandler)
         geo = get_geo_object(domain_json)
     else:
         raise FileNotFoundError(domain)
@@ -1392,8 +1384,8 @@ def create_lsm_file_assim(argv=None):
     field = np.transpose(field)
 
     with open(output, mode="w", encoding="utf-8") as file_handler:
-        for lat in range(0, geo.nlats):
-            for lon in range(0, geo.nlons):
+        for lat in range(geo.nlats):
+            for lon in range(geo.nlons):
                 file_handler.write(str(field[lat, lon]) + "\n")
 
 

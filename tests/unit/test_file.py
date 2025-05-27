@@ -22,7 +22,7 @@ from pysurfex.file import (
 from pysurfex.read import ConvertedInput, Converter
 
 
-@pytest.fixture()
+@pytest.fixture
 def ascii_conf_proj_float_record_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_conf_proj_float.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -118,7 +118,7 @@ CONF PROJ
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def ascii_ign_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_ign.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -150,7 +150,7 @@ IGN
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def ascii_lonlatval_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_lonlatval.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -176,7 +176,7 @@ LONLATVAL
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def ascii_lonlat_reg_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_lonlat_reg.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -255,7 +255,7 @@ def test_read_ascii_geo_lonlat_reg(ascii_lonlat_reg_file):
     assert grid_type == "LONLAT REG"
 
 
-@pytest.fixture()
+@pytest.fixture
 def texte_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/texte.TXT"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -338,7 +338,7 @@ def test_converter_ascii(conf_proj_2x3, ascii_conf_proj_float_record_file):
     field = np.reshape(field, [my_geo.nlons, my_geo.nlats])
 
 
-@pytest.fixture()
+@pytest.fixture
 def fa_conf_proj_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/fa_conf_proj.fa"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -356,7 +356,7 @@ def test_read_fa_field(fa_conf_proj_file, conf_proj_2x3):
 
 
 # NC
-@pytest.fixture()
+@pytest.fixture
 def data_converter_nc2(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_converter_nc.nc"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -433,7 +433,7 @@ def data_converter_nc2(tmp_path_factory):
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_surfex_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_nc.cdl"
@@ -589,7 +589,7 @@ data:
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_forcing_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_forcing_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_forcing_nc.cdl"
@@ -721,7 +721,7 @@ def test_netcdf_forcing_file(conf_proj_2x3, data_forcing_nc_file):
     assert field.shape[0] == 6
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_timeseries_netcdf_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_timeseries_netcdf.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_timeries_netcdf.cdl"

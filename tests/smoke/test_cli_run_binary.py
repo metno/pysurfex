@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 
 import pytest
-import toml
 
 from pysurfex.cli import canari, masterodb, offline, perturbed_offline, pgd, prep, soda
 
@@ -21,7 +20,7 @@ def working_directory(path):
         os.chdir(prev_cwd)
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_rte_file(tmp_path_factory):
     rte = f"{tmp_path_factory.getbasetemp().as_posix()}/rte_cli_run_binary.json"
     with open(rte, mode="w", encoding="utf-8") as file_handler:
@@ -29,7 +28,7 @@ def get_rte_file(tmp_path_factory):
     return rte
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_system(tmp_path_factory):
     system_file = (
         f"{tmp_path_factory.getbasetemp().as_posix()}/system_cli_run_binary.json"

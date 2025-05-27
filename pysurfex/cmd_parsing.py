@@ -12,7 +12,7 @@ from . import __version__
 class LoadFromFile(Action):
     """Load arguments from a file."""
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser, namespace, values, option_string=None):  # noqa ARG002
         """Override __call__ method."""
         with values as f_h:
             # parse arguments in the file and store them in the target namespace
@@ -420,9 +420,8 @@ def parse_args_create_forcing(argv):
 
     user_config = {}
     if "user_config" in kwargs and kwargs["user_config"] is not None:
-        user_config = (
-            yaml.safe_load(open(kwargs["user_config"], mode="r", encoding="utf-8")) or {}
-        )
+        with open(kwargs["user_config"], mode="r", encoding="utf-8") as fhandler:
+            user_config = yaml.safe_load(fhandler) or {}
     kwargs.update({"user_config": user_config})
 
     # Find name of global config file
@@ -432,9 +431,8 @@ def parse_args_create_forcing(argv):
     base = os.path.dirname(os.path.abspath(root))
     yaml_config = base + "/cfg/config.yml"
 
-    default_conf = yaml.safe_load(
-        open(yaml_config, mode="r", encoding="utf-8")
-    ) or sys.exit(1)
+    with open(yaml_config, mode="r", encoding="utf-8") as fhandler:
+        default_conf = yaml.safe_load(fhandler) or sys.exit(1)
     kwargs.update({"config": default_conf})
     return kwargs
 
@@ -558,7 +556,15 @@ def parse_args_dump_environ(argv):
 
 
 def parse_args_first_guess_for_oi(argv):
+    """Parse arguments for first guess for OI.
 
+    Args:
+        argv (list): Arguments
+
+    Returns:
+        kwargs (dict): Parsed keyword arguments
+
+    """
     parser = ArgumentParser(
         description="Create first guess file for gridpp", add_help=True
     )
@@ -608,11 +614,11 @@ def parse_args_first_guess_for_oi(argv):
         parser.print_help()
         sys.exit(1)
 
-    print("argv", argv)
+    logging.debug("argv %s", argv)
     args, __ = parser.parse_known_args(argv)
     kwargs = {}
     for arg in vars(args):
-        print(arg, getattr(args, arg))
+        logging.debug("%s %s", arg, getattr(args, arg))
         kwargs.update({arg: getattr(args, arg)})
     return parser, kwargs
 
@@ -692,15 +698,14 @@ def parse_args_surfex_binary(argv, mode):
         parser.add_argument("--prep-filetype", required=False, default=None)
         parser.add_argument("--prep-pgdfile", required=False, default=None)
         parser.add_argument("--prep-pgdfiletype", required=False, default=None)
-    if mode == "offline" or mode == "perturbed":
-        if not masterodb:
-            parser.add_argument(
-                "--forc-zs",
-                action="store_true",
-                default=False,
-                help="Set model ZS to forcing ZS",
-            )
-            parser.add_argument("--forcing-dir", required=False, default=None)
+    if mode in ("offline", "perturbed") and not masterodb:
+        parser.add_argument(
+            "--forc-zs",
+            action="store_true",
+            default=False,
+            help="Set model ZS to forcing ZS",
+        )
+        parser.add_argument("--forcing-dir", required=False, default=None)
     if mode == "soda":
         basetime_required = True
     parser.add_argument("--force", "-f", action="store_true", help="Force re-creation")
@@ -740,7 +745,8 @@ def parse_args_surfex_binary(argv, mode):
         "--namelist-path",
         "-n",
         required=True,
-        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set",
+        help="A yml file containing definitions or alternatively a namelist file "
+        + "if assemble_file is not set",
     )
     domain_required = False
     if mode == "pgd":
@@ -831,7 +837,8 @@ def parse_args_create_namelist(argv):
         "-n",
         dest="namelist_defs",
         required=True,
-        help="A yml file containing definitions or alternatively a namelist file if assemble_file is not set",
+        help="A yml file containing definitions or alternatively a namelist file "
+        + "if assemble_file is not set",
     )
     parser.add_argument("--uppercase", action="store_true", required=False, default=False)
     parser.add_argument("--true_repr", type=str, required=False, default=".TRUE.")
@@ -1944,10 +1951,8 @@ def variable_parse_options(parser, name=None):
         name (str, optional): Add name prefix to variables
 
     """
-    if name is None or name == "":
-        name = ""
-    else:
-        name = f"{name}-"
+    name = "" if name is None or name == "" else f"{name}-"
+
     nameu = f"{name}"
     nameu = nameu.replace("-", "_")
     name = name.replace("_", "-")
@@ -2140,6 +2145,13 @@ def variable_parse_options(parser, name=None):
 
 
 def converter_parse_options(parser, prefix=""):
+    """Parser options for converter.
+
+    Args:
+        parser (Parser): Arguemnt parser
+        prefix (str, optional): Prefix. Defaults to ""
+
+    """
     if prefix != "":
         prefix = f"{prefix}-"
     prefix_u = prefix.replace("-", "_")
@@ -2162,6 +2174,19 @@ def converter_parse_options(parser, prefix=""):
 
 
 def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
+    """Parse variable arguments.
+
+    Args:
+        parent_parser (Parser): Arguemnt parser
+        kwargs (dict): Key word arguments
+        argv (list): Arguments
+        variables (list, optional): Variables. Defaults to None
+        prefix (str, optional): Prefix. Defaults to ""
+
+    Returns:
+        kwargs (dict): Keyword arguments
+
+    """
     logging.debug("kwargs in: %s", kwargs)
     if variables is None:
         variables = []
@@ -2179,27 +2204,25 @@ def parse_args_variable(parent_parser, kwargs, argv, variables=None, prefix=""):
             if arg.find(pname) == 0:
                 var_name = name
 
-        # print(arg, prefix, var_name)
         if var_name != "":
-            if isinstance(arg, str):
+            marg = arg
+            if isinstance(marg, str):
                 if prefix != "":
                     if var_name == "var":
-                        arg = arg.replace(f"{prefix}_", "")
+                        marg = marg.replace(f"{prefix}_", "")
                     else:
-                        arg = arg.replace(f"{prefix}_{var_name}_", "")
+                        marg = marg.replace(f"{prefix}_{var_name}_", "")
                 else:
-                    arg = arg.replace(f"{var_name}_", "")
-            # print(arg, prefix, var_name)
+                    marg = marg.replace(f"{var_name}_", "")
             if var_name in kwargs:
-                kwargs[var_name].update({arg: val})
+                kwargs[var_name].update({marg: val})
             else:
-                kwargs.update({var_name: {arg: val}})
+                kwargs.update({var_name: {marg: val}})
         else:
-            # print(arg, val)
             pfix = prefix
             if prefix != "":
                 pfix = f"{prefix}_"
-            arg = arg.replace(f"{pfix}", "")
-            kwargs.update({arg: val})
+            marg = arg.replace(f"{pfix}", "")
+            kwargs.update({marg: val})
     logging.debug("kwargs out: %s", kwargs)
     return kwargs

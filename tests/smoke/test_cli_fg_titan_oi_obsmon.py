@@ -223,7 +223,8 @@ def create_obs_data(var, obs_fname):
             ],
         },
     }
-    json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
+    with open(obs_fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(qc_data, fhandler)
 
 
 @pytest.fixture(params=["t2m", "rh2m", "sd"])
@@ -303,7 +304,8 @@ def _qc_gridpp_obsmon(
     argv += harmonie
     titan(argv=argv)
 
-    qc_titan_obs = json.load(open(qc_fname, "r"))
+    with open(qc_fname, mode="r", encoding="utf8") as fhandler:
+        qc_titan_obs = json.load(fhandler)
     assert qc_titan_obs["0"]["epsilon"] == 0.5
     shutil.copy(qc_fname, f"{qc_fname}-1")
     shutil.copy(qc_fname, f"{qc_fname}-2")
@@ -400,7 +402,7 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
 @pytest.mark.usefixtures("_qc_gridpp_obsmon")
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon():
-    _qc_gridpp_obsmon
+    _qc_gridpp_obsmon  # noqa B018
 
 
 @pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
@@ -474,8 +476,8 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
         an_time,
     ]
 
+    fail = [*argv, "fail"]
     with pytest.raises(SystemExit):
-        fail = argv + ["fail"]
         first_guess_for_oi(argv=fail)
 
     argv += harmonie

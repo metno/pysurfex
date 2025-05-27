@@ -9,7 +9,7 @@ from pysurfex.read import Converter
 from pysurfex.timeseries import TimeSeriesFromConverter
 
 
-@pytest.fixture()
+@pytest.fixture
 def obsset_ts(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs_set_t2m.json"
     obs = {
@@ -32,7 +32,8 @@ def obsset_ts(tmp_path_factory):
             "value": 277.15,
         },
     }
-    json.dump(obs, open(fname, mode="w", encoding="utf-8"))
+    with open(fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(obs, fhandler)
     return fname
 
 
