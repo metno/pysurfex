@@ -548,7 +548,7 @@ def run_titan(**kwargs):
         blacklist = kwargs["blacklist"]
     elif "blacklist_file" in kwargs and kwargs["blacklist_file"] is not None:
         with open(kwargs["blacklist_file"], mode="r", encoding="utf-8") as fhandler:
-            blacklist = json.load()
+            blacklist = json.load(fhandler)
 
     if "input_file" in kwargs:
         input_file = kwargs["input_file"]

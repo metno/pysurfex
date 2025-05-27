@@ -36,9 +36,9 @@ class NamelistGenerator(object):
         for bkey, block in self.nml.items():
             items = {}
             for key, val in block.items():
-                items.update({key: val})
+                rval = val
+                items.update({key: rval})
                 for mkey, mval in self.macros.items():
-                    rval = val
                     if isinstance(rval, str):
                         rval = rval.replace(f"{self.micro}{mkey}{self.micro}", f"{mval}")
                         if rval == f"{mval}" and isinstance(mval, (float, int)):

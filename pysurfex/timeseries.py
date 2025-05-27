@@ -108,6 +108,5 @@ class TimeSeriesFromConverter(TimeSeries):
             geo.lonlist,
             geo.latlist,
             stids,
-            stids_file=stids_file,
             varname=var,
         )

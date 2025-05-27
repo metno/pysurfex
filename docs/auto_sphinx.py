@@ -34,7 +34,6 @@ for code_dir in code_dirs:
                             if sline.find("(") > 0 and sline.find(":") == (
                                 len(sline) - 1
                             ):
-                                print(sline, cl)
                                 sline = sline.lstrip()
                                 m = sline.split(" ")[1]
                                 m = m.split("(")[0]

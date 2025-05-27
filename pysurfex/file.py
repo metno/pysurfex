@@ -640,8 +640,9 @@ class AsciiSurfexFile(SurfexIO):
             words = line.split()
             logging.debug("read_value=%s, read_desc=%s", read_value, read_desc)
             logging.debug("words=%s", words)
-            if len(words) > 0 and read_value and not read_desc:
-                if words[0].find("&") < 0:
+
+            if len(words) > 0:
+                if read_value and not read_desc and words[0].find("&") < 0:
                     try:
                         if datatype.lower() == "float":
                             for word in words:
@@ -669,7 +670,6 @@ class AsciiSurfexFile(SurfexIO):
                             f"Conversion from {words!s} to {datatype!s} "
                             "does not work! Try a different datatype!"
                         ) from ValueError
-
                 if read_desc:
                     read_desc = False
                     read_value = True
@@ -686,6 +686,7 @@ class AsciiSurfexFile(SurfexIO):
                         read_desc = True
                         read_value = False
                         logging.info("Found: %s %s", str(tile), str(par))
+                    logging.info("Found: %s %s", str(read_tile), str(read_par))
 
             # Description could be empty
             elif read_desc:

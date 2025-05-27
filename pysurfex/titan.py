@@ -1954,12 +1954,18 @@ def dataset_from_json(
             flags.append(flag)
             lafs.append(data[i]["laf"])
             if fg_dep is not None:
-                fg_deps.append(fg_dep[int(i)])
+                if isinstance(fg_dep, float):
+                    fg_deps.append(fg_dep)
+                else:
+                    fg_deps.append(fg_dep[int(i)])
             else:
                 fg_dep = data[i].get("fg_dep", np.nan)
                 fg_deps.append(fg_dep)
             if an_dep is not None:
-                an_deps.append(an_dep[int(i)])
+                if isinstance(an_dep, float):
+                    an_deps.append(an_dep)
+                else:
+                    an_deps.append(an_dep[int(i)])
             else:
                 an_dep = data[i].get("an_dep", np.nan)
                 an_deps.append(an_dep)

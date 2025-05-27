@@ -447,7 +447,7 @@ class Converter(object):
                         raise RuntimeError("Alpha is different for the 2 wind vectors!")
                 else:
                     logging.warning(
-                        "Wind was not rotated to geographical coordinates due to ",
+                        "Wind was not rotated to geographical coordinates due to %s",
                         "missing alphas",
                     )
 

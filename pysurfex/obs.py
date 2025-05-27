@@ -1010,7 +1010,7 @@ class ObsSetFromVobs(ObservationSet):
         return pars, x
 
 
-class StationList():
+class StationList:
     """Station list."""
 
     def __init__(self, fname):

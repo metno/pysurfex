@@ -488,8 +488,8 @@ class AsciiOutput(SurfexOutputForcing):
             if key == "WIND_DIR":
                 nam = "DIR"
             self.forcing_file[key] = "Forc_" + nam + ".txt"
-            with open(self.forcing_file[key], mode="w", encoding="utf-8") as fhandler:
-                self.file_handler[key] = fhandler
+            fhandler = open(self.forcing_file[key], mode="w", encoding="utf-8")  # noqa
+            self.file_handler[key] = fhandler
 
     def finalize(self):
         """Finalize forcing."""
