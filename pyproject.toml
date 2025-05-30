@@ -36,7 +36,7 @@
   prep = "pysurfex.cli:prep"
   qc2obsmon = "pysurfex.cli:qc2obsmon"
   sentinel_obs = "pysurfex.cli:sentinel_obs"
-  set_domain = "pysurfex.cli:cli_set_domain"
+  set_domain_from_harmonie = "pysurfex.cli:cli_set_domain_from_harmonie"
   set_geo_from_obs_set = "pysurfex.cli:cli_set_geo_from_obs_set"
   set_geo_from_stationlist = "pysurfex.cli:set_geo_from_stationlist"
   shape2ign = "pysurfex.cli:cli_shape2ign"

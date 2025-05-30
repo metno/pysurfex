@@ -43,12 +43,6 @@ def parse_args_create_forcing(argv):
         default=None,
     )
     parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration (domain) created from Harmonie environment",
-    )
-    parser.add_argument(
         "-fb",
         "--filebase",
         dest="file_base",
@@ -571,12 +565,6 @@ def parse_args_first_guess_for_oi(argv):
     parser.add_argument(
         "--options", type=open, action=LoadFromFile, help="Load options from file"
     )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration (domain) created from Harmonie environment",
-    )
     parser.add_argument("--validtime")
     parser.add_argument("-o", "--output", dest="output", required=False, default="raw.nc")
     parser.add_argument(
@@ -602,7 +590,7 @@ def parse_args_first_guess_for_oi(argv):
         dest="domain",
         type=str,
         help="Domain/points json geometry definition file",
-        default=None,
+        default=True,
         required=False,
     )
     parser.add_argument(
@@ -710,12 +698,6 @@ def parse_args_surfex_binary(argv, mode):
         basetime_required = True
     parser.add_argument("--force", "-f", action="store_true", help="Force re-creation")
     parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
-    parser.add_argument(
         "--print-namelist", action="store_true", default=False, help="Print namelist used"
     )
     parser.add_argument(
@@ -818,12 +800,6 @@ def parse_args_create_namelist(argv):
         "--debug", action="store_true", help="Debug", required=False, default=False
     )
     parser.add_argument("mode", type=str, help="Type of namelist")
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration created from Harmonie environment",
-    )
     parser.add_argument(
         "--assemble-file",
         "-a",
@@ -978,12 +954,6 @@ def parse_args_titan(argv):
         help="Output json file with quality checked observations",
         required=False,
         default="qc_obs.json",
-    )
-    parser.add_argument(
-        "--harmonie",
-        action="store_true",
-        default=False,
-        help="Surfex configuration (domain) created from Harmonie environment",
     )
     parser.add_argument(
         "-v", "--variable", type=str, required=True, help="Observation variable"
@@ -1244,14 +1214,14 @@ def parse_args_obs2json(argv):
         "--indent", dest="indent", type=int, required=False, default=None, help="Indent"
     )
     parser.add_argument(
-        "--pos_t_range",
+        "--pos-t-range",
         dest="pos_t_range",
         type=int,
         help="Valid range in seconds after obs_time",
         default=3600,
     )
     parser.add_argument(
-        "--neg_t_range",
+        "--neg-t-range",
         dest="neg_t_range",
         type=int,
         help="Valid range in seconds before obs_time",
@@ -1925,11 +1895,6 @@ def parse_set_domain(argv):
     parser = ArgumentParser()
 
     parser.add_argument("--version", action="version", version=f"surfex {__version__}")
-    parser.add_argument("--domain", "-d", required=True, type=str, help="Name of domain")
-    parser.add_argument("--domains", required=True, type=str, help="Domain definitions")
-    parser.add_argument(
-        "--harmonie", action="store_true", help="Domain in harmonie definition"
-    )
     parser.add_argument(
         "--indent", required=False, default=2, type=int, help="Indented output"
     )
@@ -2064,7 +2029,7 @@ def variable_parse_options(parser, name=None):
         dest=f"{nameu}discipline",
         type=int,
         help="Discipline [grib2]",
-        default=None,
+        default=0,
     )
     grib.add_argument(
         f"--{name}parameterCategory",

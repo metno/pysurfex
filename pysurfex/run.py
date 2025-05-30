@@ -203,9 +203,10 @@ class PerturbedOffline(SURFEXBinary):
         if negpert:
             nncv = settings["nam_var"]["nncv"]
 
-            for nvi, _nval in enumerate(nncv):
+            for nvi, __ in enumerate(nncv):
                 val = settings["nam_var"]["xtprt_m"][nvi]
                 settings["nam_var"]["xtprt_m"][nvi] = -val
+        settings["nam_var"]["nvar"] = sum(settings["nam_var"]["nncv"])
 
         SURFEXBinary.__init__(
             self,

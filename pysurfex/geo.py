@@ -976,56 +976,6 @@ def get_geo_object_from_json_file(fname):
     return get_geo_object(domain_dict)
 
 
-def set_domain(settings, domain, hm_mode=False):
-    """Set domain.
-
-    Args:
-        settings (dict): Domain definitions
-        domain (str): Domain name
-        hm_mode (bool, optional): Harmonie definition. Defaults to False.
-
-    Raises:
-        KeyError: Domain not found
-        ValueError: Settings should be a dict
-
-    Returns:
-        dict: Domain dictionary
-
-    """
-    if isinstance(settings, dict):
-        if domain in settings:
-            if hm_mode:
-                ezone = 11
-                if "EZONE" in settings[domain]:
-                    ezone = settings[domain]["EZONE"]
-
-                domain_dict = {
-                    "nam_pgd_grid": {"cgrid": "CONF PROJ"},
-                    "nam_conf_proj": {
-                        "xlat0": settings[domain]["LAT0"],
-                        "xlon0": settings[domain]["LON0"],
-                    },
-                    "nam_conf_proj_grid": {
-                        "ilone": ezone,
-                        "ilate": ezone,
-                        "xlatcen": settings[domain]["LATC"],
-                        "xloncen": settings[domain]["LONC"],
-                        "nimax": settings[domain]["NLON"] - ezone,
-                        "njmax": settings[domain]["NLAT"] - ezone,
-                        "xdx": settings[domain]["GSIZE"],
-                        "xdy": settings[domain]["GSIZE"],
-                    },
-                }
-            else:
-                domain_dict = settings[domain]
-            return domain_dict
-
-        logging.error("Domain not found: %s", domain)
-        raise KeyError("Domain not found: " + domain)
-    logging.error("Settings should be a dict")
-    raise ValueError("Settings should be a dict")
-
-
 def shape2ign(catchment, infile, output, ref_proj, indent=None):
     """Read a shape file and convert to IGN geo.
 

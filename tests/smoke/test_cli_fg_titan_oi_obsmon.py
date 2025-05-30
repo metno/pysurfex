@@ -1,6 +1,5 @@
 """Test fg + titan + gridpp + obsmon."""
 import json
-import os
 import shutil
 
 import numpy as np
@@ -16,26 +15,6 @@ from pysurfex.cli import (
 )
 
 an_time = "2020022006"
-
-
-def hm_env():
-    env = {
-        "EZONE": "1",
-        "GSIZE": "10000.0",
-        "LAT0": "59.5",
-        "LATC": "60.0",
-        "LON0": "9.0",
-        "LONC": "10.0",
-        "NDGUXG": "19",
-        "NDLUXG": "9",
-        "NLAT": "20",
-        "NLON": "10",
-        "NMSMAX": "-1",
-        "NNOEXTZX": "0",
-        "NNOEXTZY": "0",
-    }
-    for key, value in env.items():
-        os.environ[key] = value
 
 
 def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_file):
@@ -229,12 +208,8 @@ def create_obs_data(var, obs_fname):
 
 @pytest.fixture(params=["t2m", "rh2m", "sd"])
 def _qc_gridpp_obsmon(
-    tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm
+    tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp
 ):
-    harmonie = ["--debug"]
-    if hm == "harmonie":
-        hm_env()
-        harmonie = ["--harmonie"]
     var = request.param
     translation = {
         "t2m": {
@@ -301,7 +276,6 @@ def _qc_gridpp_obsmon(
         "climatology",
         "sct",
     ]
-    argv += harmonie
     titan(argv=argv)
 
     with open(qc_fname, mode="r", encoding="utf8") as fhandler:
@@ -400,18 +374,12 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
 
 
 @pytest.mark.usefixtures("_qc_gridpp_obsmon")
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon():
     _qc_gridpp_obsmon  # noqa B018
 
 
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
-def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file, hm):
+def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp_output.nc"
-    harmonie = ["--debug"]
-    if hm == "harmonie":
-        hm_env()
-        harmonie = ["--harmonie"]
 
     argv = [
         "--domain",
@@ -474,11 +442,11 @@ def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file,
         "land_area_fraction",
         "--laf-basetime",
         an_time,
+        "--debug",
     ]
 
     fail = [*argv, "fail"]
     with pytest.raises(SystemExit):
         first_guess_for_oi(argv=fail)
 
-    argv += harmonie
     first_guess_for_oi(argv=argv)

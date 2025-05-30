@@ -2,15 +2,7 @@
 import f90nml
 import pytest
 
-from pysurfex.geo import (
-    IGN,
-    Cartesian,
-    ConfProj,
-    LonLatReg,
-    LonLatVal,
-    get_geo_object,
-    set_domain,
-)
+from pysurfex.geo import IGN, Cartesian, ConfProj, LonLatReg, LonLatVal, get_geo_object
 from pysurfex.namelist import NamelistGenerator
 
 
@@ -229,17 +221,3 @@ def test_geo_ign():
     domain = {"nam_ign": {"not_existing": "some_value"}}
     with pytest.raises(KeyError):
         IGN(domain)
-
-
-def test_set_domain_unittest():
-    """Test set domain."""
-    domains = {"NAME": {"nam_pgd_grid": {"cgrid": "some_projection"}}}
-    domain = set_domain(domains, "NAME")
-    assert domains["NAME"]["nam_pgd_grid"]["cgrid"] == domain["nam_pgd_grid"]["cgrid"]
-
-    with pytest.raises(KeyError):
-        set_domain(domains, "not_existing")
-
-    domains = ["NAME"]
-    with pytest.raises(ValueError):  # noqa PT011
-        set_domain(domains, "NAME")

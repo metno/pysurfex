@@ -16,7 +16,7 @@ from . import PACKAGE_DIRECTORY
 from .cache import Cache
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
-from .geo import ConfProjFromHarmonie, get_geo_object
+from .geo import get_geo_object
 from .read import ConstantValue, ConvertedInput, Converter
 from .util import deep_update
 
@@ -721,13 +721,9 @@ def set_input_object(
 def set_forcing_config(**kwargs):
     """Set the forcing config."""
     file_base = None
-    if kwargs.get("harmonie"):
-        geo_out = ConfProjFromHarmonie()
-    elif "domain" in kwargs and kwargs["domain"] is not None:
-        with open(kwargs["domain"], mode="r", encoding="utf-8") as fhandler:
-            geo_out = get_geo_object(json.load(fhandler))
-    else:
-        raise RuntimeError("No geometry is set")
+    domain_file = kwargs["domain"]
+    with open(domain_file, mode="r", encoding="utf-8") as fhandler:
+        geo_out = get_geo_object(json.load(fhandler))
 
     user_config = {}
     pattern = None

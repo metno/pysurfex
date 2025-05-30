@@ -42,7 +42,7 @@ from .cmd_parsing import (
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, get_decade
 from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
-from .geo import ConfProjFromHarmonie, LonLatVal, get_geo_object, set_domain, shape2ign
+from .geo import ConfProjFromHarmonie, LonLatVal, get_geo_object, shape2ign
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
 from .namelist import NamelistGeneratorAssemble, NamelistGeneratorFromNamelistFile
@@ -67,20 +67,6 @@ from .titan import (
 from .variable import Variable
 
 
-def get_geo_from_cmd(**kwargs):
-    """Get geo and config from cmd."""
-    if kwargs.get("harmonie"):
-        geo = ConfProjFromHarmonie()
-    else:
-        domain = kwargs.get("domain")
-        if domain is not None:
-            with open(domain, mode="r", encoding="utf-8") as fhandler:
-                geo = get_geo_object(json.load(fhandler))
-        else:
-            geo = None
-    return geo
-
-
 def run_surfex_binary(mode, **kwargs):
     """Run a surfex binary."""
     logging.debug("ARGS: %s", kwargs)
@@ -90,7 +76,11 @@ def run_surfex_binary(mode, **kwargs):
     except KeyError:
         masterodb = False
 
-    geo = get_geo_from_cmd(**kwargs)
+    domain = kwargs.get("domain")
+    geo = None
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            geo = get_geo_object(json.load(fhandler))
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -247,7 +237,7 @@ def run_surfex_binary(mode, **kwargs):
         rte = "rte.json"
     if not os.path.exists(rte):
         with open(rte, mode="w", encoding="utf-8") as fhandler:
-            json.dump(os.environ.copy(fhandler))
+            json.dump(os.environ.copy(), fhandler)
 
     with open(rte, mode="r", encoding="utf-8") as file_handler:
         rte = json.load(file_handler)
@@ -299,6 +289,9 @@ def run_surfex_binary(mode, **kwargs):
             my_settings["nam_io_offline"]["lset_forc_zs"] = True
         with contextlib.suppress(KeyError):
             my_settings["nam_io_offline"]["xtstep_output"] = kwargs["output_frequency"]
+
+        with contextlib.suppress(KeyError):
+            my_settings["nam_var"]["nvar"] = sum(my_settings["nam_var"]["nncv"])
 
         try:
             nnco = my_settings["nam_obs"]["nnco"]
@@ -533,7 +526,11 @@ def run_gridpp(**kwargs):
 
 def run_titan(**kwargs):
     """Titan."""
-    domain_geo = get_geo_from_cmd(**kwargs)
+    domain = kwargs.get("domain")
+    domain_geo = None
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            domain_geo = get_geo_object(json.load(fhandler))
 
     blacklist = None
     if "blacklist" in kwargs:
@@ -1109,9 +1106,9 @@ def first_guess_for_oi(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
 
-    geo = get_geo_from_cmd(**kwargs)
-    if geo is None:
-        raise RuntimeError("Geo is missing")
+    domain = kwargs["domain"]
+    with open(domain, mode="r", encoding="utf-8") as fhandler:
+        geo = get_geo_object(json.load(fhandler))
 
     validtime = kwargs["validtime"]
     output = kwargs["output"]
@@ -1276,7 +1273,10 @@ def create_namelist(argv=None):
     logging.debug("ARGS: %s", kwargs)
     mode = kwargs.get("mode")
 
-    geo = get_geo_from_cmd(**kwargs)
+    domain = kwargs.get("domain", None)
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            geo = get_geo_object(json.load(fhandler))
     if mode == "pgd" and geo is None:
         raise RuntimeError("Geo is needed for PGD")
     uppercase = kwargs.get("uppercase")
@@ -1522,7 +1522,7 @@ def obs2json(argv=None):
     )
 
 
-def cli_set_domain(argv=None):
+def cli_set_domain_from_harmonie(argv=None):
     """Command line interface.
 
     Args:
@@ -1550,23 +1550,14 @@ def cli_set_domain(argv=None):
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
-    logging.info("************ set_domain ******************")
-    domain = args.domain
-    domains = args.domains
+    logging.info("************ set_domain_from_harmonie ******************")
+
     output = args.output
     indent = args.indent
-    harmonie_mode = args.harmonie
-    if os.path.exists(domains):
-        with open(domains, mode="r", encoding="utf-8") as file_handler:
-            domains = json.load(file_handler)
-        domain_json = set_domain(domains, domain, hm_mode=harmonie_mode)
-        if domain_json is not None:
-            with open(output, mode="w", encoding="utf-8") as file_handler:
-                json.dump(domain_json, file_handler, indent=indent)
-        else:
-            raise RuntimeError("Domain not provided")
-    else:
-        raise FileNotFoundError
+    geo = ConfProjFromHarmonie()
+    domain_json = geo.json
+    with open(output, mode="w", encoding="utf-8") as file_handler:
+        json.dump(domain_json, file_handler, indent=indent)
 
 
 def cli_set_geo_from_obs_set(argv=None):
