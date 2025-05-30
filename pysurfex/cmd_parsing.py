@@ -200,7 +200,16 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Surface air pressure input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
+        choices=[
+            "default",
+            "netcdf",
+            "grib1",
+            "grib2",
+            "surfex",
+            "fa",
+            "constant",
+            "obs",
+        ],
     )
     group_ps.add_argument(
         "--ps-converter",
@@ -218,7 +227,16 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Direct short wave radiation input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
+        choices=[
+            "default",
+            "netcdf",
+            "grib1",
+            "grib2",
+            "surfex",
+            "fa",
+            "constant",
+            "obs",
+        ],
     )
     group_dir_sw.add_argument(
         "--dir-sw-converter",
